@@ -14,7 +14,7 @@ from PIL import Image, ImageGrab, ImageDraw, ImageFilter
 import pytesseract
 import cv2
 from Curvefitting import Curvefitting
-from Montecarlo3 import MonteCarlo
+from Montecarlo_v3 import MonteCarlo
 from Genetic_Algorithm import *
 from XMLHandler import *
 from Captcha_manager import *
