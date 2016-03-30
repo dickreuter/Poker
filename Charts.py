@@ -4,7 +4,7 @@ from matplotlib.path import Path
 from matplotlib.spines import Spine
 from matplotlib.projections.polar import PolarAxes
 from matplotlib.projections import register_projection
-from XMLHandler import *
+from Xml_handler import *
 from Log_manager import *
 
 def radar_factory(num_vars, frame='circle'):

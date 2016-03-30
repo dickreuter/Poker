@@ -1,22 +1,16 @@
-import time
 import win32gui
 import os.path
-import win32api
-import re
-import threading
-import xml.etree.ElementTree as xml
+import win32api  # moving mouse
 import random
-import math
 import sys
-import numpy as np
 import win32con
 from PIL import Image, ImageGrab, ImageDraw, ImageFilter
 import pytesseract
-import cv2
+import cv2  # opencv 3.0
 from Curvefitting import Curvefitting
 from Montecarlo_v3 import MonteCarlo
 from Genetic_Algorithm import *
-from XMLHandler import *
+from Xml_handler import *
 from Captcha_manager import *
 from KeyPressVBox import *
 from Log_manager import *
@@ -524,7 +518,7 @@ class DecisionMaker(object):
             gui.pie.canvas.draw()
 
         gui.statusbar.set(self.decision)
-        mouse.MouseAction(self.decision)
+        mouse.mouse_action(self.decision)
 
 class Table(object):
     # baseclass that is inherited by the different types of Tables (e.g. Pokerstars of Party Poker Table)
@@ -648,8 +642,8 @@ class TablePS(Table):
                 captchaIMG.save("pics/captcha.png")
                 # captchaIMG.show()
                 time.sleep(0.5)
-                t.captcha = solveCaptcha("pics/captcha.png")
-                mouse.EnterCaptcha(t.captcha)
+                t.captcha = solve_captcha("pics/captcha.png")
+                mouse.enter_captcha(t.captcha)
                 print("Entered captcha")
                 print(t.captcha)
         except:
@@ -663,7 +657,7 @@ class TablePS(Table):
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
         count, points, bestfit = a.find_template_on_screen(scraped.ImBack, img, 0.01)
         if count > 0:
-            mouse.MouseAction("Imback")
+            mouse.mouse_action("Imback")
             return False
             gui.statusbar.set("I am back found")
         else:
@@ -1194,8 +1188,8 @@ class TablePP(Table):
         #         captchaIMG.save("pics/captcha.png")
         #         # captchaIMG.show()
         #         time.sleep(0.5)
-        #         t.captcha = solveCaptcha("pics/captcha.png")
-        #         mouse.EnterCaptcha(t.captcha)
+        #         t.captcha = solve_captcha("pics/captcha.png")
+        #         mouse.enter_captcha(t.captcha)
         #         print("Entered captcha")
         #         print(t.captcha)
         # except:
@@ -1209,7 +1203,7 @@ class TablePP(Table):
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
         count, points, bestfit = a.find_template_on_screen(scraped.ImBack, img, 0.08)
         if count > 0:
-            mouse.MouseAction("Imback")
+            mouse.mouse_action("Imback")
             return False
             gui.statusbar.set("I am back found")
         else:
@@ -1814,8 +1808,8 @@ class TableF1(Table):
         #         captchaIMG.save("pics/captcha.png")
         #         # captchaIMG.show()
         #         time.sleep(0.5)
-        #         t.captcha = solveCaptcha("pics/captcha.png")
-        #         mouse.EnterCaptcha(t.captcha)
+        #         t.captcha = solve_captcha("pics/captcha.png")
+        #         mouse.enter_captcha(t.captcha)
         #         print("Entered captcha")
         #         print(t.captcha)
         # except:
@@ -1829,7 +1823,7 @@ class TableF1(Table):
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
         count, points, bestfit = a.find_template_on_screen(scraped.ImBack, img, 0.08)
         if count > 0:
-            mouse.MouseAction("Imback")
+            mouse.mouse_action("Imback")
             return False
             gui.statusbar.set("I am back found")
         else:
@@ -2348,7 +2342,7 @@ class TableF1(Table):
         return True
 
 class MouseMoverPS(object):
-    def EnterCaptcha(self, captchaString):
+    def enter_captcha(self, captchaString):
         gui.statusbar.set("Entering Captcha: " + str(captchaString))
         buttonToleranceX = 30
         buttonToleranceY = 0
@@ -2360,12 +2354,12 @@ class MouseMoverPS(object):
         a.mouse_mover(x1, y1, x2, y2)
         a.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
         try:
-            Write(captchaString, "win")
+            write_characters_to_virtualbox(captchaString, "win")
         except:
             t.error = "Failing to type Captcha"
             print(t.error)
 
-    def MouseAction(self, decision):
+    def mouse_action(self, decision):
         tlx = t.topleftcorner[0]
         tly = t.topleftcorner[1]
         flags, hcursor, (x1, y1) = win32gui.GetCursorInfo()
@@ -2518,7 +2512,7 @@ class MouseMoverPS(object):
         a.mouse_mover(x2, y2, xscatter, yscatter)
 
 class MouseMoverPP(object):
-    def EnterCaptcha(self, captchaString):
+    def enter_captcha(self, captchaString):
         gui.statusbar.set("Entering Captcha: " + str(captchaString))
         buttonToleranceX = 30
         buttonToleranceY = 0
@@ -2530,12 +2524,12 @@ class MouseMoverPP(object):
         a.mouse_mover(x1, y1, x2, y2)
         a.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
         try:
-            Write(captchaString, "win")
+            write_characters_to_virtualbox(captchaString, "win")
         except:
             t.error = "Failing to type Captcha"
             print(t.error)
 
-    def MouseAction(self, decision):
+    def mouse_action(self, decision):
         tlx = t.topleftcorner[0]
         tly = t.topleftcorner[1]
         flags, hcursor, (x1, y1) = win32gui.GetCursorInfo()

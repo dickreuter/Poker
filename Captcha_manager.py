@@ -6,10 +6,10 @@ commands to Virtualbox to enter the solved captcha
 '''
 
 
-def solveCaptcha(filename):
+def solve_captcha(filename):
     # Put your DBC account username and password here.
     # Use deathbycaptcha.HttpClient for HTTP API.
-    client = deathbycaptcha.SocketClient('dickreuter', 'wuschel')
+    client = deathbycaptcha.SocketClient('dickreuter', 'e14')
 
     balance = client.get_balance()
     print("Death by Captcha Balance:")
@@ -31,5 +31,5 @@ def solveCaptcha(filename):
 
 if __name__ == '__main__':
     filename = "c:/temp/cpp2.png"
-    result = solveCaptcha(filename)
+    result = solve_captcha(filename)
     print(result)

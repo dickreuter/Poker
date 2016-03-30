@@ -3,7 +3,7 @@ Assesses the log file and checks how the parameters in strategies.xml need to be
 '''
 import xml.etree.ElementTree as xml
 from Log_manager import *
-from XMLHandler import *
+from Xml_handler import *
 
 class Genetic_Algorithm(object):
     def __init__(self, autoUpdate=False):
