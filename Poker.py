@@ -2697,9 +2697,9 @@ if __name__ == '__main__':
         L = Logging(LogFilename)
         a = Tools()
 
-        if p.XMLEntriesList['pokerSite'].text == "PS":
+        if p.XML_entries_list1['pokerSite'].text == "PS":
             mouse = MouseMoverPS()
-        elif p.XMLEntriesList['pokerSite'].text == "PP":
+        elif p.XML_entries_list1['pokerSite'].text == "PP":
             mouse = MouseMoverPP()
         else:
             raise ("Invalid PokerSite")
@@ -2707,11 +2707,11 @@ if __name__ == '__main__':
 
         while True:
             p.read_XML()
-            if p.XMLEntriesList['pokerSite'].text == "PS":
+            if p.XML_entries_list1['pokerSite'].text == "PS":
                 t = TablePS()
-            elif p.XMLEntriesList['pokerSite'].text == "PP":
+            elif p.XML_entries_list1['pokerSite'].text == "PP":
                 t = TablePP()
-            elif p.XMLEntriesList['pokerSite'].text == "F1":
+            elif p.XML_entries_list1['pokerSite'].text == "F1":
                 t = TableF1()
 
             ready = False

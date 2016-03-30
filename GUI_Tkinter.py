@@ -120,7 +120,7 @@ class GUI(tk.Frame):
         self.h = Figure(figsize=(5, 4), dpi=60);
         self.c = self.h.add_subplot(111)
         L = Logging('log')
-        data = L.get_stacked_bar_data('Template', p.CurrentStrategy.text, 'stackedBar')
+        data = L.get_stacked_bar_data('Template', p.current_strategy.text, 'stackedBar')
         N = 11
         Bluff = data[0]
         BP = data[1]

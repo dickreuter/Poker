@@ -14,110 +14,123 @@ class TestMonteCarlo(unittest.TestCase):
             self):  # unittest to make sure the evaluator returns the corret winner hand 1 or 2 (returned as index of 0 or 1)
         Simulation = mc.MonteCarlo()
 
-        Simulation.PlayerFinalCards = [['8H', '8D', 'QH', '7H', '9H', 'JH', 'TH'],
-                                       ['KH', '6C', 'QH', '7H', '9H', 'JH', 'TH']]  # two straight flush
-        print(Simulation.eval_best_hand(Simulation.PlayerFinalCards)[1])
+        Simulation.player_final_cards = [['8H', '8D', 'QH', '7H', '9H', 'JH', 'TH'],
+                                         ['KH', '6C', 'QH', '7H', '9H', 'JH', 'TH']]  # two straight flush
+        print(Simulation.eval_best_hand(Simulation.player_final_cards)[1])
         print("\r")
-        self.assertEqual(Simulation.PlayerFinalCards.index(Simulation.eval_best_hand(Simulation.PlayerFinalCards)[0]),
-                         1)
+        self.assertEqual(
+            Simulation.player_final_cards.index(Simulation.eval_best_hand(Simulation.player_final_cards)[0]),
+            1)
 
-        Simulation.PlayerFinalCards = [['AS', 'KS', 'TS', '9S', '7S', '2H', '2H'],
-                                       ['AS', 'KS', 'TS', '9S', '8S', '2H', '2H']]  # two flush
-        print(Simulation.eval_best_hand(Simulation.PlayerFinalCards)[1])
+        Simulation.player_final_cards = [['AS', 'KS', 'TS', '9S', '7S', '2H', '2H'],
+                                         ['AS', 'KS', 'TS', '9S', '8S', '2H', '2H']]  # two flush
+        print(Simulation.eval_best_hand(Simulation.player_final_cards)[1])
         print("\r")
-        self.assertEqual(Simulation.PlayerFinalCards.index(Simulation.eval_best_hand(Simulation.PlayerFinalCards)[0]),
-                         1)
+        self.assertEqual(
+            Simulation.player_final_cards.index(Simulation.eval_best_hand(Simulation.player_final_cards)[0]),
+            1)
 
-        Simulation.PlayerFinalCards = [['8S', 'TS', '8H', 'KS', '9S', 'TH', 'KH'],
-                                       ['TD', '7S', '8H', 'KS', '9S', 'TH', 'KH']]  # two pairs
-        print(Simulation.eval_best_hand(Simulation.PlayerFinalCards)[1])
+        Simulation.player_final_cards = [['8S', 'TS', '8H', 'KS', '9S', 'TH', 'KH'],
+                                         ['TD', '7S', '8H', 'KS', '9S', 'TH', 'KH']]  # two pairs
+        print(Simulation.eval_best_hand(Simulation.player_final_cards)[1])
         print("\r")
-        self.assertEqual(Simulation.PlayerFinalCards.index(Simulation.eval_best_hand(Simulation.PlayerFinalCards)[0]),
-                         0)
+        self.assertEqual(
+            Simulation.player_final_cards.index(Simulation.eval_best_hand(Simulation.player_final_cards)[0]),
+            0)
 
-        Simulation.PlayerFinalCards = [['2D', '2H', 'AS', 'AD', 'AH', '8S', '7H'],
-                                       ['7C', '7S', '7H', 'AD', 'AS', '8S', '8H']]  # FULLHOUSES
-        print(Simulation.eval_best_hand(Simulation.PlayerFinalCards)[1])
+        Simulation.player_final_cards = [['2D', '2H', 'AS', 'AD', 'AH', '8S', '7H'],
+                                         ['7C', '7S', '7H', 'AD', 'AS', '8S', '8H']]  # FULLHOUSES
+        print(Simulation.eval_best_hand(Simulation.player_final_cards)[1])
         print("\r")
-        self.assertEqual(Simulation.PlayerFinalCards.index(Simulation.eval_best_hand(Simulation.PlayerFinalCards)[0]),
-                         0)
+        self.assertEqual(
+            Simulation.player_final_cards.index(Simulation.eval_best_hand(Simulation.player_final_cards)[0]),
+            0)
 
-        Simulation.PlayerFinalCards = [['7C', '7S', '7H', 'AD', 'KS', '5S', '8H'],
-                                       ['2D', '3H', 'AS', '4D', '5H', '8S', '7H']]  # THREE OF A KIND AND STRAIGHT
-        print(Simulation.eval_best_hand(Simulation.PlayerFinalCards)[1])
+        Simulation.player_final_cards = [['7C', '7S', '7H', 'AD', 'KS', '5S', '8H'],
+                                         ['2D', '3H', 'AS', '4D', '5H', '8S', '7H']]  # THREE OF A KIND AND STRAIGHT
+        print(Simulation.eval_best_hand(Simulation.player_final_cards)[1])
         print("\r")
-        self.assertEqual(Simulation.PlayerFinalCards.index(Simulation.eval_best_hand(Simulation.PlayerFinalCards)[0]),
-                         1)
+        self.assertEqual(
+            Simulation.player_final_cards.index(Simulation.eval_best_hand(Simulation.player_final_cards)[0]),
+            1)
 
-        Simulation.PlayerFinalCards = [['7C', '7C', 'AC', 'AC', '8C', '8S', '7H'],
-                                       ['2C', '3C', '4C', '5C', '6C', '8S', 'KH']]  # FULL OF ACE AND STRAIGHT FLUSH
-        print(Simulation.eval_best_hand(Simulation.PlayerFinalCards)[1])
+        Simulation.player_final_cards = [['7C', '7C', 'AC', 'AC', '8C', '8S', '7H'],
+                                         ['2C', '3C', '4C', '5C', '6C', '8S', 'KH']]  # FULL OF ACE AND STRAIGHT FLUSH
+        print(Simulation.eval_best_hand(Simulation.player_final_cards)[1])
         print("\r")
-        self.assertEqual(Simulation.PlayerFinalCards.index(Simulation.eval_best_hand(Simulation.PlayerFinalCards)[0]),
-                         1)
+        self.assertEqual(
+            Simulation.player_final_cards.index(Simulation.eval_best_hand(Simulation.player_final_cards)[0]),
+            1)
 
-        Simulation.PlayerFinalCards = [['AC', 'JS', 'AS', '2D', '5H', '3S', '3H'],
-                                       ['QD', 'JD', 'TS', '9D', '6H', '8S', 'KH'],
-                                       ['2D', '3D', '4S', '5D', '6H', '8S', 'KH']]  # STRAIGHTS and twoPair
-        print(Simulation.eval_best_hand(Simulation.PlayerFinalCards)[1])
+        Simulation.player_final_cards = [['AC', 'JS', 'AS', '2D', '5H', '3S', '3H'],
+                                         ['QD', 'JD', 'TS', '9D', '6H', '8S', 'KH'],
+                                         ['2D', '3D', '4S', '5D', '6H', '8S', 'KH']]  # STRAIGHTS and twoPair
+        print(Simulation.eval_best_hand(Simulation.player_final_cards)[1])
         print("\r")
-        self.assertEqual(Simulation.PlayerFinalCards.index(Simulation.eval_best_hand(Simulation.PlayerFinalCards)[0]),
-                         1)
+        self.assertEqual(
+            Simulation.player_final_cards.index(Simulation.eval_best_hand(Simulation.player_final_cards)[0]),
+            1)
 
-        Simulation.PlayerFinalCards = [['7C', '5S', '3S', 'JD', '8H', '2S', 'KH'],
-                                       ['AD', '3D', '4S', '5D', '9H', '8S', 'KH']]  # Highcardds
-        print(Simulation.eval_best_hand(Simulation.PlayerFinalCards)[1])
+        Simulation.player_final_cards = [['7C', '5S', '3S', 'JD', '8H', '2S', 'KH'],
+                                         ['AD', '3D', '4S', '5D', '9H', '8S', 'KH']]  # Highcardds
+        print(Simulation.eval_best_hand(Simulation.player_final_cards)[1])
         print("\r")
-        self.assertEqual(Simulation.PlayerFinalCards.index(Simulation.eval_best_hand(Simulation.PlayerFinalCards)[0]),
-                         1)
+        self.assertEqual(
+            Simulation.player_final_cards.index(Simulation.eval_best_hand(Simulation.player_final_cards)[0]),
+            1)
 
-        Simulation.PlayerFinalCards = [['2C', '2D', '4S', '4D', '4H', '8S', 'KH'],
-                                       ['7C', '7S', '7D', '7H', '8H', '8S', 'JH']]  # Fullhouse and four of a kind
-        print(Simulation.eval_best_hand(Simulation.PlayerFinalCards)[1])
+        Simulation.player_final_cards = [['2C', '2D', '4S', '4D', '4H', '8S', 'KH'],
+                                         ['7C', '7S', '7D', '7H', '8H', '8S', 'JH']]  # Fullhouse and four of a kind
+        print(Simulation.eval_best_hand(Simulation.player_final_cards)[1])
         print("\r")
-        self.assertEqual(Simulation.PlayerFinalCards.index(Simulation.eval_best_hand(Simulation.PlayerFinalCards)[0]),
-                         1)
+        self.assertEqual(
+            Simulation.player_final_cards.index(Simulation.eval_best_hand(Simulation.player_final_cards)[0]),
+            1)
 
-        Simulation.PlayerFinalCards = [['7C', '5S', '3S', 'JD', '8H', '2S', 'KH'],
-                                       ['AD', '3D', '3S', '5D', '9H', '8S', 'KH']]  # Highcard and Pair
-        print(Simulation.eval_best_hand(Simulation.PlayerFinalCards)[1])
+        Simulation.player_final_cards = [['7C', '5S', '3S', 'JD', '8H', '2S', 'KH'],
+                                         ['AD', '3D', '3S', '5D', '9H', '8S', 'KH']]  # Highcard and Pair
+        print(Simulation.eval_best_hand(Simulation.player_final_cards)[1])
         print("\r")
-        self.assertEqual(Simulation.PlayerFinalCards.index(Simulation.eval_best_hand(Simulation.PlayerFinalCards)[0]),
-                         1)
+        self.assertEqual(
+            Simulation.player_final_cards.index(Simulation.eval_best_hand(Simulation.player_final_cards)[0]),
+            1)
 
-        Simulation.PlayerFinalCards = [['7H', '7S', '3S', 'JD', '8H', '2S', 'KH'],
-                                       ['7D', '3D', '3S', '7C', '9H', '8S', 'KH']]  # Two pairs over one pair
-        print(Simulation.eval_best_hand(Simulation.PlayerFinalCards)[1])
+        Simulation.player_final_cards = [['7H', '7S', '3S', 'JD', '8H', '2S', 'KH'],
+                                         ['7D', '3D', '3S', '7C', '9H', '8S', 'KH']]  # Two pairs over one pair
+        print(Simulation.eval_best_hand(Simulation.player_final_cards)[1])
         print("\r")
-        self.assertEqual(Simulation.PlayerFinalCards.index(Simulation.eval_best_hand(Simulation.PlayerFinalCards)[0]),
-                         1)
+        self.assertEqual(
+            Simulation.player_final_cards.index(Simulation.eval_best_hand(Simulation.player_final_cards)[0]),
+            1)
 
-        Simulation.PlayerFinalCards = [['AS', '8H', 'TS', 'JH', '3H', '2H', 'AH'],
-                                       ['QD', 'QH', 'TS', 'JH', '3H', '2H', 'AH']]  # Two flushes
-        print(Simulation.eval_best_hand(Simulation.PlayerFinalCards)[1])
+        Simulation.player_final_cards = [['AS', '8H', 'TS', 'JH', '3H', '2H', 'AH'],
+                                         ['QD', 'QH', 'TS', 'JH', '3H', '2H', 'AH']]  # Two flushes
+        print(Simulation.eval_best_hand(Simulation.player_final_cards)[1])
         print("\r")
-        self.assertEqual(Simulation.PlayerFinalCards.index(Simulation.eval_best_hand(Simulation.PlayerFinalCards)[0]),
-                         1)
+        self.assertEqual(
+            Simulation.player_final_cards.index(Simulation.eval_best_hand(Simulation.player_final_cards)[0]),
+            1)
 
-        Simulation.PlayerFinalCards = [['9S', '7H', 'KS', 'KH', 'AH', 'AS', 'AC'],
-                                       ['8D', '2H', 'KS', 'KH', 'AH', 'AS', 'AC']]  # Full house on table that is draw
-        print(Simulation.eval_best_hand(Simulation.PlayerFinalCards)[1])
+        Simulation.player_final_cards = [['9S', '7H', 'KS', 'KH', 'AH', 'AS', 'AC'],
+                                         ['8D', '2H', 'KS', 'KH', 'AH', 'AS', 'AC']]  # Full house on table that is draw
+        print(Simulation.eval_best_hand(Simulation.player_final_cards)[1])
         print("\r")
-        self.assertEqual(Simulation.PlayerFinalCards.index(Simulation.eval_best_hand(Simulation.PlayerFinalCards)[0]),
-                         0)
+        self.assertEqual(
+            Simulation.player_final_cards.index(Simulation.eval_best_hand(Simulation.player_final_cards)[0]),
+            0)
 
     def test_monteCarlo(self):  # Unittest to ensure correct winning probabilities are returned
-        def testRun(Simulation, mycards, cardsOnTable, players, expectedResult):
+        def testRun(Simulation, my_cards, cards_on_table, players, expected_results):
             maxRuns = 15000  # maximum number of montecarlo runs
             testRuns = 5  # make several testruns to get standard deviation of winning probability
             secs = 5  # cut simulation short if amount of seconds are exceeded
 
-            totalResult = []
+            total_result = []
             for n in range(testRuns):
                 start_time = time.time()
-                Simulation.run_montecarlo(mycards, cardsOnTable, players, 1, maxRuns=maxRuns, maxSecs=secs)
+                Simulation.run_montecarlo(my_cards, cards_on_table, players, 1, maxRuns=maxRuns, maxSecs=secs)
                 equity = Simulation.equity
-                totalResult.append(equity * 100)
+                total_result.append(equity * 100)
                 print("--- %s seconds ---" % (time.time() - start_time))
 
                 for keys, values in Simulation.winTypesDict:
@@ -125,121 +138,121 @@ class TestMonteCarlo(unittest.TestCase):
                 print("Equity: " + str(np.round(equity * 100, 2)))
                 self.assertAlmostEqual(sum(Simulation.winnerCardTypeList.values()) - equity, 0, delta=0.0001)
 
-            stdev = np.std(totalResult)
-            avg = np.mean(totalResult)
+            stdev = np.std(total_result)
+            avg = np.mean(total_result)
 
             print("Mean: " + str(avg))
             print("Stdev: " + str(stdev))
 
-            self.assertAlmostEqual(avg, expectedResult, delta=1)
+            self.assertAlmostEqual(avg, expected_results, delta=1)
             self.assertAlmostEqual(stdev, 0, delta=1)
 
         Simulation = mc.MonteCarlo()
 
-        mycards = [['8H', '8D']]
-        cardsOnTable = ['QH', '7H', '9H', 'JH', 'TH']
-        expectedResult = 95.6
+        my_cards = [['8H', '8D']]
+        cards_on_table = ['QH', '7H', '9H', 'JH', 'TH']
+        expected_results = 95.6
         players = 2
-        testRun(Simulation, mycards, cardsOnTable, players, expectedResult)
+        testRun(Simulation, my_cards, cards_on_table, players, expected_results)
 
-        mycards = [['AS', 'KS']]
-        cardsOnTable = []
-        expectedResult = 49.9 + 1.9
+        my_cards = [['AS', 'KS']]
+        cards_on_table = []
+        expected_results = 49.9 + 1.9
         players = 3
-        testRun(Simulation, mycards, cardsOnTable, players, expectedResult)
+        testRun(Simulation, my_cards, cards_on_table, players, expected_results)
 
-        mycards = [['AS', 'KS']]
-        cardsOnTable = []
-        expectedResult = 66.1 + 1.6
+        my_cards = [['AS', 'KS']]
+        cards_on_table = []
+        expected_results = 66.1 + 1.6
         players = 2
-        testRun(Simulation, mycards, cardsOnTable, players, expectedResult)
+        testRun(Simulation, my_cards, cards_on_table, players, expected_results)
 
-        mycards = [['8S', 'TS']]
-        cardsOnTable = ['8H', 'KS', '9S', 'TH', 'KH']
-        expectedResult = 71.5 + 5.9
+        my_cards = [['8S', 'TS']]
+        cards_on_table = ['8H', 'KS', '9S', 'TH', 'KH']
+        expected_results = 71.5 + 5.9
         players = 2
-        testRun(Simulation, mycards, cardsOnTable, players, expectedResult)
+        testRun(Simulation, my_cards, cards_on_table, players, expected_results)
 
-        mycards = [['8S', 'TS']]
-        cardsOnTable = ['2S', '3S', '4S', 'KS', 'AS']
-        expectedResult = 87
+        my_cards = [['8S', 'TS']]
+        cards_on_table = ['2S', '3S', '4S', 'KS', 'AS']
+        expected_results = 87
         players = 2
-        testRun(Simulation, mycards, cardsOnTable, players, expectedResult)
+        testRun(Simulation, my_cards, cards_on_table, players, expected_results)
 
-        mycards = [['8S', '2S']]
-        cardsOnTable = ['5S', '3S', '4S', 'KS', 'AS']
-        expectedResult = 100
+        my_cards = [['8S', '2S']]
+        cards_on_table = ['5S', '3S', '4S', 'KS', 'AS']
+        expected_results = 100
         players = 2
-        testRun(Simulation, mycards, cardsOnTable, players, expectedResult)
+        testRun(Simulation, my_cards, cards_on_table, players, expected_results)
 
-        mycards = [['8S', 'TS']]
-        cardsOnTable = []
-        expectedResult = 22.6 + 2.9
+        my_cards = [['8S', 'TS']]
+        cards_on_table = []
+        expected_results = 22.6 + 2.9
         players = 5
-        testRun(Simulation, mycards, cardsOnTable, players, expectedResult)
+        testRun(Simulation, my_cards, cards_on_table, players, expected_results)
 
-        mycards = [['2C', 'QS']]
-        cardsOnTable = []
-        expectedResult = 49.6  # 45 win and 4 tie
+        my_cards = [['2C', 'QS']]
+        cards_on_table = []
+        expected_results = 49.6  # 45 win and 4 tie
         players = 2
-        testRun(Simulation, mycards, cardsOnTable, players, expectedResult)
+        testRun(Simulation, my_cards, cards_on_table, players, expected_results)
 
-        mycards = [['7H', '7S']]
-        cardsOnTable = ['7C', '8C', '8S', 'AC', 'AH']
-        expectedResult = 83
+        my_cards = [['7H', '7S']]
+        cards_on_table = ['7C', '8C', '8S', 'AC', 'AH']
+        expected_results = 83
         players = 2
-        testRun(Simulation, mycards, cardsOnTable, players, expectedResult)
+        testRun(Simulation, my_cards, cards_on_table, players, expected_results)
 
-        mycards = [['3S', 'QH']]
-        cardsOnTable = ['2C', '5H', '7C']
-        expectedResult = 30.9 + 2.2
+        my_cards = [['3S', 'QH']]
+        cards_on_table = ['2C', '5H', '7C']
+        expected_results = 30.9 + 2.2
         players = 2
-        testRun(Simulation, mycards, cardsOnTable, players, expectedResult)
+        testRun(Simulation, my_cards, cards_on_table, players, expected_results)
 
-        mycards = [['5C', 'JS']]
-        cardsOnTable = []
-        expectedResult = 23
+        my_cards = [['5C', 'JS']]
+        cards_on_table = []
+        expected_results = 23
         players = 4
-        testRun(Simulation, mycards, cardsOnTable, players, expectedResult)
+        testRun(Simulation, my_cards, cards_on_table, players, expected_results)
 
-        mycards = [['TC', 'TH']]
-        cardsOnTable = ['4D', 'QD', 'KC']
-        expectedResult = 66.7 + 0.38
+        my_cards = [['TC', 'TH']]
+        cards_on_table = ['4D', 'QD', 'KC']
+        expected_results = 66.7 + 0.38
         players = 2
-        testRun(Simulation, mycards, cardsOnTable, players, expectedResult)
+        testRun(Simulation, my_cards, cards_on_table, players, expected_results)
 
-        mycards = [['JH', 'QS']]
-        cardsOnTable = ['5C', 'JD', 'AS', 'KS', 'QD']
-        expectedResult = 77
+        my_cards = [['JH', 'QS']]
+        cards_on_table = ['5C', 'JD', 'AS', 'KS', 'QD']
+        expected_results = 77
         players = 2
-        testRun(Simulation, mycards, cardsOnTable, players, expectedResult)
+        testRun(Simulation, my_cards, cards_on_table, players, expected_results)
 
-        mycards = [['2H', '8S']]
-        cardsOnTable = ['AC', 'AD', 'AS', 'KS', 'KD']
-        expectedResult = 95
+        my_cards = [['2H', '8S']]
+        cards_on_table = ['AC', 'AD', 'AS', 'KS', 'KD']
+        expected_results = 95
         players = 2
-        testRun(Simulation, mycards, cardsOnTable, players, expectedResult)
+        testRun(Simulation, my_cards, cards_on_table, players, expected_results)
 
-        mycards = [['KD', 'KS']]
-        cardsOnTable = ['4D', '6S', '9C', '9S', 'TC']
-        expectedResult = 88
+        my_cards = [['KD', 'KS']]
+        cards_on_table = ['4D', '6S', '9C', '9S', 'TC']
+        expected_results = 88
         players = 2
-        testRun(Simulation, mycards, cardsOnTable, players, expectedResult)
+        testRun(Simulation, my_cards, cards_on_table, players, expected_results)
 
-        mycards = [['5H', 'KD']]
-        cardsOnTable = ['KH', 'JS', '2C', 'QS']
-        expectedResult = 75.6 + 3.6
+        my_cards = [['5H', 'KD']]
+        cards_on_table = ['KH', 'JS', '2C', 'QS']
+        expected_results = 75.6 + 3.6
         players = 2
-        testRun(Simulation, mycards, cardsOnTable, players, expectedResult)
+        testRun(Simulation, my_cards, cards_on_table, players, expected_results)
 
-        mycards = [['JD', 'JS']]
-        cardsOnTable = ['8C', 'TC', 'JC', '5H', 'QC']
-        expectedResult = 26
+        my_cards = [['JD', 'JS']]
+        cards_on_table = ['8C', 'TC', 'JC', '5H', 'QC']
+        expected_results = 26
         players = 3
-        testRun(Simulation, mycards, cardsOnTable, players, expectedResult)
+        testRun(Simulation, my_cards, cards_on_table, players, expected_results)
 
-        mycards = [['TD', '7D']]
-        cardsOnTable = ['8D', 'QD', '7C', '5D', '6D']
-        expectedResult = 87
+        my_cards = [['TD', '7D']]
+        cards_on_table = ['8D', 'QD', '7C', '5D', '6D']
+        expected_results = 87
         players = 2
-        testRun(Simulation, mycards, cardsOnTable, players, expectedResult)
+        testRun(Simulation, my_cards, cards_on_table, players, expected_results)
