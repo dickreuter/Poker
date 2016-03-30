@@ -43,14 +43,11 @@ class Curvefitting(object):
         adj1 = result.params['adj1']
         adj2 = result.params['adj2']
 
-        # try to plot results
-
-
+        # plot results
         y = finalFunction(x, adj1, adj2, pw, xf[0], maxEquity, smallBlind)
         if pl == True:
             plot()
         self.y = y
-        # self.y_single=round(y[1],2)
 
 
 if __name__ == '__main__':

@@ -4,7 +4,7 @@ is calculated correctly and within a given amount of time without a timeout
 '''
 
 import unittest
-import Montecarlo3 as mc
+import Montecarlo_v3 as mc
 import time
 import numpy as np
 

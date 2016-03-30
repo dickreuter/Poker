@@ -1,9 +1,11 @@
+'''
+Functions that are used to log and analyse present and past pokergames
+'''
 import pandas as pd
 import numpy as np
 import time
 import math
 from collections import Iterable
-
 
 class Logging(object):
     def __init__(self, filename):
@@ -24,7 +26,7 @@ class Logging(object):
             return x
         return [x]
 
-    def writeCSV(self, df, file):
+    def write_CSV(self, df, file):
         try:
             df.to_csv(file + ".csv")
             # print ("writing to CSV Log File...")
@@ -32,7 +34,7 @@ class Logging(object):
             print("Could not write to Log file!")
             # print FinalDataFrame
 
-    def writeLogFile(self, p, h, t, d):
+    def write_log_file(self, p, h, t, d):
         hDict = {}
         tDict = {}
         dDict = {}
@@ -55,10 +57,10 @@ class Logging(object):
         self.FinalDataFrame = pd.concat([Dd, Dt, Dh, Dp], axis=1)
 
         self.LogDataFile = pd.concat([self.FinalDataFrame, self.LogDataFile], ignore_index=True)
-        self.writeCSV(self.LogDataFile, self.LogFilename)
+        self.write_CSV(self.LogDataFile, self.LogFilename)
 
-    def markLastGame(self, t, h):
-
+    def mark_last_game(self, t, h):
+        # updates the last game after it becomes know if it was won or lost
         outcome = "na"
         if t.myFundsChange > 0:
             outcome = "Won";
@@ -79,7 +81,7 @@ class Logging(object):
             self.LogDataFile.ix[self.LogDataFile.GameID == h.lastGameID, 'FinalDecision'] = h.histDecision
             self.LogDataFile.ix[self.LogDataFile.GameID == h.lastGameID, 'FinalEquity'] = h.histEquity
             # print ("Adjusting log file for last game")
-            self.writeCSV(self.LogDataFile, self.LogFilename)
+            self.write_CSV(self.LogDataFile, self.LogFilename)
             # print "LastGameID Full list: "+str(L.LogDataFile.ix[L.LogDataFile.lastGameID])
             # print "LastGameID:" + str(h.lastGameID)
             # print "FinalOutcome:" + str(L.LogDataFile.FinalOutcome)
@@ -87,23 +89,23 @@ class Logging(object):
             print("Unable to assess previous game")
             time.sleep(0.1)
 
-    def filterByParameter(self, parameter, value):
+    def filter_by_parameter(self, parameter, value):
         self.LogDataFileFiltered = self.LogDataFile[self.LogDataFile[parameter] == value]
         self.LogDataFileFiltered2 = self.LogDataFile[(self.LogDataFile[parameter] == value) & (
             (self.LogDataFile.FinalOutcome == 'Won') | (self.LogDataFile.FinalOutcome == 'Lost'))]
 
-    def filterByTemplate(self, p_name):
+    def filter_by_template(self, p_name):
         self.LogDataFileFiltered = self.LogDataFile[self.LogDataFile.Template == p_name]
         self.LogDataFileFiltered2 = self.LogDataFile[(self.LogDataFile.Template == p_name) & (
             (self.LogDataFile.FinalOutcome == 'Won') | (self.LogDataFile.FinalOutcome == 'Lost'))]
 
-    def ReplaceStringsWithNumbers(self):
+    def replace_strings_with_numbers(self):
         self.LogDataFileFiltered = self.LogDataFileFiltered.replace(
             {'Won': 1, 'Lost': -1, 'Neutral': 0, 'Fold': 0, 'Check': 1, 'Check Deception': 1, 'Call': 2,
              'Call Decepsion': 2, 'Bet': 3, 'Bet Bluff': 3, 'BetPlus': 3, 'Bet half pot': 4, 'Bet pot': 5, 'Bet max': 6,
              'PreFlop': 0, 'Flop': 1, 'Turn': 2, 'River': 3})
 
-    def collapseGames(self):
+    def collapse_games(self):
         self.LogDataFileSummary = self.LogDataFileFiltered.pivot_table(index='GameID',
                                                                        values=['FinalFundsChange', 'FinalDecision',
                                                                                'FinalOutcome', 'FinalStage',
@@ -113,7 +115,7 @@ class Logging(object):
              6.0: '6Bet max'})
         self.LogDataFileSummary['FinalStage'] = self.LogDataFileSummary['FinalStage'].map(
             {0.0: '0PreFlop', 1.0: '1Flop', 2.0: '2Turn', 3.0: '3River'})
-        self.writeCSV(self.LogDataFileSummary, self.LogFilename + "_summary")
+        self.write_CSV(self.LogDataFileSummary, self.LogFilename + "_summary")
 
     def pivot1(self):
         try:
@@ -137,16 +139,16 @@ class Logging(object):
         except:
             print("No log entries with given strategy to analyse.")
 
-    def TotalFundChange(self):
+    def get_total_funds_change(self):
         FCPG = np.sum(self.LogDataFileSummary['FinalFundsChange']) / np.size(
             self.LogDataFileSummary['FinalFundsChange'])
         return FCPG
 
-    def showPivots(self, p_name):
-        self.filterByTemplate(p_name)
-        self.ReplaceStringsWithNumbers()
+    def show_pivots(self, p_name):
+        self.filter_by_template(p_name)
+        self.replace_strings_with_numbers()
         try:
-            self.collapseGames()
+            self.collapse_games()
         except:
             print("Pivot summary collapsing not working")
         try:
@@ -154,7 +156,7 @@ class Logging(object):
         except:
             print("Could not show Pivot")
 
-    def getNeuralTrainingData(self, p_name, p_value, GameStage, decision):
+    def get_neural_training_data(self, p_name, p_value, GameStage, decision):
 
         # filter out multiple rounds in the same game and gamestage
         self.LogDataFile2 = self.LogDataFile.pivot_table(
@@ -179,7 +181,7 @@ class Logging(object):
 
         return Data
 
-    def getDataStackedBar(self, p_name, p_value, chartType):
+    def get_stacked_bar_data(self, p_name, p_value, chartType):
 
         # filter out multiple rounds in the same game and gamestage
         self.LogDataFile2 = self.LogDataFile.drop_duplicates(subset=['GameID', 'gameStage'], keep='first')
@@ -251,7 +253,7 @@ class Logging(object):
 
         return FinalData
 
-    def getDataHistogram(self, p_name, p_value, GameStage, decision):
+    def get_histrogram_data(self, p_name, p_value, GameStage, decision):
 
         # filter out multiple rounds in the same game and gamestage
         self.LogDataFile2 = self.LogDataFile.pivot_table(
@@ -271,7 +273,7 @@ class Logging(object):
 
         return Data
 
-    def getGameCount(self, strategy):
+    def get_game_count(self, strategy):
         try:
             n = max(self.LogDataFile[self.LogDataFile['Template'] == strategy].pivot_table(index='GameID',
                                                                                            values=['FinalOutcome'],
@@ -281,7 +283,7 @@ class Logging(object):
             n = 0
         return n + 1
 
-    def getStrategyTotalFundsChange(self, strategy, days):
+    def get_strategy_total_funds_change(self, strategy, days):
         try:
             n = round(self.LogDataFile[self.LogDataFile['Template'] == strategy][
                           ['FinalFundsChange', 'GameID']].drop_duplicates(subset=['GameID'])['FinalFundsChange'][
@@ -290,30 +292,27 @@ class Logging(object):
             n = 0
         return n
 
-
 def pivot_by_template():
     LogFilename = 'log'
     p_value = 'Strategy345'
     L = Logging(LogFilename)
-    L.filterByTemplate(p_value)
-    L.ReplaceStringsWithNumbers()
-    L.collapseGames()
+    L.filter_by_template(p_value)
+    L.replace_strings_with_numbers()
+    L.collapse_games()
     L.pivot1()
     print("Funds Change:")
-    f = L.getStrategyTotalFundsChange(p_value, 30)
+    f = L.get_strategy_total_funds_change(p_value, 30)
     print(f)
     # print L.SpiderData(p)
-
 
 def filter_log_by_parameter(p_name, p_value):
     LogFilename = 'log'
     L = Logging(LogFilename)
-    L.filterByParameter(p_name, p_value)
-    L.ReplaceStringsWithNumbers()
-    L.collapseGames()
-    result = L.TotalFundChange()
+    L.filter_by_parameter(p_name, p_value)
+    L.replace_strings_with_numbers()
+    L.collapse_games()
+    result = L.get_total_funds_change()
     return (result)
-
 
 def maximize_parameters(rowAmount):
     # experimental function to maximize parameters
@@ -344,7 +343,6 @@ def maximize_parameters(rowAmount):
     result = pd.DataFrame(FinalList, columns=['Variable', 'ParamValue', 'AvgWin'])
     return result
 
-
 if __name__ == '__main__':
     p_name = 'Template'
     p_value = ''
@@ -354,4 +352,4 @@ if __name__ == '__main__':
     # pivot_by_template()
     LogFilename = 'log'
     L = Logging(LogFilename)
-    L.getNeuralTrainingData(p_name, p_value, gameStage, decision)
+    L.get_neural_training_data(p_name, p_value, gameStage, decision)

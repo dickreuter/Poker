@@ -24,7 +24,6 @@ from GUI_Tkinter import *
 from Terminal import *
 import winsound
 
-
 class History(object):
     def __init__(self):
         # keeps values of the last round
@@ -46,7 +45,6 @@ class History(object):
         self.histMinBet = 0
         self.histPlayerPots = 0
 
-
 class Tools(object):
     # General tools that are used to operate the pokerbot, such as moving the mouse, clicking and routines that
     # call Opencv for image recognition
@@ -61,51 +59,51 @@ class Tools(object):
         suites = "CDHS"
         for x in values:
             for y in suites:
-                name = "pics/" + p.XMLEntriesList['pokerSite'].text + "/" + x + y + ".png"
+                name = "pics/" + p.XML_entries_list1['pokerSite'].text + "/" + x + y + ".png"
                 if os.path.exists(name) == True:
                     self.img[x + y] = Image.open(name)
                     self.cardImages[x + y] = cv2.cvtColor(np.array(self.img[x + y]), cv2.COLOR_BGR2RGB)
                 else:
                     print("Cardimage File not found")
 
-        name = "pics/" + p.XMLEntriesList['pokerSite'].text + "/button.png"
+        name = "pics/" + p.XML_entries_list1['pokerSite'].text + "/button.png"
         template = Image.open(name)
         self.button = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + p.XMLEntriesList['pokerSite'].text + "/topleft.png"
+        name = "pics/" + p.XML_entries_list1['pokerSite'].text + "/topleft.png"
         template = Image.open(name)
         self.topLeftCorner = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + p.XMLEntriesList['pokerSite'].text + "/coveredcard.png"
+        name = "pics/" + p.XML_entries_list1['pokerSite'].text + "/coveredcard.png"
         template = Image.open(name)
         self.coveredCardHolder = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + p.XMLEntriesList['pokerSite'].text + "/imback.png"
+        name = "pics/" + p.XML_entries_list1['pokerSite'].text + "/imback.png"
         template = Image.open(name)
         self.ImBack = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + p.XMLEntriesList['pokerSite'].text + "/check.png"
+        name = "pics/" + p.XML_entries_list1['pokerSite'].text + "/check.png"
         template = Image.open(name)
         self.check = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + p.XMLEntriesList['pokerSite'].text + "/call.png"
+        name = "pics/" + p.XML_entries_list1['pokerSite'].text + "/call.png"
         template = Image.open(name)
         self.call = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + p.XMLEntriesList['pokerSite'].text + "/smalldollarsign1.png"
+        name = "pics/" + p.XML_entries_list1['pokerSite'].text + "/smalldollarsign1.png"
         template = Image.open(name)
         self.smallDollarSign1 = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        if p.XMLEntriesList['pokerSite'].text == "PP":
-            name = "pics/" + p.XMLEntriesList['pokerSite'].text + "/smalldollarsign2.png"
+        if p.XML_entries_list1['pokerSite'].text == "PP":
+            name = "pics/" + p.XML_entries_list1['pokerSite'].text + "/smalldollarsign2.png"
             template = Image.open(name)
             self.smallDollarSign2 = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + p.XMLEntriesList['pokerSite'].text + "/allincallbutton.png"
+        name = "pics/" + p.XML_entries_list1['pokerSite'].text + "/allincallbutton.png"
         template = Image.open(name)
         self.allInCallButton = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + p.XMLEntriesList['pokerSite'].text + "/lostEverything.png"
+        name = "pics/" + p.XML_entries_list1['pokerSite'].text + "/lostEverything.png"
         template = Image.open(name)
         self.lostEverything = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
@@ -115,7 +113,7 @@ class Tools(object):
         time.sleep(0.1)
         self.entireScreenPIL = ImageGrab.grab()
         if gui.active == True:
-            gui.statusbar.set(str(p.CurrentStrategy.text))
+            gui.statusbar.set(str(p.current_strategy.text))
         if terminalmode == False and p.ExitThreads == True: sys.exit()
         return True
 
@@ -206,7 +204,6 @@ class Tools(object):
         print(findTemplate + " Relative: ")
         print(tuple(map(sum, zip(points[0], rel))))
 
-
 class Collusion(object):
     # If more than one pokerbot plays on the same table, the players can collude. This is not yet fully implemented
     # The gained advantage is expected to be limited unless a corresponding strategy is trained independently
@@ -216,7 +213,6 @@ class Collusion(object):
         # add cards
         # for cardLIst in ColludingPlayers
         # t.PlayerCardList.append(cardList)
-
 
 class DecisionMaker(object):
     # Contains routines that make the actual decisions to play: the main function is make_decision
@@ -530,22 +526,22 @@ class DecisionMaker(object):
         gui.statusbar.set(self.decision)
         mouse.MouseAction(self.decision)
 
-
 class Table(object):
     # baseclass that is inherited by the different types of Tables (e.g. Pokerstars of Party Poker Table)
     def call_genetic_algorithm(self):
         gui.statusbar.set("Checking for AI update")
-        n = L.getGameCount(p.CurrentStrategy.text)
-        lg = int(p.XMLEntriesList['considerLastGames'].text)  # only consider lg last games to see if there was a loss
-        f = L.getStrategyTotalFundsChange(p.CurrentStrategy.text, lg)
+        n = L.get_game_count(p.current_strategy.text)
+        lg = int(
+            p.XML_entries_list1['considerLastGames'].text)  # only consider lg last games to see if there was a loss
+        f = L.get_strategy_total_funds_change(p.current_strategy.text, lg)
         gui.var6.set("Game #" + str(n) + " - Last " + str(lg) + ": $" + str(f))
-        if n % int(p.XMLEntriesList['strategyIterationGames'].text) == 0 and f < float(
-                p.XMLEntriesList['minimumLossForIteration'].text):
+        if n % int(p.XML_entries_list1['strategyIterationGames'].text) == 0 and f < float(
+                p.XML_entries_list1['minimumLossForIteration'].text):
             pass
             gui.statusbar.set("***Improving current strategy***")
             winsound.Beep(500, 100)
             Genetic_Algorithm(True)
-            p.readXML()
+            p.read_XML()
 
     def crop_image(self, original, left, top, right, bottom):
         # original.show()
@@ -553,7 +549,6 @@ class Table(object):
         cropped_example = original.crop((left, top, right, bottom))
         # cropped_example.show()
         return cropped_example
-
 
 class TablePS(Table):
     def get_top_left_corner(self, scraped):
@@ -876,7 +871,7 @@ class TablePS(Table):
                     ")", "").replace("}", "").replace(":", "").replace(":", "").replace("]", ""))
             recognizedText = re.sub("[^0123456789.]", "", recognizedText)
             if pt == (393, 331) and recognizedText == str(
-                    float(p.XMLEntriesList['p.bigBlind'].text)): self.iAmBigBLind = True
+                    float(p.XML_entries_list1['p.bigBlind'].text)): self.iAmBigBLind = True
             if recognizedText != "":
                 self.PlayerPots.append(recognizedText)
 
@@ -1073,7 +1068,7 @@ class TablePS(Table):
         if h.previousCards != t.mycards:
             h.lastGameID = str(h.GameID)
             h.GameID = int(round(np.random.uniform(0, 999999999), 0))
-            L.markLastGame(t, h)
+            L.mark_last_game(t, h)
 
             self.call_genetic_algorithm()
 
@@ -1088,8 +1083,8 @@ class TablePS(Table):
                 gui.f.canvas.draw()
 
             if gui.active == True:
-                data = L.getDataStackedBar('Template', p.CurrentStrategy.text, 'stackedBar')
-                maxh = float(p.XMLEntriesList['bigBlind'].text) * 10
+                data = L.get_stacked_bar_data('Template', p.current_strategy.text, 'stackedBar')
+                maxh = float(p.XML_entries_list1['bigBlind'].text) * 10
                 i = 0
                 for rect0, rect1, rect2, rect3, rect4, rect5, rect6 in zip(gui.p0.patches, gui.p1.patches,
                                                                            gui.p2.patches,
@@ -1127,7 +1122,6 @@ class TablePS(Table):
 
         return True
 
-
 class TablePP(Table):
     def get_top_left_corner(self, scraped):
         img = cv2.cvtColor(np.array(a.entireScreenPIL), cv2.COLOR_BGR2RGB)
@@ -1136,7 +1130,7 @@ class TablePP(Table):
             self.topleftcorner = points[0]
             return True
         else:
-            gui.statusbar.set(p.XMLEntriesList['pokerSite'].text + " not found yet")
+            gui.statusbar.set(p.XML_entries_list1['pokerSite'].text + " not found yet")
             time.sleep(1)
             return False
 
@@ -1478,7 +1472,7 @@ class TablePP(Table):
         self.playersAhead = int(np.round(self.coveredCardHolders - self.playersBehind))
         # print (self.PlayerPots)
 
-        if p.XMLEntriesList['smallBlind'].text in self.PlayerPots:
+        if p.XML_entries_list1['smallBlind'].text in self.PlayerPots:
             self.playersAhead += 1
             self.playersBehind -= 1
             # print ("Found small blind")
@@ -1682,7 +1676,7 @@ class TablePP(Table):
         if count > 0:
             h.lastGameID = str(h.GameID)
             t.myFundsChange = float(0) - float(str(h.myFundsHistory[-1]).strip('[]'))
-            L.markLastGame(t, h)
+            L.mark_last_game(t, h)
             gui.statusbar.set("Everything is lost. Last game has been marked.")
             user_input = input("Press Enter for exit ")
             sys.exit()
@@ -1695,7 +1689,7 @@ class TablePP(Table):
             h.GameID = int(round(np.random.uniform(0, 999999999), 0))
             cards = ' '.join(t.mycards)
             gui.statusbar.set("New hand: " + str(cards))
-            L.markLastGame(t, h)
+            L.mark_last_game(t, h)
 
             self.call_genetic_algorithm()
 
@@ -1709,8 +1703,8 @@ class TablePP(Table):
                 gui.f.canvas.draw()
 
             if gui.active == True:
-                data = L.getDataStackedBar('Template', p.CurrentStrategy.text, 'stackedBar')
-                maxh = float(p.XMLEntriesList['bigBlind'].text) * 10
+                data = L.get_stacked_bar_data('Template', p.current_strategy.text, 'stackedBar')
+                maxh = float(p.XML_entries_list1['bigBlind'].text) * 10
                 i = 0
                 for rect0, rect1, rect2, rect3, rect4, rect5, rect6 in zip(gui.p0.patches, gui.p1.patches,
                                                                            gui.p2.patches,
@@ -1748,7 +1742,6 @@ class TablePP(Table):
 
         return True
 
-
 class TableF1(Table):
     def get_top_left_corner(self, scraped):
         img = cv2.cvtColor(np.array(a.entireScreenPIL), cv2.COLOR_BGR2RGB)
@@ -1757,7 +1750,7 @@ class TableF1(Table):
             self.topleftcorner = points[0]
             return True
         else:
-            gui.statusbar.set(p.XMLEntriesList['pokerSite'].text + " not found yet")
+            gui.statusbar.set(p.XML_entries_list1['pokerSite'].text + " not found yet")
             time.sleep(1)
             return False
 
@@ -2099,7 +2092,7 @@ class TableF1(Table):
         self.playersAhead = int(np.round(self.coveredCardHolders - self.playersBehind))
         # print (self.PlayerPots)
 
-        if p.XMLEntriesList['smallBlind'].text in self.PlayerPots:
+        if p.XML_entries_list1['smallBlind'].text in self.PlayerPots:
             self.playersAhead += 1
             self.playersBehind -= 1
             # print ("Found small blind")
@@ -2287,7 +2280,7 @@ class TableF1(Table):
         if count > 0:
             h.lastGameID = str(h.GameID)
             t.myFundsChange = float(0) - float(str(h.myFundsHistory[-1]).strip('[]'))
-            L.markLastGame(t, h)
+            L.mark_last_game(t, h)
             gui.statusbar.set("Everything is lost. Last game has been marked.")
             user_input = input("Press Enter for exit ")
             sys.exit()
@@ -2298,7 +2291,7 @@ class TableF1(Table):
         if h.previousCards != t.mycards:
             h.lastGameID = str(h.GameID)
             h.GameID = int(round(np.random.uniform(0, 999999999), 0))
-            L.markLastGame(t, h)
+            L.mark_last_game(t, h)
 
             self.call_genetic_algorithm()
 
@@ -2315,8 +2308,8 @@ class TableF1(Table):
                 gui.f.canvas.draw()
 
             if gui.active == True:
-                data = L.getDataStackedBar('Template', p.CurrentStrategy.text, 'stackedBar')
-                maxh = float(p.XMLEntriesList['bigBlind'].text) * 10
+                data = L.get_stacked_bar_data('Template', p.current_strategy.text, 'stackedBar')
+                maxh = float(p.XML_entries_list1['bigBlind'].text) * 10
                 i = 0
                 for rect0, rect1, rect2, rect3, rect4, rect5, rect6 in zip(gui.p0.patches, gui.p1.patches,
                                                                            gui.p2.patches,
@@ -2353,7 +2346,6 @@ class TableF1(Table):
             a.take_screenshot()
 
         return True
-
 
 class MouseMoverPS(object):
     def EnterCaptcha(self, captchaString):
@@ -2425,7 +2417,7 @@ class MouseMoverPS(object):
             y2 = 500 + tly
             a.mouse_mover(x1, y1, x2, y2)
 
-            for n in range(int(p.XMLEntriesList['BetPlusInc'].text)):
+            for n in range(int(p.XML_entries_list1['BetPlusInc'].text)):
                 a.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
 
             x1temp = x2
@@ -2525,7 +2517,6 @@ class MouseMoverPS(object):
         # print xscatter
         a.mouse_mover(x2, y2, xscatter, yscatter)
 
-
 class MouseMoverPP(object):
     def EnterCaptcha(self, captchaString):
         gui.statusbar.set("Entering Captcha: " + str(captchaString))
@@ -2593,9 +2584,9 @@ class MouseMoverPP(object):
             y2 = 492 - 37 + tly
             a.mouse_mover(x1, y1, x2, y2)
 
-            for n in range(int(p.XMLEntriesList['BetPlusInc'].text)):
+            for n in range(int(p.XML_entries_list1['BetPlusInc'].text)):
                 a.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
-                if t.minBet > float(p.XMLEntriesList['BetPlusInc'].text): continue
+                if t.minBet > float(p.XML_entries_list1['BetPlusInc'].text): continue
 
             x1temp = x2
             y1temp = y2
@@ -2696,92 +2687,93 @@ class MouseMoverPP(object):
         a.mouse_mover(x2, y2, xscatter, yscatter)
 
 
-# ==========MAIN PROGRAM===========
-def pokerPlayer():
-    global LogFilename, h, L, p, mouse, t, a, d
+# ==== MAIN PROGRAM =====
+if __name__ == '__main__':
+    def run_pokerbot():
+        global LogFilename, h, L, p, mouse, t, a, d
 
-    LogFilename = 'log'
-    h = History()
-    L = Logging(LogFilename)
-    a = Tools()
+        LogFilename = 'log'
+        h = History()
+        L = Logging(LogFilename)
+        a = Tools()
 
-    if p.XMLEntriesList['pokerSite'].text == "PS":
-        mouse = MouseMoverPS()
-    elif p.XMLEntriesList['pokerSite'].text == "PP":
-        mouse = MouseMoverPP()
-    else:
-        raise ("Invalid PokerSite")
-    counter = 0
-
-    while True:
-        p.readXML()
         if p.XMLEntriesList['pokerSite'].text == "PS":
-            t = TablePS()
+            mouse = MouseMoverPS()
         elif p.XMLEntriesList['pokerSite'].text == "PP":
-            t = TablePP()
-        elif p.XMLEntriesList['pokerSite'].text == "F1":
-            t = TableF1()
+            mouse = MouseMoverPP()
+        else:
+            raise ("Invalid PokerSite")
+        counter = 0
 
-        ready = False
-        while (not ready):
-            t.timeout_start = time.time()
-            ready = a.take_screenshot() and \
-                    t.get_top_left_corner(a) and \
-                    t.check_for_captcha() and \
-                    t.get_lost_everything(a) and \
-                    t.check_for_imback(a) and \
-                    t.get_my_funds() and \
-                    t.get_my_cards(a) and \
-                    t.get_new_hand() and \
-                    t.check_for_button(a) and \
-                    t.get_covered_card_holders(a) and \
-                    t.get_total_pot_value() and \
-                    t.get_played_players(a) and \
-                    t.check_for_checkbutton(a) and \
-                    t.get_deck_cards(a) and \
-                    t.check_for_call(a) and \
-                    t.check_for_allincall_button(a) and \
-                    t.get_current_call_value() and \
-                    t.get_current_bet_value()
+        while True:
+            p.read_XML()
+            if p.XMLEntriesList['pokerSite'].text == "PS":
+                t = TablePS()
+            elif p.XMLEntriesList['pokerSite'].text == "PP":
+                t = TablePP()
+            elif p.XMLEntriesList['pokerSite'].text == "F1":
+                t = TableF1()
 
-        d = DecisionMaker()
+            ready = False
+            while (not ready):
+                t.timeout_start = time.time()
+                ready = a.take_screenshot() and \
+                        t.get_top_left_corner(a) and \
+                        t.check_for_captcha() and \
+                        t.get_lost_everything(a) and \
+                        t.check_for_imback(a) and \
+                        t.get_my_funds() and \
+                        t.get_my_cards(a) and \
+                        t.get_new_hand() and \
+                        t.check_for_button(a) and \
+                        t.get_covered_card_holders(a) and \
+                        t.get_total_pot_value() and \
+                        t.get_played_players(a) and \
+                        t.check_for_checkbutton(a) and \
+                        t.get_deck_cards(a) and \
+                        t.check_for_call(a) and \
+                        t.check_for_allincall_button(a) and \
+                        t.get_current_call_value() and \
+                        t.get_current_bet_value()
 
-        d.make_decision(t, h, p)
+            d = DecisionMaker()
 
-        gui.statusbar.set("Writing log file")
+            d.make_decision(t, h, p)
 
-        L.writeLogFile(p, h, t, d)
+            gui.statusbar.set("Writing log file")
 
-        h.previousPot = t.totalPotValue
-        h.histGameStage = t.gameStage
-        h.histDecision = d.decision
-        h.histEquity = d.equity
-        h.histMinCall = t.minCall
-        h.histMinBet = t.minBet
-        h.histPlayerPots = t.PlayerPots
+            L.write_log_file(p, h, t, d)
 
-        # print ("")
+            h.previousPot = t.totalPotValue
+            h.histGameStage = t.gameStage
+            h.histDecision = d.decision
+            h.histEquity = d.equity
+            h.histMinCall = t.minCall
+            h.histMinBet = t.minBet
+            h.histPlayerPots = t.PlayerPots
+
+            # print ("")
 
 
-terminalmode = False
-setupmode = False
+    terminalmode = False
+    setupmode = False
 
-p = XMLHandler('strategies.xml')
-p.readXML()
+    p = XMLHandler('strategies.xml')
+    p.read_XML()
 
-if setupmode == True:
-    a = Tools()
-    a.setup_get_item_location()
-    sys.exit()
+    if setupmode == True:
+        a = Tools()
+        a.setup_get_item_location()
+        sys.exit()
 
-if terminalmode == False:
-    gui = GUI(p)
-    p.ExitThreads = False
-    t1 = threading.Thread(target=pokerPlayer, args=[])
-    t1.start()
-    gui.root.mainloop()
-    p.ExitThreads = True
+    if terminalmode == False:
+        gui = GUI(p)
+        p.ExitThreads = False
+        t1 = threading.Thread(target=run_pokerbot, args=[])
+        t1.start()
+        gui.root.mainloop()
+        p.ExitThreads = True
 
-elif terminalmode == True:
-    gui = Terminal()
-    pokerPlayer()
+    elif terminalmode == True:
+        gui = Terminal()
+        run_pokerbot()

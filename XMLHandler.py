@@ -11,55 +11,56 @@ import re
 
 class XMLHandler(object):
     def __init__(self, filename):
-        self.XMLEntriesList = dict()
+        self.XML_entries_list1 = dict()
         self.filename = filename
 
-    def readXML(self):
+    def read_XML(self):
         self.tree = xml.parse(self.filename)
         self.root = self.tree.getroot()
 
-        self.CurrentStrategy = self.root.find('CurrentStrategy')
+        self.current_strategy = self.root.find('CurrentStrategy')
 
         for self.XML_entry in self.root.findall('Strategy'):
-            if self.XML_entry.get('name') == self.CurrentStrategy.text:
+            if self.XML_entry.get('name') == self.current_strategy.text:
                 for child in self.XML_entry:
-                    self.XMLEntriesList[child.tag] = child
+                    self.XML_entries_list1[child.tag] = child
 
-        self.XMLEntriesList2 = deepcopy(self.XMLEntriesList)
+        self.XML_entries_list2 = deepcopy(self.XML_entries_list1)
 
-        for e in self.XMLEntriesList2:
-            self.XMLEntriesList2[e].set('updated', 'False')
+        for e in self.XML_entries_list2:
+            self.XML_entries_list2[e].set('updated', 'False')
 
         self.modified = False
-        self.Template = self.CurrentStrategy.text
+        self.Template = self.current_strategy.text
 
-    def modifyXML(self, elementName, change):
-        self.XMLEntriesList2[elementName].text = str(round(float(self.XMLEntriesList2[elementName].text) + change, 2))
-        self.XMLEntriesList2[elementName].set('updated', str(change))
+    def modify_XML(self, elementName, change):
+        self.XML_entries_list2[elementName].text = str(
+            round(float(self.XML_entries_list2[elementName].text) + change, 2))
+        self.XML_entries_list2[elementName].set('updated', str(change))
         self.modified = True
 
-    def saveXML(self):
+    def save_XML(self):
         r = re.compile("([a-zA-Z]+)([0-9]+)")
-        m = r.match(self.CurrentStrategy.text)
+        m = r.match(self.current_strategy.text)
         stringPart = m.group(1)
         numberPart = int(m.group(2))
         numberPart += 1
-        self.newStrategyName = stringPart + str(numberPart)
-        self.CurrentStrategy.text = self.newStrategyName
+        self.new_strategy_name = stringPart + str(numberPart)
+        self.current_strategy.text = self.new_strategy_name
         newElement = xml.Element('Strategy')
-        newElement.set('name', self.newStrategyName)
+        newElement.set('name', self.new_strategy_name)
         self.root.append(newElement)
         for child in self.XML_entry:
-            newElement.append(self.XMLEntriesList2[child.tag])
+            newElement.append(self.XML_entries_list2[child.tag])
 
             self.tree.write(self.filename)
-            self.XMLEntriesList = deepcopy(self.XMLEntriesList2)
+            self.XML_entries_list1 = deepcopy(self.XML_entries_list2)
 
-        self.Template = self.CurrentStrategy.text
+        self.Template = self.current_strategy.text
 
 
 if __name__ == '__main__':
     XML = XMLHandler('strategies.xml')
-    XML.readXML()
-    # XML.modifyXML('RiverCallPower',-1)
+    XML.read_XML()
+    # XML.modify_XML('RiverCallPower',-1)
     pass

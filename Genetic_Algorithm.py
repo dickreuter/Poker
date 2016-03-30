@@ -10,8 +10,8 @@ Assesses the log file and checks how the parameters in strategies.xml need to be
 class Genetic_Algorithm(object):
     def __init__(self, autoUpdate=False):
         p = XMLHandler('strategies.xml')
-        p.readXML()
-        p_name = p.CurrentStrategy.text
+        p.read_XML()
+        p_name = p.current_strategy.text
         L = self.loadLog(p_name)
         self.improve_strategy(L, p)
         if p.modified == True:
@@ -19,15 +19,15 @@ class Genetic_Algorithm(object):
             if autoUpdate == False:
                 user_input = input("Y/N? ")
                 if user_input.upper() == "Y":
-                    p.saveXML()
+                    p.save_XML()
                     print("XML Saved")
         if autoUpdate == True and self.changed > 0:
-            p.saveXML()
+            p.save_XML()
 
     def loadLog(self, p_name):
         self.gameResults = {}
         L = Logging('log')
-        L.getDataStackedBar('Template', p_name, 'stackedBar')
+        L.get_stacked_bar_data('Template', p_name, 'stackedBar')
         self.recommendation = dict()
         return L
 
@@ -40,13 +40,13 @@ class Genetic_Algorithm(object):
             self.recommendation[stage, decision] = "ok"
         elif A and B == False and C:
             self.recommendation[stage, decision] = "more agressive"
-            p.modifyXML(stage + 'MinCallEquity', -change)
-            p.modifyXML(stage + 'CallPower', -change * 25)
+            p.modify_XML(stage + 'MinCallEquity', -change)
+            p.modify_XML(stage + 'CallPower', -change * 25)
             self.changed += 1
         elif A == False and B == True:
             self.recommendation[stage, decision] = "less agressive"
-            p.modifyXML(stage + 'MinCallEquity', +change)
-            p.modifyXML(stage + 'CallPower', +change * 25)
+            p.modify_XML(stage + 'MinCallEquity', +change)
+            p.modify_XML(stage + 'CallPower', +change * 25)
             self.changed += 1
         else:
             self.recommendation[stage, decision] = "inconclusive"
@@ -72,13 +72,13 @@ class Genetic_Algorithm(object):
             self.recommendation[stage, decision] = "ok"
         elif A and B:
             self.recommendation[stage, decision] = "more agressive"
-            p.modifyXML(stage + 'MinBetEquity', -change)
-            p.modifyXML(stage + 'BetPower', -change * 25)
+            p.modify_XML(stage + 'MinBetEquity', -change)
+            p.modify_XML(stage + 'BetPower', -change * 25)
             self.changed += 1
         elif C and B == False:
             self.recommendation[stage, decision] = "less agressive"
-            p.modifyXML(stage + 'MinBetEquity', +change)
-            p.modifyXML(stage + 'BetPower', +change * 25)
+            p.modify_XML(stage + 'MinBetEquity', +change)
+            p.modify_XML(stage + 'BetPower', +change * 25)
             self.changed += 1
         else:
             self.recommendation[stage, decision] = "inconclusive"

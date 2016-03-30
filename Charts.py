@@ -104,7 +104,7 @@ def unit_poly_verts(theta):
 
 def show_spider(p):
     L = Logging('log')
-    data = L.getDataStackedBar('Template', p, 'spider')
+    data = L.get_stacked_bar_data('Template', p, 'spider')
 
     N = 12
     theta = radar_factory(N, frame='polygon')
@@ -149,7 +149,7 @@ def setup_backend(backend='TkAgg'):
 
 def show_histogram(template, gameStage, decision):
     L = Logging('log')
-    data = L.getDataHistogram(template, p_name, gameStage, decision)
+    data = L.get_histrogram_data(template, p_name, gameStage, decision)
     wins = data[0]
     losses = data[1]
     bins = np.linspace(0, 1, 25)
@@ -162,7 +162,7 @@ def show_histogram(template, gameStage, decision):
 
 def show_stacked_bars(p_name):
     L = Logging('log')
-    data = L.getDataStackedBar('Template', p_name, 'stackedBar')
+    data = L.get_stacked_bar_data('Template', p_name, 'stackedBar')
     N = 11
     Bluff = data[0]
     BP = data[1]
@@ -214,9 +214,9 @@ def show_stacked_bars(p_name):
 
 if __name__ == '__main__':
     p = XMLHandler('strategies.xml')
-    p.readXML()
+    p.read_XML()
     template = 'Template'
-    p_name = p.CurrentStrategy.text
+    p_name = p.current_strategy.text
     p_name = 'PPStrategy3002d'
     # template='decision'
     # p_name='Call'
