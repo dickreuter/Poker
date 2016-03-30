@@ -7,9 +7,10 @@ This pokerbot plays automatically on Pokerstars and Partypoker. It works with im
 ### Setup:
 Download the Pokerstars or Partypoker software and run it in Virtualbox. The Pokerbot needs to be run outside the Virtual Machine to avoid detection.
 
-### Dependencies:
+### Dependencies (I recommend to use a python 3 Ancaconda distribution)
 * OpenCV (for image template recognition)
 * Pytesseract (for OCR recognition of names and numbers)
+* Tesseract needs to be compiled and installed, or download a compiled version: https://github.com/tesseract-ocr/tesseract/wiki or for Windows https://github.com/tesseract-ocr/tesseract/wiki/Downloads
 * Pandas
 * Matplotlib
 * Tkinter (to be replaced with Pyside)
