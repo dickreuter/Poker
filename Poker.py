@@ -286,7 +286,7 @@ class DecisionMaker(object):
         maxSecs = 3
         gui.statusbar.set("Running Monte Carlo: " + str(maxRuns))
         m = MonteCarlo()
-        m.RunMonteCarlo(t.PlayerCardList, t.cardsOnTable, int(t.assumedPlayers), gui, maxRuns=maxRuns, maxSecs=maxSecs)
+        m.run_montecarlo(t.PlayerCardList, t.cardsOnTable, int(t.assumedPlayers), gui, maxRuns=maxRuns, maxSecs=maxSecs)
         gui.statusbar.set("Monte Carlo completed successfully")
 
         bigBlindMultiplier = bigBlind / 0.02

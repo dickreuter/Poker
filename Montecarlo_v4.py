@@ -279,7 +279,7 @@ class Evaluation(object):
         print(self.all_hand_types)
         print("best handtype")
         print(self.best_hand_type)
-        print("total score")
+        print("total calc_score")
         print(self.totalscore)
 
         print()

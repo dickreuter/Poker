@@ -1,11 +1,9 @@
-import xml.etree.ElementTree as xml
-from Log_manager import *
-from XMLHandler import *
-
 '''
 Assesses the log file and checks how the parameters in strategies.xml need to be adjusted to optimize playing
 '''
-
+import xml.etree.ElementTree as xml
+from Log_manager import *
+from XMLHandler import *
 
 class Genetic_Algorithm(object):
     def __init__(self, autoUpdate=False):

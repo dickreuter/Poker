@@ -4,7 +4,6 @@ Functions that are used to log and analyse present and past pokergames
 import pandas as pd
 import numpy as np
 import time
-import math
 from collections import Iterable
 
 class Logging(object):

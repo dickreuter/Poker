@@ -1,5 +1,4 @@
 import numpy as np
-
 import matplotlib.pyplot as plt
 from matplotlib.path import Path
 from matplotlib.spines import Spine
@@ -7,7 +6,6 @@ from matplotlib.projections.polar import PolarAxes
 from matplotlib.projections import register_projection
 from XMLHandler import *
 from Log_manager import *
-
 
 def radar_factory(num_vars, frame='circle'):
     """Create a radar chart with `num_vars` axes.
@@ -91,7 +89,6 @@ def radar_factory(num_vars, frame='circle'):
     register_projection(RadarAxes)
     return theta
 
-
 def unit_poly_verts(theta):
     """Return vertices of polygon for subplot axes.
 
@@ -100,7 +97,6 @@ def unit_poly_verts(theta):
     x0, y0, r = [0.5] * 3
     verts = [(r * np.cos(t) + x0, r * np.sin(t) + y0) for t in theta]
     return verts
-
 
 def show_spider(p):
     L = Logging('log')
@@ -136,7 +132,6 @@ def show_spider(p):
                 ha='center', color='black', weight='bold', size='large')
     plt.show()
 
-
 def setup_backend(backend='TkAgg'):
     import sys
     del sys.modules['matplotlib.backends']
@@ -145,7 +140,6 @@ def setup_backend(backend='TkAgg'):
     mpl.use(backend)  # do this before importing pyplot
     import matplotlib.pyplot as plt
     return plt
-
 
 def show_histogram(template, gameStage, decision):
     L = Logging('log')
@@ -158,7 +152,6 @@ def show_histogram(template, gameStage, decision):
     plt.hist(losses, bins, alpha=0.5, label='losses', color='r')
     plt.legend(loc='upper right')
     plt.show()
-
 
 def show_stacked_bars(p_name):
     L = Logging('log')
@@ -211,7 +204,6 @@ def show_stacked_bars(p_name):
 
     plt.show()
 
-
 if __name__ == '__main__':
     p = XMLHandler('strategies.xml')
     p.read_XML()
@@ -220,7 +212,6 @@ if __name__ == '__main__':
     p_name = 'PPStrategy3002d'
     # template='decision'
     # p_name='Call'
-
 
     # showSpider(p_name)
     show_stacked_bars(p_name)
