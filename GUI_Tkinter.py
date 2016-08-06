@@ -1,5 +1,5 @@
 import tkinter as tk
-import ttk
+from tkinter import ttk
 import time
 import threading
 import numpy as np
@@ -53,13 +53,7 @@ class GUI(tk.Frame):
         tk.Label(self.root, textvariable=self.statusbar, bd=1, font="Arial", relief=tk.SUNKEN, anchor=tk.W).grid(row=11,
                                                                                                                  column=1,
                                                                                                                  columnspan=2)
-        #
-        #
-        # self.s1 = tk.Scale(self.root, from_=1, to=20, orient=tk.HORIZONTAL); self.s1.pack(); self.s1.set(2)
-        # self.s2 = tk.Scale(self.root, from_=1, to=20, orient=tk.HORIZONTAL); self.s2.pack(); self.s2.set(8)
-        # self.s3 = tk.Scale(self.root, from_=1, to=20, orient=tk.HORIZONTAL); self.s3.pack(); self.s3.set(3)
-        # self.s4 = tk.Scale(self.root, from_=1, to=20, orient=tk.HORIZONTAL); self.s4.pack(); self.s4.set(2)
-        # self.s5 = tk.Scale(self.root, from_=1, to=20, orient=tk.HORIZONTAL); self.s5.pack(); self.s5.set(8)
+
 
         self.button = tk.Button(self.root, text="Run Artificial Intelligence",
                                 command=partial(run_genetic_algorithm, True))
@@ -182,51 +176,6 @@ class GUI(tk.Frame):
         self.progress = ttk.Progressbar(self.root, orient="horizontal", length=300, mode="determinate")
         self.progress.grid(row=10, column=1, columnspan=2)
 
-    # def showSpider(self,p):
-    #
-    #     L=Logging('log')
-    #     data=L.SpiderData(p)
-    #
-    #
-    #     N = 6
-    #     theta = radar_factory(N, frame='polygon')
-    #     spoke_labels = data.pop('column names')
-    #
-    #     self.fig = plt.figure(figsize=(4,3))
-    #     #fig.subplots_adjust(wspace=0.25, hspace=0.20, top=0.85, bottom=0.05)
-    #
-    #     colors = ['r', 'g']
-    #     # Plot the four cases from the example data on separate axes
-    #     for n, title in enumerate(data.keys()):
-    #         self.ax = self.fig.add_subplot(1, 1, n+1, projection='radar')
-    #         #plt.rgrids([0.5, 1.0, 1.5, 2.0, 2.5, 3.0,3.5,4.0,4.5])
-    #         self.ax.set_title(title, size='medium', position=(0.5, 1.1),horizontalalignment='center', verticalalignment='center')
-    #         self.spider1=[]
-    #         self.spider2=[]
-    #         i=0
-    #         for d, color in zip(data[title], colors):
-    #             i+=1
-    #             self.ax.plot(theta, d, color=color)
-    #             self.ax.fill(theta, d, facecolor=color, alpha=0.25)
-    #             print d
-    #         self.ax.set_varlabels(spoke_labels)
-    #
-    #     # add legend relative to top-left plot
-    #     plt.subplot(1, 1, 1)
-    #     labels = ('Losers', 'Winners')
-    #     #legend = plt.legend(labels, loc=(0.9, .95), labelspacing=0.1)
-    #     #plt.setp(legend.get_texts(), fontsize='small')
-    #
-    #     plt.figtext(0.5, 0.965, 'Winner vs Losers',
-    #                 ha='center', color='black', weight='bold', size='large')
-    #
-    #     canvas = FigureCanvasTkAgg(self.fig, master=self.root)
-    #     canvas.show()
-    #     #canvas.get_tk_widget().grid(row=6, column=1)
-    #     canvas._tkcanvas.grid(row=7, column=2,ipadx=7,ipady=7)
-
-
-
     def on_closing(self):
         # if tk.messagebox.askokcancel("Quit", "Do you want to quit?"):
         self.active = False
@@ -295,16 +244,8 @@ class Calcuiation(object):
 
                 gui.y.append(self.i * 10)
                 gui.line1.set_ydata(gui.y[-100:])
-                # maxh=max(gui.y[-100:],5)
-                # gui.a.set_ylim((0,maxh))
+
                 gui.f.canvas.draw()
-
-                # l=gui.a.plot([0.5,2,3,4], [0.2,0.4,9,16], 'bo')
-                # time.sleep(5)
-                # l.pop(0).remove()
-
-
-
 
                 x2 = np.arange(0, 1, 0.01)
                 for item in x2:
@@ -314,8 +255,6 @@ class Calcuiation(object):
                 gui.line3.set_ydata(gui.y3[-100:])
                 gui.g.canvas.draw()
 
-                # gui.spider1.set_ydata([5.5800000000000001, 5.99, 4.4000000000000001, 4.3699999999999999, 4.0900000000000001, 0])
-                # gui.fig.canvas.draw()
 
                 gui.pie.clf()
                 gui.piePlot = gui.pie.add_subplot(111)
@@ -333,8 +272,6 @@ class Calcuiation(object):
 
 
 # ===========Main program==============
-# if __name__ == '__main__':
-
 if __name__ == '__main__':
     p = XMLHandler('strategies.xml')
     p.read_XML()
