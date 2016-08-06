@@ -225,10 +225,22 @@ class Tools(object):
 
         try:
             lst.append(pytesseract.image_to_string(img_orig, None, False,"-psm 6"))
+        except Exception as e:
+            logger.error(str(e))
+        try:
             lst.append(pytesseract.image_to_string(img_min, None, False, "-psm 6"))
+        except Exception as e:
+            logger.error(str(e))
+        try:
             lst.append(pytesseract.image_to_string(img_med, None, False, "-psm 6"))
+        except Exception as e:
+            logger.error(str(e))
+        try:
             lst.append(pytesseract.image_to_string(img_mod, None, False, "-psm 6"))
+        except Exception as e:
+            logger.error(str(e))
 
+        try:
             final_value=''
             for i, j in enumerate(lst):
                 logger.info("OCR of " + name + " method "+str(i)+" :" + str(j))
@@ -240,6 +252,7 @@ class Tools(object):
         except Exception as e:
             logger.error("Pytesseract Error in recognising "+name)
             logger.error(str(e))
+            exit()
 
 class Collusion(object):
     # If more than one pokerbot plays on the same table, the players can collude. This is not yet fully implemented
