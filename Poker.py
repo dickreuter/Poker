@@ -1291,8 +1291,8 @@ class MouseMoverPP(object):
         if decision == "BetPlus":
             buttonToleranceX = 4
             buttonToleranceY = 5
-            x2 = 662 + tlx
-            y2 = 492 - 37 + tly
+            x2 = 666 + tlx
+            y2 = 496 - 37 + tly
             a.mouse_mover(x1, y1, x2, y2)
 
             for n in range(int(p.XML_entries_list1['BetPlusInc'].text)):
