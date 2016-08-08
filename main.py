@@ -16,6 +16,7 @@ from decisionmaker.decisionmaker1 import *
 from gui.gui_tkinter import *
 from gui.terminal import *
 
+from tables import *
 
 class History(object):
     def __init__(self):

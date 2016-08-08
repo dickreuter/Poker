@@ -271,7 +271,7 @@ class Calcuiation(object):
 
 # ===========Main program==============
 if __name__ == '__main__':
-    p = XMLHandler('strategies.xml')
+    p = XMLHandler('../strategies.xml')
     p.read_XML()
     gui = GUI(p)
     calc = Calcuiation()
