@@ -351,4 +351,4 @@ if __name__ == '__main__':
     # pivot_by_template()
     LogFilename = 'log'
     L = Logging(LogFilename)
-    L.get_neural_training_data(p_name, p_value, gameStage, decision)
+    #L.get_neural_training_data(p_name, p_value, gameStage, decision)

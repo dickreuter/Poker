@@ -1,4 +1,3 @@
-import logging
 import operator
 import os.path
 import random
@@ -12,10 +11,11 @@ import pytesseract
 import win32con
 from PIL import Image, ImageGrab, ImageDraw, ImageFilter
 
+from captcha.key_press_vbox import *
 from decisionmaker.decisionmaker1 import *
-from gui_tkinter import *
-from key_press_vbox import *
-from terminal import *
+from gui.gui_tkinter import *
+from gui.terminal import *
+
 
 class History(object):
     def __init__(self):
@@ -1145,7 +1145,7 @@ if __name__ == '__main__':
             h.histMinBet = t.minBet
             h.histPlayerPots = t.PlayerPots
 
-    terminalmode = True
+    terminalmode = False
     setupmode = False
 
     logger = logging.getLogger('Poker')
