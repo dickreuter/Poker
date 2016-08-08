@@ -1,3 +1,11 @@
+""""
+Strategy Definition
+t contains variables that have been scraped from the table
+h contains values from the historical (last) decision
+p contains values from the Strategy as defined in the xml file
+"""
+
+
 from .base import DecisionBase, Collusion
 import numpy as np
 from .curvefitting import *
@@ -9,6 +17,9 @@ class Decision(DecisionBase):
         gui.statusbar.set("Starting decision analysis")
         bigBlind = float(p.XML_entries_list1['bigBlind'].text)
         smallBlind = float(p.XML_entries_list1['smallBlind'].text)
+
+
+        # Prepare for montecarlo simulation to evaluate equity (probability of winning with given cards)
 
         if t.gameStage == "PreFlop":
             # t.assumedPlayers = t.coveredCardHolders - int(
@@ -27,7 +38,7 @@ class Decision(DecisionBase):
         t.PlayerCardList = []
         t.PlayerCardList.append(t.mycards)
 
-        # add cards from colluding players
+        # add cards from colluding players (not yet implemented)
         col = Collusion()
 
         if t.gameStage == "PreFlop":
@@ -42,7 +53,9 @@ class Decision(DecisionBase):
 
         bigBlindMultiplier = bigBlind / 0.02
         self.equity = np.round(m.equity, 3)
+        # --- Equity calculation completed ---
 
+        # in case the other players called my bet become less aggressive and make an adjustment for the second round
         if (h.histGameStage == t.gameStage and h.lastRoundGameID == h.GameID) or h.lastSecondRoundAdjustment > 0:
             if t.gameStage == 'PreFlop':
                 self.secondRoundAdjustment = float(p.XML_entries_list1['secondRoundAdjustmentPreFlop'].text)

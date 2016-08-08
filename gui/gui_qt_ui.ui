@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow">
+ <class>Pokerbot</class>
+ <widget class="QMainWindow" name="Pokerbot">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>719</width>
-    <height>885</height>
+    <width>698</width>
+    <height>905</height>
    </rect>
   </property>
   <property name="font">
@@ -16,14 +16,17 @@
    </font>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Pokerbot</string>
+  </property>
+  <property name="autoFillBackground">
+   <bool>true</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QCheckBox" name="checkBox">
+   <widget class="QCheckBox" name="autoplay">
     <property name="geometry">
      <rect>
-      <x>620</x>
-      <y>290</y>
+      <x>490</x>
+      <y>260</y>
       <width>71</width>
       <height>31</height>
      </rect>
@@ -40,10 +43,10 @@
      <bool>true</bool>
     </property>
    </widget>
-   <widget class="QLabel" name="status">
+   <widget class="QLabel" name="last_decision">
     <property name="geometry">
      <rect>
-      <x>215</x>
+      <x>210</x>
       <y>220</y>
       <width>271</width>
       <height>31</height>
@@ -63,7 +66,7 @@
      <enum>QFrame::Sunken</enum>
     </property>
     <property name="text">
-     <string>TextLabel</string>
+     <string>Last Decision</string>
     </property>
     <property name="scaledContents">
      <bool>false</bool>
@@ -78,11 +81,11 @@
      <number>-1</number>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_2">
+   <widget class="QPushButton" name="button_pause">
     <property name="geometry">
      <rect>
       <x>360</x>
-      <y>290</y>
+      <y>330</y>
       <width>75</width>
       <height>23</height>
      </rect>
@@ -109,35 +112,35 @@
      <item>
       <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>TextLabel</string>
+        <string>Equity (winning probability)</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>TextLabel</string>
+        <string>Final call limit</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QLabel" name="label_4">
        <property name="text">
-        <string>TextLabel</string>
+        <string>Final bet Limit</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QLabel" name="label_5">
        <property name="text">
-        <string>TextLabel</string>
+        <string>Pot Size</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>TextLabel</string>
+        <string>Game Number</string>
        </property>
       </widget>
      </item>
@@ -147,14 +150,14 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>600</y>
+      <y>640</y>
       <width>321</width>
       <height>241</height>
      </rect>
     </property>
-    <layout class="QVBoxLayout" name="vLayout2_2">
+    <layout class="QVBoxLayout" name="vLayout3">
      <item>
-      <widget class="QWidget" name="mplv2_2" native="true"/>
+      <widget class="QWidget" name="mplv3" native="true"/>
      </item>
     </layout>
    </widget>
@@ -162,7 +165,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>330</y>
+      <y>370</y>
       <width>321</width>
       <height>251</height>
      </rect>
@@ -177,7 +180,7 @@
     <property name="geometry">
      <rect>
       <x>360</x>
-      <y>330</y>
+      <y>370</y>
       <width>321</width>
       <height>251</height>
      </rect>
@@ -195,12 +198,12 @@
      </item>
     </layout>
    </widget>
-   <widget class="QProgressBar" name="progressBar">
+   <widget class="QProgressBar" name="progress_bar">
     <property name="geometry">
      <rect>
       <x>210</x>
-      <y>260</y>
-      <width>281</width>
+      <y>300</y>
+      <width>271</width>
       <height>23</height>
      </rect>
     </property>
@@ -211,12 +214,12 @@
      <bool>false</bool>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton">
+   <widget class="QPushButton" name="button_run_ai">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>290</y>
-      <width>321</width>
+      <y>330</y>
+      <width>151</width>
       <height>21</height>
      </rect>
     </property>
@@ -229,11 +232,11 @@
      <string>Run AI</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_3">
+   <widget class="QPushButton" name="button_resume">
     <property name="geometry">
      <rect>
       <x>450</x>
-      <y>290</y>
+      <y>330</y>
       <width>75</width>
       <height>23</height>
      </rect>
@@ -260,35 +263,35 @@
      <item>
       <widget class="QLabel" name="label_6">
        <property name="text">
-        <string>TextLabel</string>
+        <string>Assumed players</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QLabel" name="label_7">
        <property name="text">
-        <string>TextLabel</string>
+        <string>Required minimum call</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QLabel" name="label_8">
        <property name="text">
-        <string>TextLabel</string>
+        <string>Required minimum bet</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QLabel" name="label_9">
        <property name="text">
-        <string>TextLabel</string>
+        <string>Zero EV Call</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QLabel" name="label_10">
        <property name="text">
-        <string>TextLabel</string>
+        <string>Winnings in last 250 hands</string>
        </property>
       </widget>
      </item>
@@ -305,39 +308,21 @@
     </property>
     <layout class="QVBoxLayout" name="verticalLayout_3">
      <item>
-      <widget class="QLCDNumber" name="lcdNumber_3"/>
+      <widget class="QLCDNumber" name="equity"/>
      </item>
      <item>
-      <widget class="QLCDNumber" name="lcdNumber"/>
+      <widget class="QLCDNumber" name="calllimit"/>
      </item>
      <item>
-      <widget class="QLCDNumber" name="lcdNumber_2"/>
+      <widget class="QLCDNumber" name="betlimit"/>
      </item>
      <item>
-      <widget class="QLCDNumber" name="lcdNumber_4"/>
+      <widget class="QLCDNumber" name="potsize"/>
      </item>
      <item>
-      <widget class="QLCDNumber" name="lcdNumber_5"/>
+      <widget class="QLCDNumber" name="gamenumber"/>
      </item>
     </layout>
-   </widget>
-   <widget class="QPushButton" name="pushButton_4">
-    <property name="geometry">
-     <rect>
-      <x>540</x>
-      <y>290</y>
-      <width>75</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>10</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>Config</string>
-    </property>
    </widget>
    <widget class="QWidget" name="verticalLayoutWidget_8">
     <property name="geometry">
@@ -350,19 +335,19 @@
     </property>
     <layout class="QVBoxLayout" name="verticalLayout_6">
      <item>
-      <widget class="QLCDNumber" name="lcdNumber_6"/>
+      <widget class="QLCDNumber" name="assumed_players"/>
      </item>
      <item>
-      <widget class="QLCDNumber" name="lcdNumber_7"/>
+      <widget class="QLCDNumber" name="required_mincall"/>
      </item>
      <item>
-      <widget class="QLCDNumber" name="lcdNumber_8"/>
+      <widget class="QLCDNumber" name="required_minbet"/>
      </item>
      <item>
-      <widget class="QLCDNumber" name="lcdNumber_9"/>
+      <widget class="QLCDNumber" name="zero_ev"/>
      </item>
      <item>
-      <widget class="QLCDNumber" name="lcdNumber_10"/>
+      <widget class="QLCDNumber" name="winnings"/>
      </item>
     </layout>
    </widget>
@@ -370,27 +355,91 @@
     <property name="geometry">
      <rect>
       <x>360</x>
-      <y>600</y>
+      <y>640</y>
       <width>321</width>
       <height>241</height>
      </rect>
     </property>
-    <layout class="QVBoxLayout" name="vLayout2_3">
+    <layout class="QVBoxLayout" name="vLayout4">
      <item>
-      <widget class="QWidget" name="mplv2_3" native="true"/>
+      <widget class="QWidget" name="mplv4" native="true"/>
      </item>
     </layout>
    </widget>
-  </widget>
-  <widget class="QMenuBar" name="menubar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>719</width>
-     <height>27</height>
-    </rect>
-   </property>
+   <widget class="QLabel" name="status">
+    <property name="geometry">
+     <rect>
+      <x>210</x>
+      <y>260</y>
+      <width>271</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+      <weight>50</weight>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::Panel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Sunken</enum>
+    </property>
+    <property name="text">
+     <string>Status</string>
+    </property>
+    <property name="scaledContents">
+     <bool>false</bool>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+    <property name="margin">
+     <number>1</number>
+    </property>
+    <property name="indent">
+     <number>-1</number>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="button_config">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>330</y>
+      <width>151</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Config</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="button_show_xml">
+    <property name="geometry">
+     <rect>
+      <x>610</x>
+      <y>330</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Show XML</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>

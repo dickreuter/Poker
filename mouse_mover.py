@@ -1,0 +1,231 @@
+import win32gui # get cursor info
+import win32api # set cursor info
+import win32con
+from captcha.key_press_vbox import *
+from gui.terminal import *
+from gui.gui_tkinter import *
+import logging
+import random
+import numpy as np
+
+class MouseMover():
+    def __init__(self):
+        pass
+
+    def click(self, x, y):
+        win32api.SetCursorPos((x, y))
+        time.sleep(np.random.uniform(0.1, 0.5, 1)[0])
+        win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, x, y, 0, 0)
+        win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, x, y, 0, 0)
+
+    def mouse_mover(self, x1, y1, x2, y2):
+        speed = .4
+        stepMin = 7
+        stepMax = 50
+        rd1 = int(np.round(np.random.uniform(stepMin, stepMax, 1)))
+        rd2 = int(np.round(np.random.uniform(stepMin, stepMax, 1)))
+
+        xa = list(range(x1, x2, rd1))
+        ya = list(range(y1, y2, rd2))
+
+        for k in range(0, max(0, len(xa) - len(ya))):
+            ya.append(y2)
+        for k in range(0, max(0, len(ya) - len(xa))):
+            xa.append(x2)
+
+        xTremble = 20
+        yTremble = 20
+
+        for i in range(len(max(xa, ya))):
+            x = xa[i] + int(+random.random() * xTremble)
+            y = ya[i] + int(+random.random() * yTremble)
+            win32api.SetCursorPos((x, y))
+            time.sleep(np.random.uniform(0.1 * speed, 0.01 * speed, 1)[0])
+
+        win32api.SetCursorPos((x2, y2))
+
+    def mouse_clicker(self, x2, y2, buttonToleranceX, buttonToleranceY):
+
+        xrand = np.random.uniform(0, buttonToleranceX, 1)
+        yrand = np.random.uniform(0, buttonToleranceY, 1)
+        win32api.SetCursorPos((x2 + xrand, y2 + yrand))
+
+        self.click(x2 + xrand, y2 + yrand)
+
+        time.sleep(np.random.uniform(0.1, 0.5, 1)[0])
+
+class MouseMoverPP(MouseMover):
+    def enter_captcha(self, captchaString, topleftcorner):
+        gui.statusbar.set("Entering Captcha: " + str(captchaString))
+        buttonToleranceX = 30
+        buttonToleranceY = 0
+        tlx = topleftcorner[0]
+        tly = topleftcorner[1]
+        flags, hcursor, (x1, y1) = win32gui.GetCursorInfo()
+        x2 = 30 + tlx
+        y2 = 565 + tly
+        self.mouse_mover(x1, y1, x2, y2)
+        self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
+        try:
+            write_characters_to_virtualbox(captchaString, "win")
+        except:
+            logger.info("Captcha Error")
+            pass
+
+    def mouse_action(self, decision, topleftcorner):
+        logger = logging.getLogger()
+        print("Moving Mouse: "+str(decision))
+        tlx = topleftcorner[0]
+        tly = topleftcorner[1]
+        flags, hcursor, (x1, y1) = win32gui.GetCursorInfo()
+        buttonToleranceX = 100
+        buttonToleranceY = 35
+
+        if decision == "Imback":
+            time.sleep(np.random.uniform(1, 5, 1)[0])
+            buttonToleranceX = 100
+            buttonToleranceY = 31
+            x2 = 560 + tlx
+            y2 = 492 + tly
+            logger.debug( "move mouse to "+str(y2))
+            self.mouse_mover(x1, y1, x2, y2)
+            self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
+
+        if decision == "Fold":
+            x2 = 419 + tlx
+            y2 = 492 + tly
+            self.mouse_mover(x1, y1, x2, y2)
+            self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
+
+        if decision == "Call" or decision == "Call Deception":
+            x2 = 546 + tlx
+            y2 = 492 + tly
+
+            self.mouse_mover(x1, y1, x2, y2)
+            self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
+
+        if decision == "Check" or decision == "Check Deception":
+            x2 = 546 + tlx
+            y2 = 492 + tly
+            self.mouse_mover(x1, y1, x2, y2)
+            self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
+
+        if decision == "Bet":
+            x2 = 675 + tlx
+            y2 = 492 + tly
+            self.mouse_mover(x1, y1, x2, y2)
+            self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
+
+        if decision == "BetPlus":
+            buttonToleranceX = 4
+            buttonToleranceY = 5
+            x2 = 666 + tlx
+            y2 = 496 - 37 + tly
+            self.mouse_mover(x1, y1, x2, y2)
+
+            # for n in range(int(p.XML_entries_list1['BetPlusInc'].text)):
+                # self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
+                # if t.minBet > float(p.XML_entries_list1['BetPlusInc'].text): continue
+
+            x1temp = x2
+            y1temp = y2
+
+            buttonToleranceX = 100
+            buttonToleranceY = 35
+            time.sleep(np.random.uniform(0.1, 0.5, 1)[0])
+            x2 = 675 + tlx
+            y2 = 492 + tly
+            self.mouse_mover(x1temp, y1temp, x2, y2)
+            self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
+
+        if decision == "Bet Bluff":
+            buttonToleranceX = 100
+            buttonToleranceY = 5
+            x2 = 662 + tlx
+            y2 = 492 - 37 + tly
+            self.mouse_mover(x1, y1, x2, y2)
+
+            # if t.currentBluff > 1:
+            #     for n in range(t.currentBluff - 1):
+            #         self.MouseClicker(x2, y2, buttonToleranceX, buttonToleranceY)
+
+            x1temp = x2
+            y1temp = y2
+
+            buttonToleranceX = 635 - 525
+            buttonToleranceY = 564 - 531
+            time.sleep(np.random.uniform(0.1, 0.5, 1)[0])
+            x2 = 675 + tlx
+            y2 = 492 + tly
+            self.mouse_mover(x1temp, y1temp, x2, y2)
+            self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
+
+        if decision == "Bet half pot":
+            buttonToleranceX = 10
+            buttonToleranceY = 5
+            x2 = 419 + 73 + tlx
+            y2 = 492 - 65 + tly
+            self.mouse_mover(x1, y1, x2, y2)
+            self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
+
+            x1temp = x2
+            y1temp = y2
+
+            buttonToleranceX = 635 - 525
+            buttonToleranceY = 564 - 531
+            time.sleep(np.random.uniform(0.1, 0.5, 1)[0])
+            x2 = 675 + tlx
+            y2 = 492 + tly
+            self.mouse_mover(x1temp, y1temp, x2, y2)
+            self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
+
+        if decision == "Bet pot":
+            buttonToleranceX = 30
+            buttonToleranceY = 10
+            x2 = 546 + 25 + tlx
+            y2 = 492 - 65 + tly
+            self.mouse_mover(x1, y1, x2, y2)
+            self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
+
+            x1temp = x2
+            y1temp = y2
+
+            buttonToleranceX = 635 - 525
+            buttonToleranceY = 564 - 531
+            time.sleep(np.random.uniform(0.1, 0.7, 1)[0])
+            x2 = 675 + tlx
+            y2 = 492 + tly
+            self.mouse_mover(x1temp, y1temp, x2, y2)
+            self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
+
+        if decision == "Bet max":
+            buttonToleranceX = 30
+            buttonToleranceY = 10
+            x2 = 722 + tlx
+            y2 = 492 - 65 + tly
+            self.mouse_mover(x1, y1, x2, y2)
+            self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
+
+            x1temp = x2
+            y1temp = y2
+
+            buttonToleranceX = 635 - 525
+            buttonToleranceY = 564 - 531
+            time.sleep(np.random.uniform(0.1, 0.7, 1)[0])
+            x2 = 675 + tlx
+            y2 = 492 + tly
+            self.mouse_mover(x1temp, y1temp, x2, y2)
+            self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
+
+        xscatter = int(np.round(np.random.uniform(1600, 1800, 1), 0))
+        yscatter = int(np.round(np.random.uniform(300, 400, 1), 0))
+
+        time.sleep(np.random.uniform(0.4, 1.0, 1)[0])
+
+        self.mouse_mover(x2, y2, xscatter, yscatter)
+
+if __name__=="__main__":
+    logger = logging.getLogger()
+    m=MouseMoverPP()
+    topleftcorner=[22,22]
+    m.mouse_action("Fold", topleftcorner)

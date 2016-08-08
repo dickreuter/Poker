@@ -8,8 +8,6 @@ Helps to fit curves when two points and a curvature are given.
 
 class Curvefitting(object):
     def __init__(self, x, smallBlind, bigBlind, maxValue, minEquity, maxEquity, pw, pl=False):
-
-
         def fcn2min(params, x, data):
             pw = params['pw'].value
             adj1 = params['adj1'].value
