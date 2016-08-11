@@ -9,34 +9,39 @@ class Terminal(object):
     def __init__(self):
         self.active = False
 
+
     class statusbar(object):
         def set(value):
-            logging.info("Status: "+str(value))
+            logger.info("Status: "+str(value))
 
     class var0(object):
         def set(value):
-            logging.info(value)
+            logger.info(value)
 
     class var1(object):
         def set(value):
-            logging.info(value)
+            logger.info(value)
 
     class var2(object):
         def set(value):
-            logging.info(value)
+            logger.info(value)
 
     class var3(object):
         def set(value):
-            logging.info(value)
+            logger.info(value)
 
     class var4(object):
         def set(value):
-            logging.info(value)
+            logger.info(value)
 
     class var5(object):
         def set(value):
-            logging.info(value)
+            logger.info(value)
 
     class var6(object):
         def set(value):
-            logging.info(value)
+            logger.info(value)
+
+
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)

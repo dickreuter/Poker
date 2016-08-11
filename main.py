@@ -4,6 +4,7 @@ import winsound
 import cv2  # opencv 3.0
 import pytesseract
 from PIL import Image, ImageGrab, ImageDraw, ImageFilter
+import sys
 
 from decisionmaker.decisionmaker1 import *
 from mouse_mover import *
@@ -133,8 +134,8 @@ class Tools(object):
 
     def setup_get_item_location(self):
         topleftcorner = "pics/PP/topleft.png"
-        name = "pics/PP/screenshot1.png"
-        findTemplate = "pics/PP/7D.png"
+        name = "pics/screenshot11.png"
+        findTemplate = "pics/half.png"
 
         setup = cv2.cvtColor(np.array(Image.open(name)), cv2.COLOR_BGR2RGB)
         tlc = cv2.cvtColor(np.array(Image.open(topleftcorner)), cv2.COLOR_BGR2RGB)
@@ -144,10 +145,10 @@ class Tools(object):
         template = cv2.cvtColor(np.array(Image.open(findTemplate)), cv2.COLOR_BGR2RGB)
 
         count, points, bestfit = a.find_template_on_screen(setup, template, 0.01)
-        logger.info("Count: "+str(count)+" Points: " +str(points) + " Bestfit: "+str(bestfit))
+        print("Count: "+str(count)+" Points: " +str(points) + " Bestfit: "+str(bestfit))
 
-        logger.info(findTemplate + " Relative: ")
-        logger.info(str(tuple(map(sum, zip(points[0], rel)))))
+        print(findTemplate + " Relative: ")
+        print(str(tuple(map(sum, zip(points[0], rel)))))
 
     def get_ocr_float(self,img_orig,name):
         def fix_number(t):

@@ -95,6 +95,14 @@ class CurvePlot(FigureCanvas):
         self.draw()
 
 
+class Updater(FigureCanvas):
+    def __init__(self, ui):
+        ui.equity.display("0.03")
+        ui.progress_bar.setValue(0)
+        ui.status.setText("None")
+        ui.last_decision.setText("None")
+
+
 
 
 
@@ -327,6 +335,7 @@ if __name__ == "__main__":
     # calc = Calcuiation()
     # t1 = threading.Thread(target=calc.calculation, args=[])
     # t1.start()
+    Updater(ui)
 
     MainWindow.show()
     sys.exit(app.exec_())

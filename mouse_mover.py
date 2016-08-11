@@ -98,20 +98,20 @@ class MouseMoverPP(MouseMover):
             self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
 
         if decision == "Call" or decision == "Call Deception":
-            x2 = 546 + tlx
+            x2 = 543 + tlx
             y2 = 492 + tly
 
             self.mouse_mover(x1, y1, x2, y2)
             self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
 
         if decision == "Check" or decision == "Check Deception":
-            x2 = 546 + tlx
+            x2 = 543 + tlx
             y2 = 492 + tly
             self.mouse_mover(x1, y1, x2, y2)
             self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
 
         if decision == "Bet":
-            x2 = 675 + tlx
+            x2 = 673 + tlx
             y2 = 492 + tly
             self.mouse_mover(x1, y1, x2, y2)
             self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
@@ -119,8 +119,8 @@ class MouseMoverPP(MouseMover):
         if decision == "BetPlus":
             buttonToleranceX = 4
             buttonToleranceY = 5
-            x2 = 666 + tlx
-            y2 = 496 - 37 + tly
+            x2 = 673 + tlx
+            y2 = 465 + tly
             self.mouse_mover(x1, y1, x2, y2)
 
             # for n in range(int(p.XML_entries_list1['BetPlusInc'].text)):
@@ -141,8 +141,8 @@ class MouseMoverPP(MouseMover):
         if decision == "Bet Bluff":
             buttonToleranceX = 100
             buttonToleranceY = 5
-            x2 = 662 + tlx
-            y2 = 492 - 37 + tly
+            x2 = 673 + tlx
+            y2 = 465 + tly
             self.mouse_mover(x1, y1, x2, y2)
 
             # if t.currentBluff > 1:
@@ -163,8 +163,8 @@ class MouseMoverPP(MouseMover):
         if decision == "Bet half pot":
             buttonToleranceX = 10
             buttonToleranceY = 5
-            x2 = 419 + 73 + tlx
-            y2 = 492 - 65 + tly
+            x2 = 477 + tlx
+            y2 = 433 + tly
             self.mouse_mover(x1, y1, x2, y2)
             self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
 
@@ -182,8 +182,8 @@ class MouseMoverPP(MouseMover):
         if decision == "Bet pot":
             buttonToleranceX = 30
             buttonToleranceY = 10
-            x2 = 546 + 25 + tlx
-            y2 = 492 - 65 + tly
+            x2 = 590 + tlx
+            y2 = 433 + tly
             self.mouse_mover(x1, y1, x2, y2)
             self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
 
