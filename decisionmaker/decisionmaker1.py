@@ -45,7 +45,7 @@ class Decision(DecisionBase):
             maxRuns = 15000
         else:
             maxRuns = 7500
-        maxSecs = 1
+        maxSecs = 2
         gui.statusbar.set("Running Monte Carlo: " + str(maxRuns))
         m = MonteCarlo()
         m.run_montecarlo(t.PlayerCardList, t.cardsOnTable, int(t.assumedPlayers), gui, maxRuns=maxRuns, maxSecs=maxSecs)
@@ -264,12 +264,19 @@ class Decision(DecisionBase):
         if self.decision == "Bet pot": h.myLastBet = t.totalPotValue
 
         gui.var1.set("Decision: " + str(self.decision))
+        logger.info("Decision: " + str(self.decision))
         gui.var2.set(
             "Equity: " + str(self.equity * 100) + "% -> " + str(int(t.assumedPlayers)) + " (" + str(
                 int(t.coveredCardHolders)) + "-" + str(int(t.playersAhead)) + "+1) Plr")
+        logger.info(
+            "Equity: " + str(self.equity * 100) + "% -> " + str(int(t.assumedPlayers)) + " (" + str(
+                int(t.coveredCardHolders)) + "-" + str(int(t.playersAhead)) + "+1) Plr")
         gui.var3.set("Final Call Limit: " + str(self.finalCallLimit) + " --> " + str(t.minCall))
+        logger.info("Final Call Limit: " + str(self.finalCallLimit) + " --> " + str(t.minCall))
         gui.var4.set("Final Bet Limit: " + str(self.finalBetLimit) + " --> " + str(t.currentBetValue))
+        logger.info("Final Bet Limit: " + str(self.finalBetLimit) + " --> " + str(t.currentBetValue))
         gui.var5.set("Pot size: " + str((t.totalPotValue)) + " -> Zero EV Call: " + str(round(self.maxCallEV, 2)))
+        logger.info("Pot size: " + str((t.totalPotValue)) + " -> Zero EV Call: " + str(round(self.maxCallEV, 2)))
 
         if gui.active == True:
             gui.updatePlots(h.histEquity, h.histMinCall, h.histMinBet, m.equity, t.minCall, t.minBet, 'bo', 'ro')

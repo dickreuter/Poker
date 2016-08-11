@@ -75,9 +75,8 @@ class MouseMoverPP(MouseMover):
             logger.info("Captcha Error")
             pass
 
-    def mouse_action(self, decision, topleftcorner):
-        logger = logging.getLogger()
-        print("Moving Mouse: "+str(decision))
+    def mouse_action(self, decision, topleftcorner, betplus_inc, current_bluff, logger):
+        logger.info("Moving Mouse: "+str(decision))
         tlx = topleftcorner[0]
         tly = topleftcorner[1]
         flags, hcursor, (x1, y1) = win32gui.GetCursorInfo()
@@ -126,9 +125,9 @@ class MouseMoverPP(MouseMover):
             y2 = 465 + tly
             self.mouse_mover(x1, y1, x2, y2)
 
-            # for n in range(int(p.XML_entries_list1['BetPlusInc'].text)):
-                # self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
-                # if t.minBet > float(p.XML_entries_list1['BetPlusInc'].text): continue
+            for n in range(int(betplus_inc)):
+                self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
+                # if t.minBet > float(betplus_inc): continue
 
             x1temp = x2
             y1temp = y2
@@ -148,9 +147,9 @@ class MouseMoverPP(MouseMover):
             y2 = 465 + tly
             self.mouse_mover(x1, y1, x2, y2)
 
-            # if t.currentBluff > 1:
-            #     for n in range(t.currentBluff - 1):
-            #         self.MouseClicker(x2, y2, buttonToleranceX, buttonToleranceY)
+            if current_bluff > 1:
+                for n in range(current_bluff - 1):
+                    self.MouseClicker(x2, y2, buttonToleranceX, buttonToleranceY)
 
             x1temp = x2
             y1temp = y2
@@ -231,4 +230,4 @@ if __name__=="__main__":
     logger = logging.getLogger()
     m=MouseMoverPP()
     topleftcorner=[22,22]
-    m.mouse_action("Fold", topleftcorner)
+    m.mouse_action("Fold", topleftcorner, 0, 0, logger)

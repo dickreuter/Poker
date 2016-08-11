@@ -5,11 +5,9 @@ import cv2  # opencv 3.0
 import pytesseract
 from PIL import Image, ImageGrab, ImageDraw, ImageFilter
 import sys
-
+from debug_logger import *
 from decisionmaker.decisionmaker1 import *
 from mouse_mover import *
-
-from tables import *
 
 class History(object):
     def __init__(self):
@@ -212,6 +210,7 @@ class Table(object):
             p.XML_entries_list1['considerLastGames'].text)  # only consider lg last games to see if there was a loss
         f = L.get_strategy_total_funds_change(p.current_strategy.text, lg)
         gui.var6.set("Game #" + str(n) + " - Last " + str(lg) + ": $" + str(f))
+        logger.info("Game #" + str(n) + " - Last " + str(lg) + ": $" + str(f))
         if n % int(p.XML_entries_list1['strategyIterationGames'].text) == 0 and f < float(
                 p.XML_entries_list1['minimumLossForIteration'].text):
             pass
@@ -318,7 +317,7 @@ class TablePP(Table):
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
         count, points, bestfit = a.find_template_on_screen(scraped.ImBack, img, 0.08)
         if count > 0:
-            mouse.mouse_action("Imback", t.topleftcorner)
+            mouse.mouse_action("Imback", t.topleftcorner,0,0,logger)
             return False
             gui.statusbar.set("I am back found")
         else:
@@ -335,8 +334,7 @@ class TablePP(Table):
             logger.debug("Call button found")
         else:
             self.callButton = False
-            logger.warning("Call button NOT found")
-            logger.warning(str(count)+" "+str(points)+" "+str(bestfit))
+            logger.info("Call button NOT found")
             pil_image.save("pics/debug_nocall.png")
         return True
 
@@ -699,6 +697,7 @@ class TablePP(Table):
             self.myFunds = float(h.myFundsHistory[-1])
             logger.info("myFunds not regognised!")
             gui.statusbar.set("!!Funds NOT recognised!!")
+            logger.warning("!!Funds NOT recognised!!")
             a.entireScreenPIL.save("pics/FundsError.png")
             time.sleep(0.5)
         logger.info("Funds: "+str(self.myFunds))
@@ -915,7 +914,7 @@ if __name__ == '__main__':
 
             d.make_decision(t, h, p, gui, logger)
 
-            mouse.mouse_action(d.decision, t.topleftcorner)
+            mouse.mouse_action(d.decision, t.topleftcorner, p.XML_entries_list1['BetPlusInc'].text, t.currentBluff,logger)
 
             gui.statusbar.set("Writing log file")
 
@@ -932,17 +931,7 @@ if __name__ == '__main__':
     terminalmode = False
     setupmode = False
 
-    logger = logging.getLogger('Poker')
-    logger.setLevel(logging.DEBUG)
-    fh = logging.FileHandler('pokerprogram.log')
-    fh.setLevel(logging.DEBUG)
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.ERROR)
-    fh.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
-    ch.setFormatter(logging.Formatter('%(levelname)s - %(message)s'))
-    logger.addHandler(fh)
-    logger.addHandler(ch)
-    logger.debug("Debbuging session started")
+    logger=debug_logger().start_logger()
 
     p = XMLHandler('strategies.xml')
     p.read_XML()
