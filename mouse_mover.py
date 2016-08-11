@@ -14,8 +14,9 @@ class MouseMover():
 
     def click(self, x, y):
         win32api.SetCursorPos((x, y))
-        time.sleep(np.random.uniform(0.1, 0.5, 1)[0])
+        time.sleep(np.random.uniform(0.3, 0.5, 1)[0])
         win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, x, y, 0, 0)
+        time.sleep(np.random.uniform(0.1, 0.2, 1)[0])
         win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, x, y, 0, 0)
 
     def mouse_mover(self, x1, y1, x2, y2):
