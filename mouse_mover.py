@@ -93,7 +93,7 @@ class MouseMoverPP(MouseMover):
 
         if decision == "Fold":
             x2 = 419 + tlx
-            y2 = 492 + tly
+            y2 = 493 + tly
             self.mouse_mover(x1, y1, x2, y2)
             self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
 
