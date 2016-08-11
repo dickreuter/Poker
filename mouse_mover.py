@@ -50,6 +50,8 @@ class MouseMover():
         yrand = np.random.uniform(0, buttonToleranceY, 1)
         win32api.SetCursorPos((x2 + xrand, y2 + yrand))
 
+        time.sleep(np.random.uniform(0.1, 0.2, 1)[0])
+
         self.click(x2 + xrand, y2 + yrand)
 
         time.sleep(np.random.uniform(0.1, 0.5, 1)[0])
