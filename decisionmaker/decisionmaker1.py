@@ -45,7 +45,7 @@ class Decision(DecisionBase):
             maxRuns = 15000
         else:
             maxRuns = 7500
-        maxSecs = 3
+        maxSecs = 2
         gui.statusbar.set("Running Monte Carlo: " + str(maxRuns))
         m = MonteCarlo()
         m.run_montecarlo(t.PlayerCardList, t.cardsOnTable, int(t.assumedPlayers), gui, maxRuns=maxRuns, maxSecs=maxSecs)
