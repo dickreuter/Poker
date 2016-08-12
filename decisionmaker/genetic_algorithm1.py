@@ -7,7 +7,7 @@ from xml_handler import *
 
 class Genetic_Algorithm(object):
     def __init__(self, autoUpdate=False):
-        p = XMLHandler('../strategies.xml')
+        p = XMLHandler('strategies.xml')
         p.read_XML()
         p_name = p.current_strategy.text
         L = self.loadLog(p_name)
