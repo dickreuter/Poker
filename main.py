@@ -190,10 +190,11 @@ class Tools(object):
         try:
             final_value=''
             for i, j in enumerate(lst):
-                logger.info("OCR of " + name + " method "+str(i)+" :" + str(j))
+                logger.debug("OCR of " + name + " method "+str(i)+" :" + str(j))
                 lst[i]=fix_number(lst[i]) if lst[i]!='' else lst[i]
                 final_value=lst[i] if final_value=='' else final_value
 
+            logger.info(name+" FINAL VALUE: " + str(final_value))
             return float(final_value)
 
         except Exception as e:
@@ -755,7 +756,8 @@ class TablePP(Table):
             self.BetValueReadError = True
             a.entireScreenPIL.save("pics/BetValueError.png")
 
-        logger.info("Final bet value: "+str(self.currentBetValue))
+        logger.info("Final call value: "+str(self.currentCallValue))
+        logger.info("Final bet value: " + str(self.currentBetValue))
         return True
 
     def get_current_pot_value(self):
