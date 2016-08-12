@@ -8,6 +8,7 @@ import sys
 from debug_logger import *
 from decisionmaker.decisionmaker1 import *
 from mouse_mover import *
+from configobj import ConfigObj
 
 class History(object):
     def __init__(self):
@@ -567,11 +568,13 @@ class TablePP(Table):
             playerPotImage = playerPotImage.resize((basewidth, hsize), Image.ANTIALIAS)
 
             playerPotImage = playerPotImage.filter(ImageFilter.MinFilter)
-
-            recognizedText = pytesseract.image_to_string(playerPotImage, None, False, "-psm 6")
-            recognizedText = re.sub("[^0123456789.]", "", recognizedText)
-            if recognizedText != "":
-                self.PlayerPots.append(recognizedText)
+            try:
+                recognizedText = pytesseract.image_to_string(playerPotImage, None, False, "-psm 6")
+                recognizedText = re.sub("[^0123456789.]", "", recognizedText)
+                if recognizedText != "":
+                    self.PlayerPots.append(recognizedText)
+            except:
+                logger.debug("Error in Pytesseract")
 
         self.PlayerPots.sort()
 
@@ -671,23 +674,26 @@ class TablePP(Table):
         pil_image_filtered2 = pil_image.filter(ImageFilter.MedianFilter)
         self.myFundsError = False
 
-        recognizedText = pytesseract.image_to_string(pil_image, None, False, "-psm 6")
-        logger.debug("My funds original text: "+str(recognizedText))
-        recognizedText=recognizedText.replace("I", "1").replace("O","0").replace("o", "0")
-        if recognizedText == "":
-            recognizedText = pytesseract.image_to_string(pil_image_filtered, None, False, "-psm 6").replace("I",
-                                                                                                            "1").replace(
-                "O", "0").replace("o", "0")
-            if recognizedText == "":
-                recognizedText = pytesseract.image_to_string(pil_image_filtered2, None, False, "-psm 6").replace("I",
-                                                                                                                 "1").replace(
-                    "O", "0").replace("o", "0")
-        # pil_image.show()
         try:
-            pil_image.save("pics/myFunds.png")
+            recognizedText = pytesseract.image_to_string(pil_image, None, False, "-psm 6")
+            logger.debug("My funds original text: "+str(recognizedText))
+            recognizedText=recognizedText.replace("I", "1").replace("O","0").replace("o", "0")
+            if recognizedText == "":
+                recognizedText = pytesseract.image_to_string(pil_image_filtered, None, False, "-psm 6").replace("I",
+                                                                                                                "1").replace(
+                    "O", "0").replace("o", "0")
+                if recognizedText == "":
+                    recognizedText = pytesseract.image_to_string(pil_image_filtered2, None, False, "-psm 6").replace("I",
+                                                                                                                     "1").replace(
+                        "O", "0").replace("o", "0")
+            # pil_image.show()
+            try:
+                pil_image.save("pics/myFunds.png")
+            except:
+                logger.info("Could not save myFunds.png")
+            # blurred = pil_image.filter(ImageFilter.SHARPEN)
         except:
-            logger.info("Could not save myFunds.png")
-        # blurred = pil_image.filter(ImageFilter.SHARPEN)
+            logger.warning('Error in Pytesseract Fund recognition')
 
 
         try:
@@ -770,9 +776,13 @@ class TablePP(Table):
         # pil_image.show()
         pil_image.save("pics/currenPotValue.png")
         # blurred = pil_image.filter(ImageFilter.SHARPEN)
-        self.currentRoundPotValue = pytesseract.image_to_string(pil_image, None, False, "-psm 6").replace(" ",
-                                                                                                          "").replace(
-            "$", "")
+        try:
+            self.currentRoundPotValue = pytesseract.image_to_string(pil_image, None, False, "-psm 6").replace(" ",
+                                                                                                              "").replace(
+                "$", "")
+        except:
+            logger.warning("Error in pytesseract current pot value")
+
         if len(self.currentRoundPotValue) > 6: self.currentRoundPotValue = ""
         # else: return False
 
@@ -930,8 +940,10 @@ if __name__ == '__main__':
             h.histMinBet = t.minBet
             h.histPlayerPots = t.PlayerPots
 
-    terminalmode = False
-    setupmode = False
+    config = ConfigObj("config.ini")
+    terminalmode=int(config['terminalmode'])
+    setupmode=int(config['setupmode'])
+
 
     logger=debug_logger().start_logger()
 

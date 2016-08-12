@@ -10,9 +10,13 @@ from .base import DecisionBase, Collusion
 import numpy as np
 from .curvefitting import *
 from .montecarlo_v3 import *
-
+from configobj import ConfigObj
 
 class Decision(DecisionBase):
+    def __init__(self):
+        config = ConfigObj("config.ini")
+        self.montecarlo_max_secs = float(config['montecarlo_max_secs'])
+
     def make_decision(self, t, h, p, gui, logger):
         gui.statusbar.set("Starting decision analysis")
         bigBlind = float(p.XML_entries_list1['bigBlind'].text)
@@ -45,10 +49,10 @@ class Decision(DecisionBase):
             maxRuns = 15000
         else:
             maxRuns = 7500
-        maxSecs = 1
+
         gui.statusbar.set("Running Monte Carlo: " + str(maxRuns))
         m = MonteCarlo()
-        m.run_montecarlo(t.PlayerCardList, t.cardsOnTable, int(t.assumedPlayers), gui, maxRuns=maxRuns, maxSecs=maxSecs)
+        m.run_montecarlo(t.PlayerCardList, t.cardsOnTable, int(t.assumedPlayers), gui, maxRuns=maxRuns, maxSecs=self.montecarlo_max_secs)
         gui.statusbar.set("Monte Carlo completed successfully")
 
         bigBlindMultiplier = bigBlind / 0.02
