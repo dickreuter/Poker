@@ -6,9 +6,21 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>703</width>
-    <height>903</height>
+    <width>617</width>
+    <height>713</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>617</width>
+    <height>713</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>617</width>
+    <height>713</height>
+   </size>
   </property>
   <property name="font">
    <font>
@@ -28,7 +40,7 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>500</x>
+      <x>330</x>
       <y>270</y>
       <width>71</width>
       <height>31</height>
@@ -49,9 +61,9 @@
    <widget class="QLabel" name="last_decision">
     <property name="geometry">
      <rect>
-      <x>220</x>
+      <x>20</x>
       <y>230</y>
-      <width>271</width>
+      <width>291</width>
       <height>31</height>
      </rect>
     </property>
@@ -61,6 +73,9 @@
       <weight>75</weight>
       <bold>true</bold>
      </font>
+    </property>
+    <property name="autoFillBackground">
+     <bool>false</bool>
     </property>
     <property name="frameShape">
      <enum>QFrame::Panel</enum>
@@ -87,8 +102,8 @@
    <widget class="QPushButton" name="button_pause">
     <property name="geometry">
      <rect>
-      <x>370</x>
-      <y>340</y>
+      <x>330</x>
+      <y>300</y>
       <width>75</width>
       <height>23</height>
      </rect>
@@ -107,7 +122,7 @@
      <rect>
       <x>20</x>
       <y>40</y>
-      <width>211</width>
+      <width>201</width>
       <height>181</height>
      </rect>
     </property>
@@ -153,16 +168,14 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>640</y>
-      <width>321</width>
-      <height>241</height>
+      <y>510</y>
+      <width>291</width>
+      <height>181</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="vLayout3">
      <item>
-      <widget class="QWidget" name="mplv3" native="true">
-       <zorder>verticalLayoutWidget_3</zorder>
-      </widget>
+      <widget class="QWidget" name="mplv3" native="true"/>
      </item>
     </layout>
    </widget>
@@ -170,26 +183,24 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>370</y>
-      <width>321</width>
-      <height>251</height>
+      <y>330</y>
+      <width>291</width>
+      <height>171</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="vLayout">
      <item>
-      <widget class="QWidget" name="mplvl" native="true">
-       <zorder>mplv2</zorder>
-      </widget>
+      <widget class="QWidget" name="mplvl" native="true"/>
      </item>
     </layout>
    </widget>
    <widget class="QWidget" name="verticalLayoutWidget_2">
     <property name="geometry">
      <rect>
-      <x>370</x>
-      <y>370</y>
-      <width>321</width>
-      <height>251</height>
+      <x>330</x>
+      <y>330</y>
+      <width>271</width>
+      <height>171</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="vLayout2">
@@ -208,9 +219,9 @@
    <widget class="QProgressBar" name="progress_bar">
     <property name="geometry">
      <rect>
-      <x>220</x>
-      <y>310</y>
-      <width>271</width>
+      <x>20</x>
+      <y>270</y>
+      <width>291</width>
       <height>23</height>
      </rect>
     </property>
@@ -225,7 +236,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>340</y>
+      <y>300</y>
       <width>151</width>
       <height>21</height>
      </rect>
@@ -242,8 +253,8 @@
    <widget class="QPushButton" name="button_resume">
     <property name="geometry">
      <rect>
-      <x>460</x>
-      <y>340</y>
+      <x>410</x>
+      <y>300</y>
       <width>75</width>
       <height>23</height>
      </rect>
@@ -260,9 +271,9 @@
    <widget class="QWidget" name="verticalLayoutWidget_7">
     <property name="geometry">
      <rect>
-      <x>370</x>
+      <x>330</x>
       <y>40</y>
-      <width>211</width>
+      <width>191</width>
       <height>181</height>
      </rect>
     </property>
@@ -307,7 +318,7 @@
    <widget class="QWidget" name="verticalLayoutWidget_5">
     <property name="geometry">
      <rect>
-      <x>240</x>
+      <x>220</x>
       <y>40</y>
       <width>91</width>
       <height>181</height>
@@ -334,7 +345,7 @@
    <widget class="QWidget" name="verticalLayoutWidget_8">
     <property name="geometry">
      <rect>
-      <x>590</x>
+      <x>520</x>
       <y>40</y>
       <width>91</width>
       <height>181</height>
@@ -361,10 +372,10 @@
    <widget class="QWidget" name="verticalLayoutWidget_4">
     <property name="geometry">
      <rect>
-      <x>370</x>
-      <y>640</y>
-      <width>321</width>
-      <height>241</height>
+      <x>330</x>
+      <y>510</y>
+      <width>271</width>
+      <height>181</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="vLayout4">
@@ -376,8 +387,8 @@
    <widget class="QLabel" name="status">
     <property name="geometry">
      <rect>
-      <x>220</x>
-      <y>270</y>
+      <x>330</x>
+      <y>230</y>
       <width>271</width>
       <height>31</height>
      </rect>
@@ -414,9 +425,9 @@
    <widget class="QPushButton" name="button_config">
     <property name="geometry">
      <rect>
-      <x>190</x>
-      <y>340</y>
-      <width>151</width>
+      <x>180</x>
+      <y>300</y>
+      <width>131</width>
       <height>23</height>
      </rect>
     </property>
@@ -432,8 +443,8 @@
    <widget class="QPushButton" name="button_show_xml">
     <property name="geometry">
      <rect>
-      <x>620</x>
-      <y>340</y>
+      <x>530</x>
+      <y>300</y>
       <width>75</width>
       <height>23</height>
      </rect>
@@ -447,24 +458,6 @@
      <string>Show XML</string>
     </property>
    </widget>
-   <zorder>autoplay</zorder>
-   <zorder>last_decision</zorder>
-   <zorder>button_pause</zorder>
-   <zorder>verticalLayoutWidget_6</zorder>
-   <zorder>verticalLayoutWidget_3</zorder>
-   <zorder>verticalLayoutWidget</zorder>
-   <zorder>verticalLayoutWidget_2</zorder>
-   <zorder>progress_bar</zorder>
-   <zorder>button_run_ai</zorder>
-   <zorder>button_resume</zorder>
-   <zorder>verticalLayoutWidget_7</zorder>
-   <zorder>verticalLayoutWidget_5</zorder>
-   <zorder>verticalLayoutWidget_8</zorder>
-   <zorder>verticalLayoutWidget_4</zorder>
-   <zorder>status</zorder>
-   <zorder>button_config</zorder>
-   <zorder>button_show_xml</zorder>
-   <zorder>mplvl</zorder>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
