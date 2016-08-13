@@ -218,7 +218,7 @@ class Table(object):
             pass
             gui.statusbar.set("***Improving current strategy***")
             winsound.Beep(500, 100)
-            Genetic_Algorithm(True)
+            Genetic_Algorithm(True,logger)
             p.read_XML()
 
     def crop_image(self, original, left, top, right, bottom):
