@@ -32,7 +32,8 @@ class History(object):
         self.histPlayerPots = 0
 
 class Tools(object):
-    # General tools that are used to operate the pokerbot, such as moving the mouse, clicking and routines that
+    # General tools that are used to operate the pokerbot, such as moving the
+    # mouse, clicking and routines that
     # call Opencv for image recognition
     def __init__(self):
         self.load_templates()
@@ -49,9 +50,11 @@ class Tools(object):
                 if os.path.exists(name) == True:
                     self.img[x + y] = Image.open(name)
                     self.cardImages[x + y] = cv2.cvtColor(np.array(self.img[x + y]), cv2.COLOR_BGR2RGB)
-                    #(thresh, self.cardImages[x + y]) = cv2.threshold(self.cardImages[x + y], 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+                    #(thresh, self.cardImages[x + y]) =
+                    #cv2.threshold(self.cardImages[x + y], 128, 255,
+                    #cv2.THRESH_BINARY | cv2.THRESH_OTSU)
                 else:
-                    logger.critical("Card Temlate File not found: "+str(x)+str(y)+".png")
+                    logger.critical("Card Temlate File not found: " + str(x) + str(y) + ".png")
 
         name = "pics/" + p.XML_entries_list1['pokerSite'].text + "/button.png"
         template = Image.open(name)
@@ -105,7 +108,8 @@ class Tools(object):
         return True
 
     def find_template_on_screen(self, template, screenshot, threshold):
-        # 'cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR',  'cv2.TM_CCORR_NORMED', 'cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
+        # 'cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR',
+        # 'cv2.TM_CCORR_NORMED', 'cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
         method = eval('cv2.TM_SQDIFF_NORMED')
         # Apply template Matching
         res = cv2.matchTemplate(screenshot, template, method)
@@ -144,14 +148,14 @@ class Tools(object):
         template = cv2.cvtColor(np.array(Image.open(findTemplate)), cv2.COLOR_BGR2RGB)
 
         count, points, bestfit = a.find_template_on_screen(setup, template, 0.01)
-        print("Count: "+str(count)+" Points: " +str(points) + " Bestfit: "+str(bestfit))
+        print("Count: " + str(count) + " Points: " + str(points) + " Bestfit: " + str(bestfit))
 
         print(findTemplate + " Relative: ")
         print(str(tuple(map(sum, zip(points[0], rel)))))
 
     def get_ocr_float(self,img_orig,name):
         def fix_number(t):
-            t = t.replace("I", "1").replace("O", "0").replace("o", "0").replace("-", ".")
+            t = t.replace("I", "1").replace("O", "0").replace("o", "0").replace("-", ".")..replace("D", "0")
             t = re.sub("[^0123456789.]", "", t)
             try:
                 if t[0] == ".": t = t[1:]
@@ -159,7 +163,7 @@ class Tools(object):
                 pass
             return t
 
-        img_orig.save('pics/ocr_debug_'+name+'.png')
+        img_orig.save('pics/ocr_debug_' + name + '.png')
         basewidth = 200
         wpercent = (basewidth / float(img_orig.size[0]))
         hsize = int((float(img_orig.size[1]) * float(wpercent)))
@@ -169,7 +173,7 @@ class Tools(object):
         img_med = img_resized.filter(ImageFilter.MedianFilter)
         img_mod = img_resized.filter(ImageFilter.ModeFilter).filter(ImageFilter.SHARPEN)
 
-        lst=[]
+        lst = []
 
         try:
             lst.append(pytesseract.image_to_string(img_orig, None, False,"-psm 6"))
@@ -189,32 +193,31 @@ class Tools(object):
             logger.error(str(e))
 
         try:
-            final_value=''
+            final_value = ''
             for i, j in enumerate(lst):
-                logger.debug("OCR of " + name + " method "+str(i)+" :" + str(j))
-                lst[i]=fix_number(lst[i]) if lst[i]!='' else lst[i]
-                final_value=lst[i] if final_value=='' else final_value
+                logger.debug("OCR of " + name + " method " + str(i) + " :" + str(j))
+                lst[i] = fix_number(lst[i]) if lst[i] != '' else lst[i]
+                final_value = lst[i] if final_value == '' else final_value
 
-            logger.info(name+" FINAL VALUE: " + str(final_value))
+            logger.info(name + " FINAL VALUE: " + str(final_value))
             return float(final_value)
 
         except Exception as e:
-            logger.error("Pytesseract Error in recognising "+name)
+            logger.error("Pytesseract Error in recognising " + name)
             logger.error(str(e))
             exit()
 
 class Table(object):
-    # baseclass that is inherited by the different types of Tables (e.g. Pokerstars of Party Poker Table)
+    # baseclass that is inherited by the different types of Tables (e.g.
+    # Pokerstars of Party Poker Table)
     def call_genetic_algorithm(self):
         gui.statusbar.set("Checking for AI update")
         n = L.get_game_count(p.current_strategy.text)
-        lg = int(
-            p.XML_entries_list1['considerLastGames'].text)  # only consider lg last games to see if there was a loss
+        lg = int(p.XML_entries_list1['considerLastGames'].text)  # only consider lg last games to see if there was a loss
         f = L.get_strategy_total_funds_change(p.current_strategy.text, lg)
         gui.var6.set("Game #" + str(n) + " - Last " + str(lg) + ": $" + str(f))
         logger.info("Game #" + str(n) + " - Last " + str(lg) + ": $" + str(f))
-        if n % int(p.XML_entries_list1['strategyIterationGames'].text) == 0 and f < float(
-                p.XML_entries_list1['minimumLossForIteration'].text):
+        if n % int(p.XML_entries_list1['strategyIterationGames'].text) == 0 and f < float(p.XML_entries_list1['minimumLossForIteration'].text):
             pass
             gui.statusbar.set("***Improving current strategy***")
             winsound.Beep(500, 100)
@@ -271,36 +274,45 @@ class TablePP(Table):
         if count > 0:
             self.checkButton = True
             self.currentCallValue = 0.0
-            logger.debug( "check button found")
+            logger.debug("check button found")
         else:
             self.checkButton = False
-            logger.debug( "no check button found")
-        logger.debug( "Check: " + str(self.checkButton))
+            logger.debug("no check button found")
+        logger.debug("Check: " + str(self.checkButton))
         return True
 
     def check_for_captcha(self):
-        # ChatWindow = self.crop_image(a.entireScreenPIL, self.topleftcorner[0] + 3, self.topleftcorner[1] + 443,
-        #                             self.topleftcorner[0] + 400, self.topleftcorner[1] + 443 + 90)
+        # ChatWindow = self.crop_image(a.entireScreenPIL, self.topleftcorner[0]
+        # + 3, self.topleftcorner[1] + 443,
+        #                             self.topleftcorner[0] + 400,
+        #                             self.topleftcorner[1] + 443 + 90)
         # basewidth = 500
         # wpercent = (basewidth / float(ChatWindow.size[0]))
         # hsize = int((float(ChatWindow.size[1]) * float(wpercent)))
         # ChatWindow = ChatWindow.resize((basewidth, hsize), Image.ANTIALIAS)
         # # ChatWindow.show()
         # try:
-        #     t.chatText = (pytesseract.image_to_string(ChatWindow, None, False, "-psm 6"))
-        #     t.chatText = re.sub("[^abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\.]", "", t.chatText)
+        #     t.chatText = (pytesseract.image_to_string(ChatWindow, None,
+        #     False, "-psm 6"))
+        #     t.chatText =
+        #     re.sub("[^abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\.]",
+        #     "", t.chatText)
         #     keyword1 = 'disp'
         #     keyword2 = 'left'
         #     keyword3 = 'pic'
         #     keyword4 = 'key'
         #     keyword5 = 'lete'
         #     logger.debug( (recognizedText)
-        #     if ((t.chatText.find(keyword1) > 0) or (t.chatText.find(keyword2) > 0) or (
-        #                 t.chatText.find(keyword3) > 0) or (t.chatText.find(keyword4) > 0) or (
+        #     if ((t.chatText.find(keyword1) > 0) or (t.chatText.find(keyword2)
+        #     > 0) or (
+        #                 t.chatText.find(keyword3) > 0) or
+        #                 (t.chatText.find(keyword4) > 0) or (
         #                 t.chatText.find(keyword5) > 0)):
-        #         gui.statusbar.set("Captcha discovered! Submitting...")
-        #         captchaIMG = self.crop_image(a.entireScreenPIL, self.topleftcorner[0] + 5, self.topleftcorner[1] + 490,
-        #                                     self.topleftcorner[0] + 335, self.topleftcorner[1] + 550)
+        #         gui.statusbar.set("Captcha discovered!  Submitting...")
+        #         captchaIMG = self.crop_image(a.entireScreenPIL,
+        #         self.topleftcorner[0] + 5, self.topleftcorner[1] + 490,
+        #                                     self.topleftcorner[0] + 335,
+        #                                     self.topleftcorner[1] + 550)
         #         captchaIMG.save("pics/captcha.png")
         #         # captchaIMG.show()
         #         time.sleep(0.5)
@@ -363,7 +375,8 @@ class TablePP(Table):
                                     t.topleftcorner[0] + 600, t.topleftcorner[1] + 158 + 120)
 
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
-        #(thresh, img) = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+        #(thresh, img) = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY |
+        #cv2.THRESH_OTSU)
 
         for key, value in scraped.cardImages.items():
             template = value
@@ -382,7 +395,7 @@ class TablePP(Table):
             if min_val < 0.01:
                 self.cardsOnTable.append(key)
 
-        self.gameStage=''
+        self.gameStage = ''
 
         if len(self.cardsOnTable) < 1:
             self.gameStage = "PreFlop"
@@ -393,18 +406,18 @@ class TablePP(Table):
         elif len(self.cardsOnTable) == 5:
             self.gameStage = "River"
 
-        if self.gameStage=='':
+        if self.gameStage == '':
             logger.critical("Table cards not recognised correctly")
             exit()
 
-        logger.info("Gamestage: "+self.gameStage)
-        logger.info("Cards on table: "+str(self.cardsOnTable))
+        logger.info("Gamestage: " + self.gameStage)
+        logger.info("Cards on table: " + str(self.cardsOnTable))
 
         return True
 
     def get_my_cards(self, scraped):
         def go_through_each_card(img,debugging):
-            dic={}
+            dic = {}
             for key, value in scraped.cardImages.items():
                 template = value
                 method = eval('cv2.TM_SQDIFF_NORMED')
@@ -425,7 +438,7 @@ class TablePP(Table):
                 if min_val < 0.01:
                     self.mycards.append(key)
                 if debugging:
-                    dic[key]=min_val
+                    dic[key] = min_val
 
             if debugging:
                 dic = sorted(dic.items(), key=operator.itemgetter(1))
@@ -439,7 +452,8 @@ class TablePP(Table):
 
         #pil_image.show()
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
-        #(thresh, img) = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+        #(thresh, img) = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY |
+        #cv2.THRESH_OTSU)
         go_through_each_card(img,False)
 
         if len(self.mycards) == 2:
@@ -447,7 +461,7 @@ class TablePP(Table):
             logger.info("My cards: " + str(self.mycards))
             return True
         else:
-            logger.warning("Did not find two player cards: "+str(self.mycards))
+            logger.warning("Did not find two player cards: " + str(self.mycards))
             #go_through_each_card(img,True)
             return False
 
@@ -466,8 +480,7 @@ class TablePP(Table):
         for pt in points:
             # cv2.rectangle(img, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
             count += 1
-            playerNameImage = pil_image.crop(
-                (pt[0] - (955 - 890), pt[1] + 270 - 222, pt[0] + 20, pt[1] + +280 - 222))
+            playerNameImage = pil_image.crop((pt[0] - (955 - 890), pt[1] + 270 - 222, pt[0] + 20, pt[1] + +280 - 222))
             basewidth = 500
             wpercent = (basewidth / float(playerNameImage.size[0]))
             hsize = int((float(playerNameImage.size[1]) * float(wpercent)))
@@ -481,8 +494,7 @@ class TablePP(Table):
             except:
                 logger.debug("Pyteseract error in player name recognition")
 
-            playerFundsImage = pil_image.crop(
-                (pt[0] - (955 - 890) + 10, pt[1] + 270 - 222 + 20, pt[0] + 10, pt[1] + +280 - 222 + 22))
+            playerFundsImage = pil_image.crop((pt[0] - (955 - 890) + 10, pt[1] + 270 - 222 + 20, pt[0] + 10, pt[1] + +280 - 222 + 22))
             basewidth = 500
             wpercent = (basewidth / float(playerNameImage.size[0]))
             hsize = int((float(playerNameImage.size[1]) * float(wpercent)))
@@ -498,7 +510,7 @@ class TablePP(Table):
             except:
                 logger.debug("Pyteseract error in player name recognition")
 
-        logger.debug("Player Names: " +str(t.PlayerNames))
+        logger.debug("Player Names: " + str(t.PlayerNames))
 
         # plt.subplot(121),plt.imshow(res)
         # plt.subplot(122),plt.imshow(img,cmap = 'jet')
@@ -510,7 +522,7 @@ class TablePP(Table):
 
         if self.coveredCardHolders == 1:
             self.isHeadsUp = True
-            logger.debug( "HeadSUP detected!")
+            logger.debug("HeadSUP detected!")
         else:
             self.isHeadsUp = False
 
@@ -594,9 +606,9 @@ class TablePP(Table):
             self.playerBetIncreasesPercentage = [t[i + 1] / t[i] for i in range(len(t) - 1)]
             self.maxPlayerBetIncreasesPercentage = max(self.playerBetIncreasesPercentage)
 
-            logger.debug( "Player Pots:           " + str(self.PlayerPots))
-            logger.debug( "Player Pots increases: " + str(self.playerBetIncreases))
-            logger.debug( "Player increase as %:  " + str(self.playerBetIncreasesPercentage))
+            logger.debug("Player Pots:           " + str(self.PlayerPots))
+            logger.debug("Player Pots increases: " + str(self.playerBetIncreases))
+            logger.debug("Player increase as %:  " + str(self.playerBetIncreasesPercentage))
 
         except:
             self.playerBetIncreasesPercentage = [0]
@@ -622,15 +634,15 @@ class TablePP(Table):
         self.playersBehind = count
 
         self.playersAhead = int(np.round(self.coveredCardHolders - self.playersBehind))
-        logger.debug("Player pots: "+str(self.PlayerPots))
+        logger.debug("Player pots: " + str(self.PlayerPots))
 
         if p.XML_entries_list1['smallBlind'].text in self.PlayerPots:
             self.playersAhead += 1
             self.playersBehind -= 1
-            logger.debug ("Found small blind")
+            logger.debug("Found small blind")
 
         self.playersAhead = int(max(self.playersAhead, 0))
-        logger.debug( ("Played players: " + str(self.playersBehind)))
+        logger.debug(("Played players: " + str(self.playersBehind)))
 
         return True
 
@@ -645,7 +657,7 @@ class TablePP(Table):
         pil_image = self.crop_image(a.entireScreenPIL, self.topleftcorner[0] + x1, self.topleftcorner[1] + y1,
                                     self.topleftcorner[0] + x2, self.topleftcorner[1] + y2)
 
-        self.totalPotValue=a.get_ocr_float(pil_image,'TotalPotValue')
+        self.totalPotValue = a.get_ocr_float(pil_image,'TotalPotValue')
 
         if self.totalPotValue < 0.01:
             logger.info("unable to get pot value")
@@ -654,7 +666,7 @@ class TablePP(Table):
             pil_image.save("pics/ErrPotValue.png")
             self.totalPotValue = h.previousPot
 
-        logger.info("Final Total Pot Value: "+str(self.totalPotValue ))
+        logger.info("Final Total Pot Value: " + str(self.totalPotValue))
         return True
 
     def get_my_funds(self):
@@ -676,16 +688,14 @@ class TablePP(Table):
 
         try:
             recognizedText = pytesseract.image_to_string(pil_image, None, False, "-psm 6")
-            logger.debug("My funds original text: "+str(recognizedText))
-            recognizedText=recognizedText.replace("I", "1").replace("O","0").replace("o", "0")
+            logger.debug("My funds original text: " + str(recognizedText))
+            recognizedText = recognizedText.replace("I", "1").replace("O","0").replace("o", "0")
             if recognizedText == "":
                 recognizedText = pytesseract.image_to_string(pil_image_filtered, None, False, "-psm 6").replace("I",
-                                                                                                                "1").replace(
-                    "O", "0").replace("o", "0")
+                                                                                                                "1").replace("O", "0").replace("o", "0")
                 if recognizedText == "":
                     recognizedText = pytesseract.image_to_string(pil_image_filtered2, None, False, "-psm 6").replace("I",
-                                                                                                                     "1").replace(
-                        "O", "0").replace("o", "0")
+                                                                                                                     "1").replace("O", "0").replace("o", "0")
             # pil_image.show()
             try:
                 pil_image.save("pics/myFunds.png")
@@ -707,7 +717,7 @@ class TablePP(Table):
             logger.warning("!!Funds NOT recognised!!")
             a.entireScreenPIL.save("pics/FundsError.png")
             time.sleep(0.5)
-        logger.info("Funds: "+str(self.myFunds))
+        logger.info("Funds: " + str(self.myFunds))
         return True
 
     def get_current_call_value(self):
@@ -724,7 +734,7 @@ class TablePP(Table):
         if t.checkButton == False:
 
             try:
-                self.currentCallValue=a.get_ocr_float(pil_image,'CallValue')
+                self.currentCallValue = a.get_ocr_float(pil_image,'CallValue')
                 self.getCallButtonValueSuccess = True
                 if self.allInCallButton == True and self.myFundsError == False and self.currentCallValue < self.myFunds:
                     self.getCallButtonValueSuccess = False
@@ -762,7 +772,7 @@ class TablePP(Table):
             self.BetValueReadError = True
             a.entireScreenPIL.save("pics/BetValueError.png")
 
-        logger.info("Final call value: "+str(self.currentCallValue))
+        logger.info("Final call value: " + str(self.currentCallValue))
         logger.info("Final bet value: " + str(self.currentBetValue))
         return True
 
@@ -778,8 +788,7 @@ class TablePP(Table):
         # blurred = pil_image.filter(ImageFilter.SHARPEN)
         try:
             self.currentRoundPotValue = pytesseract.image_to_string(pil_image, None, False, "-psm 6").replace(" ",
-                                                                                                              "").replace(
-                "$", "")
+                                                                                                              "").replace("$", "")
         except:
             logger.warning("Error in pytesseract current pot value")
 
@@ -869,7 +878,6 @@ class TablePP(Table):
 
 
 # ==== MAIN PROGRAM =====
-
 if __name__ == '__main__':
     def run_pokerbot(logger):
         global LogFilename, h, L, p, mouse, t, a, d
@@ -941,11 +949,11 @@ if __name__ == '__main__':
             h.histPlayerPots = t.PlayerPots
 
     config = ConfigObj("config.ini")
-    terminalmode=int(config['terminalmode'])
-    setupmode=int(config['setupmode'])
+    terminalmode = int(config['terminalmode'])
+    setupmode = int(config['setupmode'])
 
 
-    logger=debug_logger().start_logger()
+    logger = debug_logger().start_logger()
 
     p = XMLHandler('strategies.xml')
     p.read_XML()
