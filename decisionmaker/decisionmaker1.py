@@ -268,7 +268,7 @@ class Decision(DecisionBase):
         if self.decision == "Bet pot": h.myLastBet = t.totalPotValue
 
         gui.var1.set("Decision: " + str(self.decision))
-        logger.info("Decision: " + str(self.decision))
+        logger.info("+++++++++++++++++++++++ Decision: " + str(self.decision)+"+++++++++++++++++++++++")
         gui.var2.set(
             "Equity: " + str(self.equity * 100) + "% -> " + str(int(t.assumedPlayers)) + " (" + str(
                 int(t.coveredCardHolders)) + "-" + str(int(t.playersAhead)) + "+1) Plr")
