@@ -155,7 +155,7 @@ class Tools(object):
 
     def get_ocr_float(self,img_orig,name):
         def fix_number(t):
-            t = t.replace("I", "1").replace("O", "0").replace("o", "0").replace("-", ".")..replace("D", "0")
+            t = t.replace("I", "1").replace("O", "0").replace("o", "0").replace("-", ".").replace("D", "0")
             t = re.sub("[^0123456789.]", "", t)
             try:
                 if t[0] == ".": t = t[1:]
