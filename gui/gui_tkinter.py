@@ -53,9 +53,6 @@ class GUI(tk.Frame):
                                                                                                                  columnspan=2)
 
 
-        self.button = tk.Button(self.root, text="Run Artificial Intelligence",
-                                command=partial(run_genetic_algorithm, True))
-        self.button.grid(row=6, column=1, columnspan=2)
         self.x = [];
         self.y = [];
         self.x = range(0, 100)

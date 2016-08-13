@@ -4,21 +4,22 @@ Assesses the log file and checks how the parameters in strategies.xml need to be
 import xml.etree.ElementTree as xml
 from log_manager import *
 from xml_handler import *
+from debug_logger import *
 
 class Genetic_Algorithm(object):
-    def __init__(self, autoUpdate=False):
+    def __init__(self, autoUpdate, logger):
+        self.logger=logger
         p = XMLHandler('strategies.xml')
         p.read_XML()
         p_name = p.current_strategy.text
         L = self.loadLog(p_name)
         self.improve_strategy(L, p)
         if p.modified == True:
-            print("")
             if autoUpdate == False:
                 user_input = input("Y/N? ")
                 if user_input.upper() == "Y":
                     p.save_XML()
-                    print("XML Saved")
+                    self.logger.info("XML Saved")
         if autoUpdate == True and self.changed > 0:
             p.save_XML()
 
@@ -48,7 +49,7 @@ class Genetic_Algorithm(object):
             self.changed += 1
         else:
             self.recommendation[stage, decision] = "inconclusive"
-        print(stage + " " + decision + ": " + self.recommendation[stage, decision])
+        self.logger.info(stage + " " + decision + ": " + self.recommendation[stage, decision])
         pass
 
     def assess_bet(self, p, L, decision, stage, coeff1, change):
@@ -80,7 +81,7 @@ class Genetic_Algorithm(object):
             self.changed += 1
         else:
             self.recommendation[stage, decision] = "inconclusive"
-        print(stage + " " + decision + ": " + self.recommendation[stage, decision])
+        self.logger.info(stage + " " + decision + ": " + self.recommendation[stage, decision])
 
     def improve_strategy(self, L, p):
 
@@ -153,9 +154,12 @@ class Genetic_Algorithm(object):
             #     self.assessBet(p,L, decision,stage,coeff1,change)
 
 
-def run_genetic_algorithm(write):
-    Terminator = Genetic_Algorithm(write)
+def run_genetic_algorithm(write, logger):
+    logger.info("===Running genetic algorithm===")
+    Terminator = Genetic_Algorithm(write,logger)
+
 
 
 if __name__ == '__main__':
-    run_genetic_algorithm(False)
+    logger = debug_logger().start_logger()
+    run_genetic_algorithm(False,logger)
