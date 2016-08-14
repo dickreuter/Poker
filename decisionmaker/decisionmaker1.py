@@ -10,12 +10,10 @@ from .base import DecisionBase, Collusion
 import numpy as np
 from .curvefitting import *
 from .montecarlo_v3 import *
-from configobj import ConfigObj
 
 class Decision(DecisionBase):
     def __init__(self):
-        config = ConfigObj("config.ini")
-        self.montecarlo_max_secs = float(config['montecarlo_max_secs'])
+        pass
 
     def make_decision(self, t, h, p, gui, logger):
         gui.statusbar.set("Starting decision analysis")
@@ -23,41 +21,8 @@ class Decision(DecisionBase):
         smallBlind = float(p.XML_entries_list1['smallBlind'].text)
 
 
-        # Prepare for montecarlo simulation to evaluate equity (probability of winning with given cards)
-
-        if t.gameStage == "PreFlop":
-            # t.assumedPlayers = t.coveredCardHolders - int(
-            #    round(t.playersAhead * (1 - float(p.XML_entries_list1['CoveredPlayersCallLikelihoodPreFlop'].text)))) + 1
-            t.assumedPlayers = 2
-
-        elif t.gameStage == "Flop":
-            t.assumedPlayers = t.coveredCardHolders - int(
-                round(t.playersAhead * (1 - float(p.XML_entries_list1['CoveredPlayersCallLikelihoodFlop'].text)))) + 1
-
-        else:
-            t.assumedPlayers = t.coveredCardHolders + 1
-
-        t.assumedPlayers = min(max(t.assumedPlayers, 2), 3)
-
-        t.PlayerCardList = []
-        t.PlayerCardList.append(t.mycards)
-
-        # add cards from colluding players (not yet implemented)
-        col = Collusion()
-
-        if t.gameStage == "PreFlop":
-            maxRuns = 15000
-        else:
-            maxRuns = 7500
-
-        gui.statusbar.set("Running Monte Carlo: " + str(maxRuns))
-        m = MonteCarlo()
-        m.run_montecarlo(t.PlayerCardList, t.cardsOnTable, int(t.assumedPlayers), gui, maxRuns=maxRuns, maxSecs=self.montecarlo_max_secs)
-        gui.statusbar.set("Monte Carlo completed successfully")
 
         bigBlindMultiplier = bigBlind / 0.02
-        self.equity = np.round(m.equity, 3)
-        # --- Equity calculation completed ---
 
         # in case the other players called my bet become less aggressive and make an adjustment for the second round
         if (h.histGameStage == t.gameStage and h.lastRoundGameID == h.GameID) or h.lastSecondRoundAdjustment > 0:
@@ -73,8 +38,8 @@ class Decision(DecisionBase):
 
         P = float(t.totalPotValue)
         n = t.coveredCardHolders
-        self.maxCallEV = self.calc_EV_call_limit(m.equity, P)
-        self.maxBetEV = self.calc_bet_limit(m.equity, P, float(p.XML_entries_list1['c'].text), t, logger)
+        self.maxCallEV = self.calc_EV_call_limit(t.equity, P)
+        self.maxBetEV = self.calc_bet_limit(t.equity, P, float(p.XML_entries_list1['c'].text), t, logger)
         logger.debug("Max call EV: " + str(self.maxCallEV))
 
         self.DeriveCallButtonFromBetButton = False
@@ -132,7 +97,7 @@ class Decision(DecisionBase):
             maxEquityCall = 1
 
         maxValue = float(p.XML_entries_list1['initialFunds'].text) * potStretch
-        d = Curvefitting(np.array([self.equity]), smallBlind, minCallAmountIfAboveLimit, maxValue, minEquityCall,
+        d = Curvefitting(np.array([t.equity]), smallBlind, minCallAmountIfAboveLimit, maxValue, minEquityCall,
                          maxEquityCall, power1)
         self.maxCallE = round(d.y[0], 2)
 
@@ -162,7 +127,7 @@ class Decision(DecisionBase):
             minBetAmountIfAboveLimit = bigBlind * 2
 
         maxValue = float(p.XML_entries_list1['initialFunds'].text) * potStretch
-        d = Curvefitting(np.array([self.equity]), smallBlind, minBetAmountIfAboveLimit, maxValue, minEquityBet,
+        d = Curvefitting(np.array([t.equity]), smallBlind, minBetAmountIfAboveLimit, maxValue, minEquityBet,
                          maxEquityBet, power2)
         self.maxBetE = round(d.y[0], 2)
 
@@ -171,7 +136,7 @@ class Decision(DecisionBase):
 
         # --- start of decision making logic ---
 
-        if self.equity >= float(p.XML_entries_list1['alwaysCallEquity'].text):
+        if t.equity >= float(p.XML_entries_list1['alwaysCallEquity'].text):
             self.finalCallLimit = 99999999
 
         if self.finalCallLimit < t.minCall:
@@ -188,7 +153,7 @@ class Decision(DecisionBase):
                     t.totalPotValue) / 2) and (
                     (t.gameStage == "Turn" and float(t.totalPotValue) / 2 < bigBlind * 20) or t.gameStage == "River"):
             self.decision = "Bet half pot"
-        if (t.allInCallButton == False and self.equity >= float(p.XML_entries_list1['betPotRiverEquity'].text)) and (
+        if (t.allInCallButton == False and t.equity >= float(p.XML_entries_list1['betPotRiverEquity'].text)) and (
                     t.minBet <= float(t.totalPotValue)) and t.gameStage == "River" and (
                     float(t.totalPotValue) < bigBlind * float(
                     p.XML_entries_list1['betPotRiverEquityMaxBBM'].text)) and (
@@ -201,14 +166,14 @@ class Decision(DecisionBase):
         else:
             self.ErrCallButton = False
 
-        if self.equity >= float(p.XML_entries_list1['FlopCheckDeceptionMinEquity'].text) and t.gameStage == "Flop" and (
+        if t.equity >= float(p.XML_entries_list1['FlopCheckDeceptionMinEquity'].text) and t.gameStage == "Flop" and (
                                     self.decision == "Bet" or self.decision == "BetPlus" or self.decision == "Bet half pot" or self.decision == "Bet pot" or self.decision == "Bet max"):
             self.UseFlopCheckDeception = True
             self.decision = "Call Deception"
         else:
             self.UseFlopCheckDeception = False
 
-        if t.allInCallButton == False and self.equity >= float(p.XML_entries_list1[
+        if t.allInCallButton == False and t.equity >= float(p.XML_entries_list1[
                                                                    'secondRiverBetPotMinEquity'].text) and t.gameStage == "River" and h.histGameStage == "River":
             self.decision = "Bet pot"
 
@@ -219,18 +184,18 @@ class Decision(DecisionBase):
 
         t.currentBluff = 0
         if t.isHeadsUp == True:
-            if t.gameStage == "Flop" and t.PlayerPots == [] and self.equity > float(
+            if t.gameStage == "Flop" and t.PlayerPots == [] and t.equity > float(
                     p.XML_entries_list1['FlopBluffMinEquity'].text) and self.decision == "Check" and float(
                 p.XML_entries_list1['FlopBluff'].text) > 0:
                 t.currentBluff = float(p.XML_entries_list1['FlopBluff'].text)
                 self.decision = "Bet Bluff"
             elif t.gameStage == "Turn" and h.histPlayerPots == [] and t.PlayerPots == [] and self.decision == "Check" and float(
-                    p.XML_entries_list1['TurnBluff'].text) > 0 and self.equity > float(
+                    p.XML_entries_list1['TurnBluff'].text) > 0 and t.equity > float(
                 p.XML_entries_list1['TurnBluffMinEquity'].text):
                 t.currentBluff = float(p.XML_entries_list1['TurnBluff'].text)
                 self.decision = "Bet Bluff"
             elif t.gameStage == "River" and h.histPlayerPots == [] and t.PlayerPots == [] and self.decision == "Check" and float(
-                    p.XML_entries_list1['RiverBluff'].text) > 0 and self.equity > float(
+                    p.XML_entries_list1['RiverBluff'].text) > 0 and t.equity > float(
                 p.XML_entries_list1['RiverBluffMinEquity'].text):
                 t.currentBluff = float(p.XML_entries_list1['RiverBluff'].text)
                 self.decision = "Bet Bluff"
@@ -245,8 +210,8 @@ class Decision(DecisionBase):
             self.bullyMode = opponentFunds < float(p.XML_entries_list1['initialFunds'].text) / float(
                 p.XML_entries_list1['bullyDivider'].text)
 
-            if (m.equity >= float(p.XML_entries_list1['minBullyEquity'].text)) and (
-                        m.equity <= float(p.XML_entries_list1['maxBullyEquity'].text)) and self.bullyMode:
+            if (t.equity >= float(p.XML_entries_list1['minBullyEquity'].text)) and (
+                        t.equity <= float(p.XML_entries_list1['maxBullyEquity'].text)) and self.bullyMode:
                 self.decision == "Bet Bluff"
                 t.currentBluff = 10
                 self.bullyDecision = True
@@ -267,13 +232,12 @@ class Decision(DecisionBase):
         if self.decision == "Bet half pot": h.myLastBet = t.totalPotValue / 2
         if self.decision == "Bet pot": h.myLastBet = t.totalPotValue
 
-        gui.var1.set("Decision: " + str(self.decision))
-        logger.info("+++++++++++++++++++++++ Decision: " + str(self.decision)+"+++++++++++++++++++++++")
+
         gui.var2.set(
-            "Equity: " + str(self.equity * 100) + "% -> " + str(int(t.assumedPlayers)) + " (" + str(
+            "Equity: " + str(t.equity * 100) + "% -> " + str(int(t.assumedPlayers)) + " (" + str(
                 int(t.coveredCardHolders)) + "-" + str(int(t.playersAhead)) + "+1) Plr")
         logger.info(
-            "Equity: " + str(self.equity * 100) + "% -> " + str(int(t.assumedPlayers)) + " (" + str(
+            "Equity: " + str(t.equity * 100) + "% -> " + str(int(t.assumedPlayers)) + " (" + str(
                 int(t.coveredCardHolders)) + "-" + str(int(t.playersAhead)) + "+1) Plr")
         gui.var3.set("Final Call Limit: " + str(self.finalCallLimit) + " --> " + str(t.minCall))
         logger.info("Final Call Limit: " + str(self.finalCallLimit) + " --> " + str(t.minCall))
@@ -281,17 +245,19 @@ class Decision(DecisionBase):
         logger.info("Final Bet Limit: " + str(self.finalBetLimit) + " --> " + str(t.currentBetValue))
         gui.var5.set("Pot size: " + str((t.totalPotValue)) + " -> Zero EV Call: " + str(round(self.maxCallEV, 2)))
         logger.info("Pot size: " + str((t.totalPotValue)) + " -> Zero EV Call: " + str(round(self.maxCallEV, 2)))
+        gui.var1.set("Decision: " + str(self.decision))
+        logger.info("+++++++++++++++++++++++ Decision: " + str(self.decision)+"+++++++++++++++++++++++")
 
         if gui.active == True:
-            gui.updatePlots(h.histEquity, h.histMinCall, h.histMinBet, m.equity, t.minCall, t.minBet, 'bo', 'ro')
+            gui.updatePlots(h.histEquity, h.histMinCall, h.histMinBet, t.equity, t.minCall, t.minBet, 'bo', 'ro')
             gui.updateLines(power1, power2, minEquityCall, minEquityBet, smallBlind, bigBlind, maxValue, maxEquityCall,
                             maxEquityBet)
 
         if gui.active == True:
             gui.pie.clf()
             gui.piePlot = gui.pie.add_subplot(111)
-            gui.piePlot.pie([float(v) for v in m.winnerCardTypeList.values()],
-                            labels=[k for k in m.winnerCardTypeList.keys()], autopct=None)
+            gui.piePlot.pie([float(v) for v in t.winnerCardTypeList.values()],
+                            labels=[k for k in t.winnerCardTypeList.keys()], autopct=None)
             gui.piePlot.set_title('Winning probabilities')
             subtitle_string = ' '.join(t.mycards) + '\n' + ' '.join(t.cardsOnTable)
             # gui.piePlot.suptitle(subtitle_string, y=1.05, fontsize=10)

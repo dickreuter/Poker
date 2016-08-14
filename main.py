@@ -7,8 +7,11 @@ from PIL import Image, ImageGrab, ImageDraw, ImageFilter
 import sys
 from debug_logger import *
 from decisionmaker.decisionmaker1 import *
+from decisionmaker.montecarlo_v3 import *
 from mouse_mover import *
 from configobj import ConfigObj
+import numpy as np
+from multiprocessing import Process
 
 class History(object):
     def __init__(self):
@@ -238,9 +241,11 @@ class TablePP(Table):
         if count == 1:
             self.topleftcorner = points[0]
             logger.debug("Top left corner found")
+            t.timeout_start = time.time()
             return True
         else:
             gui.statusbar.set(p.XML_entries_list1['pokerSite'].text + " not found yet")
+            if gui.active: gui.progress["value"] = 0
             logger.debug("Top left corner NOT found")
             time.sleep(1)
             return False
@@ -511,6 +516,7 @@ class TablePP(Table):
                 logger.debug("Pyteseract error in player name recognition")
 
         logger.debug("Player Names: " + str(t.PlayerNames))
+        logger.debug("Player Funds: " + str(t.PlayerFunds))
 
         # plt.subplot(121),plt.imshow(res)
         # plt.subplot(122),plt.imshow(img,cmap = 'jet')
@@ -745,9 +751,9 @@ class TablePP(Table):
         pil_image = self.crop_image(a.entireScreenPIL, self.topleftcorner[0] + x1, self.topleftcorner[1] + y1,
                                     self.topleftcorner[0] + x2, self.topleftcorner[1] + y2)
 
-        try:
-            self.currentBetValue = a.get_ocr_float(pil_image, 'BetValue')
-        except:
+
+        self.currentBetValue = a.get_ocr_float(pil_image, 'BetValue')
+        if self.currentBetValue=='':
             returnvalue = False
             self.currentBetValue = 9999999.0
 
@@ -860,6 +866,52 @@ class TablePP(Table):
 
         return True
 
+    def run_montecarlo_wrapper(self):
+        #self.montecarlo_thread = Process(target=self.run_montecarlo, args=())
+        #self.montecarlo_thread.start()
+        self.run_montecarlo()
+        return True
+
+    def run_montecarlo(self):
+        # Prepare for montecarlo simulation to evaluate equity (probability of winning with given cards)
+
+        if t.gameStage == "PreFlop":
+            # t.assumedPlayers = t.coveredCardHolders - int(
+            #    round(t.playersAhead * (1 - float(p.XML_entries_list1['CoveredPlayersCallLikelihoodPreFlop'].text)))) + 1
+            t.assumedPlayers = 2
+
+        elif t.gameStage == "Flop":
+            t.assumedPlayers = t.coveredCardHolders - int(
+                round(t.playersAhead * (1 - float(p.XML_entries_list1['CoveredPlayersCallLikelihoodFlop'].text)))) + 1
+
+        else:
+            t.assumedPlayers = t.coveredCardHolders + 1
+
+        t.assumedPlayers = min(max(t.assumedPlayers, 2), 3)
+
+        t.PlayerCardList = []
+        t.PlayerCardList.append(t.mycards)
+
+        # add cards from colluding players (not yet implemented)
+        col = Collusion()
+
+        if t.gameStage == "PreFlop":
+            maxRuns = 15000
+        else:
+            maxRuns = 7500
+
+        gui.statusbar.set("Running Monte Carlo: " + str(maxRuns))
+        logger.debug("Running Monte Carlo")
+        self.montecarlo_timeout = float(config['montecarlo_timeout'])
+        timeout=t.timeout_start+self.montecarlo_timeout
+        m = MonteCarlo()
+        m.run_montecarlo(t.PlayerCardList, t.cardsOnTable, int(t.assumedPlayers), gui, maxRuns=maxRuns, timeout=timeout)
+        gui.statusbar.set("Monte Carlo completed successfully")
+        logger.debug("Monte Carlo completed successfully with runs: "+str(m.runs))
+       
+        self.equity = np.round(m.equity, 3)
+        self.winnerCardTypeList=m.winnerCardTypeList
+
 
 # ==== MAIN PROGRAM =====
 if __name__ == '__main__':
@@ -894,7 +946,7 @@ if __name__ == '__main__':
 
             ready = False
             while (not ready):
-                t.timeout_start = time.time()
+             
                 ready = a.take_screenshot() and \
                         t.get_top_left_corner(a) and \
                         t.check_for_captcha() and \
@@ -904,18 +956,20 @@ if __name__ == '__main__':
                         t.get_my_cards(a) and \
                         t.get_new_hand() and \
                         t.check_for_button(a) and \
+                        t.get_table_cards(a) and \
                         t.get_covered_card_holders(a) and \
                         t.get_total_pot_value() and \
                         t.get_played_players(a) and \
                         t.check_for_checkbutton(a) and \
-                        t.get_table_cards(a) and \
                         t.check_for_call(a) and \
                         t.check_for_allincall_button(a) and \
                         t.get_current_call_value() and \
-                        t.get_current_bet_value()
+                        t.get_current_bet_value() and \
+                        t.run_montecarlo_wrapper()
 
             d = Decision()
-
+            
+            #t.montecarlo_thread.join() # wait for montecarlo to finish
             d.make_decision(t, h, p, gui, logger)
 
             mouse.mouse_action(d.decision, t.topleftcorner, p.XML_entries_list1['BetPlusInc'].text, t.currentBluff,logger)
@@ -927,7 +981,7 @@ if __name__ == '__main__':
             h.previousPot = t.totalPotValue
             h.histGameStage = t.gameStage
             h.histDecision = d.decision
-            h.histEquity = d.equity
+            h.histEquity = t.equity
             h.histMinCall = t.minCall
             h.histMinBet = t.minBet
             h.histPlayerPots = t.PlayerPots
@@ -951,6 +1005,7 @@ if __name__ == '__main__':
         gui = GUI(p)
         p.ExitThreads = False
         t1 = threading.Thread(target=run_pokerbot, args=[logger])
+        t1.setDaemon(True)
         t1.start()
         gui.root.mainloop()
         p.ExitThreads = True

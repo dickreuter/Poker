@@ -150,12 +150,11 @@ class MonteCarlo(object):
 
         return table_card_list
 
-    def run_montecarlo(self, original_player_card_list, original_table_card_list, player_amount, gui, maxRuns=6000,
-                       maxSecs=5):
+    def run_montecarlo(self, original_player_card_list, original_table_card_list, player_amount, gui, maxRuns,
+                       timeout):
         winnerCardTypeList = []
         wins = 0
         runs = 0
-        timeout_start = time.time()
         OriginalDeck = self.create_card_deck()
         for m in range(maxRuns):
             runs += 1
@@ -191,11 +190,11 @@ class MonteCarlo(object):
                         gui.progress["value"] = int(round(m * 100 / maxRuns))
                         gui.var2.set("Equity: " + str(self.equity * 100) + "%")
                         gui.statusbar.set("Running Monte Carlo: " + str(m) + "/" + str(maxRuns))
+                        if m>999 and time.time() > timeout:
+                            break
             except:
                 pass
 
-            if time.time() > timeout_start + maxSecs:
-                break
 
         self.equity = wins / runs
         self.winnerCardTypeList = Counter(winnerCardTypeList)
@@ -220,7 +219,7 @@ if __name__ == '__main__':
     cards_on_table = []
     players = 4
     start_time = time.time()
-    Simulation.run_montecarlo(my_cards, cards_on_table, players, 1, maxRuns=15000, maxSecs=5)
+    Simulation.run_montecarlo(my_cards, cards_on_table, players, 1, maxRuns=15000, timeout=10)
     print("--- %s seconds ---" % (time.time() - start_time))
     equity = Simulation.equity  # considering draws as wins
     print("Equity: " + str(equity))
