@@ -174,19 +174,18 @@ class Tools(object):
         img_mod = img_resized.filter(ImageFilter.ModeFilter).filter(ImageFilter.SHARPEN)
 
         lst = []
-
-        try:
-            lst.append(pytesseract.image_to_string(img_orig, None, False,"-psm 6"))
-        except Exception as e:
-            logger.error(str(e))
+        #try:
+        #    lst.append(pytesseract.image_to_string(img_orig, none, false,"-psm 6"))
+        #except exception as e:
+        #    logger.error(str(e))
         try:
             lst.append(pytesseract.image_to_string(img_min, None, False, "-psm 6"))
         except Exception as e:
             logger.error(str(e))
-        try:
-            lst.append(pytesseract.image_to_string(img_med, None, False, "-psm 6"))
-        except Exception as e:
-            logger.error(str(e))
+        #try:
+        #    lst.append(pytesseract.image_to_string(img_med, None, False, "-psm 6"))
+        #except Exception as e:
+        #    logger.error(str(e))
         try:
             lst.append(pytesseract.image_to_string(img_mod, None, False, "-psm 6"))
         except Exception as e:
