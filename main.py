@@ -30,7 +30,7 @@ class History(object):
         self.histMinCall = 0
         self.histMinBet = 0
         self.histPlayerPots = 0
-
+        
 class Tools(object):
     # General tools that are used to operate the pokerbot, such as moving the
     # mouse, clicking and routines that
@@ -204,7 +204,7 @@ class Tools(object):
         except Exception as e:
             logger.error("Pytesseract Error in recognising " + name)
             logger.error(str(e))
-            exit()
+            return ''
 
 class Table(object):
     # baseclass that is inherited by the different types of Tables (e.g.

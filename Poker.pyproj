@@ -205,7 +205,6 @@
     <Compile Include="main.py" />
     <Compile Include="mouse_mover.py" />
     <Compile Include="xml_handler.py" />
-    <Compile Include="__init__.py" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="captcha" />

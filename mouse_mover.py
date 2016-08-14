@@ -41,7 +41,7 @@ class MouseMover():
             x = xa[i] + int(+random.random() * xTremble)
             y = ya[i] + int(+random.random() * yTremble)
             win32api.SetCursorPos((x, y))
-            time.sleep(np.random.uniform(0.1 * speed, 0.01 * speed, 1)[0])
+            time.sleep(np.random.uniform(0.01 * speed, 0.03 * speed, 1)[0])
 
         win32api.SetCursorPos((x2, y2))
 
