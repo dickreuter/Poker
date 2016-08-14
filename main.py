@@ -155,7 +155,7 @@ class Tools(object):
 
     def get_ocr_float(self,img_orig,name):
         def fix_number(t):
-            t = t.replace("I", "1").replace("O", "0").replace("o", "0").replace("-", ".").replace("D", "0")
+            t = t.replace("I", "1").replace("O", "0").replace("o", "0").replace("-", ".").replace("D", "0").replace("I", "1")
             t = re.sub("[^0123456789.]", "", t)
             try:
                 if t[0] == ".": t = t[1:]
@@ -219,6 +219,7 @@ class Table(object):
         if n % int(p.XML_entries_list1['strategyIterationGames'].text) == 0 and f < float(p.XML_entries_list1['minimumLossForIteration'].text):
             pass
             gui.statusbar.set("***Improving current strategy***")
+            logger.info("***Improving current strategy***")
             winsound.Beep(500, 100)
             Genetic_Algorithm(True,logger)
             p.read_XML()
@@ -684,31 +685,15 @@ class TablePP(Table):
         pil_image_filtered = pil_image.filter(ImageFilter.ModeFilter)
         pil_image_filtered2 = pil_image.filter(ImageFilter.MedianFilter)
         self.myFundsError = False
-
+        
         try:
-            recognizedText = pytesseract.image_to_string(pil_image, None, False, "-psm 6")
-            logger.debug("My funds original text: " + str(recognizedText))
-            recognizedText = recognizedText.replace("I", "1").replace("O","0").replace("o", "0")
-            if recognizedText == "":
-                recognizedText = pytesseract.image_to_string(pil_image_filtered, None, False, "-psm 6").replace("I",
-                                                                                                                "1").replace("O", "0").replace("o", "0")
-                if recognizedText == "":
-                    recognizedText = pytesseract.image_to_string(pil_image_filtered2, None, False, "-psm 6").replace("I",
-                                                                                                                     "1").replace("O", "0").replace("o", "0")
-            # pil_image.show()
-            try:
-                pil_image.save("pics/myFunds.png")
-            except:
-                logger.info("Could not save myFunds.png")
-            # blurred = pil_image.filter(ImageFilter.SHARPEN)
+            pil_image.save("pics/myFunds.png")
         except:
-            logger.warning('Error in Pytesseract Fund recognition')
+            logger.info("Could not save myFunds.png")
 
+        self.myFunds = a.get_ocr_float(pil_image,'MyFunds')
 
-        try:
-            if recognizedText[0] == ".": recognizedText = recognizedText[1:]
-            self.myFunds = float(re.sub("[^0123456789\.]", "", recognizedText))
-        except:
+        if self.myFunds=='':
             self.myFundsError = True
             self.myFunds = float(h.myFundsHistory[-1])
             logger.info("myFunds not regognised!")
