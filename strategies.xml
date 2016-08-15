@@ -5436,7 +5436,7 @@
 
         <c updated="False">0.4</c>
 
-        <strategyIterationGames updated="False">250</strategyIterationGames>
-        <considerLastGames updated="False">250</considerLastGames>
+        <strategyIterationGames updated="False">500</strategyIterationGames>
+        <considerLastGames updated="False">500</considerLastGames>
         <minimumLossForIteration updated="False">-3</minimumLossForIteration>
     </Strategy></data>

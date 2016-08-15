@@ -220,12 +220,15 @@ class Table(object):
         gui.var6.set("Game #" + str(n) + " - Last " + str(lg) + ": $" + str(f))
         logger.info("Game #" + str(n) + " - Last " + str(lg) + ": $" + str(f))
         if n % int(p.XML_entries_list1['strategyIterationGames'].text) == 0 and f < float(p.XML_entries_list1['minimumLossForIteration'].text):
-            pass
             gui.statusbar.set("***Improving current strategy***")
             logger.info("***Improving current strategy***")
             winsound.Beep(500, 100)
             Genetic_Algorithm(True,logger)
             p.read_XML()
+        else:
+            logger.info("Criteria not met for running genetic algorithm. Recommendation would be as follows:")
+            #Genetic_Algorithm(False, logger)
+
 
     def crop_image(self, original, left, top, right, bottom):
         # original.show()

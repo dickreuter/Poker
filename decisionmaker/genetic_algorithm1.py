@@ -155,8 +155,8 @@ class Genetic_Algorithm(object):
 
 
 def run_genetic_algorithm(write, logger):
-    Terminator = Genetic_Algorithm(write,logger)
     logger.info("===Running genetic algorithm===")
+    Terminator = Genetic_Algorithm(write,logger)
 
 
 if __name__ == '__main__':
