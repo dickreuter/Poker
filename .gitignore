@@ -1,0 +1,13 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.idea
+/decisionmaker/__pycache__
+/gui/__pycache__
+/captcha/__pycache__
+/__pycache__
+*.log
+/.vs/Poker/v14
+*.
+/pics/*.png

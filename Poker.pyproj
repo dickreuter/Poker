@@ -1,0 +1,223 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{7b7cc683-bf2e-473b-916c-d1db9166b9be}</ProjectGuid>
+    <ProjectHome />
+    <StartupFile>main.py</StartupFile>
+    <SearchPath />
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <InterpreterId>{9a7a9026-48c1-4688-9d5d-e5699d47d074}</InterpreterId>
+    <InterpreterVersion>3.5</InterpreterVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
+  <PropertyGroup>
+    <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
+    <PtvsTargetsFile>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets</PtvsTargetsFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="config.ini" />
+    <Content Include="pics\PP\2C.png" />
+    <Content Include="pics\PP\2D.png" />
+    <Content Include="pics\PP\2H.png" />
+    <Content Include="pics\PP\2S.png" />
+    <Content Include="pics\PP\3C.png" />
+    <Content Include="pics\PP\3D.png" />
+    <Content Include="pics\PP\3H.png" />
+    <Content Include="pics\PP\3S.png" />
+    <Content Include="pics\PP\4C.png" />
+    <Content Include="pics\PP\4D.png" />
+    <Content Include="pics\PP\4H.png" />
+    <Content Include="pics\PP\4S.png" />
+    <Content Include="pics\PP\5C.png" />
+    <Content Include="pics\PP\5D.png" />
+    <Content Include="pics\PP\5H.png" />
+    <Content Include="pics\PP\5S.png" />
+    <Content Include="pics\PP\6C.png" />
+    <Content Include="pics\PP\6D.png" />
+    <Content Include="pics\PP\6H.png" />
+    <Content Include="pics\PP\6S.png" />
+    <Content Include="pics\PP\7C.png" />
+    <Content Include="pics\PP\7D.png" />
+    <Content Include="pics\PP\7H.png" />
+    <Content Include="pics\PP\7S.png" />
+    <Content Include="pics\PP\8C.png" />
+    <Content Include="pics\PP\8D.png" />
+    <Content Include="pics\PP\8H.png" />
+    <Content Include="pics\PP\8S.png" />
+    <Content Include="pics\PP\9C.png" />
+    <Content Include="pics\PP\9D.png" />
+    <Content Include="pics\PP\9H.png" />
+    <Content Include="pics\PP\9S.png" />
+    <Content Include="pics\PP\AC.png" />
+    <Content Include="pics\PP\AD.png" />
+    <Content Include="pics\PP\AH.png" />
+    <Content Include="pics\PP\allincallbutton.png" />
+    <Content Include="pics\PP\AS.png" />
+    <Content Include="pics\PP\bet.png" />
+    <Content Include="pics\PP\button.png" />
+    <Content Include="pics\PP\buyinmore.png" />
+    <Content Include="pics\PP\call.png" />
+    <Content Include="pics\PP\callamount.png" />
+    <Content Include="pics\PP\check.png" />
+    <Content Include="pics\PP\coveredcard.png" />
+    <Content Include="pics\PP\fold.png" />
+    <Content Include="pics\PP\fullcallbutton.png" />
+    <Content Include="pics\PP\fullchatwindow.png" />
+    <Content Include="pics\PP\fullfoldbutton.png" />
+    <Content Include="pics\PP\fullraisebar.png" />
+    <Content Include="pics\PP\fullraisebutton.png" />
+    <Content Include="pics\PP\imback.png" />
+    <Content Include="pics\PP\JC.png" />
+    <Content Include="pics\PP\JD.png" />
+    <Content Include="pics\PP\JH.png" />
+    <Content Include="pics\PP\JS.png" />
+    <Content Include="pics\PP\KC.png" />
+    <Content Include="pics\PP\KD.png" />
+    <Content Include="pics\PP\KH.png" />
+    <Content Include="pics\PP\KS.png" />
+    <Content Include="pics\PP\lostEverything.png" />
+    <Content Include="pics\PP\myFunds.png" />
+    <Content Include="pics\PP\potamount.png" />
+    <Content Include="pics\PP\poteamount.png" />
+    <Content Include="pics\PP\QC.png" />
+    <Content Include="pics\PP\QD.png" />
+    <Content Include="pics\PP\QH.png" />
+    <Content Include="pics\PP\QS.png" />
+    <Content Include="pics\PP\raise.png" />
+    <Content Include="pics\PP\riseamount.png" />
+    <Content Include="pics\PP\screenshot0.png" />
+    <Content Include="pics\PP\screenshot1.jpg" />
+    <Content Include="pics\PP\screenshot10.png" />
+    <Content Include="pics\PP\screenshot2.jpg" />
+    <Content Include="pics\PP\screenshot3.png" />
+    <Content Include="pics\PP\screenshot4.png" />
+    <Content Include="pics\PP\screenshot5.png" />
+    <Content Include="pics\PP\screenshot6.png" />
+    <Content Include="pics\PP\screenshot7.png" />
+    <Content Include="pics\PP\screenshot8.png" />
+    <Content Include="pics\PP\screenshot9.png" />
+    <Content Include="pics\PP\smalldollarsign1.png" />
+    <Content Include="pics\PP\smalldollarsign2.png" />
+    <Content Include="pics\PP\tablemiddle.png" />
+    <Content Include="pics\PP\TC.png" />
+    <Content Include="pics\PP\TD.png" />
+    <Content Include="pics\PP\TH.png" />
+    <Content Include="pics\PP\topleft.png" />
+    <Content Include="pics\PP\TS.png" />
+    <Content Include="pics\PS\2C.png" />
+    <Content Include="pics\PS\2D.png" />
+    <Content Include="pics\PS\2H.png" />
+    <Content Include="pics\PS\2S.png" />
+    <Content Include="pics\PS\3C.png" />
+    <Content Include="pics\PS\3D.png" />
+    <Content Include="pics\PS\3H.png" />
+    <Content Include="pics\PS\3S.png" />
+    <Content Include="pics\PS\4.png" />
+    <Content Include="pics\PS\4C.png" />
+    <Content Include="pics\PS\4D.png" />
+    <Content Include="pics\PS\4H.png" />
+    <Content Include="pics\PS\4S.png" />
+    <Content Include="pics\PS\5.png" />
+    <Content Include="pics\PS\5C.png" />
+    <Content Include="pics\PS\5D.png" />
+    <Content Include="pics\PS\5H.png" />
+    <Content Include="pics\PS\5S.png" />
+    <Content Include="pics\PS\6C.png" />
+    <Content Include="pics\PS\6D.png" />
+    <Content Include="pics\PS\6H.png" />
+    <Content Include="pics\PS\6S.png" />
+    <Content Include="pics\PS\7C.png" />
+    <Content Include="pics\PS\7D.png" />
+    <Content Include="pics\PS\7h.png" />
+    <Content Include="pics\PS\7S.png" />
+    <Content Include="pics\PS\8C.png" />
+    <Content Include="pics\PS\8D.png" />
+    <Content Include="pics\PS\8H.png" />
+    <Content Include="pics\PS\8S.png" />
+    <Content Include="pics\PS\9.png" />
+    <Content Include="pics\PS\9C.png" />
+    <Content Include="pics\PS\9D.png" />
+    <Content Include="pics\PS\9H.png" />
+    <Content Include="pics\PS\9S.png" />
+    <Content Include="pics\PS\AC.png" />
+    <Content Include="pics\PS\AD.png" />
+    <Content Include="pics\PS\AH.png" />
+    <Content Include="pics\PS\allincallbutton.png" />
+    <Content Include="pics\PS\an91cut.jpg" />
+    <Content Include="pics\PS\AS.png" />
+    <Content Include="pics\PS\button.png" />
+    <Content Include="pics\PS\button2.png" />
+    <Content Include="pics\PS\call.png" />
+    <Content Include="pics\PS\check.png" />
+    <Content Include="pics\PS\coveredcard.png" />
+    <Content Include="pics\PS\fold.png" />
+    <Content Include="pics\PS\imback.png" />
+    <Content Include="pics\PS\JC.png" />
+    <Content Include="pics\PS\JD.png" />
+    <Content Include="pics\PS\JH.png" />
+    <Content Include="pics\PS\JS.png" />
+    <Content Include="pics\PS\KC.png" />
+    <Content Include="pics\PS\KD.png" />
+    <Content Include="pics\PS\KH.png" />
+    <Content Include="pics\PS\KS.png" />
+    <Content Include="pics\PS\QC.png" />
+    <Content Include="pics\PS\QD.png" />
+    <Content Include="pics\PS\QH.png" />
+    <Content Include="pics\PS\QS.png" />
+    <Content Include="pics\PS\raise.png" />
+    <Content Include="pics\PS\screenshot w7.png" />
+    <Content Include="pics\PS\smalldollarsign.png" />
+    <Content Include="pics\PS\TC.png" />
+    <Content Include="pics\PS\TD.png" />
+    <Content Include="pics\PS\TH.png" />
+    <Content Include="pics\PS\topleft.png" />
+    <Content Include="pics\PS\TS.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="captcha\captcha_manager.py" />
+    <Compile Include="captcha\deathbycaptcha.py" />
+    <Compile Include="captcha\key_press.py" />
+    <Compile Include="captcha\key_press_vbox.py" />
+    <Compile Include="debug_logger.py" />
+    <Compile Include="decisionmaker\base.py" />
+    <Compile Include="decisionmaker\curvefitting.py" />
+    <Compile Include="decisionmaker\decisionmaker1.py" />
+    <Compile Include="decisionmaker\genetic_algorithm1.py" />
+    <Compile Include="decisionmaker\montecarlo_v3.py" />
+    <Compile Include="decisionmaker\montecarlo_v4.py" />
+    <Compile Include="decisionmaker\test_montecarlo3.py" />
+    <Compile Include="experimental\ai_optimizer.py" />
+    <Compile Include="experimental\charts.py" />
+    <Compile Include="experimental\ev_calculator.py" />
+    <Compile Include="experimental\neurons.py" />
+    <Compile Include="experimental\tournament_server.py" />
+    <Compile Include="gui\gui_qt.py" />
+    <Compile Include="gui\gui_qt_ui.py" />
+    <Compile Include="gui\gui_tkinter.py" />
+    <Compile Include="gui\terminal.py" />
+    <Compile Include="log_manager.py" />
+    <Compile Include="main.py" />
+    <Compile Include="mouse_mover.py" />
+    <Compile Include="xml_handler.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="captcha" />
+    <Folder Include="decisionmaker" />
+    <Folder Include="experimental" />
+    <Folder Include="gui" />
+    <Folder Include="pics\" />
+    <Folder Include="pics\PP" />
+    <Folder Include="pics\PS" />
+  </ItemGroup>
+  <ItemGroup>
+    <InterpreterReference Include="{9a7a9026-48c1-4688-9d5d-e5699d47d074}\3.5" />
+  </ItemGroup>
+  <Import Project="$(PtvsTargetsFile)" Condition="Exists($(PtvsTargetsFile))" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="!Exists($(PtvsTargetsFile))" />
+</Project>
