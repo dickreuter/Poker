@@ -7,21 +7,16 @@ from xml_handler import *
 from debug_logger import *
 
 class Genetic_Algorithm(object):
-    def __init__(self, autoUpdate, logger):
+    def __init__(self, write_update, logger):
         self.logger=logger
         p = XMLHandler('strategies.xml')
         p.read_XML()
         p_name = p.current_strategy.text
         L = self.loadLog(p_name)
         self.improve_strategy(L, p)
-        if p.modified == True:
-            if autoUpdate == False:
-                user_input = input("Y/N? ")
-                if user_input.upper() == "Y":
-                    p.save_XML()
-                    self.logger.info("XML Saved")
-        if autoUpdate == True and self.changed > 0:
+        if p.modified and write_update:
             p.save_XML()
+            self.logger.info("New strategy saved in XML file")
 
     def loadLog(self, p_name):
         self.gameResults = {}
@@ -146,12 +141,12 @@ class Genetic_Algorithm(object):
             #     change=0.02
             #     self.assessBet(p,L, decision,stage,coeff1,change)
 
-            # if self.changed<maxChanges:
-            #     coeff1=2
-            #     stage='PreFlop'
-            #     decision='Bet'
-            #     change=0.02
-            #     self.assessBet(p,L, decision,stage,coeff1,change)
+        if self.changed<maxChanges:
+            coeff1=2
+            stage='PreFlop'
+            decision='Bet'
+            change=0.02
+            self.assess_bet(p,L, decision,stage,coeff1,change)
 
 
 def run_genetic_algorithm(write, logger):
@@ -162,3 +157,7 @@ def run_genetic_algorithm(write, logger):
 if __name__ == '__main__':
     logger = debug_logger().start_logger()
     run_genetic_algorithm(False,logger)
+
+    user_input = input("Run again and modify Y/N? ")
+    if user_input.upper() == "Y":
+        run_genetic_algorithm(True, logger)

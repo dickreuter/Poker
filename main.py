@@ -226,8 +226,8 @@ class Table(object):
             Genetic_Algorithm(True,logger)
             p.read_XML()
         else:
-            logger.info("Criteria not met for running genetic algorithm. Recommendation would be as follows:")
-            #Genetic_Algorithm(False, logger)
+            logger.debug("Criteria not met for running genetic algorithm. Recommendation would be as follows:")
+            Genetic_Algorithm(False, logger)
 
 
     def crop_image(self, original, left, top, right, bottom):
@@ -899,9 +899,9 @@ class TablePP(Table):
         col = Collusion()
 
         if t.gameStage == "PreFlop":
-            maxRuns = 15000
+            maxRuns = 20000
         else:
-            maxRuns = 7500
+            maxRuns = 10000
 
         gui.statusbar.set("Running Monte Carlo: " + str(maxRuns))
         logger.debug("Running Monte Carlo")
