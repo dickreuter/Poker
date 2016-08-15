@@ -9,3 +9,5 @@
 /__pycache__
 *.log
 /.vs/Poker/v14
+*.
+/pics/*.png

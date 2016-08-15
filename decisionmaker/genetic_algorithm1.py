@@ -59,7 +59,7 @@ class Genetic_Algorithm(object):
                                                                                                                'BetPlus', stage, 'Lost'] +
                                                                                                            L.d[
                                                                                                                'Bet half pot', stage, 'Lost']) * coeff1  # Bet won bigger Bet lost
-        B = L.d['Bluff', stage, 'Won'] > L.d['Bluff', stage, 'Lost']  # check won bigger check lost
+        B = L.d['Check', stage, 'Won'] > L.d['Check', stage, 'Lost']  # check won bigger check lost
         C = L.d['Bet', stage, 'Won'] + L.d['BetPlus', stage, 'Won'] + L.d['Bet half pot', stage, 'Won'] < (L.d[
                                                                                                                'Bet', stage, 'Lost'] +
                                                                                                            L.d[
@@ -82,23 +82,6 @@ class Genetic_Algorithm(object):
         else:
             self.recommendation[stage, decision] = "inconclusive"
         self.logger.info(stage + " " + decision + ": " + self.recommendation[stage, decision])
-
-    def assess_bluff(self, p, L, decision, stage, coeff1, change):
-        # TODO: Not yet implemented
-        A = L.d['Bet', stage, 'Won'] + L.d['BetPlus', stage, 'Won'] + L.d['Bet half pot', stage, 'Won'] > (L.d[
-                                                                                                               'Bet', stage, 'Lost'] +
-                                                                                                           L.d[
-                                                                                                               'BetPlus', stage, 'Lost'] +
-                                                                                                           L.d[
-                                                                                                               'Bet half pot', stage, 'Lost']) * coeff1  # Bet won bigger Bet lost
-        B = L.d['Check', stage, 'Won'] > L.d['Check', stage, 'Lost']  # check won bigger check lost
-        C = L.d['Bet', stage, 'Won'] + L.d['BetPlus', stage, 'Won'] + L.d['Bet half pot', stage, 'Won'] < (L.d[
-                                                                                                               'Bet', stage, 'Lost'] +
-                                                                                                           L.d[
-                                                                                                               'BetPlus', stage, 'Lost'] +
-                                                                                                           L.d[
-                                                                                                               'Bet half pot', stage, 'Lost']) * 1  # Bet won bigger Bet lost
-
 
     def improve_strategy(self, L, p):
 
@@ -172,9 +155,8 @@ class Genetic_Algorithm(object):
 
 
 def run_genetic_algorithm(write, logger):
-    logger.info("===Running genetic algorithm===")
     Terminator = Genetic_Algorithm(write,logger)
-
+    logger.info("===Running genetic algorithm===")
 
 
 if __name__ == '__main__':
