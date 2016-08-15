@@ -218,6 +218,9 @@ class Decision(DecisionBase):
             else:
                 self.bullyDecision = False
 
+        if self.allInCallButton and self.decision!="Fold":
+            self.decision="Call"
+
         # --- end of decision making logic ---
 
         h.lastRoundGameID = h.GameID

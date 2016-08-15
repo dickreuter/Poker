@@ -358,18 +358,18 @@ class TablePP(Table):
         return True
 
     def check_for_allincall_button(self, scraped):
-        logger.debug("Check for All in")
-        pil_image = self.crop_image(a.entireScreenPIL, self.topleftcorner[0] + 557, self.topleftcorner[1] + 493,
-                                    self.topleftcorner[0] + 670, self.topleftcorner[1] + 550)
+        logger.debug("Check for All in call button")
+        pil_image = self.crop_image(a.entireScreenPIL, self.topleftcorner[0] + 557, self.topleftcorner[1] + 483,
+                                    self.topleftcorner[0] + 670, self.topleftcorner[1] + 580)
         # Convert RGB to BGR
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
         count, points, bestfit = a.find_template_on_screen(scraped.allInCallButton, img, 0.01)
         if count > 0:
             self.allInCallButton = True
-            logger.debug("All in button found")
+            logger.debug("All in call button found")
         else:
             self.allInCallButton = False
-            logger.debug("No all in button")
+            logger.debug("All in call button not found")
 
         return True
 
