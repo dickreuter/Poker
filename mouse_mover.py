@@ -2,8 +2,6 @@ import win32gui # get cursor info
 import win32api # set cursor info
 import win32con
 from captcha.key_press_vbox import *
-from gui.terminal import *
-from gui.gui_tkinter import *
 import logging
 import random
 import numpy as np

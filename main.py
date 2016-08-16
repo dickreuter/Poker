@@ -11,7 +11,8 @@ from decisionmaker.montecarlo_v3 import *
 from mouse_mover import *
 from configobj import ConfigObj
 import numpy as np
-from multiprocessing import Process
+from gui.terminal import *
+from gui.gui_qt import *
 
 class History(object):
     def __init__(self):
@@ -821,6 +822,7 @@ class TablePP(Table):
             self.call_genetic_algorithm()
 
             if gui.active == True:
+
                 gui.y.append(t.myFunds)
                 gui.line1.set_ydata(gui.y[-100:])
                 gui.f.canvas.draw()
