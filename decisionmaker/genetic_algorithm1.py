@@ -1,14 +1,14 @@
 '''
 Assesses the log file and checks how the parameters in strategies.xml need to be adjusted to optimize playing
 '''
-import xml.etree.ElementTree as xml
+from debug_logger import *
 from log_manager import *
 from xml_handler import *
-from debug_logger import *
+
 
 class Genetic_Algorithm(object):
     def __init__(self, write_update, logger):
-        self.logger=logger
+        self.logger = logger
         p = XMLHandler('strategies.xml')
         p.read_XML()
         p_name = p.current_strategy.text
@@ -62,14 +62,14 @@ class Genetic_Algorithm(object):
                                                                                                            L.d[
                                                                                                                'Bet half pot', stage, 'Lost']) * 1  # Bet won bigger Bet lost
 
-        if A and B == False:
+        if A and not B:
             self.recommendation[stage, decision] = "ok"
         elif A and B:
             self.recommendation[stage, decision] = "more agressive"
             p.modify_XML(stage + 'MinBetEquity', -change)
             p.modify_XML(stage + 'BetPower', -change * 25)
             self.changed += 1
-        elif C and B == False:
+        elif C and not B:
             self.recommendation[stage, decision] = "less agressive"
             p.modify_XML(stage + 'MinBetEquity', +change)
             p.modify_XML(stage + 'BetPower', +change * 25)
@@ -141,22 +141,22 @@ class Genetic_Algorithm(object):
             #     change=0.02
             #     self.assessBet(p,L, decision,stage,coeff1,change)
 
-        if self.changed<maxChanges:
-            coeff1=2
-            stage='PreFlop'
-            decision='Bet'
-            change=0.02
-            self.assess_bet(p,L, decision,stage,coeff1,change)
+        if self.changed < maxChanges:
+            coeff1 = 2
+            stage = 'PreFlop'
+            decision = 'Bet'
+            change = 0.02
+            self.assess_bet(p, L, decision, stage, coeff1, change)
 
 
 def run_genetic_algorithm(write, logger):
     logger.info("===Running genetic algorithm===")
-    Terminator = Genetic_Algorithm(write,logger)
+    Terminator = Genetic_Algorithm(write, logger)
 
 
 if __name__ == '__main__':
     logger = debug_logger().start_logger()
-    run_genetic_algorithm(False,logger)
+    run_genetic_algorithm(False, logger)
 
     user_input = input("Run again and modify Y/N? ")
     if user_input.upper() == "Y":

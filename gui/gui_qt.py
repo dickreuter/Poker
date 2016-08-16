@@ -1,7 +1,7 @@
 import matplotlib
 
 matplotlib.use('Qt4Agg')
-#matplotlib.rcParams['backend.qt4'] = 'PySide'
+# matplotlib.rcParams['backend.qt4'] = 'PySide'
 from matplotlib.backends.backend_qt4agg import (
     FigureCanvasQTAgg as FigureCanvas)
 from matplotlib.figure import Figure
@@ -17,38 +17,43 @@ from decisionmaker.genetic_algorithm1 import *
 from decisionmaker.curvefitting import *
 
 
-class Plotter1(FigureCanvas):
-    def __init__(self, ui):
+class FundsPlotter(FigureCanvas):
+    def __init__(self, ui, p):
         self.ui = proxy(ui)
-        self.fig = Figure()
-        super(Plotter1,self).__init__(self.fig)
+        self.fig = Figure(figsize=(5, 4), dpi=60)
+        super(FundsPlotter, self).__init__(self.fig)
         self.drawfigure()
         self.ui.vLayout.insertWidget(1, self)
 
     def drawfigure(self):
         data = [random.random() for i in range(10)]
-        self.axes = self.fig.add_subplot(111) # create an axis
-        self.axes.hold(False) # discards the old graph
-        self.axes.plot(data, '*-') # plot data
+        self.fig.clf()
+        self.axes = self.fig.add_subplot(111)  # create an axis
+        self.axes.hold(True)  # discards the old graph
+        self.axes.set_title('My Funds')
+        self.axes.set_xlabel('Time')
+        self.axes.set_ylabel('$')
+        self.axes.plot(data, '-')  # plot data
         self.draw()
 
-class Plotter2(FigureCanvas):
-    def __init__(self, ui):
+
+class BarPlotter(FigureCanvas):
+    def __init__(self, ui, p):
         self.ui = proxy(ui)
-        self.fig = Figure()
-        super(Plotter2,self).__init__(self.fig)
+        self.fig = Figure(figsize=(5, 4), dpi=60)
+        super(BarPlotter, self).__init__(self.fig)
         self.drawfigure()
         self.ui.vLayout2.insertWidget(1, self)
 
     def drawfigure(self):
+        self.fig.clf()
         data = [random.random() for i in range(10)]
-        self.axes = self.fig.add_subplot(111) # create an axis
-        self.axes.hold(False) # discards the old graph
-        self.axes.plot(data, '*-') # plot data
-        self.draw()
+        self.axes = self.fig.add_subplot(111)  # create an axis
+        self.axes.hold(True)  # discards the old graph
 
         L = Logging('log')
         data = L.get_stacked_bar_data('Template', p.current_strategy.text, 'stackedBar')
+
         N = 11
         Bluff = data[0]
         BP = data[1]
@@ -60,75 +65,74 @@ class Plotter2(FigureCanvas):
         ind = np.arange(N)  # the x locations for the groups
         width = 1  # the width of the bars: can also be len(x) sequence
 
-        self.p0 = self.c.bar(ind, Bluff, width, color='y')
-        self.p1 = self.c.bar(ind, BP, width, color='k', bottom=Bluff)
-        self.p2 = self.c.bar(ind, BHP, width, color='b', bottom=[sum(x) for x in zip(Bluff, BP)])
-        self.p3 = self.c.bar(ind, Bet, width, color='c', bottom=[sum(x) for x in zip(Bluff, BP, BHP)])
-        self.p4 = self.c.bar(ind, Call, width, color='g', bottom=[sum(x) for x in zip(Bluff, BP, BHP, Bet)])
-        self.p5 = self.c.bar(ind, Check, width, color='w', bottom=[sum(x) for x in zip(Bluff, BP, BHP, Bet, Call)])
-        self.p6 = self.c.bar(ind, Fold, width, color='r',
-                             bottom=[sum(x) for x in zip(Bluff, BP, BHP, Bet, Call, Check)])
+        self.p0 = self.axes.bar(ind, Bluff, width, color='y')
+        self.p1 = self.axes.bar(ind, BP, width, color='k', bottom=Bluff)
+        self.p2 = self.axes.bar(ind, BHP, width, color='b', bottom=[sum(x) for x in zip(Bluff, BP)])
+        self.p3 = self.axes.bar(ind, Bet, width, color='c', bottom=[sum(x) for x in zip(Bluff, BP, BHP)])
+        self.p4 = self.axes.bar(ind, Call, width, color='g', bottom=[sum(x) for x in zip(Bluff, BP, BHP, Bet)])
+        self.p5 = self.axes.bar(ind, Check, width, color='w', bottom=[sum(x) for x in zip(Bluff, BP, BHP, Bet, Call)])
+        self.p6 = self.axes.bar(ind, Fold, width, color='r',
+                                bottom=[sum(x) for x in zip(Bluff, BP, BHP, Bet, Call, Check)])
 
-        self.c.set_ylabel('Profitability')
-        self.c.set_title('FinalFundsChange ABS')
-        self.c.set_xlabel(['PF Win', 'Loss', '', 'F Win', 'Loss', '', 'T Win', 'Loss', '', 'R Win', 'Loss'])
+        self.axes.set_ylabel('Profitability')
+        self.axes.set_title('FinalFundsChange ABS')
+        self.axes.set_xlabel(['PF Win', 'Loss', '', 'F Win', 'Loss', '', 'T Win', 'Loss', '', 'R Win', 'Loss'])
         # plt.yticks(np.arange(0,10,0.5))
         # self.c.tight_layout()
-        self.c.legend((self.p0[0], self.p1[0], self.p2[0], self.p3[0], self.p4[0], self.p5[0], self.p6[0]),
-                      ('Bluff', 'BetPot', 'BetHfPot', 'Bet/Bet+', 'Call', 'Check', 'Fold'), labelspacing=0.03,
-                      prop={'size': 12})
-
+        self.axes.legend((self.p0[0], self.p1[0], self.p2[0], self.p3[0], self.p4[0], self.p5[0], self.p6[0]),
+                         ('Bluff', 'BetPot', 'BetHfPot', 'Bet/Bet+', 'Call', 'Check', 'Fold'), labelspacing=0.03,
+                         prop={'size': 12})
+        maxh = float(p.XML_entries_list1['bigBlind'].text) * 10
         i = 0
-        maxh = 0
-        for rect0, rect1, rect2, rect3, rect4, rect5, rect6 in zip(self.p0.patches, self.p1.patches, self.p2.patches,
-                                                                   self.p3.patches, self.p4.patches, self.p5.patches,
-                                                                   self.p6.patches):
+        for rect0, rect1, rect2, rect3, rect4, rect5, rect6 in zip(self.p0.patches, self.p1.patches,
+                                                                   self.p2.patches,
+                                                                   self.p3.patches, self.p4.patches,
+                                                                   self.p5.patches, self.p6.patches):
             g = list(zip(data[0], data[1], data[2], data[3], data[4], data[5], data[6]))
-            h = g[i]
+            height = g[i]
             i += 1
-            rect0.set_height(h[0])
-            rect1.set_y(h[0])
-            rect1.set_height(h[1])
-            rect2.set_y(h[0] + h[1])
-            rect2.set_height(h[2])
-            rect3.set_y(h[0] + h[1] + h[2])
-            rect3.set_height(h[3])
-            rect4.set_y(h[0] + h[1] + h[2] + h[3])
-            rect4.set_height(h[4])
-            rect5.set_y(h[0] + h[1] + h[2] + h[3] + h[4])
-            rect5.set_height(h[5])
-            rect6.set_y(h[0] + h[1] + h[2] + h[3] + h[4] + h[5])
-            rect6.set_height(h[6])
-            maxh = max(h[0] + h[1] + h[2] + h[3] + h[4] + h[5] + h[6], maxh)
+            rect0.set_height(height[0])
+            rect1.set_y(height[0])
+            rect1.set_height(height[1])
+            rect2.set_y(height[0] + height[1])
+            rect2.set_height(height[2])
+            rect3.set_y(height[0] + height[1] + height[2])
+            rect3.set_height(height[3])
+            rect4.set_y(height[0] + height[1] + height[2] + height[3])
+            rect4.set_height(height[4])
+            rect5.set_y(height[0] + height[1] + height[2] + height[3] + height[4])
+            rect5.set_height(height[5])
+            rect6.set_y(height[0] + height[1] + height[2] + height[3] + height[4] + height[5])
+            rect6.set_height(height[6])
+            maxh = max(height[0] + height[1] + height[2] + height[3] + height[4] + height[5] + height[6], maxh)
 
-        self.c.set_ylim((0, maxh))
-        canvas = FigureCanvasTkAgg(self.h, master=self.root)
-        canvas.show()
+        self.axes.set_ylim((0, maxh))
+
+        self.draw()
 
 
-
-class Pieplot(FigureCanvas):
-    def __init__(self, ui):
+class PiePlotter(FigureCanvas):
+    def __init__(self, ui, p):
         self.ui = proxy(ui)
         self.fig = Figure()
-        super(Pieplot,self).__init__(self.fig)
+        super(PiePlotter, self).__init__(self.fig)
         self.drawfigure()
         self.ui.vLayout4.insertWidget(1, self)
 
-
     def drawfigure(self):
-        self.axes = self.fig.add_subplot(111) # create an axis
-        self.axes.hold(False) # discards the old graph
+        self.axes = self.fig.add_subplot(111)  # create an axis
+        self.axes.hold(False)  # discards the old graph
         self.axes.pie([22, 100 - 22], autopct='%1.1f%%')
         D = {u'HighCard': 0}
         self.pieChartCircles = self.axes.pie([float(v) for v in D.values()], labels=[k for k in D.keys()],
-                                              autopct=None)
+                                             autopct=None)
 
         self.axes.set_title('Winning probabilities')
         self.draw()
 
+
 class CurvePlot(FigureCanvas):
-    def __init__(self, ui):
+    def __init__(self, ui, p):
         self.ui = proxy(ui)
         self.fig = Figure()
         super(CurvePlot, self).__init__(self.fig)
@@ -163,12 +167,8 @@ class Updater(FigureCanvas):
         ui.status.setText("None")
         ui.last_decision.setText("None")
 
-
-
-
-
-# class GUI():
-#     def __init__(self, p, ui):
+    # class GUI():
+    #     def __init__(self, p, ui):
     #     self.a = self.f.add_subplot(111)
     #
     #     self.line1, = self.a.plot(self.x, self.y, 'r-')  # Returns a tuple of line objects, thus the comma
@@ -317,6 +317,7 @@ class Updater(FigureCanvas):
     #     self.b.set_ylim(0, max(1, maxValue))
     #     self.g.canvas.draw()
 
+
 #
 # class Calcuiation(object):
 #     def __init__(self):
@@ -378,21 +379,22 @@ class Updater(FigureCanvas):
 
 if __name__ == "__main__":
     import sys
+
     app = QtGui.QApplication(sys.argv)
-    MainWindow = QtGui.QWidget()
+    MainWindow = QtGui.QMainWindow()
     ui = Ui_Pokerbot()
     ui.setupUi(MainWindow)
+    p = XMLHandler('strategies.xml')
+    p.read_XML()
 
     # plotter logic and binding needs to be added here
-    plotter1 = Plotter1(ui)
+    plotter1 = FundsPlotter(ui, p)
     ui.button_config.clicked.connect(plotter1.drawfigure)
-    plotter2 = Plotter2(ui)
-    plotter3 = CurvePlot(ui)
-    plotter4 = Pieplot(ui)
+    plotter2 = BarPlotter(ui, p)
+    plotter3 = CurvePlot(ui, p)
+    plotter4 = PiePlotter(ui, p)
 
-    p = XMLHandler('../strategies.xml')
-    p.read_XML()
-    #gui = GUI(p,ui)
+    # gui = GUI(p,ui)
     # calc = Calcuiation()
     # t1 = threading.Thread(target=calc.calculation, args=[])
     # t1.start()

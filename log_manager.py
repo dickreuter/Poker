@@ -347,8 +347,13 @@ if __name__ == '__main__':
     p_value = ''
     gameStage = 'Flop'
     decision = 'Call'
+    Strategy='PPStrategy4005'
 
     # pivot_by_template()
     LogFilename = 'log'
     L = Logging(LogFilename)
     #L.get_neural_training_data(p_name, p_value, gameStage, decision)
+    #print(L.get_strategy_total_funds_change(Strategy,500))
+
+    print(L.get_neural_training_data(p_name,p_value,gameStage,decision))
+

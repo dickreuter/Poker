@@ -80,6 +80,8 @@ class GUI(tk.Frame):
             self.y3.append(0.7)
         self.g = Figure(figsize=(5, 4), dpi=60);
         self.g.clf()
+
+
         self.b = self.g.add_subplot(111)
 
         self.line2, = self.b.plot(self.x2, self.y2, 'b-')  # Returns a tuple of line objects, thus the comma
