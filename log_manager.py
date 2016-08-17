@@ -291,6 +291,16 @@ class Logging(object):
             n = 0
         return n
 
+    def get_fundschange_chart(self,strategy):
+        x=[]
+        y=[]
+        days=100
+
+        y = round(self.LogDataFile[self.LogDataFile['Template'] == strategy][
+                          ['FinalFundsChange', 'GameID']].drop_duplicates(subset=['GameID'])['FinalFundsChange'], 2)
+
+        return y
+
 def pivot_by_template():
     LogFilename = 'log'
     p_value = 'Strategy345'
@@ -342,12 +352,14 @@ def maximize_parameters(rowAmount):
     result = pd.DataFrame(FinalList, columns=['Variable', 'ParamValue', 'AvgWin'])
     return result
 
+
+
 if __name__ == '__main__':
     p_name = 'Template'
     p_value = ''
     gameStage = 'Flop'
     decision = 'Call'
-    Strategy='PPStrategy4005'
+    Strategy='PPStrategy4004'
 
     # pivot_by_template()
     LogFilename = 'log'
@@ -355,5 +367,7 @@ if __name__ == '__main__':
     #L.get_neural_training_data(p_name, p_value, gameStage, decision)
     #print(L.get_strategy_total_funds_change(Strategy,500))
 
-    print(L.get_neural_training_data(p_name,p_value,gameStage,decision))
+    #print(L.get_neural_training_data(p_name,p_value,gameStage,decision))
+
+    print (L.get_fundschange_chart(Strategy))
 

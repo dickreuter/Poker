@@ -57,7 +57,7 @@ class MouseMover():
 
 class MouseMoverPP(MouseMover):
     def enter_captcha(self, captchaString, topleftcorner):
-        gui.statusbar.set("Entering Captcha: " + str(captchaString))
+        logger.warning("Entering Captcha: " + str(captchaString))
         buttonToleranceX = 30
         buttonToleranceY = 0
         tlx = topleftcorner[0]

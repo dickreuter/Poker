@@ -19,14 +19,20 @@ from decisionmaker.curvefitting import *
 
 class FundsPlotter(FigureCanvas):
     def __init__(self, ui, p):
+        self.p = p
         self.ui = proxy(ui)
         self.fig = Figure(figsize=(5, 4), dpi=60)
         super(FundsPlotter, self).__init__(self.fig)
-        self.drawfigure()
+        self.drawfigure(0)
         self.ui.vLayout.insertWidget(1, self)
 
-    def drawfigure(self):
-        data = [random.random() for i in range(10)]
+    def drawfigure(self,lastvalue):
+        LogFilename = 'log'
+        L = Logging(LogFilename)
+        Strategy = 'PPStrategy4005'
+        data=L.get_fundschange_chart(Strategy)
+        data=np.cumsum(data)
+        data=data-data.iloc[-1]
         self.fig.clf()
         self.axes = self.fig.add_subplot(111)  # create an axis
         self.axes.hold(True)  # discards the old graph
@@ -39,6 +45,7 @@ class FundsPlotter(FigureCanvas):
 
 class BarPlotter(FigureCanvas):
     def __init__(self, ui, p):
+        self.p=p
         self.ui = proxy(ui)
         self.fig = Figure(figsize=(5, 4), dpi=60)
         super(BarPlotter, self).__init__(self.fig)
@@ -52,7 +59,7 @@ class BarPlotter(FigureCanvas):
         self.axes.hold(True)  # discards the old graph
 
         L = Logging('log')
-        data = L.get_stacked_bar_data('Template', p.current_strategy.text, 'stackedBar')
+        data = L.get_stacked_bar_data('Template', self.p.current_strategy.text, 'stackedBar')
 
         N = 11
         Bluff = data[0]
@@ -82,7 +89,7 @@ class BarPlotter(FigureCanvas):
         self.axes.legend((self.p0[0], self.p1[0], self.p2[0], self.p3[0], self.p4[0], self.p5[0], self.p6[0]),
                          ('Bluff', 'BetPot', 'BetHfPot', 'Bet/Bet+', 'Call', 'Check', 'Fold'), labelspacing=0.03,
                          prop={'size': 12})
-        maxh = float(p.XML_entries_list1['bigBlind'].text) * 10
+        maxh = float(self.p.XML_entries_list1['bigBlind'].text) * 10
         i = 0
         for rect0, rect1, rect2, rect3, rect4, rect5, rect6 in zip(self.p0.patches, self.p1.patches,
                                                                    self.p2.patches,
@@ -119,11 +126,11 @@ class PiePlotter(FigureCanvas):
         self.drawfigure()
         self.ui.vLayout4.insertWidget(1, self)
 
-    def drawfigure(self):
+    def drawfigure(self, D = {u'HighCard': 0}):
         self.axes = self.fig.add_subplot(111)  # create an axis
         self.axes.hold(False)  # discards the old graph
         self.axes.pie([22, 100 - 22], autopct='%1.1f%%')
-        D = {u'HighCard': 0}
+
         self.pieChartCircles = self.axes.pie([float(v) for v in D.values()], labels=[k for k in D.keys()],
                                              autopct=None)
 
@@ -158,6 +165,37 @@ class CurvePlot(FigureCanvas):
         self.axes.set_xlabel('Equity')
         self.axes.set_ylabel('Max $')
         self.draw()
+
+    def updatePlots(self, histEquity, histMinCall, histMinBet, equity, minCall, minBet, color1, color2):
+        try:
+            self.dots1.remove()
+            self.dots2.remove()
+            self.dots1h.remove()
+            self.dots2h.remove()
+        except:
+            pass
+
+        self.dots1h, = self.b.plot(histEquity, histMinCall, 'wo')
+        self.dots2h, = self.b.plot(histEquity, histMinBet, 'wo')
+        self.dots1, = self.b.plot(equity, minCall, color1)
+        self.dots2, = self.b.plot(equity, minBet, color2)
+
+        self.g.canvas.draw()
+
+    def updateLines(self, power1, power2, minEquityCall, minEquityBet, smallBlind, bigBlind, maxValue, maxEquityCall,
+                    maxEquityBet):
+        x2 = np.linspace(0, 1, 100)
+        self.statusbar.set("Updating GUI")
+
+        d1 = Curvefitting(x2, smallBlind, bigBlind * 2, maxValue, minEquityCall, maxEquityCall, power1)
+        d2 = Curvefitting(x2, smallBlind, bigBlind, maxValue, minEquityBet, maxEquityBet, power2)
+
+        self.y2.extend(d1.y)
+        self.y3.extend(d2.y)
+        self.line2.set_ydata(self.y2[-100:])
+        self.line3.set_ydata(self.y3[-100:])
+        self.b.set_ylim(0, max(1, maxValue))
+        self.g.canvas.draw()
 
 
 class Updater(FigureCanvas):
@@ -346,35 +384,6 @@ class Updater(FigureCanvas):
 #                 gui.progress["value"] = int(round(self.i * 100 / max))
 #                 # self.update()  # no need, will be automatic as mainloop() runs
 #                 # self.after(1, self.calculation) not necessary anymore as everything is in a main loop#
-#
-#
-#                 gui.y.append(self.i * 10)
-#                 gui.line1.set_ydata(gui.y[-100:])
-#
-#                 gui.f.canvas.draw()
-#
-#                 x2 = np.arange(0, 1, 0.01)
-#                 for item in x2:
-#                     gui.y2.append(item ** 2)
-#                     gui.y3.append(item ** 3)
-#                 gui.line2.set_ydata(gui.y2[-100:])
-#                 gui.line3.set_ydata(gui.y3[-100:])
-#                 gui.g.canvas.draw()
-#
-#
-#                 gui.pie.clf()
-#                 gui.piePlot = gui.pie.add_subplot(111)
-#                 gui.piePlot.pie([22, 100 - 22], autopct='%1.1f%%')
-#                 D = {u'HighCard': 0}
-#                 gui.pieChartCircles = gui.piePlot.pie([float(v) for v in D.values()], labels=[k for k in D.keys()],
-#                                                       autopct=None)
-#                 gui.piePlot.set_title('Winning probabilities')
-#                 # gui.piePlot.suptitle(subtitle_string, y=1.05, fontsize=10)
-#                 gui.pie.canvas.draw_idle()
-#                 # gui.pie.canvas.draw()
-#
-#                 gui.a.set_ylim(0, 7)
-#                 gui.f.canvas.draw()
 
 
 if __name__ == "__main__":
@@ -388,17 +397,17 @@ if __name__ == "__main__":
     p.read_XML()
 
     # plotter logic and binding needs to be added here
-    plotter1 = FundsPlotter(ui, p)
-    ui.button_config.clicked.connect(plotter1.drawfigure)
-    plotter2 = BarPlotter(ui, p)
-    plotter3 = CurvePlot(ui, p)
-    plotter4 = PiePlotter(ui, p)
+    gui_funds = FundsPlotter(ui, p)
+    #ui.button_config.clicked.connect(plotter1.drawfigure)
+    gui_bar = BarPlotter(ui, p)
+    gui_curve = CurvePlot(ui, p)
+    gui_pie = PiePlotter(ui, p)
 
     # gui = GUI(p,ui)
     # calc = Calcuiation()
     # t1 = threading.Thread(target=calc.calculation, args=[])
     # t1.start()
-    Updater(ui)
+    #Updater(ui)
 
     MainWindow.show()
     sys.exit(app.exec_())

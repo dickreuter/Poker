@@ -18,7 +18,7 @@ def calcMaxInvest(equity, pw, bigBlindMultiplier):
     return np.round((math.pow(equity, pw)) * bigBlindMultiplier, 2)
 
 
-class GUI(tk.Frame):
+class GUIf(tk.Frame):
     def __init__(self, p, master=None):
         self.l = []
         self.active = True

@@ -150,7 +150,7 @@ class MonteCarlo(object):
 
         return table_card_list
 
-    def run_montecarlo(self, original_player_card_list, original_table_card_list, player_amount, gui, maxRuns,
+    def run_montecarlo(self, original_player_card_list, original_table_card_list, player_amount, ui, maxRuns,
                        timeout):
         winnerCardTypeList = []
         wins = 0
@@ -186,10 +186,10 @@ class MonteCarlo(object):
 
             try:
                 if m % 1000 == 0:
-                    if gui.active == True:
-                        gui.progress["value"] = int(round(m * 100 / maxRuns))
-                        gui.var2.set("Equity: " + str(self.equity * 100) + "%")
-                        gui.statusbar.set("Running Monte Carlo: " + str(m) + "/" + str(maxRuns))
+                    # if gui.active == True:
+                    #     gui.progress["value"] = int(round(m * 100 / maxRuns))
+                    #     gui.var2.set("Equity: " + str(self.equity * 100) + "%")
+                    #     gui.statusbar.set("Running Monte Carlo: " + str(m) + "/" + str(maxRuns))
                         if m>999 and time.time() > timeout:
                             break
             except:

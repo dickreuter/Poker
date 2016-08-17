@@ -11,8 +11,8 @@ from decisionmaker.montecarlo_v3 import *
 from mouse_mover import *
 from configobj import ConfigObj
 import numpy as np
-from gui.terminal import *
 from gui.gui_qt import *
+
 
 class History(object):
     def __init__(self):
@@ -34,7 +34,8 @@ class History(object):
         self.histMinCall = 0
         self.histMinBet = 0
         self.histPlayerPots = 0
-        
+
+
 class Tools(object):
     # General tools that are used to operate the pokerbot, such as moving the
     # mouse, clicking and routines that
@@ -54,9 +55,9 @@ class Tools(object):
                 if os.path.exists(name) == True:
                     self.img[x + y] = Image.open(name)
                     self.cardImages[x + y] = cv2.cvtColor(np.array(self.img[x + y]), cv2.COLOR_BGR2RGB)
-                    #(thresh, self.cardImages[x + y]) =
-                    #cv2.threshold(self.cardImages[x + y], 128, 255,
-                    #cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+                    # (thresh, self.cardImages[x + y]) =
+                    # cv2.threshold(self.cardImages[x + y], 128, 255,
+                    # cv2.THRESH_BINARY | cv2.THRESH_OTSU)
                 else:
                     logger.critical("Card Temlate File not found: " + str(x) + str(y) + ".png")
 
@@ -102,12 +103,12 @@ class Tools(object):
         self.lostEverything = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
     def take_screenshot(self):
-        if gui.active == True:
-            gui.statusbar.set("")
+        if terminalmode == False:
+            ui.status.setText("")
         time.sleep(0.1)
         self.entireScreenPIL = ImageGrab.grab()
-        if gui.active == True:
-            gui.statusbar.set(str(p.current_strategy.text))
+        if terminalmode == False:
+            ui.status.setText(str(p.current_strategy.text))
         if terminalmode == False and p.ExitThreads == True: sys.exit()
         return True
 
@@ -157,9 +158,10 @@ class Tools(object):
         print(findTemplate + " Relative: ")
         print(str(tuple(map(sum, zip(points[0], rel)))))
 
-    def get_ocr_float(self,img_orig,name):
+    def get_ocr_float(self, img_orig, name):
         def fix_number(t):
-            t = t.replace("I", "1").replace("O", "0").replace("o", "0").replace("-", ".").replace("D", "0").replace("I", "1")
+            t = t.replace("I", "1").replace("O", "0").replace("o", "0").replace("-", ".").replace("D", "0").replace("I",
+                                                                                                                    "1")
             t = re.sub("[^0123456789.]", "", t)
             try:
                 if t[0] == ".": t = t[1:]
@@ -178,17 +180,17 @@ class Tools(object):
         img_mod = img_resized.filter(ImageFilter.ModeFilter).filter(ImageFilter.SHARPEN)
 
         lst = []
-        #try:
+        # try:
         #    lst.append(pytesseract.image_to_string(img_orig, none, false,"-psm 6"))
-        #except exception as e:
+        # except exception as e:
         #    logger.error(str(e))
         try:
             lst.append(pytesseract.image_to_string(img_min, None, False, "-psm 6"))
         except Exception as e:
             logger.error(str(e))
-        #try:
+        # try:
         #    lst.append(pytesseract.image_to_string(img_med, None, False, "-psm 6"))
-        #except Exception as e:
+        # except Exception as e:
         #    logger.error(str(e))
         try:
             lst.append(pytesseract.image_to_string(img_mod, None, False, "-psm 6"))
@@ -210,26 +212,30 @@ class Tools(object):
             logger.error(str(e))
             return ''
 
+
 class Table(object):
     # baseclass that is inherited by the different types of Tables (e.g.
     # Pokerstars of Party Poker Table)
     def call_genetic_algorithm(self):
-        gui.statusbar.set("Checking for AI update")
+        ui.status.setText("Checking for AI update")
         n = L.get_game_count(p.current_strategy.text)
-        lg = int(p.XML_entries_list1['considerLastGames'].text)  # only consider lg last games to see if there was a loss
+        lg = int(
+            p.XML_entries_list1['considerLastGames'].text)  # only consider lg last games to see if there was a loss
         f = L.get_strategy_total_funds_change(p.current_strategy.text, lg)
-        gui.var6.set("Game #" + str(n) + " - Last " + str(lg) + ": $" + str(f))
+        if terminalmode==False:
+            ui.gamenumber.display(str(n))
+            ui.winnings.display(str(f))
         logger.info("Game #" + str(n) + " - Last " + str(lg) + ": $" + str(f))
-        if n % int(p.XML_entries_list1['strategyIterationGames'].text) == 0 and f < float(p.XML_entries_list1['minimumLossForIteration'].text):
-            gui.statusbar.set("***Improving current strategy***")
+        if n % int(p.XML_entries_list1['strategyIterationGames'].text) == 0 and f < float(
+                p.XML_entries_list1['minimumLossForIteration'].text):
+            ui.status.setText("***Improving current strategy***")
             logger.info("***Improving current strategy***")
             winsound.Beep(500, 100)
-            Genetic_Algorithm(True,logger)
+            Genetic_Algorithm(True, logger)
             p.read_XML()
         else:
             logger.debug("Criteria not met for running genetic algorithm. Recommendation would be as follows:")
             Genetic_Algorithm(False, logger)
-
 
     def crop_image(self, original, left, top, right, bottom):
         # original.show()
@@ -237,6 +243,7 @@ class Table(object):
         cropped_example = original.crop((left, top, right, bottom))
         # cropped_example.show()
         return cropped_example
+
 
 class TablePP(Table):
     def get_top_left_corner(self, scraped):
@@ -248,8 +255,10 @@ class TablePP(Table):
             t.timeout_start = time.time()
             return True
         else:
-            gui.statusbar.set(p.XML_entries_list1['pokerSite'].text + " not found yet")
-            if gui.active: gui.progress["value"] = 0
+
+            if terminalmode == False:
+                ui.status.setText(p.XML_entries_list1['pokerSite'].text + " not found yet")
+                ui.progress_bar.setValue(0)
             logger.debug("Top left corner NOT found")
             time.sleep(1)
             return False
@@ -262,7 +271,8 @@ class TablePP(Table):
         count, points, bestfit = a.find_template_on_screen(scraped.button, img, 0.01)
 
         if count > 0:
-            gui.statusbar.set("Buttons found, preparing Montecarlo with: " + str(cards))
+            if terminalmode == False:
+                ui.status.setText("Buttons found, preparing Montecarlo with: " + str(cards))
             logger.info("Buttons Found, preparing for montecarlo")
             return True
 
@@ -271,7 +281,8 @@ class TablePP(Table):
             return False
 
     def check_for_checkbutton(self, scraped):
-        gui.statusbar.set("Check for Check")
+        if terminalmode == False:
+            ui.status.setText("Check for Check")
         logger.debug("Checking for check button")
         pil_image = self.crop_image(a.entireScreenPIL, self.topleftcorner[0] + 560, self.topleftcorner[1] + 478,
                                     self.topleftcorner[0] + 670, self.topleftcorner[1] + 550)
@@ -340,9 +351,10 @@ class TablePP(Table):
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
         count, points, bestfit = a.find_template_on_screen(scraped.ImBack, img, 0.08)
         if count > 0:
-            mouse.mouse_action("Imback", t.topleftcorner,0,0,logger)
+            mouse.mouse_action("Imback", t.topleftcorner, 0, 0, logger)
             return False
-            gui.statusbar.set("I am back found")
+            if terminalmode == False:
+                ui.status.setText("I am back found")
         else:
             return True
 
@@ -384,8 +396,8 @@ class TablePP(Table):
                                     t.topleftcorner[0] + 600, t.topleftcorner[1] + 158 + 120)
 
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
-        #(thresh, img) = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY |
-        #cv2.THRESH_OTSU)
+        # (thresh, img) = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY |
+        # cv2.THRESH_OTSU)
 
         for key, value in scraped.cardImages.items():
             template = value
@@ -425,16 +437,16 @@ class TablePP(Table):
         return True
 
     def get_my_cards(self, scraped):
-        def go_through_each_card(img,debugging):
+        def go_through_each_card(img, debugging):
             dic = {}
             for key, value in scraped.cardImages.items():
                 template = value
                 method = eval('cv2.TM_SQDIFF_NORMED')
 
                 # Apply template Matching
-                #kernel = np.ones((5, 5), np.float32) / 25
-                #img = cv2.filter2D(img, -1, kernel)
-                #template = cv2.filter2D(template, -1, kernel)
+                # kernel = np.ones((5, 5), np.float32) / 25
+                # img = cv2.filter2D(img, -1, kernel)
+                # template = cv2.filter2D(template, -1, kernel)
 
                 res = cv2.matchTemplate(img, template, method)
 
@@ -453,17 +465,15 @@ class TablePP(Table):
                 dic = sorted(dic.items(), key=operator.itemgetter(1))
                 logger.error("Analysing cards: " + str(dic))
 
-
-
         self.mycards = []
         pil_image = self.crop_image(a.entireScreenPIL, self.topleftcorner[0] + 450, self.topleftcorner[1] + 330,
                                     self.topleftcorner[0] + 450 + 80, self.topleftcorner[1] + 330 + 80)
 
-        #pil_image.show()
+        # pil_image.show()
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
-        #(thresh, img) = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY |
-        #cv2.THRESH_OTSU)
-        go_through_each_card(img,False)
+        # (thresh, img) = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY |
+        # cv2.THRESH_OTSU)
+        go_through_each_card(img, False)
 
         if len(self.mycards) == 2:
             t.myFundsChange = float(t.myFunds) - float(str(h.myFundsHistory[-1]).strip('[]'))
@@ -471,11 +481,11 @@ class TablePP(Table):
             return True
         else:
             logger.warning("Did not find two player cards: " + str(self.mycards))
-            #go_through_each_card(img,True)
+            # go_through_each_card(img,True)
             return False
 
     def get_covered_card_holders(self, scraped):
-        gui.statusbar.set("Analyse other players and position")
+        if terminalmode == False: ui.status.setText("Analyse other players and position")
         pil_image = self.crop_image(a.entireScreenPIL, self.topleftcorner[0] + 0, self.topleftcorner[1] + 0,
                                     self.topleftcorner[0] + 800, self.topleftcorner[1] + 500)
         # Convert RGB to BGR
@@ -503,7 +513,8 @@ class TablePP(Table):
             except:
                 logger.debug("Pyteseract error in player name recognition")
 
-            playerFundsImage = pil_image.crop((pt[0] - (955 - 890) + 10, pt[1] + 270 - 222 + 20, pt[0] + 10, pt[1] + +280 - 222 + 22))
+            playerFundsImage = pil_image.crop(
+                (pt[0] - (955 - 890) + 10, pt[1] + 270 - 222 + 20, pt[0] + 10, pt[1] + +280 - 222 + 22))
             basewidth = 500
             wpercent = (basewidth / float(playerNameImage.size[0]))
             hsize = int((float(playerNameImage.size[1]) * float(wpercent)))
@@ -544,7 +555,7 @@ class TablePP(Table):
             return True
 
     def get_played_players(self, scraped):
-        gui.statusbar.set("Analyse past players")
+        if terminalmode == False: ui.status.setText("Analyse past players")
         pil_image = self.crop_image(a.entireScreenPIL, self.topleftcorner[0] + 0, self.topleftcorner[1] + 0,
                                     self.topleftcorner[0] + 800, self.topleftcorner[1] + 500)
 
@@ -657,7 +668,7 @@ class TablePP(Table):
         return True
 
     def get_total_pot_value(self):
-        gui.statusbar.set("Get Pot Value")
+        if terminalmode == False: ui.status.setText("Get Pot Value")
         logger.debug("Get TotalPot value")
         returnvalue = True
         x1 = 385
@@ -667,11 +678,11 @@ class TablePP(Table):
         pil_image = self.crop_image(a.entireScreenPIL, self.topleftcorner[0] + x1, self.topleftcorner[1] + y1,
                                     self.topleftcorner[0] + x2, self.topleftcorner[1] + y2)
 
-        self.totalPotValue = a.get_ocr_float(pil_image,'TotalPotValue')
+        self.totalPotValue = a.get_ocr_float(pil_image, 'TotalPotValue')
 
         if self.totalPotValue < 0.01:
             logger.info("unable to get pot value")
-            gui.statusbar.set("Unable to get pot value")
+            if terminalmode == False: ui.status.setText("Unable to get pot value")
             time.sleep(1)
             pil_image.save("pics/ErrPotValue.png")
             self.totalPotValue = h.previousPot
@@ -695,19 +706,19 @@ class TablePP(Table):
         pil_image_filtered = pil_image.filter(ImageFilter.ModeFilter)
         pil_image_filtered2 = pil_image.filter(ImageFilter.MedianFilter)
         self.myFundsError = False
-        
+
         try:
             pil_image.save("pics/myFunds.png")
         except:
             logger.info("Could not save myFunds.png")
 
-        self.myFunds = a.get_ocr_float(pil_image,'MyFunds')
+        self.myFunds = a.get_ocr_float(pil_image, 'MyFunds')
 
-        if self.myFunds=='':
+        if self.myFunds == '':
             self.myFundsError = True
             self.myFunds = float(h.myFundsHistory[-1])
             logger.info("myFunds not regognised!")
-            gui.statusbar.set("!!Funds NOT recognised!!")
+            if terminalmode == False: ui.status.setText("!!Funds NOT recognised!!")
             logger.warning("!!Funds NOT recognised!!")
             a.entireScreenPIL.save("pics/FundsError.png")
             time.sleep(0.5)
@@ -715,7 +726,7 @@ class TablePP(Table):
         return True
 
     def get_current_call_value(self):
-        gui.statusbar.set("Get Call value")
+        if terminalmode == False: ui.status.setText("Get Call value")
         x1 = 585
         y1 = 516
         x2 = 585 + 70
@@ -724,11 +735,10 @@ class TablePP(Table):
         pil_image = self.crop_image(a.entireScreenPIL, self.topleftcorner[0] + x1, self.topleftcorner[1] + y1,
                                     self.topleftcorner[0] + x2, self.topleftcorner[1] + y2)
 
-
         if t.checkButton == False:
 
             try:
-                self.currentCallValue = a.get_ocr_float(pil_image,'CallValue')
+                self.currentCallValue = a.get_ocr_float(pil_image, 'CallValue')
                 self.getCallButtonValueSuccess = True
                 if self.allInCallButton == True and self.myFundsError == False and self.currentCallValue < self.myFunds:
                     self.getCallButtonValueSuccess = False
@@ -745,7 +755,7 @@ class TablePP(Table):
         return True
 
     def get_current_bet_value(self):
-        gui.statusbar.set("Get Bet Value")
+        if terminalmode == False: ui.status.setText("Get Bet Value")
         logger.debug("Get bet value")
         x1 = 589 + 125
         y1 = 516
@@ -755,9 +765,8 @@ class TablePP(Table):
         pil_image = self.crop_image(a.entireScreenPIL, self.topleftcorner[0] + x1, self.topleftcorner[1] + y1,
                                     self.topleftcorner[0] + x2, self.topleftcorner[1] + y2)
 
-
         self.currentBetValue = a.get_ocr_float(pil_image, 'BetValue')
-        if self.currentBetValue=='':
+        if self.currentBetValue == '':
             returnvalue = False
             self.currentBetValue = 9999999.0
 
@@ -782,7 +791,8 @@ class TablePP(Table):
         # blurred = pil_image.filter(ImageFilter.SHARPEN)
         try:
             self.currentRoundPotValue = pytesseract.image_to_string(pil_image, None, False, "-psm 6").replace(" ",
-                                                                                                              "").replace("$", "")
+                                                                                                              "").replace(
+                "$", "")
         except:
             logger.warning("Error in pytesseract current pot value")
 
@@ -805,7 +815,7 @@ class TablePP(Table):
             h.lastGameID = str(h.GameID)
             t.myFundsChange = float(0) - float(str(h.myFundsHistory[-1]).strip('[]'))
             L.mark_last_game(t, h)
-            gui.statusbar.set("Everything is lost. Last game has been marked.")
+            if terminalmode == False: ui.status.setText("Everything is lost. Last game has been marked.")
             user_input = input("Press Enter for exit ")
             sys.exit()
         else:
@@ -816,51 +826,14 @@ class TablePP(Table):
             h.lastGameID = str(h.GameID)
             h.GameID = int(round(np.random.uniform(0, 999999999), 0))
             cards = ' '.join(t.mycards)
-            gui.statusbar.set("New hand: " + str(cards))
+            ui.status.setText("New hand: " + str(cards))
             L.mark_last_game(t, h)
 
             self.call_genetic_algorithm()
 
-            if gui.active == True:
-
-                gui.y.append(t.myFunds)
-                gui.line1.set_ydata(gui.y[-100:])
-                gui.f.canvas.draw()
-
-                maxh = max(gui.y)
-                gui.a.set_ylim(0, max(6, maxh))
-                gui.f.canvas.draw()
-
-            if gui.active == True:
-                data = L.get_stacked_bar_data('Template', p.current_strategy.text, 'stackedBar')
-                maxh = float(p.XML_entries_list1['bigBlind'].text) * 10
-                i = 0
-                for rect0, rect1, rect2, rect3, rect4, rect5, rect6 in zip(gui.p0.patches, gui.p1.patches,
-                                                                           gui.p2.patches,
-                                                                           gui.p3.patches, gui.p4.patches,
-                                                                           gui.p5.patches, gui.p6.patches):
-                    g = list(zip(data[0], data[1], data[2], data[3], data[4], data[5], data[6]))
-                    height = g[i]
-                    i += 1
-                    rect0.set_height(height[0])
-                    rect1.set_y(height[0])
-                    rect1.set_height(height[1])
-                    rect2.set_y(height[0] + height[1])
-                    rect2.set_height(height[2])
-                    rect3.set_y(height[0] + height[1] + height[2])
-                    rect3.set_height(height[3])
-                    rect4.set_y(height[0] + height[1] + height[2] + height[3])
-                    rect4.set_height(height[4])
-                    rect5.set_y(height[0] + height[1] + height[2] + height[3] + height[4])
-                    rect5.set_height(height[5])
-                    rect6.set_y(height[0] + height[1] + height[2] + height[3] + height[4] + height[5])
-                    rect6.set_height(height[6])
-                    maxh = max(height[0] + height[1] + height[2] + height[3] + height[4] + height[5] + height[6], maxh)
-                # canvas = FigureCanvasTkAgg(gui.h, master=gui.root)
-
-                gui.c.set_ylim((0, maxh))
-                gui.h.canvas.draw()
-                # canvas.get_tk_widget().grid(row=6, column=1)
+            if terminalmode == False:
+                gui_funds.drawfigure(t.myFunds - h.myFundsHistory[-1])
+                gui_bar.draw()
 
             h.myLastBet = 0
             h.myFundsHistory.append(str(t.myFunds))
@@ -872,8 +845,8 @@ class TablePP(Table):
         return True
 
     def run_montecarlo_wrapper(self):
-        #self.montecarlo_thread = Process(target=self.run_montecarlo, args=())
-        #self.montecarlo_thread.start()
+        # self.montecarlo_thread = Process(target=self.run_montecarlo, args=())
+        # self.montecarlo_thread.start()
         self.run_montecarlo()
         return True
 
@@ -905,17 +878,17 @@ class TablePP(Table):
         else:
             maxRuns = 10000
 
-        gui.statusbar.set("Running Monte Carlo: " + str(maxRuns))
+        if terminalmode == False: ui.status.setText("Running Monte Carlo: " + str(maxRuns))
         logger.debug("Running Monte Carlo")
         self.montecarlo_timeout = float(config['montecarlo_timeout'])
-        timeout=t.timeout_start+self.montecarlo_timeout
+        timeout = t.timeout_start + self.montecarlo_timeout
         m = MonteCarlo()
-        m.run_montecarlo(t.PlayerCardList, t.cardsOnTable, int(t.assumedPlayers), gui, maxRuns=maxRuns, timeout=timeout)
-        gui.statusbar.set("Monte Carlo completed successfully")
-        logger.debug("Monte Carlo completed successfully with runs: "+str(m.runs))
-       
+        m.run_montecarlo(t.PlayerCardList, t.cardsOnTable, int(t.assumedPlayers), ui, maxRuns=maxRuns, timeout=timeout)
+        if terminalmode == False: ui.status.setText("Monte Carlo completed successfully")
+        logger.debug("Monte Carlo completed successfully with runs: " + str(m.runs))
+
         self.equity = np.round(m.equity, 3)
-        self.winnerCardTypeList=m.winnerCardTypeList
+        self.winnerCardTypeList = m.winnerCardTypeList
 
 
 # ==== MAIN PROGRAM =====
@@ -945,13 +918,12 @@ if __name__ == '__main__':
             elif p.XML_entries_list1['pokerSite'].text == "PP":
                 t = TablePP()
             elif p.XML_entries_list1['pokerSite'].text == "F1":
-                #t = TableF1()
+                # t = TableF1()
                 logger.critical("Pokerbot tournament not yet supported")
                 exit()
 
             ready = False
             while (not ready):
-             
                 ready = a.take_screenshot() and \
                         t.get_top_left_corner(a) and \
                         t.check_for_captcha() and \
@@ -973,13 +945,49 @@ if __name__ == '__main__':
                         t.run_montecarlo_wrapper()
 
             d = Decision()
-            
-            #t.montecarlo_thread.join() # wait for montecarlo to finish
-            d.make_decision(t, h, p, gui, logger)
+            d.make_decision(t, h, p, logger)
+            # t.montecarlo_thread.join() # wait for montecarlo to finish
 
-            mouse.mouse_action(d.decision, t.topleftcorner, p.XML_entries_list1['BetPlusInc'].text, t.currentBluff,logger)
+            if terminalmode == False:
+                ui.last_decision.setText(d.decision)
+                ui.equity.display(str(t.equity))
+                ui.required_minbet.display(str(t.currentBetValue))
+                ui.required_mincall.display(str(t.minCall))
+                ui.potsize.display(str((t.totalPotValue)))
+                ui.gamenumber.display()
+                ui.assumed_players.display(str(int(t.assumedPlayers)))
+                ui.calllimit.display(str(t.finalCallLimit))
+                ui.betlimit.display(str(t.finalBetLimit))
+                ui.zero_ev.display(str(round(t.maxCallEV, 2)))
 
-            gui.statusbar.set("Writing log file")
+                gui_pie.drawfigure(t.winnerCardTypeList)
+
+                gui_curve.updatePlots(h.histEquity, h.histMinCall, h.histMinBet, t.equity, t.minCall, t.minBet, 'bo', 'ro')
+                gui_curve.updateLines(t.power1, t.power2, t.minEquityCall, t.minEquityBet, t.smallBlind, t.bigBlind, t.maxValue,
+                                      t.maxEquityCall,t.maxEquityBet)
+
+
+            logger.info(
+                "Equity: " + str(t.equity * 100) + "% -> " + str(int(t.assumedPlayers)) + " (" + str(
+                    int(t.coveredCardHolders)) + "-" + str(int(t.playersAhead)) + "+1) Plr")
+
+            logger.info("Final Call Limit: " + str(t.finalCallLimit) + " --> " + str(t.minCall))
+
+            logger.info("Final Bet Limit: " + str(t.finalBetLimit) + " --> " + str(t.currentBetValue))
+
+            logger.info("Pot size: " + str((t.totalPotValue)) + " -> Zero EV Call: " + str(round(self.maxCallEV, 2)))
+
+            logger.info("+++++++++++++++++++++++ Decision: " + str(t.decision) + "+++++++++++++++++++++++")
+
+
+
+
+
+
+            mouse.mouse_action(d.decision, t.topleftcorner, p.XML_entries_list1['BetPlusInc'].text, t.currentBluff,
+                               logger)
+
+            if terminalmode == False: ui.status.setText("Writing log file")
 
             L.write_log_file(p, h, t, d)
 
@@ -991,10 +999,10 @@ if __name__ == '__main__':
             h.histMinBet = t.minBet
             h.histPlayerPots = t.PlayerPots
 
+
     config = ConfigObj("config.ini")
     terminalmode = int(config['terminalmode'])
     setupmode = int(config['setupmode'])
-
 
     logger = debug_logger().start_logger()
 
@@ -1007,15 +1015,25 @@ if __name__ == '__main__':
         sys.exit()
 
     if terminalmode == False:
-        gui = GUI(p)
+        app = QtGui.QApplication(sys.argv)
+        MainWindow = QtGui.QMainWindow()
+        ui = Ui_Pokerbot()
+        ui.setupUi(MainWindow)
+        gui_funds = FundsPlotter(ui, p)
+        gui_bar = BarPlotter(ui, p)
+        gui_curve = CurvePlot(ui, p)
+        gui_pie = PiePlotter(ui, p)
+        # ui.button_config.clicked.connect(plotter1.drawfigure)
+
         p.ExitThreads = False
         t1 = threading.Thread(target=run_pokerbot, args=[logger])
         t1.setDaemon(True)
         t1.start()
-        gui.root.mainloop()
+
+        MainWindow.show()
+        sys.exit(app.exec_())
         p.ExitThreads = True
 
     elif terminalmode == True:
         print("Terminal mode selected. To view GUI set terminalmode=False")
-        gui = Terminal()
         run_pokerbot(logger)
