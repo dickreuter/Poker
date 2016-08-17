@@ -74,10 +74,7 @@ class GUIf(tk.Frame):
         self.x2 = [];
         self.y2 = [];
         self.y3 = [];
-        self.x2 = np.arange(0, 1, 0.01)
-        for each in self.x2:
-            self.y2.append(0.5)
-            self.y3.append(0.7)
+
         self.g = Figure(figsize=(5, 4), dpi=60);
         self.g.clf()
 

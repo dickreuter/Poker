@@ -110,6 +110,9 @@ class Tools(object):
         if terminalmode == False:
             ui.status.setText(str(p.current_strategy.text))
         if terminalmode == False and p.ExitThreads == True: sys.exit()
+        if terminalmode == False and t1.pause == True:
+            while t1.pause==True:
+                time.sleep(1)
         return True
 
     def find_template_on_screen(self, template, screenshot, threshold):
@@ -950,15 +953,15 @@ if __name__ == '__main__':
 
             if terminalmode == False:
                 ui.last_decision.setText(d.decision)
-                ui.equity.display(str(t.equity))
+                ui.equity.display(str(np.round(t.equity*100,2)))
                 ui.required_minbet.display(str(t.currentBetValue))
                 ui.required_mincall.display(str(t.minCall))
                 ui.potsize.display(str((t.totalPotValue)))
-                ui.gamenumber.display()
+                ui.gamenumber.display(str(L.get_game_count(p.current_strategy.text)))
                 ui.assumed_players.display(str(int(t.assumedPlayers)))
-                ui.calllimit.display(str(t.finalCallLimit))
-                ui.betlimit.display(str(t.finalBetLimit))
-                ui.zero_ev.display(str(round(t.maxCallEV, 2)))
+                ui.calllimit.display(str(d.finalCallLimit))
+                ui.betlimit.display(str(d.finalBetLimit))
+                ui.zero_ev.display(str(round(d.maxCallEV, 2)))
 
                 gui_pie.drawfigure(t.winnerCardTypeList)
 
@@ -971,13 +974,13 @@ if __name__ == '__main__':
                 "Equity: " + str(t.equity * 100) + "% -> " + str(int(t.assumedPlayers)) + " (" + str(
                     int(t.coveredCardHolders)) + "-" + str(int(t.playersAhead)) + "+1) Plr")
 
-            logger.info("Final Call Limit: " + str(t.finalCallLimit) + " --> " + str(t.minCall))
+            logger.info("Final Call Limit: " + str(d.finalCallLimit) + " --> " + str(t.minCall))
 
-            logger.info("Final Bet Limit: " + str(t.finalBetLimit) + " --> " + str(t.currentBetValue))
+            logger.info("Final Bet Limit: " + str(d.finalBetLimit) + " --> " + str(t.currentBetValue))
 
-            logger.info("Pot size: " + str((t.totalPotValue)) + " -> Zero EV Call: " + str(round(self.maxCallEV, 2)))
+            logger.info("Pot size: " + str((t.totalPotValue)) + " -> Zero EV Call: " + str(round(d.maxCallEV, 2)))
 
-            logger.info("+++++++++++++++++++++++ Decision: " + str(t.decision) + "+++++++++++++++++++++++")
+            logger.info("+++++++++++++++++++++++ Decision: " + str(d.decision) + "+++++++++++++++++++++++")
 
 
 
@@ -1019,17 +1022,27 @@ if __name__ == '__main__':
         MainWindow = QtGui.QMainWindow()
         ui = Ui_Pokerbot()
         ui.setupUi(MainWindow)
+        ui_action=UIAction()
+
         gui_funds = FundsPlotter(ui, p)
         gui_bar = BarPlotter(ui, p)
         gui_curve = CurvePlot(ui, p)
         gui_pie = PiePlotter(ui, p)
-        # ui.button_config.clicked.connect(plotter1.drawfigure)
 
         p.ExitThreads = False
         t1 = threading.Thread(target=run_pokerbot, args=[logger])
         t1.setDaemon(True)
-        t1.start()
 
+
+        #ui.button_options.clicked.connect()
+        ui.button_log_analyser.clicked.connect(lambda: ui_action.open_strategy_analyser(ui))
+        #ui.button_strategy_editor.clicked.connect()
+        #ui.button_options.clicked.connect()
+        ui.button_pause.clicked.connect(lambda: ui_action.pause(ui,t1))
+        ui.button_resume.clicked.connect(lambda: ui_action.resume(ui,t1))
+
+        t1.pause=False
+        t1.start()
         MainWindow.show()
         sys.exit(app.exec_())
         p.ExitThreads = True

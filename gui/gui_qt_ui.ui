@@ -208,7 +208,10 @@
      <bool>false</bool>
     </property>
    </widget>
-   <widget class="QPushButton" name="button_run_ai">
+   <widget class="QPushButton" name="button_log_analyser">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -227,6 +230,9 @@
     </property>
    </widget>
    <widget class="QPushButton" name="button_resume">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>330</x>
@@ -241,7 +247,7 @@
      </font>
     </property>
     <property name="text">
-     <string>Start</string>
+     <string>Resume</string>
     </property>
    </widget>
    <widget class="QWidget" name="verticalLayoutWidget_7">
@@ -398,7 +404,10 @@
      <number>-1</number>
     </property>
    </widget>
-   <widget class="QPushButton" name="button_config">
+   <widget class="QPushButton" name="button_genetic_algorithm">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>180</x>
@@ -416,7 +425,10 @@
      <string>Genetic Algorithm</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="button_show_xml">
+   <widget class="QPushButton" name="button_strategy_editor">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>330</x>
@@ -454,7 +466,10 @@
      <string>Dickreuter's Poker bot</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton">
+   <widget class="QPushButton" name="button_options">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
     <property name="geometry">
      <rect>
       <x>470</x>

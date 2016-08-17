@@ -16,12 +16,12 @@ class Decision(DecisionBase):
         pass
 
     def make_decision(self, t, h, p, logger):
-        bigBlind = float(p.XML_entries_list1['bigBlind'].text)
-        smallBlind = float(p.XML_entries_list1['smallBlind'].text)
+        t.bigBlind = float(p.XML_entries_list1['bigBlind'].text)
+        t.smallBlind = float(p.XML_entries_list1['smallBlind'].text)
 
 
 
-        bigBlindMultiplier = bigBlind / 0.02
+        t.bigBlindMultiplier = t.bigBlind / 0.02
 
         # in case the other players called my bet become less aggressive and make an adjustment for the second round
         if (h.histGameStage == t.gameStage and h.lastRoundGameID == h.GameID) or h.lastSecondRoundAdjustment > 0:
@@ -62,35 +62,35 @@ class Decision(DecisionBase):
             t.minBet = float(100.0)
             t.opponentBetIncreases = 0
 
-        self.potAdjustment = t.totalPotValue / bigBlind / 250 * float(p.XML_entries_list1['potAdjustment'].text)
+        self.potAdjustment = t.totalPotValue / t.bigBlind / 250 * float(p.XML_entries_list1['potAdjustment'].text)
         self.potAdjustment = min(self.potAdjustment, float(p.XML_entries_list1['maxPotAdjustment'].text))
 
         if t.gameStage == "PreFlop":
             t.power1 = float(p.XML_entries_list1['PreFlopCallPower'].text) + secondRoundAdjustmentPowerIncrease
             t.minEquityCall = float(
                 p.XML_entries_list1['PreFlopMinCallEquity'].text) + self.secondRoundAdjustment - self.potAdjustment
-            t.minCallAmountIfAboveLimit = bigBlind * 2
+            t.minCallAmountIfAboveLimit = t.bigBlind * 2
             t.potStretch = 1
             t.maxEquityCall = 1
         elif t.gameStage == "Flop":
             t.power1 = float(p.XML_entries_list1['FlopCallPower'].text) + secondRoundAdjustmentPowerIncrease
             t.minEquityCall = float(
                 p.XML_entries_list1['FlopMinCallEquity'].text) + self.secondRoundAdjustment - self.potAdjustment
-            t.minCallAmountIfAboveLimit = bigBlind * 2
+            t.minCallAmountIfAboveLimit = t.bigBlind * 2
             t.potStretch = 1
             t.maxEquityCall = 1
         elif t.gameStage == "Turn":
             t.power1 = float(p.XML_entries_list1['TurnCallPower'].text) + secondRoundAdjustmentPowerIncrease
             t.minEquityCall = float(
                 p.XML_entries_list1['TurnMinCallEquity'].text) + self.secondRoundAdjustment - self.potAdjustment
-            t.minCallAmountIfAboveLimit = bigBlind * 2
+            t.minCallAmountIfAboveLimit = t.bigBlind * 2
             t.potStretch = 1
             t.maxEquityCall = 1
         elif t.gameStage == "River":
             t.power1 = float(p.XML_entries_list1['RiverCallPower'].text) + secondRoundAdjustmentPowerIncrease
             t.minEquityCall = float(
                 p.XML_entries_list1['RiverMinCallEquity'].text) + self.secondRoundAdjustment - self.potAdjustment
-            t.minCallAmountIfAboveLimit = bigBlind * 2
+            t.minCallAmountIfAboveLimit = t.bigBlind * 2
             t.potStretch = 1
             t.maxEquityCall = 1
 
@@ -104,25 +104,25 @@ class Decision(DecisionBase):
             t.minEquityBet = float(
                 p.XML_entries_list1['PreFlopMinBetEquity'].text) + self.secondRoundAdjustment - self.potAdjustment
             t.maxEquityBet = float(p.XML_entries_list1['PreFlopMaxBetEquity'].text)
-            t.minBetAmountIfAboveLimit = bigBlind * 2
+            t.minBetAmountIfAboveLimit = t.bigBlind * 2
         elif t.gameStage == "Flop":
             t.power2 = float(p.XML_entries_list1['FlopBetPower'].text) + secondRoundAdjustmentPowerIncrease
             t.minEquityBet = float(
                 p.XML_entries_list1['FlopMinBetEquity'].text) + self.secondRoundAdjustment - self.potAdjustment
             t.maxEquityBet = 1
-            t.minBetAmountIfAboveLimit = bigBlind * 2
+            t.minBetAmountIfAboveLimit = t.bigBlind * 2
         elif t.gameStage == "Turn":
             t.power2 = float(p.XML_entries_list1['TurnBetPower'].text) + secondRoundAdjustmentPowerIncrease
             t.minEquityBet = float(
                 p.XML_entries_list1['TurnMinBetEquity'].text) + self.secondRoundAdjustment - self.potAdjustment
             t.maxEquityBet = 1
-            t.minBetAmountIfAboveLimit = bigBlind * 2
+            t.minBetAmountIfAboveLimit = t.bigBlind * 2
         elif t.gameStage == "River":
             t.power2 = float(p.XML_entries_list1['RiverBetPower'].text) + secondRoundAdjustmentPowerIncrease
             minEquityBet = float(
                 p.XML_entries_list1['RiverMinBetEquity'].text) + self.secondRoundAdjustment - self.potAdjustment
             t.maxEquityBet = 1
-            t.minBetAmountIfAboveLimit = bigBlind * 2
+            t.minBetAmountIfAboveLimit = t.bigBlind * 2
 
         maxValue = float(p.XML_entries_list1['initialFunds'].text) * t.potStretch
         d = Curvefitting(np.array([t.equity]), t.smallBlind, t.minBetAmountIfAboveLimit, t.maxValue, t.minEquityBet,
@@ -143,19 +143,19 @@ class Decision(DecisionBase):
             self.decision = "Call"
         if self.finalBetLimit >= t.minBet:
             self.decision = "Bet"
-        if self.finalBetLimit >= (t.minBet + bigBlind * float(p.XML_entries_list1['BetPlusInc'].text)) and (
-                    (t.gameStage == "Turn" and t.totalPotValue > bigBlind * 3) or t.gameStage == "River"):
+        if self.finalBetLimit >= (t.minBet + t.bigBlind * float(p.XML_entries_list1['BetPlusInc'].text)) and (
+                    (t.gameStage == "Turn" and t.totalPotValue > t.bigBlind * 3) or t.gameStage == "River"):
             self.decision = "BetPlus"
         if (self.finalBetLimit >= float(t.totalPotValue) / 2) and (t.minBet < float(t.totalPotValue) / 2) and (
-                    (t.minBet + bigBlind * float(p.XML_entries_list1['BetPlusInc'].text)) < float(
+                    (t.minBet + t.bigBlind * float(p.XML_entries_list1['BetPlusInc'].text)) < float(
                     t.totalPotValue) / 2) and (
-                    (t.gameStage == "Turn" and float(t.totalPotValue) / 2 < bigBlind * 20) or t.gameStage == "River"):
+                    (t.gameStage == "Turn" and float(t.totalPotValue) / 2 < t.bigBlind * 20) or t.gameStage == "River"):
             self.decision = "Bet half pot"
         if (t.allInCallButton == False and t.equity >= float(p.XML_entries_list1['betPotRiverEquity'].text)) and (
                     t.minBet <= float(t.totalPotValue)) and t.gameStage == "River" and (
-                    float(t.totalPotValue) < bigBlind * float(
+                    float(t.totalPotValue) < t.bigBlind * float(
                     p.XML_entries_list1['betPotRiverEquityMaxBBM'].text)) and (
-                    (t.minBet + bigBlind * float(p.XML_entries_list1['BetPlusInc'].text)) < float(t.totalPotValue)):
+                    (t.minBet + t.bigBlind * float(p.XML_entries_list1['BetPlusInc'].text)) < float(t.totalPotValue)):
             self.decision = "Bet pot"
 
         if t.checkButton == False and t.minCall == 0.0:
@@ -229,7 +229,7 @@ class Decision(DecisionBase):
 
         if self.decision == "Bet": h.myLastBet = t.minBet
         if self.decision == "BetPlus": h.myLastBet = t.minBet * float(p.XML_entries_list1['BetPlusInc'].text) + t.minBet
-        if self.decision == "Bet Bluff": h.myLastBet = bigBlind * t.currentBluff
+        if self.decision == "Bet Bluff": h.myLastBet = t.bigBlind * t.currentBluff
         if self.decision == "Bet half pot": h.myLastBet = t.totalPotValue / 2
         if self.decision == "Bet pot": h.myLastBet = t.totalPotValue
 
