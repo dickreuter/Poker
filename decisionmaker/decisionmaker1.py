@@ -205,6 +205,8 @@ class Decision(DecisionBase):
             except:
                 opponentFunds = float(p.XML_entries_list1['initialFunds'].text)
 
+            if opponentFunds=='': opponentFunds=float(p.XML_entries_list1['initialFunds'].text)
+
             self.bullyMode = opponentFunds < float(p.XML_entries_list1['initialFunds'].text) / float(
                 p.XML_entries_list1['bullyDivider'].text)
 
