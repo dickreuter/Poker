@@ -192,15 +192,37 @@ class CurvePlot(FigureCanvas):
         self.axes.set_ylim(0, max(1, maxValue))
         self.draw()
 
+class FundsChangePlot(FigureCanvas):
+    def __init__(self, ui_analyser, p):
+        self.p = p
+        self.ui_analyser = proxy(ui_analyser)
+        self.fig = Figure(dpi=50)
+        super(FundsChangePlot, self).__init__(self.fig)
+        self.drawfigure(0)
+        self.ui_analyser.vLayout_fundschange.insertWidget(1, self)
+
+    def drawfigure(self,lastvalue):
+        LogFilename = 'log'
+        L = Logging(LogFilename)
+        Strategy = 'PPStrategy4005'
+        data=L.get_fundschange_chart(Strategy)
+        self.fig.clf()
+        self.axes = self.fig.add_subplot(111)  # create an axis
+        self.axes.hold(True)  # discards the old graph
+        self.axes.set_title('My Funds')
+        self.axes.set_xlabel('Time')
+        self.axes.set_ylabel('$')
+        self.axes.plot(data, '-')  # plot data
+        self.draw()
 
 class BarPlotter2(FigureCanvas):
-    def __init__(self, ui, p):
+    def __init__(self, ui_analyser, p):
         self.p=p
-        self.ui = proxy(ui)
-        self.fig = Figure(figsize=(5, 4), dpi=50)
+        self.ui_analyser = proxy(ui_analyser)
+        self.fig = Figure(dpi=70)
         super(BarPlotter2, self).__init__(self.fig)
         self.drawfigure()
-        self.ui.formLayout.insertWidget(1, self)
+        self.ui_analyser.vLayout_bar.insertWidget(1, self)
 
     def drawfigure(self):
         self.fig.clf()
@@ -291,7 +313,8 @@ class UIAction():
         ui_analyser.setupUi(self.stragegy_analyser_form)
         self.stragegy_analyser_form.show()
 
-        self.gui_bar = BarPlotter2(ui_analyser, p)
+        self.gui_bar2 = BarPlotter2(ui_analyser, p)
+        self.gui_fundschange = FundsChangePlot(ui_analyser, p)
 
 
 if __name__ == "__main__":

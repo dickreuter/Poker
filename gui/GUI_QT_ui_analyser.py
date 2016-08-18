@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'GUI_QT_ui_analyser.ui'
 #
-# Created: Thu Aug 18 00:48:36 2016
+# Created: Thu Aug 18 08:56:17 2016
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -13,16 +13,6 @@ class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
         Form.resize(756, 746)
-        self.formLayoutWidget = QtGui.QWidget(Form)
-        self.formLayoutWidget.setGeometry(QtCore.QRect(90, 370, 571, 361))
-        self.formLayoutWidget.setObjectName("formLayoutWidget")
-        self.formLayout = QtGui.QFormLayout(self.formLayoutWidget)
-        self.formLayout.setFieldGrowthPolicy(QtGui.QFormLayout.AllNonFixedFieldsGrow)
-        self.formLayout.setContentsMargins(0, 0, 0, 0)
-        self.formLayout.setObjectName("formLayout")
-        self.widget = QtGui.QWidget(self.formLayoutWidget)
-        self.widget.setObjectName("widget")
-        self.formLayout.setWidget(1, QtGui.QFormLayout.LabelRole, self.widget)
         self.button_analyse = QtGui.QPushButton(Form)
         self.button_analyse.setGeometry(QtCore.QRect(90, 150, 181, 41))
         self.button_analyse.setObjectName("button_analyse")
@@ -73,15 +63,24 @@ class Ui_Form(object):
         font.setPointSize(10)
         self.label_5.setFont(font)
         self.label_5.setObjectName("label_5")
-        self.formLayoutWidget_2 = QtGui.QWidget(Form)
-        self.formLayoutWidget_2.setGeometry(QtCore.QRect(90, 200, 571, 161))
-        self.formLayoutWidget_2.setObjectName("formLayoutWidget_2")
-        self.formLayout_2 = QtGui.QFormLayout(self.formLayoutWidget_2)
-        self.formLayout_2.setContentsMargins(0, 0, 0, 0)
-        self.formLayout_2.setObjectName("formLayout_2")
-        self.widget_2 = QtGui.QWidget(self.formLayoutWidget_2)
+        self.verticalLayoutWidget = QtGui.QWidget(Form)
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(90, 340, 571, 401))
+        self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
+        self.vLayout_bar = QtGui.QVBoxLayout(self.verticalLayoutWidget)
+        self.vLayout_bar.setContentsMargins(0, 0, 0, 0)
+        self.vLayout_bar.setObjectName("vLayout_bar")
+        self.widget = QtGui.QWidget(self.verticalLayoutWidget)
+        self.widget.setObjectName("widget")
+        self.vLayout_bar.addWidget(self.widget)
+        self.verticalLayoutWidget_2 = QtGui.QWidget(Form)
+        self.verticalLayoutWidget_2.setGeometry(QtCore.QRect(90, 200, 571, 121))
+        self.verticalLayoutWidget_2.setObjectName("verticalLayoutWidget_2")
+        self.vLayout_fundschange = QtGui.QVBoxLayout(self.verticalLayoutWidget_2)
+        self.vLayout_fundschange.setContentsMargins(0, 0, 0, 0)
+        self.vLayout_fundschange.setObjectName("vLayout_fundschange")
+        self.widget_2 = QtGui.QWidget(self.verticalLayoutWidget_2)
         self.widget_2.setObjectName("widget_2")
-        self.formLayout_2.setWidget(0, QtGui.QFormLayout.LabelRole, self.widget_2)
+        self.vLayout_fundschange.addWidget(self.widget_2)
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
@@ -99,7 +98,7 @@ class Ui_Form(object):
 if __name__ == "__main__":
     import sys
     app = QtGui.QApplication(sys.argv)
-    Form = QtGui.QDialog()
+    Form = QtGui.QWidget()
     ui = Ui_Form()
     ui.setupUi(Form)
     Form.show()

@@ -13,24 +13,6 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QWidget" name="formLayoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>90</x>
-     <y>370</y>
-     <width>571</width>
-     <height>361</height>
-    </rect>
-   </property>
-   <layout class="QFormLayout" name="formLayout">
-    <property name="fieldGrowthPolicy">
-     <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-    </property>
-    <item row="1" column="0">
-     <widget class="QWidget" name="widget" native="true"/>
-    </item>
-   </layout>
-  </widget>
   <widget class="QPushButton" name="button_analyse">
    <property name="geometry">
     <rect>
@@ -146,17 +128,32 @@
     <string>Total profit:</string>
    </property>
   </widget>
-  <widget class="QWidget" name="formLayoutWidget_2">
+  <widget class="QWidget" name="verticalLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>90</x>
+     <y>340</y>
+     <width>571</width>
+     <height>401</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="vLayout_bar">
+    <item>
+     <widget class="QWidget" name="widget" native="true"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="verticalLayoutWidget_2">
    <property name="geometry">
     <rect>
      <x>90</x>
      <y>200</y>
      <width>571</width>
-     <height>161</height>
+     <height>121</height>
     </rect>
    </property>
-   <layout class="QFormLayout" name="formLayout_2">
-    <item row="0" column="0">
+   <layout class="QVBoxLayout" name="vLayout_fundschange">
+    <item>
      <widget class="QWidget" name="widget_2" native="true"/>
     </item>
    </layout>
