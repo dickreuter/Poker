@@ -7,13 +7,10 @@ import winsound
 import cv2  # opencv 3.0
 import pytesseract
 from PIL import Image, ImageGrab, ImageDraw, ImageFilter
-import sys
-from debug_logger import *
 from decisionmaker.decisionmaker1 import *
 from decisionmaker.montecarlo_v3 import *
 from mouse_mover import *
 from configobj import ConfigObj
-import numpy as np
 from gui.gui_qt_logic import *
 
 
@@ -108,10 +105,12 @@ class Tools(object):
     def take_screenshot(self):
         if terminalmode == False:
             ui.status.setText("")
+            #ui.progress_bar.setValue(0)
         time.sleep(0.1)
         self.entireScreenPIL = ImageGrab.grab()
         if terminalmode == False:
             ui.status.setText(str(p.current_strategy.text))
+            #ui.progress_bar.setValue(10)
         if terminalmode == False and p.ExitThreads == True: sys.exit()
         if terminalmode == False and t1.pause == True:
             while t1.pause == True:
@@ -264,7 +263,7 @@ class TablePP(Table):
 
             if terminalmode == False:
                 ui.status.setText(p.XML_entries_list1['pokerSite'].text + " not found yet")
-                ui.progress_bar.setValue(0)
+                #ui.progress_bar.setValue(0)
             logger.debug("Top left corner NOT found")
             time.sleep(1)
             return False
@@ -818,6 +817,9 @@ class TablePP(Table):
         count, points, bestfit = a.find_template_on_screen(scraped.lostEverything, img, 0.001)
 
         if count > 0:
+            if not terminalmode:
+                #ui.progress_bar.setValue(15)
+                pass
             h.lastGameID = str(h.GameID)
             t.myFundsChange = float(0) - float(str(h.myFundsHistory[-1]).strip('[]'))
             L.mark_last_game(t, h)
@@ -838,7 +840,7 @@ class TablePP(Table):
             self.call_genetic_algorithm()
 
             if terminalmode == False:
-                gui_funds.drawfigure(t.myFunds - float(h.myFundsHistory[-1]))
+                gui_funds.drawfigure()
                 gui_bar.drawfigure()
 
             h.myLastBet = 0

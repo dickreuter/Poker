@@ -21,16 +21,17 @@ class FundsPlotter(FigureCanvas):
         self.ui = proxy(ui)
         self.fig = Figure(figsize=(5, 4), dpi=50)
         super(FundsPlotter, self).__init__(self.fig)
-        self.drawfigure(0)
+        self.drawfigure()
         self.ui.vLayout.insertWidget(1, self)
 
-    def drawfigure(self,lastvalue):
+    def drawfigure(self):
         LogFilename = 'log'
         L = Logging(LogFilename)
-        Strategy = 'PPStrategy4005'
+        Strategy = str(self.p.current_strategy.text)
         data=L.get_fundschange_chart(Strategy)
         data=np.cumsum(data)
         data=data-data.iloc[-1]
+        data.reset_index(inplace=True, drop=True)
         self.fig.clf()
         self.axes = self.fig.add_subplot(111)  # create an axis
         self.axes.hold(True)  # discards the old graph
@@ -193,19 +194,20 @@ class CurvePlot(FigureCanvas):
         self.draw()
 
 class FundsChangePlot(FigureCanvas):
-    def __init__(self, ui_analyser, p):
+    def __init__(self, ui_analyser):
         self.p = p
         self.ui_analyser = proxy(ui_analyser)
         self.fig = Figure(dpi=50)
         super(FundsChangePlot, self).__init__(self.fig)
-        self.drawfigure(0)
+        self.drawfigure()
         self.ui_analyser.vLayout_fundschange.insertWidget(1, self)
 
-    def drawfigure(self,lastvalue):
+    def drawfigure(self):
         LogFilename = 'log'
         L = Logging(LogFilename)
-        Strategy = 'PPStrategy4005'
+        Strategy = str(self.p.current_strategy.text)
         data=L.get_fundschange_chart(Strategy)
+        data.reset_index(inplace=True, drop=True)
         self.fig.clf()
         self.axes = self.fig.add_subplot(111)  # create an axis
         self.axes.hold(True)  # discards the old graph
