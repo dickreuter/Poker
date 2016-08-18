@@ -165,8 +165,8 @@ class Tools(object):
 
     def get_ocr_float(self, img_orig, name):
         def fix_number(t):
-            t = t.replace("I", "1").replace("O", "0").replace("o", "0").replace("-", ".").replace("D", "0").replace("I",
-                                                                                                                    "1")
+            t = t.replace("I", "1").replace("O", "0").replace("o", "0")\
+                .replace("-", ".").replace("D", "0").replace("I","1").replace("_",".")
             t = re.sub("[^0123456789.]", "", t)
             try:
                 if t[0] == ".": t = t[1:]
@@ -197,8 +197,11 @@ class Tools(object):
         #    lst.append(pytesseract.image_to_string(img_med, None, False, "-psm 6"))
         # except Exception as e:
         #    logger.error(str(e))
+
+
         try:
-            lst.append(pytesseract.image_to_string(img_mod, None, False, "-psm 6"))
+            if fix_number(lst[0])=='':
+                lst.append(pytesseract.image_to_string(img_mod, None, False, "-psm 6"))
         except Exception as e:
             logger.error(str(e))
 
@@ -526,14 +529,10 @@ class TablePP(Table):
             playerFundsImage = playerFundsImage.resize((basewidth, hsize), Image.ANTIALIAS)
             # playerFundsImage = playerFundsImage.filter(ImageFilter.MaxFilter)
             # playerFundsImage.show()
-            try:
-                recognizedText = (pytesseract.image_to_string(playerFundsImage, None, False, "-psm 6")).replace("-",
-                                                                                                                ".")
-                recognizedText = re.sub("[^0123456789.]", "",
-                                        recognizedText)
-                t.PlayerFunds.append(float(recognizedText))
-            except:
-                logger.debug("Pyteseract error in player name recognition")
+
+
+            t.PlayerFunds.append(a.get_ocr_float(playerFundsImage,'PlayerFunds'))
+
 
         logger.debug("Player Names: " + str(t.PlayerNames))
         logger.debug("Player Funds: " + str(t.PlayerFunds))
@@ -606,15 +605,9 @@ class TablePP(Table):
             playerPotImage = playerPotImage.resize((basewidth, hsize), Image.ANTIALIAS)
 
             playerPotImage = playerPotImage.filter(ImageFilter.MinFilter)
-            try:
-                recognizedText = pytesseract.image_to_string(playerPotImage, None, False, "-psm 6")
-                recognizedText = re.sub("[^0123456789.]", "", recognizedText)
-                if recognizedText != "":
-                    self.PlayerPots.append(recognizedText)
-            except:
-                logger.debug("Error in Pytesseract")
 
-        self.PlayerPots.sort()
+            self.PlayerPots.append(a.get_ocr_float(playerPotImage, 'PlayerPot'))
+
 
         try:
             t = [float(x) for x in self.PlayerPots]

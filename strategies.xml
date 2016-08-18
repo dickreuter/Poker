@@ -1,5 +1,5 @@
 <data>
-    <CurrentStrategy>PPStrategy4005</CurrentStrategy>
+    <CurrentStrategy>PPStrategy4006</CurrentStrategy>
     <Strategy name="Strategy121">
         <TableType>Zoom</TableType>
 
@@ -5439,4 +5439,74 @@
         <strategyIterationGames updated="False">500</strategyIterationGames>
         <considerLastGames updated="False">500</considerLastGames>
         <minimumLossForIteration updated="False">-3</minimumLossForIteration>
-    </Strategy></data>
+    </Strategy>
+    <Strategy name="PPStrategy4006"><TableType updated="False">Zoom</TableType>
+
+        <PreFlopCallPower updated="False">1</PreFlopCallPower>
+        <FlopCallPower updated="False">7.25</FlopCallPower>
+        <TurnCallPower updated="False">15</TurnCallPower>
+        <RiverCallPower updated="False">18.0</RiverCallPower>
+
+        <PreFlopMinCallEquity updated="False">0.60</PreFlopMinCallEquity>
+        <FlopMinCallEquity updated="False">0.6</FlopMinCallEquity>
+        <TurnMinCallEquity updated="False">0.59</TurnMinCallEquity>
+        <RiverMinCallEquity updated="False">0.68</RiverMinCallEquity>
+
+
+        <PreFlopBetPower updated="False">13</PreFlopBetPower>
+        <FlopBetPower updated="False">11.0</FlopBetPower>
+        <TurnBetPower updated="-0.5">12.0</TurnBetPower>
+        <RiverBetPower updated="-0.5">13.5</RiverBetPower>
+
+        <PreFlopMinBetEquity updated="False">0.65</PreFlopMinBetEquity>
+        <PreFlopMaxBetEquity updated="False">0.80</PreFlopMaxBetEquity>
+        <FlopMinBetEquity updated="False">0.65</FlopMinBetEquity>
+        <FlopCheckDeceptionMinEquity updated="False">0.85</FlopCheckDeceptionMinEquity>
+        <TurnMinBetEquity updated="-0.02">0.62</TurnMinBetEquity>
+        <RiverMinBetEquity updated="-0.02">0.68</RiverMinBetEquity>
+
+
+        <CoveredPlayersCallLikelihoodPreFlop updated="False">0.1</CoveredPlayersCallLikelihoodPreFlop>
+        <CoveredPlayersCallLikelihoodFlop updated="False">0.3</CoveredPlayersCallLikelihoodFlop>
+
+
+        <FlopBluffMinEquity updated="False">0.3</FlopBluffMinEquity>
+        <FlopBluff updated="False">0</FlopBluff>
+        <TurnBluffMinEquity updated="False">0.25</TurnBluffMinEquity>
+        <TurnBluff updated="False">1</TurnBluff>
+        <RiverBluffMinEquity updated="False">0.60</RiverBluffMinEquity>
+        <RiverBluff updated="False">1</RiverBluff>
+
+
+        <BetPlusInc updated="False">2</BetPlusInc>
+
+        <alwaysCallEquity updated="False">0.985</alwaysCallEquity>
+        <betPotRiverEquity updated="False">0.97</betPotRiverEquity>
+        <betPotRiverEquityMaxBBM updated="False">9</betPotRiverEquityMaxBBM>
+
+        <secondRiverBetPotMinEquity updated="False">0.99</secondRiverBetPotMinEquity>
+
+        <secondRoundAdjustmentPreFlop updated="False">0.03</secondRoundAdjustmentPreFlop>
+        <secondRoundAdjustment updated="False">0.1</secondRoundAdjustment>
+        <secondRoundAdjustmentPowerIncrease updated="False">2</secondRoundAdjustmentPowerIncrease>
+
+        <potAdjustment updated="False">1</potAdjustment>
+        <maxPotAdjustment updated="False">0.1</maxPotAdjustment>
+
+        <smallBlind updated="False">0.02</smallBlind>
+        <bigBlind updated="False">0.04</bigBlind>
+        <initialFunds updated="False">2.0</initialFunds>
+
+        <bullyDivider updated="False">5</bullyDivider>
+        <minBullyEquity updated="False">0.50</minBullyEquity>
+        <maxBullyEquity updated="False">0.75</maxBullyEquity>
+
+        <pokerSite updated="False">PP</pokerSite>
+
+        <c updated="False">0.4</c>
+
+        <strategyIterationGames updated="False">500</strategyIterationGames>
+        <considerLastGames updated="False">500</considerLastGames>
+        <minimumLossForIteration updated="False">-3</minimumLossForIteration>
+    </Strategy>
+	</data>

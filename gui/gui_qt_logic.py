@@ -30,7 +30,9 @@ class FundsPlotter(FigureCanvas):
         Strategy = str(self.p.current_strategy.text)
         data=L.get_fundschange_chart(Strategy)
         data=np.cumsum(data)
-        data=data-data.iloc[-1]
+        try: data=data-data.iloc[-1];
+        except: pass
+
         data.reset_index(inplace=True, drop=True)
         self.fig.clf()
         self.axes = self.fig.add_subplot(111)  # create an axis
@@ -194,7 +196,7 @@ class CurvePlot(FigureCanvas):
         self.draw()
 
 class FundsChangePlot(FigureCanvas):
-    def __init__(self, ui_analyser):
+    def __init__(self, ui_analyser, p):
         self.p = p
         self.ui_analyser = proxy(ui_analyser)
         self.fig = Figure(dpi=50)

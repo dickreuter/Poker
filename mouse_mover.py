@@ -139,7 +139,7 @@ class MouseMoverPP(MouseMover):
             self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
 
         if decision == "Bet Bluff":
-            buttonToleranceX = 100
+            buttonToleranceX = 4
             buttonToleranceY = 5
             x2 = 673 + tlx
             y2 = 465 + tly
@@ -147,13 +147,13 @@ class MouseMoverPP(MouseMover):
 
             if current_bluff > 1:
                 for n in range(current_bluff - 1):
-                    self.MouseClicker(x2, y2, buttonToleranceX, buttonToleranceY)
+                    self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
 
             x1temp = x2
             y1temp = y2
 
-            buttonToleranceX = 635 - 525
-            buttonToleranceY = 564 - 531
+            buttonToleranceX = 100
+            buttonToleranceY = 35
             time.sleep(np.random.uniform(0.1, 0.5, 1)[0])
             x2 = 675 + tlx
             y2 = 492 + tly
