@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'GUI_QT_ui_analyser.ui'
 #
-# Created: Wed Aug 17 23:51:47 2016
+# Created: Thu Aug 18 00:48:36 2016
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -12,9 +12,9 @@ from PyQt4 import QtCore, QtGui
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(756, 636)
+        Form.resize(756, 746)
         self.formLayoutWidget = QtGui.QWidget(Form)
-        self.formLayoutWidget.setGeometry(QtCore.QRect(90, 200, 571, 401))
+        self.formLayoutWidget.setGeometry(QtCore.QRect(90, 370, 571, 361))
         self.formLayoutWidget.setObjectName("formLayoutWidget")
         self.formLayout = QtGui.QFormLayout(self.formLayoutWidget)
         self.formLayout.setFieldGrowthPolicy(QtGui.QFormLayout.AllNonFixedFieldsGrow)
@@ -73,6 +73,15 @@ class Ui_Form(object):
         font.setPointSize(10)
         self.label_5.setFont(font)
         self.label_5.setObjectName("label_5")
+        self.formLayoutWidget_2 = QtGui.QWidget(Form)
+        self.formLayoutWidget_2.setGeometry(QtCore.QRect(90, 200, 571, 161))
+        self.formLayoutWidget_2.setObjectName("formLayoutWidget_2")
+        self.formLayout_2 = QtGui.QFormLayout(self.formLayoutWidget_2)
+        self.formLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.formLayout_2.setObjectName("formLayout_2")
+        self.widget_2 = QtGui.QWidget(self.formLayoutWidget_2)
+        self.widget_2.setObjectName("widget_2")
+        self.formLayout_2.setWidget(0, QtGui.QFormLayout.LabelRole, self.widget_2)
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
@@ -90,7 +99,7 @@ class Ui_Form(object):
 if __name__ == "__main__":
     import sys
     app = QtGui.QApplication(sys.argv)
-    Form = QtGui.QWidget()
+    Form = QtGui.QDialog()
     ui = Ui_Form()
     ui.setupUi(Form)
     Form.show()

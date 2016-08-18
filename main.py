@@ -1,3 +1,6 @@
+import matplotlib
+
+matplotlib.use('Qt4Agg')
 import operator
 import os.path
 import winsound
@@ -11,7 +14,7 @@ from decisionmaker.montecarlo_v3 import *
 from mouse_mover import *
 from configobj import ConfigObj
 import numpy as np
-from gui.gui_qt import *
+from gui.gui_qt_logic import *
 
 
 class History(object):
@@ -111,7 +114,7 @@ class Tools(object):
             ui.status.setText(str(p.current_strategy.text))
         if terminalmode == False and p.ExitThreads == True: sys.exit()
         if terminalmode == False and t1.pause == True:
-            while t1.pause==True:
+            while t1.pause == True:
                 time.sleep(1)
         return True
 
@@ -225,7 +228,7 @@ class Table(object):
         lg = int(
             p.XML_entries_list1['considerLastGames'].text)  # only consider lg last games to see if there was a loss
         f = L.get_strategy_total_funds_change(p.current_strategy.text, lg)
-        if terminalmode==False:
+        if terminalmode == False:
             ui.gamenumber.display(str(n))
             ui.winnings.display(str(f))
         logger.info("Game #" + str(n) + " - Last " + str(lg) + ": $" + str(f))
@@ -638,7 +641,7 @@ class TablePP(Table):
             self.playerBetIncreasesPercentage = [0]
             self.maxPlayerBetIncreasesPercentage = 0
 
-        if self.isHeadsUp == True:
+        if self.isHeadsUp:
             try:
                 self.maxPlayerBetIncreasesPercentage = (self.totalPotValue - h.previousPot - h.myLastBet) / h.myLastBet
                 self.maxPlayerBetIncrease = (self.totalPotValue - h.previousPot - h.myLastBet) - h.myLastBet
@@ -835,8 +838,8 @@ class TablePP(Table):
             self.call_genetic_algorithm()
 
             if terminalmode == False:
-                gui_funds.drawfigure(t.myFunds - h.myFundsHistory[-1])
-                gui_bar.draw()
+                gui_funds.drawfigure(t.myFunds - float(h.myFundsHistory[-1]))
+                gui_bar.drawfigure()
 
             h.myLastBet = 0
             h.myFundsHistory.append(str(t.myFunds))
@@ -953,7 +956,7 @@ if __name__ == '__main__':
 
             if terminalmode == False:
                 ui.last_decision.setText(d.decision)
-                ui.equity.display(str(np.round(t.equity*100,2)))
+                ui.equity.display(str(np.round(t.equity * 100, 2)))
                 ui.required_minbet.display(str(t.currentBetValue))
                 ui.required_mincall.display(str(t.minCall))
                 ui.potsize.display(str((t.totalPotValue)))
@@ -965,10 +968,11 @@ if __name__ == '__main__':
 
                 gui_pie.drawfigure(t.winnerCardTypeList)
 
-                gui_curve.updatePlots(h.histEquity, h.histMinCall, h.histMinBet, t.equity, t.minCall, t.minBet, 'bo', 'ro')
-                gui_curve.updateLines(t.power1, t.power2, t.minEquityCall, t.minEquityBet, t.smallBlind, t.bigBlind, t.maxValue,
-                                      t.maxEquityCall,t.maxEquityBet)
-
+                gui_curve.updatePlots(h.histEquity, h.histMinCall, h.histMinBet, t.equity, t.minCall, t.minBet, 'bo',
+                                      'ro')
+                gui_curve.updateLines(t.power1, t.power2, t.minEquityCall, t.minEquityBet, t.smallBlind, t.bigBlind,
+                                      t.maxValue,
+                                      t.maxEquityCall, t.maxEquityBet)
 
             logger.info(
                 "Equity: " + str(t.equity * 100) + "% -> " + str(int(t.assumedPlayers)) + " (" + str(
@@ -981,11 +985,6 @@ if __name__ == '__main__':
             logger.info("Pot size: " + str((t.totalPotValue)) + " -> Zero EV Call: " + str(round(d.maxCallEV, 2)))
 
             logger.info("+++++++++++++++++++++++ Decision: " + str(d.decision) + "+++++++++++++++++++++++")
-
-
-
-
-
 
             mouse.mouse_action(d.decision, t.topleftcorner, p.XML_entries_list1['BetPlusInc'].text, t.currentBluff,
                                logger)
@@ -1012,17 +1011,17 @@ if __name__ == '__main__':
     p = XMLHandler('strategies.xml')
     p.read_XML()
 
-    if setupmode == True:
+    if setupmode:
         a = Tools()
         a.setup_get_item_location()
         sys.exit()
 
-    if terminalmode == False:
+    if not terminalmode:
         app = QtGui.QApplication(sys.argv)
         MainWindow = QtGui.QMainWindow()
         ui = Ui_Pokerbot()
         ui.setupUi(MainWindow)
-        ui_action=UIAction()
+        ui_action = UIAction()
 
         gui_funds = FundsPlotter(ui, p)
         gui_bar = BarPlotter(ui, p)
@@ -1033,20 +1032,19 @@ if __name__ == '__main__':
         t1 = threading.Thread(target=run_pokerbot, args=[logger])
         t1.setDaemon(True)
 
+        # ui.button_options.clicked.connect()
+        ui.button_log_analyser.clicked.connect(lambda: ui_action.open_strategy_analyser(p))
+        # ui.button_strategy_editor.clicked.connect()
+        # ui.button_options.clicked.connect()
+        ui.button_pause.clicked.connect(lambda: ui_action.pause(ui, t1))
+        ui.button_resume.clicked.connect(lambda: ui_action.resume(ui, t1))
 
-        #ui.button_options.clicked.connect()
-        ui.button_log_analyser.clicked.connect(lambda: ui_action.open_strategy_analyser(ui))
-        #ui.button_strategy_editor.clicked.connect()
-        #ui.button_options.clicked.connect()
-        ui.button_pause.clicked.connect(lambda: ui_action.pause(ui,t1))
-        ui.button_resume.clicked.connect(lambda: ui_action.resume(ui,t1))
-
-        t1.pause=False
+        t1.pause = False
         t1.start()
         MainWindow.show()
         sys.exit(app.exec_())
         p.ExitThreads = True
 
-    elif terminalmode == True:
+    elif terminalmode:
         print("Terminal mode selected. To view GUI set terminalmode=False")
         run_pokerbot(logger)

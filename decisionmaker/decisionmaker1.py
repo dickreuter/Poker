@@ -119,7 +119,7 @@ class Decision(DecisionBase):
             t.minBetAmountIfAboveLimit = t.bigBlind * 2
         elif t.gameStage == "River":
             t.power2 = float(p.XML_entries_list1['RiverBetPower'].text) + secondRoundAdjustmentPowerIncrease
-            minEquityBet = float(
+            t.minEquityBet = float(
                 p.XML_entries_list1['RiverMinBetEquity'].text) + self.secondRoundAdjustment - self.potAdjustment
             t.maxEquityBet = 1
             t.minBetAmountIfAboveLimit = t.bigBlind * 2
