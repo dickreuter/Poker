@@ -36,7 +36,7 @@ class FundsPlotter(FigureCanvas):
         data.reset_index(inplace=True, drop=True)
         self.fig.clf()
         self.axes = self.fig.add_subplot(111)  # create an axis
-        self.axes.hold(True)  # discards the old graph
+        self.axes.hold(False)  # discards the old graph
         self.axes.set_title('My Funds')
         self.axes.set_xlabel('Time')
         self.axes.set_ylabel('$')
@@ -125,7 +125,7 @@ class PiePlotter(FigureCanvas):
         self.drawfigure()
         self.ui.vLayout4.insertWidget(1, self)
 
-    def drawfigure(self, D = {u'HighCard': 0}):
+    def drawfigure(self, D = {u'HighCard': 10}):
         self.fig.clf()
         self.axes = self.fig.add_subplot(111)  # create an axis
         self.axes.hold(False)  # discards the old graph
@@ -212,7 +212,7 @@ class FundsChangePlot(FigureCanvas):
         data.reset_index(inplace=True, drop=True)
         self.fig.clf()
         self.axes = self.fig.add_subplot(111)  # create an axis
-        self.axes.hold(True)  # discards the old graph
+        self.axes.hold(False)  # discards the old graph
         self.axes.set_title('My Funds')
         self.axes.set_xlabel('Time')
         self.axes.set_ylabel('$')

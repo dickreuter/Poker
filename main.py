@@ -193,6 +193,7 @@ class Tools(object):
             lst.append(pytesseract.image_to_string(img_min, None, False, "-psm 6"))
         except Exception as e:
             logger.error(str(e))
+            self.entireScreenPIL.save('pics/err_debug_fullscreen.png')
         # try:
         #    lst.append(pytesseract.image_to_string(img_med, None, False, "-psm 6"))
         # except Exception as e:
@@ -204,6 +205,7 @@ class Tools(object):
                 lst.append(pytesseract.image_to_string(img_mod, None, False, "-psm 6"))
         except Exception as e:
             logger.error(str(e))
+            self.entireScreenPIL.save('pics/err_debug_fullscreen.png')
 
         try:
             final_value = ''
@@ -218,6 +220,7 @@ class Tools(object):
         except Exception as e:
             logger.error("Pytesseract Error in recognising " + name)
             logger.error(str(e))
+            self.entireScreenPIL.save('pics/err_debug_fullscreen.png')
             return ''
 
 
@@ -767,6 +770,11 @@ class TablePP(Table):
         if self.currentBetValue == '':
             returnvalue = False
             self.currentBetValue = 9999999.0
+
+        if self.currentCallValue=='':
+            logger.error("Call Value was empty")
+            self.entireScreenPIL.save('pics/err_debug_fullscreen.png')
+            self.currentCallValue=9999999.0
 
         if self.currentBetValue < self.currentCallValue:
             self.currentCallValue = self.currentBetValue / 2
