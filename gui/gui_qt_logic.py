@@ -9,7 +9,7 @@ import random
 
 from weakref import proxy
 from gui.gui_qt_ui import Ui_Pokerbot
-import threading
+
 
 import math
 from decisionmaker.genetic_algorithm1 import *
@@ -29,11 +29,11 @@ class FundsPlotter(FigureCanvas):
         L = Logging(LogFilename)
         Strategy = str(self.p.current_strategy.text)
         data=L.get_fundschange_chart(Strategy)
+        data=data.iloc[::-1].reset_index(drop=True)
         data=np.cumsum(data)
-        try: data=data-data.iloc[-1];
-        except: pass
+        # try: data=data-data.iloc[-1];
+        # except: pass
 
-        data.reset_index(inplace=True, drop=True)
         self.fig.clf()
         self.axes = self.fig.add_subplot(111)  # create an axis
         self.axes.hold(False)  # discards the old graph

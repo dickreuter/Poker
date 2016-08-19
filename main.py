@@ -12,6 +12,7 @@ from decisionmaker.montecarlo_v3 import *
 from mouse_mover import *
 from configobj import ConfigObj
 from gui.gui_qt_logic import *
+import threading
 
 
 class History(object):
