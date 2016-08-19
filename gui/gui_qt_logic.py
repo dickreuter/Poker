@@ -128,12 +128,9 @@ class PiePlotter(FigureCanvas):
     def drawfigure(self, winnerCardTypeList):
         self.fig.clf()
         self.axes = self.fig.add_subplot(111)  # create an axis
-        self.axes.hold(False)  # discards the old graph
-        self.axes.pie([22, 100 - 22], autopct='%1.1f%%')
-
+        self.axes.hold(False)
         self.axes.pie([float(v) for v in winnerCardTypeList.values()],
                         labels=[k for k in winnerCardTypeList.keys()], autopct=None)
-
         self.axes.set_title('Winning probabilities')
         self.draw()
 

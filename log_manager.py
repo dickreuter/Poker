@@ -292,9 +292,6 @@ class Logging(object):
         return n
 
     def get_fundschange_chart(self,strategy):
-        x=[]
-        y=[]
-        days=100
 
         y = round(self.LogDataFile[self.LogDataFile['Template'] == strategy][
                           ['FinalFundsChange', 'GameID']].drop_duplicates(subset=['GameID'])['FinalFundsChange'], 2)
