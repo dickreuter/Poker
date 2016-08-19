@@ -1029,7 +1029,7 @@ if __name__ == '__main__':
         gui_funds = FundsPlotter(ui, p)
         gui_bar = BarPlotter(ui, p)
         gui_curve = CurvePlot(ui, p)
-        gui_pie = PiePlotter(ui, p)
+        gui_pie = PiePlotter(ui, winnerCardTypeList={'Highcard':22})
 
         p.ExitThreads = False
         t1 = threading.Thread(target=run_pokerbot, args=[logger])
