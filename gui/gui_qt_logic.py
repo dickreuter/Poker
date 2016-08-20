@@ -4,16 +4,25 @@ matplotlib.use('Qt4Agg')
 from matplotlib.backends.backend_qt4agg import (
     FigureCanvasQTAgg as FigureCanvas)
 from matplotlib.figure import Figure
-from PyQt4 import QtGui
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
 import random
 
 from weakref import proxy
 from gui.gui_qt_ui import Ui_Pokerbot
 
 
-import math
 from decisionmaker.genetic_algorithm1 import *
 from decisionmaker.curvefitting import *
+
+class SignalDefinitions(QObject):
+    signal_progressbar = QtCore.pyqtSignal(int)
+    def __init__(self,ui):
+        QObject.__init__(self)
+        self.ui_action = UIAction(ui)
+        self.signal_progressbar.connect(self.ui_action.update_progressbar)
+        #self.signal_progressbar.emit(50)
+
 
 class FundsPlotter(FigureCanvas):
     def __init__(self, ui, p):
@@ -206,7 +215,7 @@ class FundsChangePlot(FigureCanvas):
         L = Logging(LogFilename)
         Strategy = str(self.p.current_strategy.text)
         data=L.get_fundschange_chart(Strategy)
-        data.reset_index(inplace=True, drop=True)
+        data = data.iloc[::-1].reset_index(drop=True)
         self.fig.clf()
         self.axes = self.fig.add_subplot(111)  # create an axis
         self.axes.hold(False)  # discards the old graph
@@ -291,8 +300,8 @@ class BarPlotter2(FigureCanvas):
         self.draw()
 
 class UIAction():
-    def __init__(self):
-        pass
+    def __init__(self, ui):
+        self.ui=ui
 
     def pause(self,ui,t1):
         print ("Game paused")
@@ -317,6 +326,10 @@ class UIAction():
         self.gui_bar2 = BarPlotter2(ui_analyser, p)
         self.gui_fundschange = FundsChangePlot(ui_analyser, p)
 
+    def update_progressbar(self, value):
+        #self.ui.progress_bar.setValue(value)
+        pass
+
 
 if __name__ == "__main__":
     import sys
@@ -333,12 +346,16 @@ if __name__ == "__main__":
     p = XMLHandler('strategies.xml')
     p.read_XML()
 
+
     # plotter logic and binding needs to be added here
     gui_funds = FundsPlotter(ui, p)
     #ui.button_config.clicked.connect(plotter1.drawfigure)
     gui_bar = BarPlotter(ui, p)
     gui_curve = CurvePlot(ui, p)
     gui_pie = PiePlotter(ui, p)
+
+
+
 
     MainWindow.show()
     sys.exit(app.exec_())

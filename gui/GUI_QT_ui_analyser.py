@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'GUI_QT_ui_analyser.ui'
 #
-# Created: Thu Aug 18 08:56:17 2016
+# Created: Sat Aug 20 18:25:11 2016
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -12,7 +12,9 @@ from PyQt4 import QtCore, QtGui
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(756, 746)
+        Form.resize(722, 748)
+        Form.setMinimumSize(QtCore.QSize(722, 748))
+        Form.setMaximumSize(QtCore.QSize(722, 748))
         self.button_analyse = QtGui.QPushButton(Form)
         self.button_analyse.setGeometry(QtCore.QRect(90, 150, 181, 41))
         self.button_analyse.setObjectName("button_analyse")
@@ -58,13 +60,13 @@ class Ui_Form(object):
         self.lcdNumber.setGeometry(QtCore.QRect(560, 150, 101, 41))
         self.lcdNumber.setObjectName("lcdNumber")
         self.label_5 = QtGui.QLabel(Form)
-        self.label_5.setGeometry(QtCore.QRect(470, 170, 111, 16))
+        self.label_5.setGeometry(QtCore.QRect(500, 170, 61, 21))
         font = QtGui.QFont()
         font.setPointSize(10)
         self.label_5.setFont(font)
         self.label_5.setObjectName("label_5")
         self.verticalLayoutWidget = QtGui.QWidget(Form)
-        self.verticalLayoutWidget.setGeometry(QtCore.QRect(90, 340, 571, 401))
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(90, 340, 281, 401))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
         self.vLayout_bar = QtGui.QVBoxLayout(self.verticalLayoutWidget)
         self.vLayout_bar.setContentsMargins(0, 0, 0, 0)
@@ -81,6 +83,21 @@ class Ui_Form(object):
         self.widget_2 = QtGui.QWidget(self.verticalLayoutWidget_2)
         self.widget_2.setObjectName("widget_2")
         self.vLayout_fundschange.addWidget(self.widget_2)
+        self.horizontalLayoutWidget_3 = QtGui.QWidget(Form)
+        self.horizontalLayoutWidget_3.setGeometry(QtCore.QRect(380, 340, 281, 401))
+        self.horizontalLayoutWidget_3.setObjectName("horizontalLayoutWidget_3")
+        self.horizontalLayout_3 = QtGui.QHBoxLayout(self.horizontalLayoutWidget_3)
+        self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
+        self.widget_3 = QtGui.QWidget(self.horizontalLayoutWidget_3)
+        self.widget_3.setObjectName("widget_3")
+        self.horizontalLayout_3.addWidget(self.widget_3)
+        self.lcdNumber_2 = QtGui.QLCDNumber(Form)
+        self.lcdNumber_2.setGeometry(QtCore.QRect(363, 150, 101, 41))
+        self.lcdNumber_2.setObjectName("lcdNumber_2")
+        self.label_6 = QtGui.QLabel(Form)
+        self.label_6.setGeometry(QtCore.QRect(310, 170, 51, 20))
+        self.label_6.setObjectName("label_6")
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
@@ -89,10 +106,11 @@ class Ui_Form(object):
         Form.setWindowTitle(QtGui.QApplication.translate("Form", "Form", None, QtGui.QApplication.UnicodeUTF8))
         self.button_analyse.setText(QtGui.QApplication.translate("Form", "Show Analysis", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("Form", "Strategy", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_2.setText(QtGui.QApplication.translate("Form", "Item1", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_3.setText(QtGui.QApplication.translate("Form", "Item2", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_2.setText(QtGui.QApplication.translate("Form", "Game Stage", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_3.setText(QtGui.QApplication.translate("Form", "Action Type", None, QtGui.QApplication.UnicodeUTF8))
         self.label_4.setText(QtGui.QApplication.translate("Form", "Strategy Analyser", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_5.setText(QtGui.QApplication.translate("Form", "Total profit:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_5.setText(QtGui.QApplication.translate("Form", "Return %", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_6.setText(QtGui.QApplication.translate("Form", "Total hads", None, QtGui.QApplication.UnicodeUTF8))
 
 
 if __name__ == "__main__":

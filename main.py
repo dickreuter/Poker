@@ -12,7 +12,7 @@ from decisionmaker.montecarlo_v3 import *
 from mouse_mover import *
 from configobj import ConfigObj
 from gui.gui_qt_logic import *
-import threading
+from PyQt4 import QtCore
 
 
 class History(object):
@@ -35,7 +35,6 @@ class History(object):
         self.histMinCall = 0
         self.histMinBet = 0
         self.histPlayerPots = 0
-
 
 class Tools(object):
     # General tools that are used to operate the pokerbot, such as moving the
@@ -106,13 +105,13 @@ class Tools(object):
     def take_screenshot(self):
         if terminalmode == False:
             ui.status.setText("")
-            #ui.progress_bar.setValue(0)
+            signal_definitions.signal_progressbar.emit(0)
         time.sleep(0.1)
         self.entireScreenPIL = ImageGrab.grab()
         if terminalmode == False:
             ui.status.setText(str(p.current_strategy.text))
-            #ui.progress_bar.setValue(10)
-        if terminalmode == False and p.ExitThreads == True: sys.exit()
+            signal_definitions.signal_progressbar.emit(10)
+        if terminalmode == False and t1.exit_thread == True: sys.exit()
         if terminalmode == False and t1.pause == True:
             while t1.pause == True:
                 time.sleep(1)
@@ -224,7 +223,6 @@ class Tools(object):
             self.entireScreenPIL.save('pics/err_debug_fullscreen.png')
             return ''
 
-
 class Table(object):
     # baseclass that is inherited by the different types of Tables (e.g.
     # Pokerstars of Party Poker Table)
@@ -256,7 +254,6 @@ class Table(object):
         # cropped_example.show()
         return cropped_example
 
-
 class TablePP(Table):
     def get_top_left_corner(self, scraped):
         img = cv2.cvtColor(np.array(a.entireScreenPIL), cv2.COLOR_BGR2RGB)
@@ -270,7 +267,7 @@ class TablePP(Table):
 
             if terminalmode == False:
                 ui.status.setText(p.XML_entries_list1['pokerSite'].text + " not found yet")
-                #ui.progress_bar.setValue(0)
+                ui.progress_bar.setValue(0)
             logger.debug("Top left corner NOT found")
             time.sleep(1)
             return False
@@ -900,113 +897,120 @@ class TablePP(Table):
         self.equity = np.round(m.equity, 3)
         self.winnerCardTypeList = m.winnerCardTypeList
 
+class QtThreadManager(QtCore.QThread):
+    def __init__(self):
+        QtCore.QThread.__init__(self)
 
-    
-# ==== MAIN PROGRAM =====
-if __name__ == '__main__':
-    def run_pokerbot(logger):
-        global LogFilename, h, L, p, mouse, t, a, d
+    def run_pokerbot(self):
+        self.start()
 
-        LogFilename = 'log'
-        h = History()
-        L = Logging(LogFilename)
-        a = Tools()
+    def run(self):
+            global LogFilename, h, L, p, mouse, t, a, d, terminalmode
 
-        if p.XML_entries_list1['pokerSite'].text == "PS":
-            logger.critical("Pokerstars no longer supported")
-            exit()
-        elif p.XML_entries_list1['pokerSite'].text == "PP":
-            mouse = MouseMoverPP()
-        else:
-            raise ("Invalid PokerSite")
-        counter = 0
 
-        while True:
-            p.read_XML()
+            LogFilename = 'log'
+            h = History()
+            L = Logging(LogFilename)
+            a = Tools()
+
             if p.XML_entries_list1['pokerSite'].text == "PS":
                 logger.critical("Pokerstars no longer supported")
                 exit()
             elif p.XML_entries_list1['pokerSite'].text == "PP":
-                t = TablePP()
-            elif p.XML_entries_list1['pokerSite'].text == "F1":
-                # t = TableF1()
-                logger.critical("Pokerbot tournament not yet supported")
-                exit()
+                mouse = MouseMoverPP()
+            else:
+                raise ("Invalid PokerSite")
+            counter = 0
 
-            ready = False
-            while (not ready):
-                ready = a.take_screenshot() and \
-                        t.get_top_left_corner(a) and \
-                        t.check_for_captcha() and \
-                        t.get_lost_everything(a) and \
-                        t.check_for_imback(a) and \
-                        t.get_my_funds() and \
-                        t.get_my_cards(a) and \
-                        t.get_new_hand() and \
-                        t.check_for_button(a) and \
-                        t.get_table_cards(a) and \
-                        t.get_covered_card_holders(a) and \
-                        t.get_total_pot_value() and \
-                        t.get_played_players(a) and \
-                        t.check_for_checkbutton(a) and \
-                        t.check_for_call(a) and \
-                        t.check_for_allincall_button(a) and \
-                        t.get_current_call_value() and \
-                        t.get_current_bet_value() and \
-                        t.run_montecarlo_wrapper()
+            while True:
+                p.read_XML()
+                if p.XML_entries_list1['pokerSite'].text == "PS":
+                    logger.critical("Pokerstars no longer supported")
+                    exit()
+                elif p.XML_entries_list1['pokerSite'].text == "PP":
+                    t = TablePP()
+                elif p.XML_entries_list1['pokerSite'].text == "F1":
+                    # t = TableF1()
+                    logger.critical("Pokerbot tournament not yet supported")
+                    exit()
 
-            d = Decision()
-            d.make_decision(t, h, p, logger)
-            # t.montecarlo_thread.join() # wait for montecarlo to finish
+                ready = False
+                while (not ready):
+                    ready = a.take_screenshot() and \
+                            t.get_top_left_corner(a) and \
+                            t.check_for_captcha() and \
+                            t.get_lost_everything(a) and \
+                            t.check_for_imback(a) and \
+                            t.get_my_funds() and \
+                            t.get_my_cards(a) and \
+                            t.get_new_hand() and \
+                            t.check_for_button(a) and \
+                            t.get_table_cards(a) and \
+                            t.get_covered_card_holders(a) and \
+                            t.get_total_pot_value() and \
+                            t.get_played_players(a) and \
+                            t.check_for_checkbutton(a) and \
+                            t.check_for_call(a) and \
+                            t.check_for_allincall_button(a) and \
+                            t.get_current_call_value() and \
+                            t.get_current_bet_value() and \
+                            t.run_montecarlo_wrapper()
 
-            if terminalmode == False:
-                ui.last_decision.setText(d.decision)
-                ui.equity.display(str(np.round(t.equity * 100, 2)))
-                ui.required_minbet.display(str(t.currentBetValue))
-                ui.required_mincall.display(str(t.minCall))
-                ui.potsize.display(str((t.totalPotValue)))
-                ui.gamenumber.display(str(L.get_game_count(p.current_strategy.text)))
-                ui.assumed_players.display(str(int(t.assumedPlayers)))
-                ui.calllimit.display(str(d.finalCallLimit))
-                ui.betlimit.display(str(d.finalBetLimit))
-                ui.zero_ev.display(str(round(d.maxCallEV, 2)))
+                d = Decision()
+                d.make_decision(t, h, p, logger)
+                # t.montecarlo_thread.join() # wait for montecarlo to finish
 
-                gui_pie.drawfigure(t.winnerCardTypeList)
+                if terminalmode == False:
+                    ui.last_decision.setText(d.decision)
+                    ui.equity.display(str(np.round(t.equity * 100, 2)))
+                    ui.required_minbet.display(str(t.currentBetValue))
+                    ui.required_mincall.display(str(t.minCall))
+                    ui.potsize.display(str((t.totalPotValue)))
+                    ui.gamenumber.display(str(L.get_game_count(p.current_strategy.text)))
+                    ui.assumed_players.display(str(int(t.assumedPlayers)))
+                    ui.calllimit.display(str(d.finalCallLimit))
+                    ui.betlimit.display(str(d.finalBetLimit))
+                    ui.zero_ev.display(str(round(d.maxCallEV, 2)))
 
-                gui_curve.updatePlots(h.histEquity, h.histMinCall, h.histMinBet, t.equity, t.minCall, t.minBet, 'bo',
-                                      'ro')
-                gui_curve.updateLines(t.power1, t.power2, t.minEquityCall, t.minEquityBet, t.smallBlind, t.bigBlind,
-                                      t.maxValue,
-                                      t.maxEquityCall, t.maxEquityBet)
+                    gui_pie.drawfigure(t.winnerCardTypeList)
 
-            logger.info(
-                "Equity: " + str(t.equity * 100) + "% -> " + str(int(t.assumedPlayers)) + " (" + str(
-                    int(t.coveredCardHolders)) + "-" + str(int(t.playersAhead)) + "+1) Plr")
+                    gui_curve.updatePlots(h.histEquity, h.histMinCall, h.histMinBet, t.equity, t.minCall, t.minBet,
+                                          'bo',
+                                          'ro')
+                    gui_curve.updateLines(t.power1, t.power2, t.minEquityCall, t.minEquityBet, t.smallBlind, t.bigBlind,
+                                          t.maxValue,
+                                          t.maxEquityCall, t.maxEquityBet)
 
-            logger.info("Final Call Limit: " + str(d.finalCallLimit) + " --> " + str(t.minCall))
+                logger.info(
+                    "Equity: " + str(t.equity * 100) + "% -> " + str(int(t.assumedPlayers)) + " (" + str(
+                        int(t.coveredCardHolders)) + "-" + str(int(t.playersAhead)) + "+1) Plr")
 
-            logger.info("Final Bet Limit: " + str(d.finalBetLimit) + " --> " + str(t.currentBetValue))
+                logger.info("Final Call Limit: " + str(d.finalCallLimit) + " --> " + str(t.minCall))
 
-            logger.info("Pot size: " + str((t.totalPotValue)) + " -> Zero EV Call: " + str(round(d.maxCallEV, 2)))
+                logger.info("Final Bet Limit: " + str(d.finalBetLimit) + " --> " + str(t.currentBetValue))
 
-            logger.info("+++++++++++++++++++++++ Decision: " + str(d.decision) + "+++++++++++++++++++++++")
+                logger.info("Pot size: " + str((t.totalPotValue)) + " -> Zero EV Call: " + str(round(d.maxCallEV, 2)))
 
-            mouse.mouse_action(d.decision, t.topleftcorner, p.XML_entries_list1['BetPlusInc'].text, t.currentBluff,
-                               logger)
+                logger.info("+++++++++++++++++++++++ Decision: " + str(d.decision) + "+++++++++++++++++++++++")
 
-            if terminalmode == False: ui.status.setText("Writing log file")
+                mouse.mouse_action(d.decision, t.topleftcorner, p.XML_entries_list1['BetPlusInc'].text, t.currentBluff,
+                                   logger)
 
-            L.write_log_file(p, h, t, d)
+                if terminalmode == False: ui.status.setText("Writing log file")
 
-            h.previousPot = t.totalPotValue
-            h.histGameStage = t.gameStage
-            h.histDecision = d.decision
-            h.histEquity = t.equity
-            h.histMinCall = t.minCall
-            h.histMinBet = t.minBet
-            h.histPlayerPots = t.PlayerPots
+                L.write_log_file(p, h, t, d)
+
+                h.previousPot = t.totalPotValue
+                h.histGameStage = t.gameStage
+                h.histDecision = d.decision
+                h.histEquity = t.equity
+                h.histMinCall = t.minCall
+                h.histMinBet = t.minBet
+                h.histPlayerPots = t.PlayerPots
 
 
+# ==== MAIN PROGRAM =====
+if __name__ == '__main__':
     config = ConfigObj("config.ini")
     terminalmode = int(config['terminalmode'])
     setupmode = int(config['setupmode'])
@@ -1026,16 +1030,16 @@ if __name__ == '__main__':
         MainWindow = QtGui.QMainWindow()
         ui = Ui_Pokerbot()
         ui.setupUi(MainWindow)
-        ui_action = UIAction()
+        ui_action = UIAction(ui)
 
         gui_funds = FundsPlotter(ui, p)
         gui_bar = BarPlotter(ui, p)
         gui_curve = CurvePlot(ui, p)
         gui_pie = PiePlotter(ui, winnerCardTypeList={'Highcard':22})
 
-        p.ExitThreads = False
-        t1 = threading.Thread(target=run_pokerbot, args=[logger])
-        t1.setDaemon(True)
+
+        t1=QtThreadManager()
+        t1.run_pokerbot()
 
         # ui.button_options.clicked.connect()
         ui.button_log_analyser.clicked.connect(lambda: ui_action.open_strategy_analyser(p))
@@ -1044,11 +1048,14 @@ if __name__ == '__main__':
         ui.button_pause.clicked.connect(lambda: ui_action.pause(ui, t1))
         ui.button_resume.clicked.connect(lambda: ui_action.resume(ui, t1))
 
+        signal_definitions=SignalDefinitions(ui)
+
         t1.pause = False
-        t1.start()
+        t1.exit_thread=False
+
         MainWindow.show()
         sys.exit(app.exec_())
-        p.ExitThreads = True
+        p.exit_thread = True
 
     elif terminalmode:
         print("Terminal mode selected. To view GUI set terminalmode=False")

@@ -198,6 +198,7 @@
     <Compile Include="experimental\neurons.py" />
     <Compile Include="experimental\tournament_server.py" />
     <Compile Include="gui\gui_qt.py" />
+    <Compile Include="gui\gui_qt_logic.py" />
     <Compile Include="gui\gui_qt_ui.py" />
     <Compile Include="gui\gui_tkinter.py" />
     <Compile Include="gui\terminal.py" />
