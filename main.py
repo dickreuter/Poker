@@ -104,12 +104,13 @@ class Tools(object):
 
     def take_screenshot(self):
         if terminalmode == False:
-            ui.status.setText("")
+            signal_definitions.signal_status.emit("")
             signal_definitions.signal_progressbar.emit(0)
         time.sleep(0.1)
         self.entireScreenPIL = ImageGrab.grab()
         if terminalmode == False:
-            ui.status.setText(str(p.current_strategy.text))
+            
+            signal_definitions.signal_status.emit(str(p.current_strategy.text))
             signal_definitions.signal_progressbar.emit(10)
         if terminalmode == False and t1.exit_thread == True: sys.exit()
         if terminalmode == False and t1.pause == True:
@@ -227,7 +228,7 @@ class Table(object):
     # baseclass that is inherited by the different types of Tables (e.g.
     # Pokerstars of Party Poker Table)
     def call_genetic_algorithm(self):
-        ui.status.setText("Checking for AI update")
+        signal_definitions.signal_status.emit("Checking for AI update")
         n = L.get_game_count(p.current_strategy.text)
         lg = int(
             p.XML_entries_list1['considerLastGames'].text)  # only consider lg last games to see if there was a loss
@@ -238,7 +239,7 @@ class Table(object):
         logger.info("Game #" + str(n) + " - Last " + str(lg) + ": $" + str(f))
         if n % int(p.XML_entries_list1['strategyIterationGames'].text) == 0 and f < float(
                 p.XML_entries_list1['minimumLossForIteration'].text):
-            ui.status.setText("***Improving current strategy***")
+            signal_definitions.signal_status.emit("***Improving current strategy***")
             logger.info("***Improving current strategy***")
             winsound.Beep(500, 100)
             Genetic_Algorithm(True, logger)
@@ -266,7 +267,7 @@ class TablePP(Table):
         else:
 
             if terminalmode == False:
-                ui.status.setText(p.XML_entries_list1['pokerSite'].text + " not found yet")
+                signal_definitions.signal_status.emit(p.XML_entries_list1['pokerSite'].text + " not found yet")
                 ui.progress_bar.setValue(0)
             logger.debug("Top left corner NOT found")
             time.sleep(1)
@@ -281,7 +282,7 @@ class TablePP(Table):
 
         if count > 0:
             if terminalmode == False:
-                ui.status.setText("Buttons found, preparing Montecarlo with: " + str(cards))
+                signal_definitions.signal_status.emit("Buttons found, preparing Montecarlo with: " + str(cards))
             logger.info("Buttons Found, preparing for montecarlo")
             return True
 
@@ -291,7 +292,7 @@ class TablePP(Table):
 
     def check_for_checkbutton(self, scraped):
         if terminalmode == False:
-            ui.status.setText("Check for Check")
+            signal_definitions.signal_status.emit("Check for Check")
         logger.debug("Checking for check button")
         pil_image = self.crop_image(a.entireScreenPIL, self.topleftcorner[0] + 560, self.topleftcorner[1] + 478,
                                     self.topleftcorner[0] + 670, self.topleftcorner[1] + 550)
@@ -363,7 +364,7 @@ class TablePP(Table):
             mouse.mouse_action("Imback", t.topleftcorner, 0, 0, logger)
             return False
             if terminalmode == False:
-                ui.status.setText("I am back found")
+                signal_definitions.signal_status.emit("I am back found")
         else:
             return True
 
@@ -494,7 +495,7 @@ class TablePP(Table):
             return False
 
     def get_covered_card_holders(self, scraped):
-        if terminalmode == False: ui.status.setText("Analyse other players and position")
+        if terminalmode == False: signal_definitions.signal_status.emit("Analyse other players and position")
         pil_image = self.crop_image(a.entireScreenPIL, self.topleftcorner[0] + 0, self.topleftcorner[1] + 0,
                                     self.topleftcorner[0] + 800, self.topleftcorner[1] + 500)
         # Convert RGB to BGR
@@ -560,7 +561,7 @@ class TablePP(Table):
             return True
 
     def get_played_players(self, scraped):
-        if terminalmode == False: ui.status.setText("Analyse past players")
+        if terminalmode == False: signal_definitions.signal_status.emit("Analyse past players")
         pil_image = self.crop_image(a.entireScreenPIL, self.topleftcorner[0] + 0, self.topleftcorner[1] + 0,
                                     self.topleftcorner[0] + 800, self.topleftcorner[1] + 500)
 
@@ -667,7 +668,7 @@ class TablePP(Table):
         return True
 
     def get_total_pot_value(self):
-        if terminalmode == False: ui.status.setText("Get Pot Value")
+        if terminalmode == False: signal_definitions.signal_status.emit("Get Pot Value")
         logger.debug("Get TotalPot value")
         returnvalue = True
         x1 = 385
@@ -681,7 +682,7 @@ class TablePP(Table):
 
         if self.totalPotValue < 0.01:
             logger.info("unable to get pot value")
-            if terminalmode == False: ui.status.setText("Unable to get pot value")
+            if terminalmode == False: signal_definitions.signal_status.emit("Unable to get pot value")
             time.sleep(1)
             pil_image.save("pics/ErrPotValue.png")
             self.totalPotValue = h.previousPot
@@ -717,7 +718,7 @@ class TablePP(Table):
             self.myFundsError = True
             self.myFunds = float(h.myFundsHistory[-1])
             logger.info("myFunds not regognised!")
-            if terminalmode == False: ui.status.setText("!!Funds NOT recognised!!")
+            if terminalmode == False: signal_definitions.signal_status.emit("!!Funds NOT recognised!!")
             logger.warning("!!Funds NOT recognised!!")
             a.entireScreenPIL.save("pics/FundsError.png")
             time.sleep(0.5)
@@ -725,7 +726,7 @@ class TablePP(Table):
         return True
 
     def get_current_call_value(self):
-        if terminalmode == False: ui.status.setText("Get Call value")
+        if terminalmode == False: signal_definitions.signal_status.emit("Get Call value")
         x1 = 585
         y1 = 516
         x2 = 585 + 70
@@ -754,7 +755,7 @@ class TablePP(Table):
         return True
 
     def get_current_bet_value(self):
-        if terminalmode == False: ui.status.setText("Get Bet Value")
+        if terminalmode == False: signal_definitions.signal_status.emit("Get Bet Value")
         logger.debug("Get bet value")
         x1 = 589 + 125
         y1 = 516
@@ -822,7 +823,7 @@ class TablePP(Table):
             h.lastGameID = str(h.GameID)
             t.myFundsChange = float(0) - float(str(h.myFundsHistory[-1]).strip('[]'))
             L.mark_last_game(t, h)
-            if terminalmode == False: ui.status.setText("Everything is lost. Last game has been marked.")
+            if terminalmode == False: signal_definitions.signal_status.emit("Everything is lost. Last game has been marked.")
             user_input = input("Press Enter for exit ")
             sys.exit()
         else:
@@ -833,7 +834,7 @@ class TablePP(Table):
             h.lastGameID = str(h.GameID)
             h.GameID = int(round(np.random.uniform(0, 999999999), 0))
             cards = ' '.join(t.mycards)
-            ui.status.setText("New hand: " + str(cards))
+            signal_definitions.signal_status.emit("New hand: " + str(cards))
             L.mark_last_game(t, h)
 
             self.call_genetic_algorithm()
@@ -885,13 +886,13 @@ class TablePP(Table):
         else:
             maxRuns = 10000
 
-        if terminalmode == False: ui.status.setText("Running Monte Carlo: " + str(maxRuns))
+        if terminalmode == False: signal_definitions.signal_status.emit("Running Monte Carlo: " + str(maxRuns))
         logger.debug("Running Monte Carlo")
         self.montecarlo_timeout = float(config['montecarlo_timeout'])
         timeout = t.timeout_start + self.montecarlo_timeout
         m = MonteCarlo()
         m.run_montecarlo(t.PlayerCardList, t.cardsOnTable, int(t.assumedPlayers), ui, maxRuns=maxRuns, timeout=timeout)
-        if terminalmode == False: ui.status.setText("Monte Carlo completed successfully")
+        if terminalmode == False: signal_definitions.signal_status.emit("Monte Carlo completed successfully")
         logger.debug("Monte Carlo completed successfully with runs: " + str(m.runs))
 
         self.equity = np.round(m.equity, 3)
@@ -996,7 +997,7 @@ class QtThreadManager(QtCore.QThread):
                 mouse.mouse_action(d.decision, t.topleftcorner, p.XML_entries_list1['BetPlusInc'].text, t.currentBluff,
                                    logger)
 
-                if terminalmode == False: ui.status.setText("Writing log file")
+                if terminalmode == False: signal_definitions.signal_status.emit("Writing log file")
 
                 L.write_log_file(p, h, t, d)
 
@@ -1030,6 +1031,7 @@ if __name__ == '__main__':
         MainWindow = QtGui.QMainWindow()
         ui = Ui_Pokerbot()
         ui.setupUi(MainWindow)
+
         ui_action = UIAction(ui)
 
         gui_funds = FundsPlotter(ui, p)

@@ -17,11 +17,12 @@ from decisionmaker.curvefitting import *
 
 class SignalDefinitions(QObject):
     signal_progressbar = QtCore.pyqtSignal(int)
+    signal_status = QtCore.pyqtSignal(str)
     def __init__(self,ui):
         QObject.__init__(self)
         self.ui_action = UIAction(ui)
         self.signal_progressbar.connect(self.ui_action.update_progressbar)
-        #self.signal_progressbar.emit(50)
+        self.signal_status.connect(self.ui_action.update_mainwindow_status)
 
 
 class FundsPlotter(FigureCanvas):
@@ -329,6 +330,9 @@ class UIAction():
     def update_progressbar(self, value):
         #self.ui.progress_bar.setValue(value)
         pass
+
+    def update_mainwindow_status(self, text):
+        self.ui.status.setText(text)
 
 
 if __name__ == "__main__":
