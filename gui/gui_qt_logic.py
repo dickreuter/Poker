@@ -16,12 +16,12 @@ from decisionmaker.genetic_algorithm1 import *
 from decisionmaker.curvefitting import *
 
 class SignalDefinitions(QObject):
-    signal_progressbar = QtCore.pyqtSignal(int)
+    signal_progressbar_setvalue = QtCore.pyqtSignal(int)
     signal_status = QtCore.pyqtSignal(str)
     def __init__(self,ui):
         QObject.__init__(self)
         self.ui_action = UIAction(ui)
-        self.signal_progressbar.connect(self.ui_action.update_progressbar)
+        self.signal_progressbar_setvalue.connect(self.ui_action.update_progressbar)
         self.signal_status.connect(self.ui_action.update_mainwindow_status)
 
 
@@ -328,7 +328,7 @@ class UIAction():
         self.gui_fundschange = FundsChangePlot(ui_analyser, p)
 
     def update_progressbar(self, value):
-        #self.ui.progress_bar.setValue(value)
+        self.ui.progress_bar.setValue(value)
         pass
 
     def update_mainwindow_status(self, text):

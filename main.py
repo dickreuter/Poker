@@ -105,17 +105,18 @@ class Tools(object):
     def take_screenshot(self):
         if terminalmode == False:
             signal_definitions.signal_status.emit("")
-            signal_definitions.signal_progressbar.emit(0)
+            signal_definitions.signal_progressbar_setvalue.emit(0)
         time.sleep(0.1)
         self.entireScreenPIL = ImageGrab.grab()
         if terminalmode == False:
             
             signal_definitions.signal_status.emit(str(p.current_strategy.text))
-            signal_definitions.signal_progressbar.emit(10)
+            signal_definitions.signal_progressbar_setvalue.emit(5)
         if terminalmode == False and t1.exit_thread == True: sys.exit()
         if terminalmode == False and t1.pause == True:
             while t1.pause == True:
                 time.sleep(1)
+
         return True
 
     def find_template_on_screen(self, template, screenshot, threshold):
@@ -268,7 +269,7 @@ class TablePP(Table):
 
             if terminalmode == False:
                 signal_definitions.signal_status.emit(p.XML_entries_list1['pokerSite'].text + " not found yet")
-                ui.progress_bar.setValue(0)
+                signal_definitions.signal_progressbar_setvalue.emit(10)
             logger.debug("Top left corner NOT found")
             time.sleep(1)
             return False
@@ -365,6 +366,7 @@ class TablePP(Table):
             return False
             if terminalmode == False:
                 signal_definitions.signal_status.emit("I am back found")
+                signal_definitions.signal_progressbar_setvalue.emit(20)
         else:
             return True
 
@@ -726,7 +728,9 @@ class TablePP(Table):
         return True
 
     def get_current_call_value(self):
-        if terminalmode == False: signal_definitions.signal_status.emit("Get Call value")
+        if terminalmode == False:
+            signal_definitions.signal_status.emit("Get Call value")
+            signal_definitions.signal_progressbar_setvalue.emit(70)
         x1 = 585
         y1 = 516
         x2 = 585 + 70
@@ -815,15 +819,16 @@ class TablePP(Table):
                                     self.topleftcorner[0] + x2, self.topleftcorner[1] + y2)
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
         count, points, bestfit = a.find_template_on_screen(scraped.lostEverything, img, 0.001)
-
         if count > 0:
             if not terminalmode:
-                #ui.progress_bar.setValue(15)
+                signal_definitions.signal_progressbar_setvalue.emit(20)
                 pass
             h.lastGameID = str(h.GameID)
             t.myFundsChange = float(0) - float(str(h.myFundsHistory[-1]).strip('[]'))
             L.mark_last_game(t, h)
-            if terminalmode == False: signal_definitions.signal_status.emit("Everything is lost. Last game has been marked.")
+            if terminalmode == False:
+                signal_definitions.signal_status.emit("Everything is lost. Last game has been marked.")
+                signal_definitions.signal_progressbar_setvalue.emit(15)
             user_input = input("Press Enter for exit ")
             sys.exit()
         else:
@@ -855,7 +860,9 @@ class TablePP(Table):
     def run_montecarlo_wrapper(self):
         # self.montecarlo_thread = Process(target=self.run_montecarlo, args=())
         # self.montecarlo_thread.start()
+        signal_definitions.signal_progressbar_setvalue.emit(80)
         self.run_montecarlo()
+        signal_definitions.signal_progressbar_setvalue.emit(100)
         return True
 
     def run_montecarlo(self):
