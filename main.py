@@ -10,7 +10,7 @@ from decisionmaker.montecarlo_v3 import *
 from mouse_mover import *
 from configobj import ConfigObj
 from gui.gui_qt_logic import *
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtGui
 
 
 class History(object):

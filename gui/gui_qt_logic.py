@@ -100,7 +100,7 @@ class UIActionAndSignals(QObject):
 
     def open_strategy_analyser(self,p,l):
         self.signal_progressbar_reset.emit()
-        self.stragegy_analyser_form = QtGui.QWidget()
+        self.stragegy_analyser_form = QtWidgets.QWidget()
         self.ui_analyser = Ui_Form()
         self.ui_analyser.setupUi(self.stragegy_analyser_form)
         self.stragegy_analyser_form.show()
@@ -129,7 +129,7 @@ class UIActionAndSignals(QObject):
         r=g.get_results()
 
 
-        self.genetic_algorithm_dialog = QtGui.QDialog()
+        self.genetic_algorithm_dialog = QtWidgets.QDialog()
         self.genetic_algorithm_form = Ui_Dialog()
         self.genetic_algorithm_form.setupUi(self.genetic_algorithm_dialog)
         self.genetic_algorithm_dialog.show()
