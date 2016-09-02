@@ -1,13 +1,10 @@
 import matplotlib
 from .GUI_QT_ui_analyser import *
-matplotlib.use('Qt4Agg')
-from matplotlib.backends.backend_qt4agg import (
+matplotlib.use('Qt5Agg')
+from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas)
 from matplotlib.figure import Figure
-from PyQt4.QtCore import *
-from PyQt4 import QtCore
-from PyQt4 import QtGui
-import random
+from PyQt5.QtCore import *
 from weakref import proxy
 from gui.gui_qt_ui import Ui_Pokerbot
 from gui.gui_qt_ui_genetic_algorithm import *

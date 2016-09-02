@@ -1,5 +1,5 @@
 import matplotlib
-matplotlib.use('Qt4Agg')
+matplotlib.use('Qt5Agg')
 import operator
 import os.path
 import cv2  # opencv 3.0
@@ -10,7 +10,7 @@ from decisionmaker.montecarlo_v3 import *
 from mouse_mover import *
 from configobj import ConfigObj
 from gui.gui_qt_logic import *
-from PyQt4 import QtCore
+from PyQt5 import QtCore
 
 
 class History(object):
@@ -1057,8 +1057,8 @@ if __name__ == '__main__':
     if not terminalmode:
         p.exit_thread=False
         p.pause=False
-        app = QtGui.QApplication(sys.argv)
-        MainWindow = QtGui.QMainWindow()
+        app = QtWidgets.QApplication(sys.argv)
+        MainWindow = QtWidgets.QMainWindow()
         ui = Ui_Pokerbot()
         ui.setupUi(MainWindow)
 
