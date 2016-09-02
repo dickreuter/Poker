@@ -1,3 +1,4 @@
+from PyQt5.QtCore import QObject
 from gui.gui_qt_logic import *
 import matplotlib
 matplotlib.use('Qt5Agg')
