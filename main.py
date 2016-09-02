@@ -1,3 +1,4 @@
+from gui.gui_qt_logic import *
 import matplotlib
 matplotlib.use('Qt5Agg')
 import operator
@@ -9,8 +10,8 @@ from decisionmaker.decisionmaker1 import *
 from decisionmaker.montecarlo_v3 import *
 from mouse_mover import *
 from configobj import ConfigObj
-from gui.gui_qt_logic import *
-from PyQt5 import QtCore, QtGui
+
+
 
 
 class History(object):
