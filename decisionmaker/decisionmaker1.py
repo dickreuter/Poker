@@ -62,13 +62,16 @@ class Decision(DecisionBase):
             t.minBet = float(100.0)
             t.opponentBetIncreases = 0
 
+        self.potAdjustmentPreFlop = t.totalPotValue / t.bigBlind / 250 * float(p.XML_entries_list1['potAdjustmentPreFlop'].text)
+        self.potAdjustmentPreFlop = min(self.potAdjustmentPreFlop, float(p.XML_entries_list1['maxPotAdjustmentPreFlop'].text))
+
         self.potAdjustment = t.totalPotValue / t.bigBlind / 250 * float(p.XML_entries_list1['potAdjustment'].text)
         self.potAdjustment = min(self.potAdjustment, float(p.XML_entries_list1['maxPotAdjustment'].text))
 
         if t.gameStage == "PreFlop":
             t.power1 = float(p.XML_entries_list1['PreFlopCallPower'].text) + secondRoundAdjustmentPowerIncrease
             t.minEquityCall = float(
-                p.XML_entries_list1['PreFlopMinCallEquity'].text) + self.secondRoundAdjustment - self.potAdjustment
+                p.XML_entries_list1['PreFlopMinCallEquity'].text) + self.secondRoundAdjustment - self.potAdjustmentPreFlop
             t.minCallAmountIfAboveLimit = t.bigBlind * 2
             t.potStretch = 1
             t.maxEquityCall = 1

@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QObject
+import threading
 from gui.gui_qt_logic import *
 import matplotlib
 matplotlib.use('Qt5Agg')
@@ -924,12 +924,12 @@ class TablePP(Table):
         self.equity = np.round(m.equity, 3)
         self.winnerCardTypeList = m.winnerCardTypeList
 
-class QtThreadManager(QtCore.QThread):
-    def __init__(self):
-        QtCore.QThread.__init__(self)
-
-    def start_separate_thread(self):
-        self.start()
+class ThreadManager(threading.Thread):
+    def __init__(self, threadID, name, counter):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+        self.name = name
+        self.counter = counter
 
     def update_most_gui_items(self):
         if terminalmode == False:
@@ -1066,8 +1066,8 @@ if __name__ == '__main__':
 
         ui_action_and_signals = UIActionAndSignals(ui, p, L, logger)
 
-        t1=QtThreadManager()
-        t1.start_separate_thread()
+        t1 = ThreadManager(1, "Thread-1", 1)
+        t1.start()
 
         MainWindow.show()
         sys.exit(app.exec_())
@@ -1075,5 +1075,5 @@ if __name__ == '__main__':
 
     elif terminalmode:
         print("Terminal mode selected. To view GUI set terminalmode=False")
-        t1=QtThreadManager()
-        t1.start_separate_thread()
+        t1 = ThreadManager(1, "Thread-1", 1)
+        t1.start()
