@@ -9,7 +9,7 @@ from xml_handler import *
 class GeneticAlgorithm(object):
     def __init__(self, write_update, logger, L):
         self.logger = logger
-        self.output=''
+        self.output = ''
         p = XMLHandler('strategies.xml')
         p.read_XML()
         p_name = p.current_strategy.text
@@ -47,7 +47,7 @@ class GeneticAlgorithm(object):
         else:
             self.recommendation[stage, decision] = "inconclusive"
         self.logger.info(stage + " " + decision + ": " + self.recommendation[stage, decision])
-        self.output+=stage + " " + decision + ": " + self.recommendation[stage, decision]+'\n'
+        self.output += stage + " " + decision + ": " + self.recommendation[stage, decision] + '\n'
 
     def assess_bet(self, p, L, decision, stage, coeff1, change):
         A = L.d['Bet', stage, 'Won'] + L.d['BetPlus', stage, 'Won'] + L.d['Bet half pot', stage, 'Won'] > (L.d[
@@ -79,7 +79,7 @@ class GeneticAlgorithm(object):
         else:
             self.recommendation[stage, decision] = "inconclusive"
         self.logger.info(stage + " " + decision + ": " + self.recommendation[stage, decision])
-        self.output += stage + " " + decision + ": " + self.recommendation[stage, decision]+'\n'
+        self.output += stage + " " + decision + ": " + self.recommendation[stage, decision] + '\n'
 
     def improve_strategy(self, L, p):
 
@@ -137,12 +137,12 @@ class GeneticAlgorithm(object):
             change = 0.02
             self.assess_bet(p, L, decision, stage, coeff1, change)
 
-            # if self.changed<maxChanges:
-            #     coeff1=2
-            #     stage='Flop'
-            #     decision='Bet'
-            #     change=0.02
-            #     self.assessBet(p,L, decision,stage,coeff1,change)
+        if self.changed < maxChanges:
+            coeff1 = 2
+            stage = 'Flop'
+            decision = 'Bet'
+            change = 0.02
+            self.assess_bet(p, L, decision, stage, coeff1, change)
 
         if self.changed < maxChanges:
             coeff1 = 2
@@ -161,6 +161,7 @@ def run_genetic_algorithm(write, logger):
 
 if __name__ == '__main__':
     import logging
+
     logger = logging
     logger.basicConfig(level=logging.DEBUG)
     run_genetic_algorithm(False, logger)

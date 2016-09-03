@@ -12,9 +12,6 @@ from decisionmaker.montecarlo_v3 import *
 from mouse_mover import *
 from configobj import ConfigObj
 
-
-
-
 class History(object):
     def __init__(self):
         # keeps values of the last round
@@ -232,7 +229,6 @@ class Table(object):
             except:
                 pass
             return ''
-
 
     def call_genetic_algorithm(self):
         if not terminalmode:
@@ -850,7 +846,7 @@ class TablePP(Table):
             L.mark_last_game(t, h)
             if not terminalmode: ui_action_and_signals.signal_status.emit("Everything is lost. Last game has been marked.")
             if not terminalmode: ui_action_and_signals.signal_progressbar_reset.emit()
-            user_input = input("Press Enter for exit ")
+            #user_input = input("Press Enter for exit ")
             sys.exit()
         else:
             return True
@@ -864,8 +860,9 @@ class TablePP(Table):
             ui_action_and_signals.signal_status.emit("New hand: " + str(cards))
             L.mark_last_game(t, h)
 
-            self.call_genetic_algorithm()
-
+            t_algo = threading.Thread(name='Algo', target=self.call_genetic_algorithm)
+            t_algo.daemon = True
+            t_algo.start()
 
             if not terminalmode: ui_action_and_signals.signal_funds_chart_update.emit(L)
             if not terminalmode: ui_action_and_signals.signal_bar_chart_update.emit(L)

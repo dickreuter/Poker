@@ -66,15 +66,15 @@ class Logging(object):
         # updates the last game after it becomes know if it was won or lost
         outcome = "na"
         if t.myFundsChange > 0:
-            outcome = "Won";
-            h.wins += 1;
+            outcome = "Won"
+            h.wins += 1
             h.totalGames += 1
         elif t.myFundsChange < 0:
-            outcome = "Lost";
-            h.losses += 1;
+            outcome = "Lost"
+            h.losses += 1
             h.totalGames += 1
         elif t.myFundsChange == 0:
-            outcome = "Neutral";
+            outcome = "Neutral"
             h.totalGames += 1
         if h.histGameStage!='':
             try:
@@ -377,8 +377,6 @@ def maximize_parameters(rowAmount):
 
     result = pd.DataFrame(FinalList, columns=['Variable', 'ParamValue', 'AvgWin'])
     return result
-
-
 
 if __name__ == '__main__':
     p_name = 'Template'
