@@ -41,7 +41,8 @@ class Logging(object):
         pDict = {}
 
         for key, val in vars(p).items():
-            pDict[key] = " ".join(str(ele) for ele in self.isIterable(val))
+            if len(" ".join(str(ele) for ele in self.isIterable(val)))<25:
+                pDict[key] = " ".join(str(ele) for ele in self.isIterable(val))
         for key, val in vars(h).items():
             hDict[key] = " ".join(str(ele) for ele in self.isIterable(val))
         for key, val in vars(t).items():
@@ -75,22 +76,23 @@ class Logging(object):
         elif t.myFundsChange == 0:
             outcome = "Neutral";
             h.totalGames += 1
-        try:
-            self.log_data_file.ix[self.log_data_file.GameID == h.lastGameID, 'FinalOutcome'] = outcome
-            self.log_data_file.ix[self.log_data_file.GameID == h.lastGameID, 'FinalStage'] = h.histGameStage
-            self.log_data_file.ix[self.log_data_file.GameID == h.lastGameID, 'FinalFundsChange'] = t.myFundsChange
-            self.log_data_file.ix[self.log_data_file.GameID == h.lastGameID, 'FinalFundsChangeABS'] = abs(t.myFundsChange)
-            self.log_data_file.ix[self.log_data_file.GameID == h.lastGameID, 'FinalDecision'] = h.histDecision
-            self.log_data_file.ix[self.log_data_file.GameID == h.lastGameID, 'FinalEquity'] = h.histEquity
-            # print ("Adjusting log file for last game")
-            self.write_CSV(self.log_data_file, self.log_filename)
-            # print "LastGameID Full list: "+str(L.LogDataFile.ix[L.LogDataFile.lastGameID])
-            # print "LastGameID:" + str(h.lastGameID)
-            # print "FinalOutcome:" + str(L.LogDataFile.FinalOutcome)
-        except:
-            #print("Unable to assess previous game")
-            #time.sleep(0.1)
-            pass
+        if h.histGameStage!='':
+            try:
+                self.log_data_file.ix[self.log_data_file.GameID == h.lastGameID, 'FinalOutcome'] = outcome
+                self.log_data_file.ix[self.log_data_file.GameID == h.lastGameID, 'FinalStage'] = h.histGameStage
+                self.log_data_file.ix[self.log_data_file.GameID == h.lastGameID, 'FinalFundsChange'] = t.myFundsChange
+                self.log_data_file.ix[self.log_data_file.GameID == h.lastGameID, 'FinalFundsChangeABS'] = abs(t.myFundsChange)
+                self.log_data_file.ix[self.log_data_file.GameID == h.lastGameID, 'FinalDecision'] = h.histDecision
+                self.log_data_file.ix[self.log_data_file.GameID == h.lastGameID, 'FinalEquity'] = h.histEquity
+                # print ("Adjusting log file for last game")
+                self.write_CSV(self.log_data_file, self.log_filename)
+                # print "LastGameID Full list: "+str(L.LogDataFile.ix[L.LogDataFile.lastGameID])
+                # print "LastGameID:" + str(h.lastGameID)
+                # print "FinalOutcome:" + str(L.LogDataFile.FinalOutcome)
+            except:
+                #print("Unable to assess previous game")
+                #time.sleep(0.1)
+                pass
 
     def filter_by_parameter(self, parameter, value):
         self.LogDataFileFiltered = self.log_data_file[self.log_data_file[parameter] == value]

@@ -37,7 +37,7 @@ class MouseMover():
             self.mouse.move(x, y)
             time.sleep(np.random.uniform(0.01 * speed, 0.03 * speed, 1)[0])
 
-            self.mouse.move(x2, y2)
+        self.mouse.move(x2, y2)
 
     def mouse_clicker(self, x2, y2, buttonToleranceX, buttonToleranceY):
 

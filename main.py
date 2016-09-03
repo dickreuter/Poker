@@ -701,6 +701,7 @@ class TablePP(Table):
 
         self.totalPotValue = self.get_ocr_float(pil_image, 'TotalPotValue')
 
+        if self.totalPotValue=='': self.totalPotValue=0
         if self.totalPotValue < 0.01:
             logger.info("unable to get pot value")
             if terminalmode == False: ui_action_and_signals.signal_status.emit("Unable to get pot value")

@@ -171,7 +171,7 @@ class FundsPlotter(FigureCanvas):
         Strategy = str(self.p.current_strategy.text)
         data=L.get_fundschange_chart(Strategy)
         try: data=data.iloc[::-1].reset_index(drop=True)
-        except: pass
+        except: print ("unable to reverse funds chart")
         data=np.cumsum(data)
         self.fig.clf()
         self.axes = self.fig.add_subplot(111)  # create an axis
