@@ -17,7 +17,7 @@ class Logging(object):
         except:
             print("No Logfile found. Creating new one.")
             d = {'lastGameID': '0', 'GameID': '0', 'Template': '0', 'gameStage': '0', 'decision': '0',
-                 'FinalOutcome': '0', 'FinalFundsChange': '0', 'equity': '0'}
+                 'FinalOutcome': 'None', 'FinalFundsChange': '0', 'equity': '0'}
             self.log_data_file = pd.DataFrame(d, index=[0])
 
     def isIterable(self, x):
@@ -45,9 +45,11 @@ class Logging(object):
         for key, val in vars(h).items():
             hDict[key] = " ".join(str(ele) for ele in self.isIterable(val))
         for key, val in vars(t).items():
-            tDict[key] = " ".join(str(ele) for ele in self.isIterable(val))
+            if len(" ".join(str(ele) for ele in self.isIterable(val)))<50:
+                tDict[key] = " ".join(str(ele) for ele in self.isIterable(val))
         for key, val in vars(d).items():
-            dDict[key] = " ".join(str(ele) for ele in self.isIterable(val))
+            if len(" ".join(str(ele) for ele in self.isIterable(val)))<20:
+                dDict[key] = " ".join(str(ele) for ele in self.isIterable(val))
 
         Dh = pd.DataFrame(hDict, index=[0])
         Dt = pd.DataFrame(tDict, index=[0])
@@ -292,9 +294,11 @@ class Logging(object):
         return n
 
     def get_fundschange_chart(self,strategy):
-
-        y = round(self.log_data_file[self.log_data_file['Template'] == strategy][
+        try:
+            y = round(self.log_data_file[self.log_data_file['Template'] == strategy][
                           ['FinalFundsChange', 'GameID']].drop_duplicates(subset=['GameID'])['FinalFundsChange'], 2)
+        except:
+            y=[0]
 
         return y
 

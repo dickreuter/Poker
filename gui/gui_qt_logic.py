@@ -170,7 +170,8 @@ class FundsPlotter(FigureCanvas):
     def drawfigure(self,L):
         Strategy = str(self.p.current_strategy.text)
         data=L.get_fundschange_chart(Strategy)
-        data=data.iloc[::-1].reset_index(drop=True)
+        try: data=data.iloc[::-1].reset_index(drop=True)
+        except: pass
         data=np.cumsum(data)
         self.fig.clf()
         self.axes = self.fig.add_subplot(111)  # create an axis

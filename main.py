@@ -1040,6 +1040,21 @@ class ThreadManager(threading.Thread):
 
 # ==== MAIN PROGRAM =====
 if __name__ == '__main__':
+    # Back up the reference to the exceptionhook
+    sys._excepthook = sys.excepthook
+
+
+    def my_exception_hook(exctype, value, traceback):
+        # Print the error and traceback
+        print(exctype, value, traceback)
+        # Call the normal Exception hook after
+        sys._excepthook(exctype, value, traceback)
+        sys.exit(1)
+
+
+    # Set the exception hook to our wrapping function
+    sys.excepthook = my_exception_hook
+
     config = ConfigObj("config.ini")
     terminalmode = int(config['terminalmode'])
     setupmode = int(config['setupmode'])
@@ -1070,8 +1085,11 @@ if __name__ == '__main__':
         t1.start()
 
         MainWindow.show()
-        sys.exit(app.exec_())
-        p.exit_thread = True
+        try:
+            sys.exit(app.exec_())
+        except:
+            print("Exiting")
+            p.exit_thread = True
 
     elif terminalmode:
         print("Terminal mode selected. To view GUI set terminalmode=False")

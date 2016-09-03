@@ -83,7 +83,7 @@ class MouseMoverPP(MouseMover):
             buttonToleranceY = 31
             x2 = 560 + tlx
             y2 = 492 + tly
-            logger.debug( "move mouse to "+str(y2))
+            logger.debug( "move mouse to I am back")
             self.mouse_mover(x1, y1, x2, y2)
             self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
 
