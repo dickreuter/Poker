@@ -14,16 +14,6 @@ class Logging(object):
         self.mongoclient = MongoClient('mongodb://guest:donald@52.201.173.151:27017/POKER')
         self.mongodb = self.mongoclient.POKER
 
-        try:
-            if not hasattr(self,'log_data_file'):
-                self.log_data_file = pd.read_csv(self.log_filename + ".csv")
-                self.log_data_file = self.log_data_file.drop('Unnamed: 0', 1)
-        except:
-            print("No Logfile found. Creating new one.")
-            d = {'lastGameID': '0', 'GameID': '0', 'Template': '0', 'gameStage': '0', 'decision': '0',
-                 'FinalOutcome': 'None', 'FinalFundsChange': '0', 'equity': '0'}
-            self.log_data_file = pd.DataFrame(d, index=[0])
-
     def isIterable(self, x):
         # use str instead of basestring if Python3
         if isinstance(x, Iterable) and not isinstance(x, str):
@@ -98,33 +88,6 @@ class Logging(object):
             summary_dict['Template'] = t.current_strategy
 
             result = self.mongodb.games.insert_one(summary_dict)
-
-    def filter_by_parameter(self, parameter, value):
-        self.LogDataFileFiltered = self.log_data_file[self.log_data_file[parameter] == value]
-        self.LogDataFileFiltered2 = self.log_data_file[(self.log_data_file[parameter] == value) & (
-            (self.log_data_file.FinalOutcome == 'Won') | (self.log_data_file.FinalOutcome == 'Lost'))]
-
-    def filter_by_template(self, p_name):
-        self.LogDataFileFiltered = self.log_data_file[self.log_data_file.Template == p_name]
-        self.LogDataFileFiltered2 = self.log_data_file[(self.log_data_file.Template == p_name) & (
-            (self.log_data_file.FinalOutcome == 'Won') | (self.log_data_file.FinalOutcome == 'Lost'))]
-
-    def replace_strings_with_numbers(self):
-        self.LogDataFileFiltered = self.LogDataFileFiltered.replace(
-            {'Won': 1, 'Lost': -1, 'Neutral': 0, 'Fold': 0, 'Check': 1, 'Check Deception': 1, 'Call': 2,
-             'Call Decepsion': 2, 'Bet': 3, 'Bet Bluff': 3, 'BetPlus': 3, 'Bet half pot': 4, 'Bet pot': 5, 'Bet max': 6,
-             'PreFlop': 0, 'Flop': 1, 'Turn': 2, 'River': 3})
-
-    def collapse_games(self):
-        self.LogDataFileSummary = self.LogDataFileFiltered.pivot_table(index='GameID',
-                                                                       values=['FinalFundsChange', 'FinalDecision',
-                                                                               'FinalOutcome', 'FinalStage',
-                                                                               'FinalEquity'], aggfunc=np.mean)
-        self.LogDataFileSummary['FinalDecision'] = self.LogDataFileSummary['FinalDecision'].map(
-            {0.0: '0Fold', 1.0: '1Check', 2.0: '2Call', 3.0: '3Bet/Bet+', 4.0: '4Bet++', 5.0: '5Bet pot',
-             6.0: '6Bet max'})
-        self.LogDataFileSummary['FinalStage'] = self.LogDataFileSummary['FinalStage'].map(
-            {0.0: '0PreFlop', 1.0: '1Flop', 2.0: '2Turn', 3.0: '3River'})
 
     def get_total_funds_change(self):
         FCPG = np.sum(self.LogDataFileSummary['FinalFundsChange']) / np.size(
@@ -244,21 +207,42 @@ class Logging(object):
 
     def get_histrogram_data(self, p_name, p_value, game_stage, decision):
 
-        # # filter out multiple rounds in the same game and gamestage
-        # self.log_data_file_collapsed = self.log_data_file.pivot_table(
-        #     index=['GameID', 'gameStage', 'decision', 'FinalOutcome', 'Template', 'minBet'],
-        #     values=['FinalFundsChange', 'equity'], aggfunc=np.mean)
-        # self.log_data_file_collapsed.reset_index(inplace=True)
-        # equity_win = self.log_data_file_collapsed[
-        #     (self.log_data_file_collapsed[p_name] == p_value) & (self.log_data_file_collapsed.FinalOutcome == 'Won') & (
-        #         self.log_data_file_collapsed.decision == decision) & (
-        #         self.log_data_file_collapsed.gameStage == game_stage)].equity.values.tolist()
-        # equity_loss = self.log_data_file_collapsed[
-        #     (self.log_data_file_collapsed[p_name] == p_value) & (self.log_data_file_collapsed.FinalOutcome == 'Lost') & (
-        #         self.log_data_file_collapsed.decision == decision) & (
-        #         self.log_data_file_collapsed.gameStage == game_stage)].equity.values.tolist()
-        equity_win=[0]
-        equity_loss=[0]
+        cursor = self.mongodb.games.aggregate([
+            {"$unwind": "$rounds"},
+            {"$match": {"Template": p_value,
+                        "FinalOutcome": "Won",
+                        "rounds.round_values.gameStage": game_stage,
+                        "rounds.round_values.decision": decision}},
+            {"$group": {
+                "_id": "$GameID",
+                "FinalFundsChange": {"$last": "$FinalFundsChange"},
+                "equity": {"$last": "$rounds.round_values.equity"},
+            }
+            },
+            {"$project": {"equity": 1, "_id": 0}},
+        ])
+        equity_win = [d['equity'] for d in cursor]
+
+        cursor = self.mongodb.games.aggregate([
+            {"$unwind": "$rounds"},
+            {"$match": {"Template": p_value,
+                        "FinalOutcome": "Lost",
+                        "rounds.round_values.gameStage": game_stage,
+                        "rounds.round_values.decision": decision}},
+            {"$group": {
+                "_id": "$GameID",
+                "FinalFundsChange": {"$last": "$FinalFundsChange"},
+                "equity": {"$last": "$rounds.round_values.equity"},
+            }
+            },
+            {"$project": {"equity": 1, "_id": 0}},
+        ])
+
+        equity_loss = [d['equity'] for d in cursor]
+
+        equity_win= [float(i) for i in equity_win]
+        equity_loss=[float(i) for i in equity_loss]
+
         return [equity_win, equity_loss]
 
     def get_game_count(self, strategy):
@@ -288,73 +272,49 @@ class Logging(object):
 
     def get_scatterplot_data(self, p_name, p_value, game_stage, decision):
 
-        wins=self.log_data_file[
-            (self.log_data_file[p_name] == p_value) & (self.log_data_file.FinalOutcome == 'Won') & (
-                self.log_data_file.decision == decision) & (
-                self.log_data_file.gameStage == game_stage)] \
-            [['GameID', 'equity', 'minCall', 'FinalFundsChange']]
+        wins=pd.DataFrame(list(self.mongodb.games.aggregate([
+            {"$unwind": "$rounds"},
+            {"$match": {"Template": p_value,
+                        "FinalOutcome": "Won",
+                        "rounds.round_values.gameStage": game_stage,
+                        "rounds.round_values.decision": decision}},
+            {"$group": {
+                "_id": "$GameID",
+                "FinalFundsChange": {"$last": "$FinalFundsChange"},
+                "equity": {"$last": "$rounds.round_values.equity"},
+                "minCall": {"$last": "$rounds.round_values.minCall"},
+            }
+            },
+            {"$project": {
+                "equity": 1,
+                "FinalFundsChange": 1,
+                "minCall": 1,
+                "_id": 0}},
+        ])))
 
-        losses=self.log_data_file[
-            (self.log_data_file[p_name] == p_value) & (self.log_data_file.FinalOutcome == 'Lost') & (
-                self.log_data_file.decision == decision) & (
-                self.log_data_file.gameStage == game_stage)] \
-            [['GameID','equity', 'minCall', 'FinalFundsChange']]
+        losses=pd.DataFrame(list(self.mongodb.games.aggregate([
+            {"$unwind": "$rounds"},
+            {"$match": {"Template": p_value,
+                        "FinalOutcome": "Lost",
+                        "rounds.round_values.gameStage": game_stage,
+                        "rounds.round_values.decision": decision}},
+            {"$group": {
+                "_id": "$GameID",
+                "FinalFundsChange": {"$last": "$FinalFundsChange"},
+                "equity": {"$last": "$rounds.round_values.equity"},
+                "minCall": {"$last": "$rounds.round_values.minCall"},
+            }
+            },
+            {"$project": {
+                "equity": 1,
+                "FinalFundsChange": 1,
+                "minCall": 1,
+                "_id": 0}},
+        ])))
 
-        wins.drop_duplicates(subset='GameID',inplace=True)
-        losses.drop_duplicates(subset='GameID', inplace=True)
-
+        wins=wins if len(wins)>0 else pd.DataFrame(columns=['FinalFundsChange','equity','minCall'],data=[[0,0,0]])
+        losses = losses if len(losses) > 0 else pd.DataFrame(columns=['FinalFundsChange','equity','minCall'],data=[[0,0,0]])
         return [wins, losses]
-
-def pivot_by_template():
-    LogFilename = 'log'
-    p_value = 'Strategy345'
-    L = Logging(LogFilename)
-    L.filter_by_template(p_value)
-    L.replace_strings_with_numbers()
-    L.collapse_games()
-    L.pivot1()
-    print("Funds Change:")
-    f = L.get_strategy_total_funds_change(p_value, 30)
-    print(f)
-    # print L.SpiderData(p)
-
-def filter_log_by_parameter(p_name, p_value):
-    LogFilename = 'log'
-    L = Logging(LogFilename)
-    L.filter_by_parameter(p_name, p_value)
-    L.replace_strings_with_numbers()
-    L.collapse_games()
-    result = L.get_total_funds_change()
-    return (result)
-
-def maximize_parameters(rowAmount):
-    # experimental function to maximize parameters
-    LogFilename = 'log_all'
-    L = Logging(LogFilename)
-    L.log_data_file = L.log_data_file.ix[0:rowAmount]
-    parameterList = ['PreFlopCallPower', 'FlopCallPower', 'TurnCallPower', 'RiverCallPower', 'preFlopCallStretch',
-                     'flopCallStretch', 'turnCallStretch', 'riverCallStretch', 'PreFlopBetPower', 'FlopBetPower',
-                     'TurnBetPower', 'RiverBetPower', 'preFlopBetStretch', 'flopBetStretch', 'turnBetStretch',
-                     'riverBetStretch', 'reducePreFlopOpponents', 'reducePreFlopOpponentsAmount', 'BlindPFMinEQCall1',
-                     'BlindPFMultiplier1', 'BlindPFminPlayersAhead', 'BlindPFMinEQCall2', 'BlindPFMultiplier2',
-                     'BlindPFMinEQCall3', 'BlindPFMultiplier3', 'FlopCheckDeceptionMinEquity', 'alwaysCallEquity',
-                     'allInBetRiverEquity', 'secondRiverBetPotMinEquity', 'potStretchMultiplier']
-
-    FinalList = []
-
-    for p_name in parameterList:
-        print(p_name)
-        all_p_values = L.log_data_file[p_name].unique().ravel()
-
-        for p_value in all_p_values:
-            print(p_value)
-            if (np.isnan(p_value)): continue
-
-            result = filter_log_by_parameter(p_name, p_value)
-            FinalList.append((p_name, p_value, result))
-
-    result = pd.DataFrame(FinalList, columns=['Variable', 'ParamValue', 'AvgWin'])
-    return result
 
 if __name__ == '__main__':
     p_name = 'Template'

@@ -156,7 +156,11 @@ class UIActionAndSignals(QObject):
         decision = str(self.ui_analyser.combobox_actiontype.currentText())
 
         self.gui_histogram.drawfigure(p_name, game_stage, decision,l)
-        self.gui_scatterplot.drawfigure(p_name, game_stage, decision,l)
+
+        p = XMLHandler('strategies.xml')
+        p.read_XML(p_name)
+        minEquityBet=float(p.XML_entries_list1['PreFlopMinCallEquity'].text)
+        self.gui_scatterplot.drawfigure(p_name, game_stage, decision,l,float(p.XML_entries_list1['smallBlind'].text), float(p.XML_entries_list1['bigBlind'].text), float(p.XML_entries_list1['PreFlopMaxBetEquity'].text), float(p.XML_entries_list1['FlopMinBetEquity'].text), 1, float(p.XML_entries_list1['PreFlopBetPower'].text))
 
 class FundsPlotter(FigureCanvas):
     def __init__(self, ui, p):
@@ -452,7 +456,7 @@ class ScatterPlot(FigureCanvas):
         super(ScatterPlot, self).__init__(self.fig)
         self.ui.horizontalLayout_4.insertWidget(1, self)
 
-    def drawfigure(self,p_name, game_stage, decision,l):
+    def drawfigure(self,p_name, game_stage, decision,l,smallBlind, bigBlind, maxValue, minEquityBet, maxEquityBet, power2):
         wins,losses=l.get_scatterplot_data('Template', p_name, game_stage, decision)
         self.fig.clf()
         self.axes = self.fig.add_subplot(111)  # create an axis
@@ -466,13 +470,17 @@ class ScatterPlot(FigureCanvas):
         self.axes.set_xlim(0, 1)
 
         area = np.pi * (50 * wins['FinalFundsChange'])  # 0 to 15 point radiuses
-        green_dots=self.axes.scatter(x=wins['equity'], y=wins['minCall'], s=area, c='green', alpha=0.5)
+        green_dots=self.axes.scatter(x=wins['equity'].tolist(), y=wins['minCall'], s=area, c='green', alpha=0.5)
 
         area = np.pi * (50 * abs(losses['FinalFundsChange']))
-        red_dots=self.axes.scatter(x=losses['equity'], y=losses['minCall'], s=area, c='red', alpha=0.5)
+        red_dots=self.axes.scatter(x=losses['equity'].tolist(), y=losses['minCall'], s=area, c='red', alpha=0.5)
 
         self.axes.legend((green_dots,red_dots),
                          ('Wins', 'Losses'), loc=2)
+
+        x2 = np.linspace(0, 1, 100)
+        d2 = Curvefitting(x2, smallBlind, bigBlind, maxValue, minEquityBet, maxEquityBet, power2)
+        self.line3, = self.axes.plot(np.arange(0, 1, 0.01), d2.y[-100:], 'r-')  # Returns a tuple of line objects, thus the comma
 
         self.axes.grid()
         self.draw()

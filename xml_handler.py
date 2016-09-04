@@ -14,14 +14,16 @@ class XMLHandler(object):
         self.XML_entries_list1 = dict()
         self.filename = filename
 
-    def read_XML(self):
+    def read_XML(self,strategy_override=''):
         self.tree = xml.parse(self.filename)
         self.root = self.tree.getroot()
 
+
         self.current_strategy = self.root.find('CurrentStrategy')
+        selected_strategy=self.current_strategy.text if strategy_override=='' else strategy_override
 
         for self.XML_entry in self.root.findall('Strategy'):
-            if self.XML_entry.get('name') == self.current_strategy.text:
+            if self.XML_entry.get('name') == selected_strategy:
                 for child in self.XML_entry:
                     self.XML_entries_list1[child.tag] = child
 
