@@ -158,9 +158,24 @@ class UIActionAndSignals(QObject):
         self.gui_histogram.drawfigure(p_name, game_stage, decision,l)
 
         p = XMLHandler('strategies.xml')
-        p.read_XML(p_name)
-        minEquityBet=float(p.XML_entries_list1['PreFlopMinCallEquity'].text)
-        self.gui_scatterplot.drawfigure(p_name, game_stage, decision,l,float(p.XML_entries_list1['smallBlind'].text), float(p.XML_entries_list1['bigBlind'].text), float(p.XML_entries_list1['PreFlopMaxBetEquity'].text), float(p.XML_entries_list1['FlopMinBetEquity'].text), 1, float(p.XML_entries_list1['PreFlopBetPower'].text))
+        if p_name=='.*': p.read_XML()
+        else: p.read_XML(p_name)
+
+        call_or_bet='Bet' if decision[0]=='B' else 'Call'
+
+        max_value=1
+        min_equity=float(p.XML_entries_list1[game_stage+'Min'+call_or_bet+'Equity'].text)
+        max_equity=float(p.XML_entries_list1['PreFlopMaxBetEquity'].text) if game_stage=='PreFlop' and call_or_bet=='Bet' else 1
+        power=float(p.XML_entries_list1[game_stage+call_or_bet+'Power'].text)
+
+        self.gui_scatterplot.drawfigure(p_name, game_stage, decision,l,
+                                        float(p.XML_entries_list1['smallBlind'].text),
+                                        float(p.XML_entries_list1['bigBlind'].text),
+                                        max_value,
+                                        min_equity,
+                                        max_equity,
+                                        power)
+
 
 class FundsPlotter(FigureCanvas):
     def __init__(self, ui, p):
@@ -456,7 +471,7 @@ class ScatterPlot(FigureCanvas):
         super(ScatterPlot, self).__init__(self.fig)
         self.ui.horizontalLayout_4.insertWidget(1, self)
 
-    def drawfigure(self,p_name, game_stage, decision,l,smallBlind, bigBlind, maxValue, minEquityBet, maxEquityBet, power2):
+    def drawfigure(self,p_name, game_stage, decision,l,smallBlind, bigBlind, maxValue, minEquityBet, maxEquityBet, power):
         wins,losses=l.get_scatterplot_data('Template', p_name, game_stage, decision)
         self.fig.clf()
         self.axes = self.fig.add_subplot(111)  # create an axis
@@ -479,7 +494,7 @@ class ScatterPlot(FigureCanvas):
                          ('Wins', 'Losses'), loc=2)
 
         x2 = np.linspace(0, 1, 100)
-        d2 = Curvefitting(x2, smallBlind, bigBlind, maxValue, minEquityBet, maxEquityBet, power2)
+        d2 = Curvefitting(x2, smallBlind, bigBlind, maxValue, minEquityBet, maxEquityBet, power)
         self.line3, = self.axes.plot(np.arange(0, 1, 0.01), d2.y[-100:], 'r-')  # Returns a tuple of line objects, thus the comma
 
         self.axes.grid()

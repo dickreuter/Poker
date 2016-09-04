@@ -10,7 +10,6 @@ import datetime
 
 class Logging(object):
     def __init__(self, filename):
-        self.log_filename = filename
         self.mongoclient = MongoClient('mongodb://guest:donald@52.201.173.151:27017/POKER')
         self.mongodb = self.mongoclient.POKER
 
@@ -135,7 +134,7 @@ class Logging(object):
         for gameStage in self.gameStages:
             cursor = self.mongodb.games.aggregate([
             { "$unwind" : "$rounds"},
-            { "$match": {"Template": p_value,
+            { "$match": {"Template": {"$regex":p_value},
                        "rounds.round_values.gameStage": gameStage }},
             { "$group": {
                  "_id": "$GameID",
@@ -209,7 +208,7 @@ class Logging(object):
 
         cursor = self.mongodb.games.aggregate([
             {"$unwind": "$rounds"},
-            {"$match": {"Template": p_value,
+            {"$match": {"Template": {"$regex":p_value},
                         "FinalOutcome": "Won",
                         "rounds.round_values.gameStage": game_stage,
                         "rounds.round_values.decision": decision}},
@@ -225,7 +224,7 @@ class Logging(object):
 
         cursor = self.mongodb.games.aggregate([
             {"$unwind": "$rounds"},
-            {"$match": {"Template": p_value,
+            {"$match": {"Template": {"$regex":p_value},
                         "FinalOutcome": "Lost",
                         "rounds.round_values.gameStage": game_stage,
                         "rounds.round_values.decision": decision}},
@@ -256,7 +255,7 @@ class Logging(object):
     def get_fundschange_chart(self,strategy):
         try:
             cursor = self.mongodb.games.aggregate([
-                {"$match": {"Template": strategy}},
+                {"$match": {"Template": {"$regex":strategy}}},
                 {"$group": {
                     "_id": None,
                     "FinalFundsChange": {"$push": "$FinalFundsChange"}
@@ -268,13 +267,15 @@ class Logging(object):
         return y
 
     def get_strategy_list(self):
-        return list(self.mongodb.games.distinct("Template"))
+        l=list(self.mongodb.games.distinct("Template"))[::-1]
+        l.append('.*')
+        return l
 
     def get_scatterplot_data(self, p_name, p_value, game_stage, decision):
 
         wins=pd.DataFrame(list(self.mongodb.games.aggregate([
             {"$unwind": "$rounds"},
-            {"$match": {"Template": p_value,
+            {"$match": {"Template": {"$regex":p_value},
                         "FinalOutcome": "Won",
                         "rounds.round_values.gameStage": game_stage,
                         "rounds.round_values.decision": decision}},
@@ -294,7 +295,7 @@ class Logging(object):
 
         losses=pd.DataFrame(list(self.mongodb.games.aggregate([
             {"$unwind": "$rounds"},
-            {"$match": {"Template": p_value,
+            {"$match": {"Template": {"$regex":p_value},
                         "FinalOutcome": "Lost",
                         "rounds.round_values.gameStage": game_stage,
                         "rounds.round_values.decision": decision}},
@@ -322,14 +323,3 @@ if __name__ == '__main__':
     gameStage = 'Flop'
     decision = 'Call'
     Strategy='PPStrategy4004'
-
-    # pivot_by_template()
-    LogFilename = 'log'
-    L = Logging(LogFilename)
-    #L.get_neural_training_data(p_name, p_value, gameStage, decision)
-    #print(L.get_strategy_total_funds_change(Strategy,500))
-
-    #print(L.get_neural_training_data(p_name,p_value,gameStage,decision))
-
-    print (L.get_fundschange_chart(Strategy))
-

@@ -106,6 +106,7 @@ class Table(object):
             if p.pause == True:
                 while p.pause == True:
                     time.sleep(1)
+                    if p.exit_thread == True: sys.exit()
 
         time.sleep(0.1)
         self.entireScreenPIL = ImageGrab.grab()
