@@ -45,7 +45,7 @@ class UIActionAndSignals(QObject):
 
         self.signal_lcd_number_update.connect(self.update_lcd_number)
 
-        strategy=l.get_game_count(p.current_strategy.text)
+        strategy=p.current_strategy.text
         self.signal_bar_chart_update.connect(lambda: self.gui_bar.drawfigure(l,strategy))
 
         self.signal_funds_chart_update.connect(lambda: self.gui_funds.drawfigure(l))
@@ -170,8 +170,6 @@ class FundsPlotter(FigureCanvas):
     def drawfigure(self,L):
         Strategy = str(self.p.current_strategy.text)
         data=L.get_fundschange_chart(Strategy)
-        try: data=data.iloc[::-1].reset_index(drop=True)
-        except: print ("unable to reverse funds chart")
         data=np.cumsum(data)
         self.fig.clf()
         self.axes = self.fig.add_subplot(111)  # create an axis
@@ -195,7 +193,7 @@ class BarPlotter(FigureCanvas):
         self.axes = self.fig.add_subplot(111)  # create an axis
         self.axes.hold(True)  # discards the old graph
 
-        data = l.get_stacked_bar_data('Template', self.p.current_strategy.text, 'stackedBar')
+        data = l.get_stacked_bar_data('Template', strategy, 'stackedBar')
 
         N = 11
         Bluff = data[0]
@@ -438,7 +436,6 @@ class FundsChangePlot(FigureCanvas):
         L = Logging(LogFilename)
         p_name = str(self.ui_analyser.combobox_strategy.currentText())
         data=L.get_fundschange_chart(p_name)
-        data = data.iloc[::-1].reset_index(drop=True)
         self.fig.clf()
         self.axes = self.fig.add_subplot(111)  # create an axis
         self.axes.hold(False)  # discards the old graph

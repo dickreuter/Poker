@@ -11,6 +11,7 @@ from decisionmaker.decisionmaker1 import *
 from decisionmaker.montecarlo_v3 import *
 from mouse_mover import *
 from configobj import ConfigObj
+import os
 
 class History(object):
     def __init__(self):
@@ -264,6 +265,7 @@ class Table(object):
 
 class TablePP(Table):
     def get_top_left_corner(self):
+        self.current_strategy=p.current_strategy.text
         img = cv2.cvtColor(np.array(self.entireScreenPIL), cv2.COLOR_BGR2RGB)
         count, points, bestfit = self.find_template_on_screen(self.topLeftCorner, img, 0.01)
         if count == 1:

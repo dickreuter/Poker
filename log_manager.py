@@ -3,12 +3,16 @@ Functions that are used to log and analyse present and past pokergames
 '''
 import pandas as pd
 import numpy as np
-import time
+from pymongo import MongoClient
 from collections import Iterable
+import os
+import datetime
 
 class Logging(object):
     def __init__(self, filename):
         self.log_filename = filename
+        self.mongoclient = MongoClient('mongodb://guest:donald@52.201.173.151:27017/POKER')
+        self.mongodb = self.mongoclient.POKER
 
         try:
             if not hasattr(self,'log_data_file'):
@@ -25,14 +29,6 @@ class Logging(object):
         if isinstance(x, Iterable) and not isinstance(x, str):
             return x
         return [x]
-
-    def write_CSV(self, df, file):
-        try:
-            df.to_csv(file + ".csv")
-            # print ("writing to CSV Log File...")
-        except:
-            print("Could not write to Log file!")
-            # print FinalDataFrame
 
     def write_log_file(self, p, h, t, d):
         hDict = {}
@@ -52,15 +48,16 @@ class Logging(object):
             if len(" ".join(str(ele) for ele in self.isIterable(val)))<20:
                 dDict[key] = " ".join(str(ele) for ele in self.isIterable(val))
 
+        pDict['logging_timestamp']=str(datetime.datetime.now())
+        pDict['computername']=os.environ['COMPUTERNAME']
+
         Dh = pd.DataFrame(hDict, index=[0])
         Dt = pd.DataFrame(tDict, index=[0])
         Dd = pd.DataFrame(dDict, index=[0])
         Dp = pd.DataFrame(pDict, index=[0])
 
         self.FinalDataFrame = pd.concat([Dd, Dt, Dh, Dp], axis=1)
-
-        self.log_data_file = pd.concat([self.FinalDataFrame, self.log_data_file], ignore_index=True)
-        self.write_CSV(self.log_data_file, self.log_filename)
+        result = self.mongodb.rounds.insert_one(self.FinalDataFrame.to_dict('records')[0])
 
     def mark_last_game(self, t, h):
         # updates the last game after it becomes know if it was won or lost
@@ -77,22 +74,30 @@ class Logging(object):
             outcome = "Neutral"
             h.totalGames += 1
         if h.histGameStage!='':
-            try:
-                self.log_data_file.ix[self.log_data_file.GameID == h.lastGameID, 'FinalOutcome'] = outcome
-                self.log_data_file.ix[self.log_data_file.GameID == h.lastGameID, 'FinalStage'] = h.histGameStage
-                self.log_data_file.ix[self.log_data_file.GameID == h.lastGameID, 'FinalFundsChange'] = t.myFundsChange
-                self.log_data_file.ix[self.log_data_file.GameID == h.lastGameID, 'FinalFundsChangeABS'] = abs(t.myFundsChange)
-                self.log_data_file.ix[self.log_data_file.GameID == h.lastGameID, 'FinalDecision'] = h.histDecision
-                self.log_data_file.ix[self.log_data_file.GameID == h.lastGameID, 'FinalEquity'] = h.histEquity
-                # print ("Adjusting log file for last game")
-                self.write_CSV(self.log_data_file, self.log_filename)
-                # print "LastGameID Full list: "+str(L.LogDataFile.ix[L.LogDataFile.lastGameID])
-                # print "LastGameID:" + str(h.lastGameID)
-                # print "FinalOutcome:" + str(L.LogDataFile.FinalOutcome)
-            except:
-                #print("Unable to assess previous game")
-                #time.sleep(0.1)
-                pass
+
+            summary_dict = dict()
+            summary_dict['rounds']=[]
+            i=0
+            cursor = self.mongodb.rounds.find({"GameID": h.lastGameID})
+            for round in cursor:
+                round_name_value=dict()
+                round_name_value['round_number']=str(i)
+                round_name_value['round_values']=round
+                summary_dict['rounds'].append(round_name_value)
+                i+=1
+
+            summary_dict['GameID'] = h.lastGameID
+            summary_dict['ComputerName']=os.environ['COMPUTERNAME']
+            summary_dict['logging_timestamp']=str(datetime.datetime.now())
+            summary_dict['FinalOutcome']= outcome
+            summary_dict['FinalStage']= h.histGameStage
+            summary_dict['FinalFundsChange']= t.myFundsChange
+            summary_dict['FinalFundsChangeABS']= abs(t.myFundsChange)
+            summary_dict['FinalDecision'] = h.histDecision
+            summary_dict['FinalEquity'] = h.histEquity
+            summary_dict['Template'] = t.current_strategy
+
+            result = self.mongodb.games.insert_one(summary_dict)
 
     def filter_by_parameter(self, parameter, value):
         self.LogDataFileFiltered = self.log_data_file[self.log_data_file[parameter] == value]
@@ -120,46 +125,11 @@ class Logging(object):
              6.0: '6Bet max'})
         self.LogDataFileSummary['FinalStage'] = self.LogDataFileSummary['FinalStage'].map(
             {0.0: '0PreFlop', 1.0: '1Flop', 2.0: '2Turn', 3.0: '3River'})
-        self.write_CSV(self.LogDataFileSummary, self.log_filename + "_summary")
-
-    def pivot1(self):
-        try:
-            print("\nGamecount stage and action\n" + str(
-                self.LogDataFileSummary.pivot_table(index='FinalStage', columns='FinalDecision',
-                                                    values='FinalFundsChange', margins=True, aggfunc=np.size)))
-            # print "\nMean change of funds by stage and action\n" + str(np.round(self.LogDataFileSummary.pivot_table(index='FinalStage', columns='FinalDecision', values='FinalFundsChange', margins=True, aggfunc=np.mean),2))
-            print("\nSum change of funds by stage and action\n" + str(np.round(
-                self.LogDataFileSummary.pivot_table(index='FinalStage', columns='FinalDecision',
-                                                    values='FinalFundsChange', margins=True, aggfunc=np.sum), 2)))
-            # print "\nWinners vs losers\n" + str(np.round(self.LogDataFileFiltered2.pivot_table(index=['decision','gameStage'], columns='FinalOutcome', values='FinalFundsChange', margins=True, aggfunc=np.mean),2))
-            # print "\nLosers sum\n: "+ str(self.LogDataFileSummary[self.LogDataFileSummary.FinalOutcome==-1].pivot_table(index='FinalDecision', values='FinalFundsChange', margins=True, aggfunc=np.sum))
-            # print "\nWinners sum\n: "+  str(self.LogDataFileSummary[self.LogDataFileSummary.FinalOutcome==1].pivot_table(index='FinalDecision', values='FinalFundsChange', margins=True, aggfunc=np.sum))
-            # print "\nTotal sum\n: "+  str(self.LogDataFileSummary.pivot_table(index='FinalDecision', values='FinalFundsChange', margins=True, aggfunc=np.sum))
-
-            FCPG = np.sum(self.LogDataFileSummary['FinalFundsChange']) / np.size(
-                self.LogDataFileSummary['FinalFundsChange'])
-            print(FCPG)
-
-        # print pd.DataFrame.to_dict(x)
-        except:
-            print("No log entries with given strategy to analyse.")
 
     def get_total_funds_change(self):
         FCPG = np.sum(self.LogDataFileSummary['FinalFundsChange']) / np.size(
             self.LogDataFileSummary['FinalFundsChange'])
         return FCPG
-
-    def show_pivots(self, p_name):
-        self.filter_by_template(p_name)
-        self.replace_strings_with_numbers()
-        try:
-            self.collapse_games()
-        except:
-            print("Pivot summary collapsing not working")
-        try:
-            self.pivot1()
-        except:
-            print("Could not show Pivot")
 
     def get_neural_training_data(self, p_name, p_value, game_stage, decision):
 
@@ -188,23 +158,37 @@ class Logging(object):
 
     def get_stacked_bar_data(self, p_name, p_value, chartType):
 
-        # filter out multiple rounds in the same game and gamestage
-        self.log_data_file_collapsed = self.log_data_file.drop_duplicates(subset=['GameID', 'gameStage'], keep='first')
-
         self.d = dict()
         self.outcomes = ['Won', 'Lost']
         self.gameStages = ['PreFlop', 'Flop', 'Turn', 'River']
         self.decisions = ['Bet Bluff', 'Check Deception', 'Call Deception', 'Fold', 'Check', 'Call', 'Bet', 'BetPlus',
                           'Bet half pot', 'Bet pot']
+
         for outcome in self.outcomes:
             for gameStage in self.gameStages:
                 for decision in self.decisions:
-                    self.d[decision, gameStage, outcome] = sum(abs((self.log_data_file_collapsed[
-                                                                        (self.log_data_file_collapsed[p_name] == p_value) & (
-                                                                            (
-                                                                                self.log_data_file_collapsed.FinalOutcome == outcome) & (
-                                                                                self.log_data_file_collapsed.gameStage == gameStage) & (
-                                                                                self.log_data_file_collapsed.decision == decision))].FinalFundsChange)))
+                    self.d[decision, gameStage, outcome] = 0
+
+        for gameStage in self.gameStages:
+            cursor = self.mongodb.games.aggregate([
+            { "$unwind" : "$rounds"},
+            { "$match": {"Template": p_value,
+                       "rounds.round_values.gameStage": gameStage }},
+            { "$group": {
+                 "_id": "$GameID",
+                 "lastDecision": {"$last": "$rounds.round_values.decision"},
+                 "FinalOutcome": { "$last": "$FinalOutcome" },
+                 "FinalFundsChange": { "$last": "$FinalFundsChange" },
+               }
+             },
+            { "$group": {
+                 "_id": {"ld": "$lastDecision", "fa": "$FinalOutcome"},
+                 "Total": {"$sum": "$FinalFundsChange"}}}
+            ])
+
+            for e in cursor:
+                self.d[e['_id']['ld'], gameStage, e['_id']['fa']] = abs(e['Total'])
+
 
         numbers = [[self.d['Call', 'PreFlop', 'Lost'], self.d['Call', 'Flop', 'Lost'], self.d['Call', 'River', 'Lost'],
                     self.d['Bet', 'Flop', 'Lost'], self.d['Bet', 'Turn', 'Lost'], self.d['Bet', 'River', 'Lost'],
@@ -260,53 +244,47 @@ class Logging(object):
 
     def get_histrogram_data(self, p_name, p_value, game_stage, decision):
 
-        # filter out multiple rounds in the same game and gamestage
-        self.log_data_file_collapsed = self.log_data_file.pivot_table(
-            index=['GameID', 'gameStage', 'decision', 'FinalOutcome', 'Template', 'minBet'],
-            values=['FinalFundsChange', 'equity'], aggfunc=np.mean)
-        self.log_data_file_collapsed.reset_index(inplace=True)
-        equity_win = self.log_data_file_collapsed[
-            (self.log_data_file_collapsed[p_name] == p_value) & (self.log_data_file_collapsed.FinalOutcome == 'Won') & (
-                self.log_data_file_collapsed.decision == decision) & (
-                self.log_data_file_collapsed.gameStage == game_stage)].equity.values.tolist()
-        equity_loss = self.log_data_file_collapsed[
-            (self.log_data_file_collapsed[p_name] == p_value) & (self.log_data_file_collapsed.FinalOutcome == 'Lost') & (
-                self.log_data_file_collapsed.decision == decision) & (
-                self.log_data_file_collapsed.gameStage == game_stage)].equity.values.tolist()
-
+        # # filter out multiple rounds in the same game and gamestage
+        # self.log_data_file_collapsed = self.log_data_file.pivot_table(
+        #     index=['GameID', 'gameStage', 'decision', 'FinalOutcome', 'Template', 'minBet'],
+        #     values=['FinalFundsChange', 'equity'], aggfunc=np.mean)
+        # self.log_data_file_collapsed.reset_index(inplace=True)
+        # equity_win = self.log_data_file_collapsed[
+        #     (self.log_data_file_collapsed[p_name] == p_value) & (self.log_data_file_collapsed.FinalOutcome == 'Won') & (
+        #         self.log_data_file_collapsed.decision == decision) & (
+        #         self.log_data_file_collapsed.gameStage == game_stage)].equity.values.tolist()
+        # equity_loss = self.log_data_file_collapsed[
+        #     (self.log_data_file_collapsed[p_name] == p_value) & (self.log_data_file_collapsed.FinalOutcome == 'Lost') & (
+        #         self.log_data_file_collapsed.decision == decision) & (
+        #         self.log_data_file_collapsed.gameStage == game_stage)].equity.values.tolist()
+        equity_win=[0]
+        equity_loss=[0]
         return [equity_win, equity_loss]
 
     def get_game_count(self, strategy):
-        try:
-            n = max(self.log_data_file[self.log_data_file['Template'] == strategy].pivot_table(index='GameID',
-                                                                                               values=['FinalOutcome'],
-                                                                                               aggfunc=np.size).reset_index().index)
-
-        except:
-            n = 0
-        return int(n + 1)
+        y=self.get_fundschange_chart(strategy)
+        return len(y)
 
     def get_strategy_total_funds_change(self, strategy, days):
-        try:
-            n = round(self.log_data_file[self.log_data_file['Template'] == strategy][
-                          ['FinalFundsChange', 'GameID']].drop_duplicates(subset=['GameID'])['FinalFundsChange'][
-                      0:days].sum(), 2)
-        except:
-            n = 0
-        return n
+        y=self.get_fundschange_chart(strategy)
+        return sum(y[-days:])
 
     def get_fundschange_chart(self,strategy):
         try:
-            y = round(self.log_data_file[self.log_data_file['Template'] == strategy][
-                          ['FinalFundsChange', 'GameID']].drop_duplicates(subset=['GameID'])['FinalFundsChange'], 2)
+            cursor = self.mongodb.games.aggregate([
+                {"$match": {"Template": strategy}},
+                {"$group": {
+                    "_id": None,
+                    "FinalFundsChange": {"$push": "$FinalFundsChange"}
+                }}
+            ])
+            y = list(cursor)[0]['FinalFundsChange']
         except:
             y=[0]
-
         return y
 
     def get_strategy_list(self):
-        strategy_list=list(self.log_data_file['Template'].unique())
-        return strategy_list
+        return list(self.mongodb.games.distinct("Template"))
 
     def get_scatterplot_data(self, p_name, p_value, game_stage, decision):
 
