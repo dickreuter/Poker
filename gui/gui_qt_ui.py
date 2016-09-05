@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'GUI_QT_ui.ui'
 #
-# Created by: PyQt5 UI code generator 5.7
+# Created by: PyQt5 UI code generator 5.5.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -44,7 +44,6 @@ class Ui_Pokerbot(object):
         self.verticalLayoutWidget_6.setGeometry(QtCore.QRect(20, 40, 201, 181))
         self.verticalLayoutWidget_6.setObjectName("verticalLayoutWidget_6")
         self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_6)
-        self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_4.setObjectName("verticalLayout_4")
         self.label_2 = QtWidgets.QLabel(self.verticalLayoutWidget_6)
         self.label_2.setObjectName("label_2")
@@ -65,7 +64,6 @@ class Ui_Pokerbot(object):
         self.verticalLayoutWidget_3.setGeometry(QtCore.QRect(20, 510, 291, 181))
         self.verticalLayoutWidget_3.setObjectName("verticalLayoutWidget_3")
         self.vLayout3 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_3)
-        self.vLayout3.setContentsMargins(0, 0, 0, 0)
         self.vLayout3.setObjectName("vLayout3")
         self.mplv3 = QtWidgets.QWidget(self.verticalLayoutWidget_3)
         self.mplv3.setObjectName("mplv3")
@@ -74,7 +72,6 @@ class Ui_Pokerbot(object):
         self.verticalLayoutWidget.setGeometry(QtCore.QRect(20, 330, 291, 171))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
         self.vLayout = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
-        self.vLayout.setContentsMargins(0, 0, 0, 0)
         self.vLayout.setObjectName("vLayout")
         self.mplvl = QtWidgets.QWidget(self.verticalLayoutWidget)
         self.mplvl.setObjectName("mplvl")
@@ -86,7 +83,6 @@ class Ui_Pokerbot(object):
         self.verticalLayoutWidget_2.setGeometry(QtCore.QRect(330, 330, 281, 171))
         self.verticalLayoutWidget_2.setObjectName("verticalLayoutWidget_2")
         self.vLayout2 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_2)
-        self.vLayout2.setContentsMargins(0, 0, 0, 0)
         self.vLayout2.setObjectName("vLayout2")
         self.mplv2 = QtWidgets.QWidget(self.verticalLayoutWidget_2)
         self.mplv2.setMouseTracking(False)
@@ -116,7 +112,6 @@ class Ui_Pokerbot(object):
         self.verticalLayoutWidget_7.setGeometry(QtCore.QRect(330, 40, 198, 181))
         self.verticalLayoutWidget_7.setObjectName("verticalLayoutWidget_7")
         self.verticalLayout_5 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_7)
-        self.verticalLayout_5.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_5.setObjectName("verticalLayout_5")
         self.label_6 = QtWidgets.QLabel(self.verticalLayoutWidget_7)
         self.label_6.setObjectName("label_6")
@@ -137,7 +132,6 @@ class Ui_Pokerbot(object):
         self.verticalLayoutWidget_5.setGeometry(QtCore.QRect(220, 40, 91, 181))
         self.verticalLayoutWidget_5.setObjectName("verticalLayoutWidget_5")
         self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_5)
-        self.verticalLayout_3.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.equity = QtWidgets.QLCDNumber(self.verticalLayoutWidget_5)
         self.equity.setObjectName("equity")
@@ -158,7 +152,6 @@ class Ui_Pokerbot(object):
         self.verticalLayoutWidget_8.setGeometry(QtCore.QRect(520, 40, 91, 181))
         self.verticalLayoutWidget_8.setObjectName("verticalLayoutWidget_8")
         self.verticalLayout_6 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_8)
-        self.verticalLayout_6.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_6.setObjectName("verticalLayout_6")
         self.assumed_players = QtWidgets.QLCDNumber(self.verticalLayoutWidget_8)
         self.assumed_players.setObjectName("assumed_players")
@@ -179,7 +172,6 @@ class Ui_Pokerbot(object):
         self.verticalLayoutWidget_4.setGeometry(QtCore.QRect(330, 510, 281, 181))
         self.verticalLayoutWidget_4.setObjectName("verticalLayoutWidget_4")
         self.vLayout4 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_4)
-        self.vLayout4.setContentsMargins(0, 0, 0, 0)
         self.vLayout4.setObjectName("vLayout4")
         self.mplv4 = QtWidgets.QWidget(self.verticalLayoutWidget_4)
         self.mplv4.setObjectName("mplv4")

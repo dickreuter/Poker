@@ -11,6 +11,31 @@ from gui.gui_qt_ui_genetic_algorithm import *
 from decisionmaker.genetic_algorithm1 import *
 from decisionmaker.curvefitting import *
 
+class PandasModel(QtCore.QAbstractTableModel):
+    """
+    Class to populate a table view with a pandas dataframe
+    """
+    def __init__(self, data, parent=None):
+        QtCore.QAbstractTableModel.__init__(self, parent)
+        self._data = data
+
+    def rowCount(self, parent=None):
+        return len(self._data.values)
+
+    def columnCount(self, parent=None):
+        return self._data.columns.size
+
+    def data(self, index, role=QtCore.Qt.DisplayRole):
+        if index.isValid():
+            if role == QtCore.Qt.DisplayRole:
+                return str(self._data.values[index.row()][index.column()])
+        return None
+
+    def headerData(self, col, orientation, role):
+        if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
+            return self._data.columns[col]
+        return None
+
 class UIActionAndSignals(QObject):
     signal_progressbar_increase = QtCore.pyqtSignal(int)
     signal_progressbar_reset = QtCore.pyqtSignal()
@@ -149,6 +174,7 @@ class UIActionAndSignals(QObject):
         self.gui_bar2.drawfigure(l,self.ui_analyser.combobox_strategy.currentText())
         self.gui_fundschange.drawfigure()
         self.strategy_analyser_update_plots(l)
+        self.strategy_analyser_update_table(l)
 
     def strategy_analyser_update_plots(self,l):
         p_name = str(self.ui_analyser.combobox_strategy.currentText())
@@ -176,6 +202,11 @@ class UIActionAndSignals(QObject):
                                         max_equity,
                                         power)
 
+    def strategy_analyser_update_table(self, l):
+        p_name = str(self.ui_analyser.combobox_strategy.currentText())
+        df=l.get_worst_games(p_name)
+        model = PandasModel(df)
+        self.ui_analyser.tableView.setModel(model)
 
 class FundsPlotter(FigureCanvas):
     def __init__(self, ui, p):

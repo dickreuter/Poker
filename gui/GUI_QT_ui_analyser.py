@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'GUI_QT_ui_analyser.ui'
 #
-# Created by: PyQt5 UI code generator 5.7
+# Created by: PyQt5 UI code generator 5.5.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -31,7 +31,6 @@ class Ui_Form(object):
         self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 140, 261, 411))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
         self.vLayout_bar = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
-        self.vLayout_bar.setContentsMargins(0, 0, 0, 0)
         self.vLayout_bar.setObjectName("vLayout_bar")
         self.widget_2 = QtWidgets.QWidget(self.verticalLayoutWidget)
         self.widget_2.setObjectName("widget_2")
@@ -40,7 +39,6 @@ class Ui_Form(object):
         self.horizontalLayoutWidget_3.setGeometry(QtCore.QRect(280, 140, 411, 411))
         self.horizontalLayoutWidget_3.setObjectName("horizontalLayoutWidget_3")
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget_3)
-        self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         self.widget_3 = QtWidgets.QWidget(self.horizontalLayoutWidget_3)
         self.widget_3.setObjectName("widget_3")
@@ -49,16 +47,10 @@ class Ui_Form(object):
         self.verticalLayoutWidget_2.setGeometry(QtCore.QRect(10, 10, 681, 121))
         self.verticalLayoutWidget_2.setObjectName("verticalLayoutWidget_2")
         self.vLayout_fundschange = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_2)
-        self.vLayout_fundschange.setContentsMargins(0, 0, 0, 0)
         self.vLayout_fundschange.setObjectName("vLayout_fundschange")
         self.widget = QtWidgets.QWidget(self.verticalLayoutWidget_2)
         self.widget.setObjectName("widget")
         self.vLayout_fundschange.addWidget(self.widget)
-        self.horizontalLayoutWidget_3.raise_()
-        self.verticalLayoutWidget.raise_()
-        self.verticalLayoutWidget.raise_()
-        self.horizontalLayoutWidget_3.raise_()
-        self.verticalLayoutWidget_2.raise_()
         self.tabWidget.addTab(self.EquityHistogram, "")
         self.tab_2 = QtWidgets.QWidget()
         self.tab_2.setObjectName("tab_2")
@@ -66,9 +58,17 @@ class Ui_Form(object):
         self.horizontalLayoutWidget_4.setGeometry(QtCore.QRect(10, 10, 661, 531))
         self.horizontalLayoutWidget_4.setObjectName("horizontalLayoutWidget_4")
         self.horizontalLayout_4 = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget_4)
-        self.horizontalLayout_4.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_4.setObjectName("horizontalLayout_4")
         self.tabWidget.addTab(self.tab_2, "")
+        self.WorstGames = QtWidgets.QWidget()
+        self.WorstGames.setObjectName("WorstGames")
+        self.tableView = QtWidgets.QTableView(self.WorstGames)
+        self.tableView.setGeometry(QtCore.QRect(10, 10, 661, 541))
+        font = QtGui.QFont()
+        font.setPointSize(8)
+        self.tableView.setFont(font)
+        self.tableView.setObjectName("tableView")
+        self.tabWidget.addTab(self.WorstGames, "")
         self.label_7 = QtWidgets.QLabel(Form)
         self.label_7.setGeometry(QtCore.QRect(280, 120, 61, 31))
         font = QtGui.QFont()
@@ -85,10 +85,9 @@ class Ui_Form(object):
         self.label_6.setGeometry(QtCore.QRect(20, 100, 51, 20))
         self.label_6.setObjectName("label_6")
         self.horizontalLayoutWidget_2 = QtWidgets.QWidget(Form)
-        self.horizontalLayoutWidget_2.setGeometry(QtCore.QRect(20, 40, 681, 31))
+        self.horizontalLayoutWidget_2.setGeometry(QtCore.QRect(20, 30, 681, 31))
         self.horizontalLayoutWidget_2.setObjectName("horizontalLayoutWidget_2")
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget_2)
-        self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.label = QtWidgets.QLabel(self.horizontalLayoutWidget_2)
         self.label.setObjectName("label")
@@ -103,10 +102,9 @@ class Ui_Form(object):
         self.lcdNumber_2.setGeometry(QtCore.QRect(20, 120, 91, 31))
         self.lcdNumber_2.setObjectName("lcdNumber_2")
         self.horizontalLayoutWidget = QtWidgets.QWidget(Form)
-        self.horizontalLayoutWidget.setGeometry(QtCore.QRect(20, 70, 681, 31))
+        self.horizontalLayoutWidget.setGeometry(QtCore.QRect(20, 60, 681, 41))
         self.horizontalLayoutWidget.setObjectName("horizontalLayoutWidget")
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget)
-        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.combobox_strategy = QtWidgets.QComboBox(self.horizontalLayoutWidget)
         self.combobox_strategy.setObjectName("combobox_strategy")
@@ -127,10 +125,11 @@ class Ui_Form(object):
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
-        Form.setWindowTitle(_translate("Form", "Form"))
+        Form.setWindowTitle(_translate("Form", "Strategy Analyser"))
         self.label_4.setText(_translate("Form", "Strategy Analyser"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.EquityHistogram), _translate("Form", "Equity Histogram"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("Form", "Scatter Plot"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.WorstGames), _translate("Form", "Worst Hands"))
         self.label_7.setText(_translate("Form", "%"))
         self.label_5.setText(_translate("Form", "Return per game per small blind ($0.02)"))
         self.label_6.setText(_translate("Form", "Total hads"))

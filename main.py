@@ -915,7 +915,7 @@ class TablePP(Table):
 
         if terminalmode == False: ui_action_and_signals.signal_status.emit("Running Monte Carlo: " + str(maxRuns))
         logger.debug("Running Monte Carlo")
-        self.montecarlo_timeout = float(config['montecarlo_timeout'])
+        self.montecarlo_timeout = 11#float(config['montecarlo_timeout'])
         timeout = self.timeout_start + self.montecarlo_timeout
         m = MonteCarlo()
         m.run_montecarlo(self.PlayerCardList, self.cardsOnTable, int(self.assumedPlayers), ui, maxRuns=maxRuns, timeout=timeout)
@@ -1057,8 +1057,8 @@ if __name__ == '__main__':
     sys.excepthook = my_exception_hook
 
     config = ConfigObj("config.ini")
-    terminalmode = int(config['terminalmode'])
-    setupmode = int(config['setupmode'])
+    terminalmode = 0#int(config['terminalmode'])
+    setupmode = 0#int(config['setupmode'])
 
     logger = debug_logger().start_logger()
 

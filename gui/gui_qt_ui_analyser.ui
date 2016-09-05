@@ -23,7 +23,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Strategy Analyser</string>
   </property>
   <widget class="QLabel" name="label_4">
    <property name="geometry">
@@ -106,11 +106,6 @@
       </item>
      </layout>
     </widget>
-    <zorder>horizontalLayoutWidget_3</zorder>
-    <zorder>verticalLayoutWidget</zorder>
-    <zorder>verticalLayoutWidget</zorder>
-    <zorder>horizontalLayoutWidget_3</zorder>
-    <zorder>verticalLayoutWidget_2</zorder>
    </widget>
    <widget class="QWidget" name="tab_2">
     <attribute name="title">
@@ -126,6 +121,26 @@
       </rect>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout_4"/>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="WorstGames">
+    <attribute name="title">
+     <string>Worst Hands</string>
+    </attribute>
+    <widget class="QTableView" name="tableView">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>661</width>
+       <height>541</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>8</pointsize>
+      </font>
+     </property>
     </widget>
    </widget>
   </widget>
@@ -182,7 +197,7 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>40</y>
+     <y>30</y>
      <width>681</width>
      <height>31</height>
     </rect>
@@ -225,9 +240,9 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>70</y>
+     <y>60</y>
      <width>681</width>
-     <height>31</height>
+     <height>41</height>
     </rect>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout">

@@ -317,6 +317,26 @@ class Logging(object):
         losses = losses if len(losses) > 0 else pd.DataFrame(columns=['FinalFundsChange','equity','minCall'],data=[[0,0,0]])
         return [wins, losses]
 
+    def get_worst_games(self, strategy):
+        cursor = self.mongodb.games.aggregate([
+            {"$unwind": "$rounds"},
+            {"$match": {"Template": {"$regex": strategy}}},
+            {"$project": {
+                "Game Stage": "$rounds.round_values.gameStage",
+                "ID": "$GameID",
+                "Equity": "$rounds.round_values.equity",
+                "Pot": "$rounds.round_values.totalPotValue",
+                "Player Funds": "$rounds.round_values.PlayerFunds",
+                "Loss": "$FinalFundsChange",
+                "Required Call": "$rounds.round_values.minCall",
+                "Ending Stage": "$FinalStage",
+                "Decision": "$rounds.round_values.decision",
+                "_id": 0
+            }},
+            {"$sort": {"Loss": 1}},
+        ])
+        return pd.DataFrame(list(cursor))[0:99]
+
 if __name__ == '__main__':
     p_name = 'Template'
     p_value = ''

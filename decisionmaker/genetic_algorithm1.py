@@ -51,18 +51,10 @@ class GeneticAlgorithm(object):
 
     def assess_bet(self, p, L, decision, stage, coeff1, change):
         A = L.d['Bet', stage, 'Won'] + L.d['BetPlus', stage, 'Won'] + L.d['Bet half pot', stage, 'Won'] > (L.d[
-                                                                                                               'Bet', stage, 'Lost'] +
-                                                                                                           L.d[
-                                                                                                               'BetPlus', stage, 'Lost'] +
-                                                                                                           L.d[
-                                                                                                               'Bet half pot', stage, 'Lost']) * coeff1  # Bet won bigger Bet lost
+                                                                                                               'Bet', stage, 'Lost']) * coeff1  # Bet won bigger Bet lost
         B = L.d['Check', stage, 'Won'] > L.d['Check', stage, 'Lost']  # check won bigger check lost
         C = L.d['Bet', stage, 'Won'] + L.d['BetPlus', stage, 'Won'] + L.d['Bet half pot', stage, 'Won'] < (L.d[
-                                                                                                               'Bet', stage, 'Lost'] +
-                                                                                                           L.d[
-                                                                                                               'BetPlus', stage, 'Lost'] +
-                                                                                                           L.d[
-                                                                                                               'Bet half pot', stage, 'Lost']) * 1  # Bet won bigger Bet lost
+                                                                                                               'Bet', stage, 'Lost']) * 1  # Bet won bigger Bet lost
 
         if A and not B:
             self.recommendation[stage, decision] = "ok"
