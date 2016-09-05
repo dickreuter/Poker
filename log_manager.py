@@ -334,8 +334,9 @@ class Logging(object):
                 "_id": 0
             }},
             {"$sort": {"Loss": 1}},
+            {"$limit": 99}
         ])
-        return pd.DataFrame(list(cursor))[0:99]
+        return pd.DataFrame(list(cursor))
 
 if __name__ == '__main__':
     p_name = 'Template'
