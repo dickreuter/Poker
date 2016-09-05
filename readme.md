@@ -7,4 +7,4 @@ You are welcome to contribute to this project in any shape or form (improving th
 
 This pokerbot plays automatically on Partypoker (Pokerstars version is also available). It works with image recognition, montecarlo simulation and a basic genetic algorithm. The mouse is moved automatically and the bot can play for hours. Captchas in Partypoker are sent to deathbycaptcha which has somebody resolve them usually within 15 seconds.
 
-![](http://www.dickreuter.com/poker_fullscreen.png)
+![](https://github.com/dickreuter/Poker/raw/master/wiki/fullscreen1.png?raw=True)
