@@ -15,7 +15,7 @@ class GeneticAlgorithm(object):
         p_name = p.current_strategy.text
         self.load_log(p_name, L)
         self.improve_strategy(L, p)
-        if p.modified and write_update:
+        if (p.modified and write_update==True) or write_update=="Force":
             p.save_XML()
             self.logger.info("New strategy saved in XML file")
 
@@ -50,11 +50,9 @@ class GeneticAlgorithm(object):
         self.output += stage + " " + decision + ": " + self.recommendation[stage, decision] + '\n'
 
     def assess_bet(self, p, L, decision, stage, coeff1, change):
-        A = L.d['Bet', stage, 'Won'] + L.d['BetPlus', stage, 'Won'] + L.d['Bet half pot', stage, 'Won'] > (L.d[
-                                                                                                               'Bet', stage, 'Lost']) * coeff1  # Bet won bigger Bet lost
+        A = L.d['Bet', stage, 'Won'] > (L.d['Bet', stage, 'Lost']) * coeff1  # Bet won bigger Bet lost
         B = L.d['Check', stage, 'Won'] > L.d['Check', stage, 'Lost']  # check won bigger check lost
-        C = L.d['Bet', stage, 'Won'] + L.d['BetPlus', stage, 'Won'] + L.d['Bet half pot', stage, 'Won'] < (L.d[
-                                                                                                               'Bet', stage, 'Lost']) * 1  # Bet won bigger Bet lost
+        C = L.d['Bet', stage, 'Won'] < (L.d['Bet', stage, 'Lost']) * 1  # Bet won bigger Bet lost
 
         if A and not B:
             self.recommendation[stage, decision] = "ok"
@@ -74,7 +72,6 @@ class GeneticAlgorithm(object):
         self.output += stage + " " + decision + ": " + self.recommendation[stage, decision] + '\n'
 
     def improve_strategy(self, L, p):
-
         self.changed = 0
         maxChanges = 2
         if self.changed <= maxChanges:
@@ -158,6 +155,6 @@ if __name__ == '__main__':
     logger.basicConfig(level=logging.DEBUG)
     run_genetic_algorithm(False, logger)
 
-    user_input = input("Run again and modify Y/N? ")
+    user_input = input("Run again and modify (Y)=Force / N? ")
     if user_input.upper() == "Y":
-        run_genetic_algorithm(True, logger)
+        run_genetic_algorithm("Force", logger)
