@@ -251,7 +251,13 @@ class Logging(object):
                 "count": {"$sum": 1}},
             }
         ])
-        return list(cursor)[0]['count']
+
+        try:
+            games=list(cursor)[0]['count']
+        except:
+            games=0
+
+        return games
 
     def get_strategy_total_funds_change(self, strategy, days):
         cursor = self.mongodb.games.aggregate([
