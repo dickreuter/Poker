@@ -268,7 +268,11 @@ class Logging(object):
                 "FinalFundsChange": {"$sum": "$FinalFundsChange"}},
             }
         ])
-        return list(cursor)[0]['FinalFundsChange']
+        try:
+            change=list(cursor)[0]['FinalFundsChange']
+        except:
+            change=0
+        return change
 
     def get_fundschange_chart(self,strategy):
         try:
