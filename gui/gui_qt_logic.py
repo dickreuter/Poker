@@ -140,13 +140,13 @@ class UIActionAndSignals(QObject):
         self.gui_histogram = HistogramEquityWinLoss(self.ui_analyser)
         self.gui_scatterplot = ScatterPlot(self.ui_analyser)
 
-        self.ui_analyser.combobox_gamestage.currentIndexChanged[str].connect(lambda: self.strategy_analyser_update_plots(l))
-        self.ui_analyser.combobox_actiontype.currentIndexChanged[str].connect(lambda: self.strategy_analyser_update_plots(l))
-        self.ui_analyser.combobox_strategy.currentIndexChanged[str].connect(lambda: self.update_strategy_analyser(l))
+        self.ui_analyser.combobox_gamestage.currentIndexChanged[str].connect(lambda: self.strategy_analyser_update_plots(l,p))
+        self.ui_analyser.combobox_actiontype.currentIndexChanged[str].connect(lambda: self.strategy_analyser_update_plots(l,p))
+        self.ui_analyser.combobox_strategy.currentIndexChanged[str].connect(lambda: self.update_strategy_analyser(l,p))
 
         self.gui_bar2 = BarPlotter2(self.ui_analyser,l)
         self.gui_bar2.drawfigure(l, self.ui_analyser.combobox_strategy.currentText())
-        self.update_strategy_analyser(l)
+        self.update_strategy_analyser(l,p)
 
     def open_genetic_algorithm(self, p, l):
         self.ui.button_genetic_algorithm.setEnabled(False)
@@ -164,7 +164,7 @@ class UIActionAndSignals(QObject):
 
         self.genetic_algorithm_form.buttonBox.accepted.connect(lambda: GeneticAlgorithm(True, self.logger, l))
 
-    def update_strategy_analyser(self,l):
+    def update_strategy_analyser(self,l,p):
         number_of_games=int(l.get_game_count(self.ui_analyser.combobox_strategy.currentText()))
         total_return=l.get_strategy_total_funds_change(self.ui_analyser.combobox_strategy.currentText(),999999)
         small_blind=0.02
@@ -173,17 +173,16 @@ class UIActionAndSignals(QObject):
         self.ui_analyser.lcdNumber.display(total_return/number_of_games/small_blind*100)
         self.gui_bar2.drawfigure(l,self.ui_analyser.combobox_strategy.currentText())
         self.gui_fundschange.drawfigure()
-        self.strategy_analyser_update_plots(l)
+        self.strategy_analyser_update_plots(l,p)
         self.strategy_analyser_update_table(l)
 
-    def strategy_analyser_update_plots(self,l):
+    def strategy_analyser_update_plots(self,l,p):
         p_name = str(self.ui_analyser.combobox_strategy.currentText())
         game_stage = str(self.ui_analyser.combobox_gamestage.currentText())
         decision = str(self.ui_analyser.combobox_actiontype.currentText())
 
         self.gui_histogram.drawfigure(p_name, game_stage, decision,l)
 
-        p = XMLHandler('strategies.xml')
         if p_name=='.*': p.read_XML()
         else: p.read_XML(p_name)
 

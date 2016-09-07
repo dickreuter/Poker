@@ -856,6 +856,7 @@ class TablePP(Table):
     def get_new_hand(self):
         if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(5)
         if h.previousCards != self.mycards:
+            self.time_new_cards_recognised=time.time()
             h.lastGameID = str(h.GameID)
             h.GameID = int(round(np.random.uniform(0, 999999999), 0))
             cards = ' '.join(self.mycards)
@@ -905,7 +906,10 @@ class TablePP(Table):
         self.PlayerCardList.append(self.mycards)
 
         # add cards from colluding players (not yet implemented)
-        col = Collusion()
+        # col = Collusion()
+        # col.
+        # if col.got_info==True:
+        #     self.PlayerCardList.add
 
         if self.gameStage == "PreFlop":
             maxRuns = 20000
