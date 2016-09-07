@@ -517,7 +517,6 @@ class TablePP(Table):
         self.PlayerNames = []
         self.PlayerFunds = []
 
-        self.PlayerNames.append("Myself")
         count = 0
         for pt in points:
             if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(1)
@@ -1005,7 +1004,7 @@ class ThreadManager(threading.Thread):
                             t.run_montecarlo_wrapper()
 
                 d = Decision()
-                d.make_decision(t, h, p, logger)
+                d.make_decision(t, h, p, logger, L)
 
                 self.update_most_gui_items()
 

@@ -9,7 +9,7 @@ import os
 import datetime
 
 class Logging(object):
-    def __init__(self, filename):
+    def __init__(self, connection='mongodb://guest:donald@52.201.173.151:27017/POKER'):
         self.mongoclient = MongoClient('mongodb://guest:donald@52.201.173.151:27017/POKER')
         self.mongodb = self.mongoclient.POKER
 
@@ -94,29 +94,31 @@ class Logging(object):
         return FCPG
 
     def get_neural_training_data(self, p_name, p_value, game_stage, decision):
+        cursor=self.mongodb.games.aggregate([
+            {"$unwind": "$rounds"},
+            {"$match": {p_name: {"$regex": p_value},
+              "rounds.round_values.gameStage": game_stage,
+              "rounds.round_values.decision": decision},
+            },
+            {"$project": {
+                "game_stage": "$rounds.round_values.gameStage",
+                "ID": "$GameID",
+                "final_outcome": "$FinalOutcome",
+                "equity": "$rounds.round_values.equity",
+                "total_pot": "$rounds.round_values.totalPotValue",
+                "player_funds": "$rounds.round_values.PlayerFunds",
+                "final_funds_change": "$FinalFundsChange",
+                "min_call": "$rounds.round_values.minCall",
+                "min_bet": "$rounds.round_values.minBet",
+                "final_stage": "$FinalStage",
+                "_id": 0
+            }},
+            {"$sort": {"Loss": 1}},
+        ])
 
-        # filter out multiple rounds in the same game and gamestage
-        self.log_data_file_collapsed = self.log_data_file.pivot_table(
-            index=['GameID', 'gameStage', 'decision', 'FinalOutcome', 'Template', 'minBet', 'minCall'],
-            values=['FinalFundsChange', 'equity'], aggfunc=np.mean)
-        self.log_data_file_collapsed.reset_index(inplace=True)
+        df = pd.DataFrame(list(cursor))
 
-        EquityValues = self.log_data_file_collapsed[
-            (self.log_data_file_collapsed[p_name] != p_value) & (self.log_data_file_collapsed.decision == decision) & (
-                self.log_data_file_collapsed.gameStage == game_stage)].equity.values.tolist()
-        MinCallValues = self.log_data_file_collapsed[
-            (self.log_data_file_collapsed[p_name] != p_value) & (self.log_data_file_collapsed.decision == decision) & (
-                self.log_data_file_collapsed.gameStage == game_stage)].minCall.values.tolist()
-        FinalFundsChange = self.log_data_file_collapsed[
-            (self.log_data_file_collapsed[p_name] != p_value) & (self.log_data_file_collapsed.decision == decision) & (
-                self.log_data_file_collapsed.gameStage == game_stage)].FinalFundsChange.values.tolist()
-
-        Output = np.array([[1, 0] if x >= 0 else [0, 1] for x in FinalFundsChange])
-        Input = np.array([list(i) for i in zip(EquityValues, MinCallValues)])
-
-        Data = [Input, Output]
-
-        return Data
+        return df
 
     def get_stacked_bar_data(self, p_name, p_value, chartType):
 
@@ -131,26 +133,23 @@ class Logging(object):
                 for decision in self.decisions:
                     self.d[decision, gameStage, outcome] = 0
 
-        for gameStage in self.gameStages:
-            cursor = self.mongodb.games.aggregate([
-            { "$unwind" : "$rounds"},
-            { "$match": {"Template": {"$regex":p_value},
-                       "rounds.round_values.gameStage": gameStage }},
-            { "$group": {
-                 "_id": "$GameID",
-                 "lastDecision": {"$last": "$rounds.round_values.decision"},
-                 "FinalOutcome": { "$last": "$FinalOutcome" },
-                 "FinalFundsChange": { "$last": "$FinalFundsChange" },
-               }
-             },
-            { "$group": {
-                 "_id": {"ld": "$lastDecision", "fa": "$FinalOutcome"},
-                 "Total": {"$sum": "$FinalFundsChange"}}}
-            ])
+        cursor = self.mongodb.games.aggregate([
+        { "$unwind" : "$rounds"},
+        { "$match": {"Template": {"$regex":p_value}}},
+        { "$group": {
+             "_id": {"GameID": "$GameID", "gameStage": "$rounds.round_values.gameStage"},
+             "lastDecision": {"$last": "$rounds.round_values.decision"},
+             "FinalOutcome": { "$last": "$FinalOutcome" },
+             "FinalFundsChange": { "$last": "$FinalFundsChange" },
+           }
+         },
+        { "$group": {
+             "_id": {"ld": "$lastDecision", "fa": "$FinalOutcome","gs": "$_id.gameStage"},
+             "Total": {"$sum": "$FinalFundsChange"}}}
+        ])
 
-            for e in cursor:
-                self.d[e['_id']['ld'], gameStage, e['_id']['fa']] = abs(e['Total'])
-
+        for e in cursor:
+            self.d[e['_id']['ld'], e['_id']['gs'], e['_id']['fa']] = abs(e['Total'])
 
         numbers = [[self.d['Call', 'PreFlop', 'Lost'], self.d['Call', 'Flop', 'Lost'], self.d['Call', 'River', 'Lost'],
                     self.d['Bet', 'Flop', 'Lost'], self.d['Bet', 'Turn', 'Lost'], self.d['Bet', 'River', 'Lost'],
@@ -245,12 +244,25 @@ class Logging(object):
         return [equity_win, equity_loss]
 
     def get_game_count(self, strategy):
-        y=self.get_fundschange_chart(strategy)
-        return len(y)
+        cursor = self.mongodb.games.aggregate([
+            {"$match": {"Template": {"$regex": strategy}}},
+            {"$group": {
+                "_id": "none",
+                "count": {"$sum": 1}},
+            }
+        ])
+        return list(cursor)[0]['count']
 
     def get_strategy_total_funds_change(self, strategy, days):
-        y=self.get_fundschange_chart(strategy)
-        return sum(y[-days:])
+        cursor = self.mongodb.games.aggregate([
+            {"$match": {"Template": {"$regex": strategy}}},
+            {"$limit": days},
+            {"$group": {
+                "_id": "none",
+                "FinalFundsChange": {"$sum": "$FinalFundsChange"}},
+            }
+        ])
+        return list(cursor)[0]['FinalFundsChange']
 
     def get_fundschange_chart(self,strategy):
         try:
@@ -338,9 +350,95 @@ class Logging(object):
         ])
         return pd.DataFrame(list(cursor))
 
+    def optimize_preflop_call_parameters(self,p_name, p_value, game_stage, decision):
+        L = Logging()
+        df = L.get_neural_training_data(p_name, p_value, game_stage, decision)
+
+        from decisionmaker.curvefitting import Curvefitting
+
+        smallBlind = 0.02
+        bigBlind = 0.04
+        maxValue = 2
+        maxEquity = 1
+
+        def check_if_below(equity, min_call, final_funds_change):
+            x = np.array([float(equity)])
+            d = Curvefitting(x, smallBlind, bigBlind, maxValue, minEquity, maxEquity, pw, pl=False)
+            return (np.array([float(min_call)]) < d.y) * final_funds_change
+
+        for pw in np.linspace(1, 5, 5):
+            for minEquity in np.linspace(0.55, 0.65, 10):
+                s = \
+                df.apply(lambda row: check_if_below(row['equity'], row['min_call'], row['final_funds_change']), axis=1)[
+                    'final_funds_change'].sum()
+                print(round(minEquity,2), pw, round(s,2))
+
+    def get_frequent_player_names(self):
+        cursor=self.mongodb.games.aggregate([
+            {"$unwind": "$rounds"},
+            {"$match":
+                 {"Template": {"$regex": '.*'}},
+             },
+            {"$group": {
+                "_id": {"GameID": "$GameID"},
+                "PlayerNames": {"$last": "$rounds.round_values.PlayerNames"},
+            }}
+         ])
+        player_list= list(cursor)
+
+        from collections import Counter
+        import operator
+
+        player_list = list(map(lambda d: str(d['PlayerNames']).split(), player_list))
+        flat_list = ([item for sublist in player_list for item in sublist])
+        counted = Counter(flat_list)
+        sorted_dict = sorted(counted.items(), key=operator.itemgetter(1))
+        return sorted_dict
+
+    def get_flop_frequency_of_player(self,playername):
+        cursor = self.mongodb.games.aggregate([
+            {"$unwind": "$rounds"},
+            {"$match":
+                 {"rounds.round_values.PlayerNames": {"$regex": playername},
+                 "FinalStage": {"$ne": "PreFlop"},
+                 },
+             },
+            {"$group": {
+                "_id": "$rounds.round_values.gameStage",
+                "count": { "$sum": 1 },
+            }}
+         ])
+
+        precence = {d["_id"]: d['count'] for d in list(cursor)}
+        try:
+            flop_presence=precence['Flop']/precence['PreFlop']
+            if precence['PreFlop'] < 10:
+                flop_presence = np.nan
+        except:
+            flop_presence=np.nan
+        return flop_presence
+
 if __name__ == '__main__':
     p_name = 'Template'
-    p_value = ''
-    gameStage = 'Flop'
+    p_value = '.*'
+    # game_stage = 'Turn'
+    # decision = 'Bet'
+    # t1=(7, 15, 9)
+    # t2=(0.5, 0.6, 10)
+    game_stage = 'PreFlop'
     decision = 'Call'
-    Strategy='PPStrategy4004'
+    t1=(1, 5, 5)
+    t2=(0.55, 0.65, 10)
+
+    L=Logging()
+    #L.optimize_preflop_call_parameters(p_name, p_value, game_stage, decision)
+    player_list = L.get_frequent_player_names()
+    print (player_list[-10:])
+
+    print(L.get_flop_frequency_of_player('MMHRIHM'))
+    print(L.get_flop_frequency_of_player('Mnanqn1no'))
+    print(L.get_flop_frequency_of_player('Annv'))
+    print(L.get_flop_frequency_of_player('7UDILI'))
+    print(L.get_flop_frequency_of_player('hfqq'))
+
+

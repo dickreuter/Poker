@@ -15,7 +15,7 @@ class Decision(DecisionBase):
     def __init__(self):
         pass
 
-    def make_decision(self, t, h, p, logger):
+    def make_decision(self, t, h, p, logger, l):
         t.bigBlind = float(p.XML_entries_list1['bigBlind'].text)
         t.smallBlind = float(p.XML_entries_list1['smallBlind'].text)
 
@@ -127,7 +127,27 @@ class Decision(DecisionBase):
             t.maxEquityBet = 1
             t.minBetAmountIfAboveLimit = t.bigBlind * 2
 
-        maxValue = float(p.XML_entries_list1['initialFunds'].text) * t.potStretch
+        # adjustment for player profile
+        if t.isHeadsUp and t.gameStage!="PreFlop":
+            try:
+                self.flop_probability_player=l.get_flop_frequency_of_player(t.PlayerNames[0])
+                logger.info("Probability profile of : "+t.PlayerNames[0] +": "+ str(self.flop_probability_player))
+            except:
+                self.flop_probability_player=np.nan
+
+            if self.flop_probability_player<0.30:
+                logger.info("Defensive play due to probability profile")
+                t.power1+=2
+                t.power2+=2
+                self.player_profile_adjustment=2
+            elif self.flop_probability_player>0.60:
+                logger.info("Agressive play due to probability profile")
+                t.power1-=2
+                t.power2-=2
+                self.player_profile_adjustment=-2
+            else:
+                self.player_profile_adjustment = 0
+
         d = Curvefitting(np.array([t.equity]), t.smallBlind, t.minBetAmountIfAboveLimit, t.maxValue, t.minEquityBet,
                          t.maxEquityBet, t.power2)
         self.maxBetE = round(d.y[0], 2)
@@ -136,6 +156,7 @@ class Decision(DecisionBase):
         self.finalBetLimit = self.maxBetE  # min(self.maxBetE, self.maxCallEV)
 
         # --- start of decision making logic ---
+
 
         if t.equity >= float(p.XML_entries_list1['alwaysCallEquity'].text):
             self.finalCallLimit = 99999999

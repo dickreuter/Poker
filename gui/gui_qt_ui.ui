@@ -145,13 +145,13 @@
      <rect>
       <x>20</x>
       <y>510</y>
-      <width>291</width>
+      <width>301</width>
       <height>181</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="vLayout3">
      <item>
-      <widget class="QWidget" name="mplv3" native="true"/>
+      <widget class="QWidget" name="widget" native="true"/>
      </item>
     </layout>
    </widget>
@@ -159,47 +159,29 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>330</y>
-      <width>291</width>
-      <height>171</height>
+      <y>320</y>
+      <width>301</width>
+      <height>191</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="vLayout">
      <item>
-      <widget class="QWidget" name="mplvl" native="true">
-       <widget class="QWidget" name="widget_2" native="true">
-        <property name="geometry">
-         <rect>
-          <x>-80</x>
-          <y>-50</y>
-          <width>359</width>
-          <height>409</height>
-         </rect>
-        </property>
-       </widget>
-      </widget>
+      <widget class="QWidget" name="widget_3" native="true"/>
      </item>
     </layout>
    </widget>
    <widget class="QWidget" name="verticalLayoutWidget_2">
     <property name="geometry">
      <rect>
-      <x>330</x>
-      <y>330</y>
-      <width>281</width>
-      <height>171</height>
+      <x>320</x>
+      <y>320</y>
+      <width>291</width>
+      <height>191</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="vLayout2">
      <item>
-      <widget class="QWidget" name="mplv2" native="true">
-       <property name="mouseTracking">
-        <bool>false</bool>
-       </property>
-       <property name="focusPolicy">
-        <enum>Qt::NoFocus</enum>
-       </property>
-      </widget>
+      <widget class="QWidget" name="widget_4" native="true"/>
      </item>
     </layout>
    </widget>
@@ -365,15 +347,15 @@
    <widget class="QWidget" name="verticalLayoutWidget_4">
     <property name="geometry">
      <rect>
-      <x>330</x>
+      <x>320</x>
       <y>510</y>
-      <width>281</width>
+      <width>291</width>
       <height>181</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="vLayout4">
      <item>
-      <widget class="QWidget" name="mplv4" native="true"/>
+      <widget class="QWidget" name="widget_2" native="true"/>
      </item>
     </layout>
    </widget>

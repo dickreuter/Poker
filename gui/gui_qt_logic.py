@@ -133,7 +133,7 @@ class UIActionAndSignals(QObject):
         self.gui_fundschange = FundsChangePlot(self.ui_analyser)
         self.gui_fundschange.drawfigure()
 
-        self.ui_analyser.combobox_actiontype.addItems(['Fold','Check','Call','Bet','BetPlus','Bet Bluff'])
+        self.ui_analyser.combobox_actiontype.addItems(['Fold','Check','Call','Bet','BetPlus','Bet half pot','Bet pot','Bet Bluff'])
         self.ui_analyser.combobox_gamestage.addItems(['PreFlop','Flop','Turn','River'])
         self.ui_analyser.combobox_strategy.addItems(l.get_strategy_list())
 
@@ -514,6 +514,9 @@ class ScatterPlot(FigureCanvas):
         try: self.axes.set_ylim(0, max(wins['minCall'].tolist()+losses['minCall'].tolist())*1.1)
         except: self.axes.set_ylim(0,1)
         self.axes.set_xlim(0, 1)
+
+        # self.axes.set_xlim(.5, .8)
+        # self.axes.set_ylim(0, .2)
 
         area = np.pi * (50 * wins['FinalFundsChange'])  # 0 to 15 point radiuses
         green_dots=self.axes.scatter(x=wins['equity'].tolist(), y=wins['minCall'], s=area, c='green', alpha=0.5)

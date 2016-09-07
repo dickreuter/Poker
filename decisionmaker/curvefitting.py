@@ -29,6 +29,7 @@ class Curvefitting(object):
 
         xf = [minEquity, 1]
         yf = [bigBlind, maxValue]
+        self.x = x
 
         # create a set of Parameters
         params = Parameters()
@@ -57,7 +58,8 @@ if __name__ == '__main__':
     maxEquity = 0.9
     pw = 16
     x = np.linspace(0, 1, 100)
-    x - np.array([0.3])
+    # x - np.array([0.3])
     # x=[0.2,0.5,0.8]
-    d = Curvefitting(x, smallBlind, bigBlind, maxValue, minEquity, maxEquity, pw, pl=True)
-    print(d.y)
+    d = Curvefitting(x, smallBlind, bigBlind, maxValue, minEquity, maxEquity, pw, pl=False)
+    result=dict(zip(d.x,d.y))
+    print(result)
