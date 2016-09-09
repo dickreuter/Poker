@@ -1,6 +1,5 @@
 from PyQt5.QtCore import *
 import matplotlib
-from .GUI_QT_ui_analyser import *
 matplotlib.use('Qt5Agg')
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas)
@@ -9,8 +8,10 @@ from weakref import proxy
 from gui.gui_qt_ui import Ui_Pokerbot
 from gui.gui_qt_ui_genetic_algorithm import *
 from gui.gui_qt_ui_strategy_manager import *
+from gui.GUI_QT_ui_analyser import *
 from decisionmaker.genetic_algorithm1 import *
 from decisionmaker.curvefitting import *
+import os
 
 class PandasModel(QtCore.QAbstractTableModel):
     """
@@ -52,8 +53,59 @@ class UIActionAndSignals(QObject):
     signal_lcd_number_update = QtCore.pyqtSignal(str,float)
     signal_update_selected_strategy = QtCore.pyqtSignal(str)
 
+
+    signal_update_strategy_sliders = QtCore.pyqtSignal(str)
+
     def __init__(self, ui_main_window, p, l, logger):
         QObject.__init__(self)
+        self.strategy_items_with_multipliers = {
+            "PreFlopMinCallEquity": 100,
+            "PreFlopCallPower": 10,
+            "secondRiverBetPotMinEquity": 100,
+            "FlopBetPower": 10,
+            "betPotRiverEquityMaxBBM": 1,
+            "CoveredPlayersCallLikelihoodPreFlop": 100,
+            "TurnMinBetEquity": 100,
+            "PreFlopBetPower": 10,
+            "potAdjustmentPreFlop": 1,
+            "RiverCallPower": 10,
+            "minBullyEquity": 100,
+            "PreFlopMinBetEquity": 100,
+            "BetPlusInc": 1,
+            "FlopMinCallEquity": 100,
+            "secondRoundAdjustmentPreFlop": 100,
+            "FlopBluffMinEquity": 100,
+            "TurnBluffMinEquity": 100,
+            "FlopCallPower": 10,
+            "TurnCallPower": 10,
+            "RiverMinCallEquity": 100,
+            "CoveredPlayersCallLikelihoodFlop": 100,
+            "TurnMinCallEquity": 100,
+            "secondRoundAdjustment": 100,
+            "maxPotAdjustmentPreFlop": 100,
+            "bullyDivider": 1,
+            "maxBullyEquity": 100,
+            "alwaysCallEquity": 100,
+            "PreFlopMaxBetEquity": 100,
+            "RiverBetPower": 10,
+            "minimumLossForIteration": -1,
+            "initialFunds": 100,
+            "potAdjustment": 1,
+            "FlopCheckDeceptionMinEquity": 100,
+            "bigBlind": 100,
+            "secondRoundAdjustmentPowerIncrease": 1,
+            "considerLastGames": 1,
+            "betPotRiverEquity": 100,
+            "RiverBluffMinEquity": 100,
+            "smallBlind": 100,
+            "TurnBetPower": 10,
+            "FlopMinBetEquity": 100,
+            "strategyIterationGames": 1,
+            "RiverMinBetEquity": 100,
+            "maxPotAdjustment": 100
+        }
+        self.p=p
+
         self.ui=ui_main_window
         self.progressbar_value=0
         self.logger=logger
@@ -84,6 +136,8 @@ class UIActionAndSignals(QObject):
         ui_main_window.button_strategy_editor.clicked.connect(lambda: self.open_strategy_editor(p, l))
         ui_main_window.button_pause.clicked.connect(lambda: self.pause(ui_main_window, p))
         ui_main_window.button_resume.clicked.connect(lambda: self.resume(ui_main_window, p))
+
+        self.signal_update_strategy_sliders.connect(lambda: self.update_strategy_editor_sliders(p.current_strategy))
 
         playable_list=p.get_playable_strategy_list()
         ui_main_window.comboBox_current_strategy.addItems(playable_list)
@@ -170,6 +224,19 @@ class UIActionAndSignals(QObject):
         self.ui_editor = Ui_editor_form()
         self.ui_editor.setupUi(self.stragegy_editor_form)
         self.stragegy_editor_form.show()
+        self.signal_update_strategy_sliders.emit(p.current_strategy)
+        self.ui_editor.Strategy.currentIndexChanged.connect(lambda: self.update_strategy_editor_sliders(self.ui_editor.Strategy.currentText()))
+
+        self.ui_editor.pushButton_save_new_strategy.clicked.connect(lambda: self.save_strategy(self.ui_editor.lineEdit_new_name.text(),False))
+        self.ui_editor.pushButton_save_current_strategy.clicked.connect(lambda: self.save_strategy(self.ui_editor.Strategy.currentText(), True))
+
+        self.playable_list=self.p.get_playable_strategy_list()
+        self.ui_editor.Strategy.addItems(self.playable_list)
+        config = ConfigObj("config.ini")
+        initial_selection=config['last_strategy']
+        for i in [i for i, x in enumerate(self.playable_list) if x == initial_selection]:
+            idx=i
+        self.ui_editor.Strategy.setCurrentIndex(idx)
 
     def open_genetic_algorithm(self, p, l):
         self.ui.button_genetic_algorithm.setEnabled(False)
@@ -229,6 +296,34 @@ class UIActionAndSignals(QObject):
         df=l.get_worst_games(p_name)
         model = PandasModel(df)
         self.ui_analyser.tableView.setModel(model)
+
+    def update_strategy_editor_sliders(self, strategy_name):
+        self.p.read_strategy(strategy_name)
+        for key,value in self.strategy_items_with_multipliers.items():
+            func = getattr(self.ui_editor, key)
+            func.setValue(float(self.p.selected_strategy[key])*value)
+
+        self.ui_editor.pushButton_save_current_strategy.setEnabled(False)
+        try:
+            if self.p.selected_strategy['computername'] == os.environ['COMPUTERNAME']: self.ui_editor.pushButton_save_current_strategy.setEnabled(True)
+        except: pass
+
+    def save_strategy(self,name,update):
+        strategy_dict=self.p.selected_strategy
+        if (name!="" and name not in self.playable_list) or update:
+            for key,value in self.strategy_items_with_multipliers.items():
+                func = getattr(self.ui_editor, key)
+                strategy_dict[key] = func.value() / value
+                strategy_dict['Strategy']=name
+                strategy_dict['pokerSite'] = 'PP'
+                strategy_dict['computername']=os.environ['COMPUTERNAME']
+
+            if update: self.p.update_strategy(strategy_dict)
+            else:  self.p.save_strategy(strategy_dict)
+            print("saved")
+        else:
+            print ("not saved")
+
 
 class FundsPlotter(FigureCanvas):
     def __init__(self, ui, p):
@@ -558,24 +653,9 @@ class ScatterPlot(FigureCanvas):
 
 if __name__ == "__main__":
     import sys
-    app = QtGui.QApplication(sys.argv)
-    MainWindow = QtGui.QMainWindow()
-    ui = Ui_Pokerbot()
-    ui.setupUi(MainWindow)
-
-    p = StrategyHandler()
-    p.read_strategy()
-
-    # plotter logic and binding needs to be added here
-    gui_funds = FundsPlotter(ui, p)
-    #ui.button_config.clicked.connect(plotter1.drawfigure)
-    gui_bar = BarPlotter(ui, p)
-    gui_curve = CurvePlot(ui, p)
-    gui_pie = PiePlotter(ui, p)
-
-
-
-
-
-    MainWindow.show()
+    app = QtWidgets.QApplication(sys.argv)
+    editor_form = QtWidgets.QWidget()
+    ui = Ui_editor_form()
+    ui.setupUi(editor_form)
+    editor_form.show()
     sys.exit(app.exec_())

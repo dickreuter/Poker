@@ -39,6 +39,10 @@ class StrategyHandler(object):
         self.current_strategy=self.new_strategy_name
         result = self.mongodb.strategies.insert_one(self.selected_strategy)
 
+    def save_strategy(self, strategy_dict):
+        del strategy_dict['_id']
+        result = self.mongodb.strategies.insert_one(strategy_dict)
+
     def update_strategy(self,strategy):
         result = self.mongodb.strategies.update_one(
             {"Strategy": strategy['Strategy']},
@@ -338,6 +342,10 @@ class GameLogger(object):
     def get_played_strategy_list(self):
         l=list(self.mongodb.games.distinct("Template"))[::-1]
         l.append('.*')
+        return l
+
+    def get_played_players(self):
+        l=list(self.mongodb.games.distinct("ComputerName"))
         return l
 
     def get_scatterplot_data(self, p_name, p_value, game_stage, decision):
