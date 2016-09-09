@@ -8,6 +8,8 @@ from collections import Iterable
 import os
 import datetime
 from configobj import ConfigObj
+import re
+import datetime
 
 class StrategyHandler(object):
     def __init__(self):
@@ -25,14 +27,31 @@ class StrategyHandler(object):
         cursor=self.mongodb.strategies.find({'Strategy': self.current_strategy})
         self.selected_strategy=cursor.next()
 
-    def save_strategy(self, strategy):
-        result = self.mongodb.strategies.insert_one(strategy)
+    def save_strategy(self):
+        r = re.compile("([a-zA-Z]+)([0-9]+)")
+        m = r.match(self.current_strategy)
+        stringPart = m.group(1)
+        numberPart = int(m.group(2))
+        numberPart += 1
+        suffix="_"+str(datetime.datetime.now())
+        self.new_strategy_name = stringPart + str(numberPart) + suffix
+        self.selected_strategy['Strategy'] = self.new_strategy_name
+        self.current_strategy=self.new_strategy_name
+        result = self.mongodb.strategies.insert_one(self.selected_strategy)
 
     def update_strategy(self,strategy):
         result = self.mongodb.strategies.update_one(
             {"Strategy": strategy['Strategy']},
             {"$set": strategy}
         )
+
+    def create_new_strategy(self,strategy):
+        result = self.mongodb.strategies.insert_one(strategy)
+
+    def modify_strategy(self, elementName, change):
+        self.selected_strategy[elementName] = str(round(float(self.selected_strategy[elementName]) + change, 2))
+        self.modified = True
+
 
 class GameLogger(object):
     def __init__(self, connection='mongodb://guest:donald@52.201.173.151:27017/POKER'):

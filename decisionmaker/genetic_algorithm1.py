@@ -9,14 +9,18 @@ class GeneticAlgorithm(object):
     def __init__(self, write_update, logger, L):
         self.logger = logger
         self.output = ''
-        p = XMLHandler('strategies.xml')
-        p.read_XML()
+        p = StrategyHandler()
+        p.read_strategy()
         p_name = p.current_strategy
+        logger.debug("Strategy to analyse: "+p_name)
         self.load_log(p_name, L)
         self.improve_strategy(L, p)
         if (p.modified and write_update==True) or write_update=="Force":
-            p.save_XML()
-            self.logger.info("New strategy saved in XML file")
+            p.save_strategy()
+            config = ConfigObj("config.ini")
+            config['last_strategy'] = p.current_strategy
+            config.write()
+            self.logger.info("Genetic algorithm: New strategy saved")
 
     def get_results(self):
         return self.output
@@ -35,8 +39,8 @@ class GeneticAlgorithm(object):
             self.recommendation[stage, decision] = "ok"
         elif A and B == False and C:
             self.recommendation[stage, decision] = "more agressive"
-            p.modify_XML(stage + 'MinCallEquity', -change)
-            p.modify_XML(stage + 'CallPower', -change * 25)
+            p.modify_strategy(stage + 'MinCallEquity', -change)
+            p.modify_strategy(stage + 'CallPower', -change * 25)
             self.changed += 1
         elif A == False and B == True:
             self.recommendation[stage, decision] = "less agressive"
@@ -57,8 +61,8 @@ class GeneticAlgorithm(object):
             self.recommendation[stage, decision] = "ok"
         elif A and B:
             self.recommendation[stage, decision] = "more agressive"
-            p.modify_XML(stage + 'MinBetEquity', -change)
-            p.modify_XML(stage + 'BetPower', -change * 25)
+            p.modify_strategy(stage + 'MinBetEquity', -change)
+            p.modify_strategy(stage + 'BetPower', -change * 25)
             self.changed += 1
         elif C and not B:
             self.recommendation[stage, decision] = "less agressive"
@@ -142,8 +146,7 @@ class GeneticAlgorithm(object):
 
 def run_genetic_algorithm(write, logger):
     logger.info("===Running genetic algorithm===")
-    LogFilename = 'log'
-    L = GameLogger(LogFilename)
+    L = GameLogger()
     GeneticAlgorithm(write, logger, L)
 
 
