@@ -47,7 +47,7 @@ class Table(object):
         suites = "CDHS"
         for x in values:
             for y in suites:
-                name = "pics/" + p.XML_entries_list1['pokerSite'].text + "/" + x + y + ".png"
+                name = "pics/" + p.selected_strategy['pokerSite'] + "/" + x + y + ".png"
                 if os.path.exists(name) == True:
                     self.img[x + y] = Image.open(name)
                     self.cardImages[x + y] = cv2.cvtColor(np.array(self.img[x + y]), cv2.COLOR_BGR2RGB)
@@ -57,44 +57,44 @@ class Table(object):
                 else:
                     logger.critical("Card Temlate File not found: " + str(x) + str(y) + ".png")
 
-        name = "pics/" + p.XML_entries_list1['pokerSite'].text + "/button.png"
+        name = "pics/" + p.selected_strategy['pokerSite'] + "/button.png"
         template = Image.open(name)
         self.button = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + p.XML_entries_list1['pokerSite'].text + "/topleft.png"
+        name = "pics/" + p.selected_strategy['pokerSite'] + "/topleft.png"
         template = Image.open(name)
         self.topLeftCorner = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + p.XML_entries_list1['pokerSite'].text + "/coveredcard.png"
+        name = "pics/" + p.selected_strategy['pokerSite'] + "/coveredcard.png"
         template = Image.open(name)
         self.coveredCardHolder = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + p.XML_entries_list1['pokerSite'].text + "/imback.png"
+        name = "pics/" + p.selected_strategy['pokerSite'] + "/imback.png"
         template = Image.open(name)
         self.ImBack = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + p.XML_entries_list1['pokerSite'].text + "/check.png"
+        name = "pics/" + p.selected_strategy['pokerSite'] + "/check.png"
         template = Image.open(name)
         self.check = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + p.XML_entries_list1['pokerSite'].text + "/call.png"
+        name = "pics/" + p.selected_strategy['pokerSite'] + "/call.png"
         template = Image.open(name)
         self.call = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + p.XML_entries_list1['pokerSite'].text + "/smalldollarsign1.png"
+        name = "pics/" + p.selected_strategy['pokerSite'] + "/smalldollarsign1.png"
         template = Image.open(name)
         self.smallDollarSign1 = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        if p.XML_entries_list1['pokerSite'].text == "PP":
-            name = "pics/" + p.XML_entries_list1['pokerSite'].text + "/smalldollarsign2.png"
+        if p.selected_strategy['pokerSite'] == "PP":
+            name = "pics/" + p.selected_strategy['pokerSite'] + "/smalldollarsign2.png"
             template = Image.open(name)
             self.smallDollarSign2 = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + p.XML_entries_list1['pokerSite'].text + "/allincallbutton.png"
+        name = "pics/" + p.selected_strategy['pokerSite'] + "/allincallbutton.png"
         template = Image.open(name)
         self.allInCallButton = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + p.XML_entries_list1['pokerSite'].text + "/lostEverything.png"
+        name = "pics/" + p.selected_strategy['pokerSite'] + "/lostEverything.png"
         template = Image.open(name)
         self.lostEverything = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
@@ -110,7 +110,7 @@ class Table(object):
 
         time.sleep(0.1)
         self.entireScreenPIL = ImageGrab.grab()
-        if not terminalmode:ui_action_and_signals.signal_status.emit(str(p.current_strategy.text))
+        if not terminalmode:ui_action_and_signals.signal_status.emit(str(p.current_strategy))
         if not terminalmode: ui_action_and_signals.signal_progressbar_increase.emit(5)
         return True
 
@@ -236,20 +236,20 @@ class Table(object):
         if not terminalmode:
             ui_action_and_signals.signal_progressbar_increase.emit(5)
             ui_action_and_signals.signal_status.emit("Checking strategy returns")
-        n = L.get_game_count(p.current_strategy.text)
+        n = L.get_game_count(p.current_strategy)
         lg = int(
-            p.XML_entries_list1['considerLastGames'].text)  # only consider lg last games to see if there was a loss
-        f = L.get_strategy_total_funds_change(p.current_strategy.text, lg)
+            p.selected_strategy['considerLastGames'])  # only consider lg last games to see if there was a loss
+        f = L.get_strategy_return(p.current_strategy, lg)
         if not terminalmode:  ui_action_and_signals.signal_lcd_number_update.emit('gamenumber',int(n))
         if not terminalmode:  ui_action_and_signals.signal_lcd_number_update.emit('winnings', f)
         logger.info("Game #" + str(n) + " - Last " + str(lg) + ": $" + str(f))
-        if n % int(p.XML_entries_list1['strategyIterationGames'].text) == 0 and f < float(
-                p.XML_entries_list1['minimumLossForIteration'].text):
+        if n % int(p.selected_strategy['strategyIterationGames']) == 0 and f < float(
+                p.selected_strategy['minimumLossForIteration']):
             if not terminalmode: ui_action_and_signals.signal_status.emit("***Improving current strategy***")
             logger.info("***Improving current strategy***")
             #winsound.Beep(500, 100)
             GeneticAlgorithm(True, logger, L)
-            p.read_XML()
+            p.read_strategy()
         else:
             logger.debug("Criteria not met for running genetic algorithm. Recommendation would be as follows:")
             if n % 50 == 0: GeneticAlgorithm(False, logger, L)
@@ -266,7 +266,7 @@ class Table(object):
 
 class TablePP(Table):
     def get_top_left_corner(self):
-        self.current_strategy=p.current_strategy.text
+        self.current_strategy=p.current_strategy
         img = cv2.cvtColor(np.array(self.entireScreenPIL), cv2.COLOR_BGR2RGB)
         count, points, bestfit = self.find_template_on_screen(self.topLeftCorner, img, 0.01)
         if count == 1:
@@ -277,7 +277,7 @@ class TablePP(Table):
         else:
 
             if terminalmode == False:
-                ui_action_and_signals.signal_status.emit(p.XML_entries_list1['pokerSite'].text + " not found yet")
+                ui_action_and_signals.signal_status.emit(p.selected_strategy['pokerSite'] + " not found yet")
                 ui_action_and_signals.signal_progressbar_reset.emit()
             logger.debug("Top left corner NOT found")
             time.sleep(1)
@@ -675,7 +675,7 @@ class TablePP(Table):
         self.playersAhead = int(np.round(self.coveredCardHolders - self.playersBehind))
         logger.debug("Player pots: " + str(self.PlayerPots))
 
-        if p.XML_entries_list1['smallBlind'].text in self.PlayerPots:
+        if p.selected_strategy['smallBlind'] in self.PlayerPots:
             self.playersAhead += 1
             self.playersBehind -= 1
             logger.debug("Found small blind")
@@ -890,12 +890,12 @@ class TablePP(Table):
 
         if self.gameStage == "PreFlop":
             # self.assumedPlayers = self.coveredCardHolders - int(
-            #    round(self.playersAhead * (1 - float(p.XML_entries_list1['CoveredPlayersCallLikelihoodPreFlop'].text)))) + 1
+            #    round(self.playersAhead * (1 - float(p.selected_strategy['CoveredPlayersCallLikelihoodPreFlop'])))) + 1
             self.assumedPlayers = 2
 
         elif self.gameStage == "Flop":
             self.assumedPlayers = self.coveredCardHolders - int(
-                round(self.playersAhead * (1 - float(p.XML_entries_list1['CoveredPlayersCallLikelihoodFlop'].text)))) + 1
+                round(self.playersAhead * (1 - float(p.selected_strategy['CoveredPlayersCallLikelihoodFlop'])))) + 1
 
         else:
             self.assumedPlayers = self.coveredCardHolders + 1
@@ -944,7 +944,7 @@ class ThreadManager(threading.Thread):
             ui_action_and_signals.signal_lcd_number_update.emit('required_minbet', t.currentBetValue)
             ui_action_and_signals.signal_lcd_number_update.emit('required_mincall', t.minCall)
             ui_action_and_signals.signal_lcd_number_update.emit('potsize', t.totalPotValue)
-            ui_action_and_signals.signal_lcd_number_update.emit('gamenumber', int(L.get_game_count(p.current_strategy.text)))
+            ui_action_and_signals.signal_lcd_number_update.emit('gamenumber', int(L.get_game_count(p.current_strategy)))
             ui_action_and_signals.signal_lcd_number_update.emit('assumed_players', int(t.assumedPlayers))
             ui_action_and_signals.signal_lcd_number_update.emit('calllimit', d.finalCallLimit)
             ui_action_and_signals.signal_lcd_number_update.emit('betlimit', d.finalBetLimit)
@@ -965,22 +965,22 @@ class ThreadManager(threading.Thread):
             global h, L, p, t, d, terminalmode
             h = History()
 
-            if p.XML_entries_list1['pokerSite'].text == "PS":
+            if p.selected_strategy['pokerSite'] == "PS":
                 logger.critical("Pokerstars no longer supported")
                 exit()
-            elif p.XML_entries_list1['pokerSite'].text == "PP":
+            elif p.selected_strategy['pokerSite'] == "PP":
                 mouse = MouseMoverPP()
             else:
                 raise ("Invalid PokerSite")
 
             while True:
-                p.read_XML()
-                if p.XML_entries_list1['pokerSite'].text == "PS":
+                p.read_strategy()
+                if p.selected_strategy['pokerSite'] == "PS":
                     logger.critical("Pokerstars no longer supported")
                     exit()
-                elif p.XML_entries_list1['pokerSite'].text == "PP":
+                elif p.selected_strategy['pokerSite'] == "PP":
                     t = TablePP()
-                elif p.XML_entries_list1['pokerSite'].text == "F1":
+                elif p.selected_strategy['pokerSite'] == "F1":
                     # t = TableF1()
                     logger.critical("Pokerbot tournament not yet supported")
                     exit()
@@ -1024,7 +1024,7 @@ class ThreadManager(threading.Thread):
 
                 logger.info("+++++++++++++++++++++++ Decision: " + str(d.decision) + "+++++++++++++++++++++++")
 
-                mouse.mouse_action(d.decision, t.topleftcorner, p.XML_entries_list1['BetPlusInc'].text, t.currentBluff,
+                mouse.mouse_action(d.decision, t.topleftcorner, p.selected_strategy['BetPlusInc'], t.currentBluff,
                                    logger)
 
                 t.time_action_completed = time.time()
@@ -1065,8 +1065,8 @@ if __name__ == '__main__':
 
     logger = debug_logger().start_logger()
 
-    p = XMLHandler('strategies.xml')
-    p.read_XML()
+    p = StrategyHandler()
+    p.read_strategy()
 
     LogFilename = 'log'
     L = Logging(LogFilename)

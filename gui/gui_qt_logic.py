@@ -70,7 +70,7 @@ class UIActionAndSignals(QObject):
 
         self.signal_lcd_number_update.connect(self.update_lcd_number)
 
-        strategy=p.current_strategy.text
+        strategy=p.current_strategy
         self.signal_bar_chart_update.connect(lambda: self.gui_bar.drawfigure(l,strategy))
 
         self.signal_funds_chart_update.connect(lambda: self.gui_funds.drawfigure(l))
@@ -135,7 +135,7 @@ class UIActionAndSignals(QObject):
 
         self.ui_analyser.combobox_actiontype.addItems(['Fold','Check','Call','Bet','BetPlus','Bet half pot','Bet pot','Bet Bluff'])
         self.ui_analyser.combobox_gamestage.addItems(['PreFlop','Flop','Turn','River'])
-        self.ui_analyser.combobox_strategy.addItems(l.get_strategy_list())
+        self.ui_analyser.combobox_strategy.addItems(l.get_played_strategy_list())
 
         self.gui_histogram = HistogramEquityWinLoss(self.ui_analyser)
         self.gui_scatterplot = ScatterPlot(self.ui_analyser)
@@ -166,7 +166,7 @@ class UIActionAndSignals(QObject):
 
     def update_strategy_analyser(self,l,p):
         number_of_games=int(l.get_game_count(self.ui_analyser.combobox_strategy.currentText()))
-        total_return=l.get_strategy_total_funds_change(self.ui_analyser.combobox_strategy.currentText(),999999)
+        total_return=l.get_strategy_return(self.ui_analyser.combobox_strategy.currentText(), 999999)
         small_blind=0.02
 
         self.ui_analyser.lcdNumber_2.display(number_of_games)
@@ -184,18 +184,18 @@ class UIActionAndSignals(QObject):
         self.gui_histogram.drawfigure(p_name, game_stage, decision,l)
 
         if p_name=='.*': p.read_XML()
-        else: p.read_XML(p_name)
+        else: p.read_strategy(p_name)
 
         call_or_bet='Bet' if decision[0]=='B' else 'Call'
 
         max_value=1
-        min_equity=float(p.XML_entries_list1[game_stage+'Min'+call_or_bet+'Equity'].text)
-        max_equity=float(p.XML_entries_list1['PreFlopMaxBetEquity'].text) if game_stage=='PreFlop' and call_or_bet=='Bet' else 1
-        power=float(p.XML_entries_list1[game_stage+call_or_bet+'Power'].text)
+        min_equity=float(p.selected_strategy[game_stage+'Min'+call_or_bet+'Equity'])
+        max_equity=float(p.selected_strategy['PreFlopMaxBetEquity']) if game_stage=='PreFlop' and call_or_bet=='Bet' else 1
+        power=float(p.selected_strategy[game_stage+call_or_bet+'Power'])
 
         self.gui_scatterplot.drawfigure(p_name, game_stage, decision,l,
-                                        float(p.XML_entries_list1['smallBlind'].text),
-                                        float(p.XML_entries_list1['bigBlind'].text),
+                                        float(p.selected_strategy['smallBlind']),
+                                        float(p.selected_strategy['bigBlind']),
                                         max_value,
                                         min_equity,
                                         max_equity,
@@ -217,7 +217,7 @@ class FundsPlotter(FigureCanvas):
         self.ui.vLayout.insertWidget(1, self)
 
     def drawfigure(self,L):
-        Strategy = str(self.p.current_strategy.text)
+        Strategy = str(self.p.current_strategy)
         data=L.get_fundschange_chart(Strategy)
         data=np.cumsum(data)
         self.fig.clf()
@@ -270,7 +270,7 @@ class BarPlotter(FigureCanvas):
         self.axes.legend((self.p0[0], self.p1[0], self.p2[0], self.p3[0], self.p4[0], self.p5[0], self.p6[0]),
                          ('Bluff', 'BetPot', 'BetHfPot', 'Bet/Bet+', 'Call', 'Check', 'Fold'), labelspacing=0.03,
                          prop={'size': 12})
-        maxh = float(self.p.XML_entries_list1['bigBlind'].text) * 10
+        maxh = float(self.p.selected_strategy['bigBlind']) * 10
         i = 0
         for rect0, rect1, rect2, rect3, rect4, rect5, rect6 in zip(self.p0.patches, self.p1.patches,
                                                                    self.p2.patches,
@@ -540,8 +540,8 @@ if __name__ == "__main__":
     ui = Ui_Pokerbot()
     ui.setupUi(MainWindow)
 
-    p = XMLHandler('strategies.xml')
-    p.read_XML()
+    p = StrategyHandler()
+    p.read_strategy()
 
     # plotter logic and binding needs to be added here
     gui_funds = FundsPlotter(ui, p)

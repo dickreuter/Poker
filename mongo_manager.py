@@ -7,6 +7,32 @@ from pymongo import MongoClient
 from collections import Iterable
 import os
 import datetime
+from configobj import ConfigObj
+
+class StrategyHandler(object):
+    def __init__(self):
+        self.mongoclient = MongoClient('mongodb://guest:donald@52.201.173.151:27017/POKER')
+        self.mongodb = self.mongoclient.POKER
+
+    def get_playable_strategy_list(self):
+        l=list(self.mongodb.strategies.distinct("Strategy"))[::-1]
+        return l
+
+    def read_strategy(self,strategy_override=''):
+        config = ConfigObj("config.ini")
+        last_strategy = (config['last_strategy'])
+        self.current_strategy = last_strategy if strategy_override == '' else strategy_override
+        cursor=self.mongodb.strategies.find({'Strategy': self.current_strategy})
+        self.selected_strategy=cursor.next()
+
+    def save_strategy(self, strategy):
+        result = self.mongodb.strategies.insert_one(strategy)
+
+    def update_strategy(self,strategy):
+        result = self.mongodb.strategies.update_one(
+            {"Strategy": strategy['Strategy']},
+            {"$set": strategy}
+        )
 
 class Logging(object):
     def __init__(self, connection='mongodb://guest:donald@52.201.173.151:27017/POKER'):
@@ -259,9 +285,10 @@ class Logging(object):
 
         return games
 
-    def get_strategy_total_funds_change(self, strategy, days):
+    def get_strategy_return(self, strategy, days):
         cursor = self.mongodb.games.aggregate([
             {"$match": {"Template": {"$regex": strategy}}},
+            {"$sort":  {"logging_timestamp": -1}},
             {"$limit": days},
             {"$group": {
                 "_id": "none",
@@ -288,7 +315,7 @@ class Logging(object):
             y=[0]
         return y
 
-    def get_strategy_list(self):
+    def get_played_strategy_list(self):
         l=list(self.mongodb.games.distinct("Template"))[::-1]
         l.append('.*')
         return l
@@ -441,14 +468,19 @@ if __name__ == '__main__':
     t2=(0.55, 0.65, 10)
 
     L=Logging()
-    #L.optimize_preflop_call_parameters(p_name, p_value, game_stage, decision)
-    player_list = L.get_frequent_player_names()
-    print (player_list[-10:])
+    # #L.optimize_preflop_call_parameters(p_name, p_value, game_stage, decision)
+    # player_list = L.get_frequent_player_names()
+    # print (player_list[-10:])
+    #
+    # print(L.get_flop_frequency_of_player('MMHRIHM'))
+    # print(L.get_flop_frequency_of_player('Mnanqn1no'))
+    # print(L.get_flop_frequency_of_player('Annv'))
+    # print(L.get_flop_frequency_of_player('7UDILI'))
+    # print(L.get_flop_frequency_of_player('hfqq'))
+    #
+    #
+    # worst_games=L.get_worst_games('.(')
 
-    print(L.get_flop_frequency_of_player('MMHRIHM'))
-    print(L.get_flop_frequency_of_player('Mnanqn1no'))
-    print(L.get_flop_frequency_of_player('Annv'))
-    print(L.get_flop_frequency_of_player('7UDILI'))
-    print(L.get_flop_frequency_of_player('hfqq'))
-
+    strategy_return=L.get_strategy_return('.*', 500)
+    print ("Return: "+str(strategy_return))
 

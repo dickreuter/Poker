@@ -2,7 +2,7 @@
 Assesses the log file and checks how the parameters in strategies.xml need to be adjusted to optimize playing
 '''
 from debug_logger import *
-from log_manager import *
+from mongo_manager import *
 from xml_handler import *
 
 
@@ -12,7 +12,7 @@ class GeneticAlgorithm(object):
         self.output = ''
         p = XMLHandler('strategies.xml')
         p.read_XML()
-        p_name = p.current_strategy.text
+        p_name = p.current_strategy
         self.load_log(p_name, L)
         self.improve_strategy(L, p)
         if (p.modified and write_update==True) or write_update=="Force":
