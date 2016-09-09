@@ -44,7 +44,7 @@ class UIActionAndSignals(QObject):
     signal_status = QtCore.pyqtSignal(str)
     signal_decision = QtCore.pyqtSignal(str)
 
-    signal_bar_chart_update=QtCore.pyqtSignal(object)
+    signal_bar_chart_update=QtCore.pyqtSignal(object,str)
     signal_funds_chart_update=QtCore.pyqtSignal(object)
     signal_pie_chart_update=QtCore.pyqtSignal(dict)
     signal_curve_chart_update1=QtCore.pyqtSignal(float,float,float,float,float,float,str,str)
@@ -72,8 +72,7 @@ class UIActionAndSignals(QObject):
 
         self.signal_lcd_number_update.connect(self.update_lcd_number)
 
-        strategy=p.current_strategy
-        self.signal_bar_chart_update.connect(lambda: self.gui_bar.drawfigure(l,strategy))
+        self.signal_bar_chart_update.connect(lambda: self.gui_bar.drawfigure(l,p.current_strategy))
 
         self.signal_funds_chart_update.connect(lambda: self.gui_funds.drawfigure(l))
         self.signal_curve_chart_update1.connect(self.gui_curve.update_plots)
@@ -207,7 +206,7 @@ class UIActionAndSignals(QObject):
 
         self.gui_histogram.drawfigure(p_name, game_stage, decision,l)
 
-        if p_name=='.*': p.read_XML()
+        if p_name=='.*': p.read_strategy()
         else: p.read_strategy(p_name)
 
         call_or_bet='Bet' if decision[0]=='B' else 'Call'

@@ -869,7 +869,7 @@ class TablePP(Table):
             t_algo.start()
 
             if not terminalmode: ui_action_and_signals.signal_funds_chart_update.emit(L)
-            if not terminalmode: ui_action_and_signals.signal_bar_chart_update.emit(L)
+            if not terminalmode: ui_action_and_signals.signal_bar_chart_update.emit(L,p.current_strategy)
 
             h.myLastBet = 0
             h.myFundsHistory.append(str(self.myFunds))
