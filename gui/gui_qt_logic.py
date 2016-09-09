@@ -8,6 +8,7 @@ from matplotlib.figure import Figure
 from weakref import proxy
 from gui.gui_qt_ui import Ui_Pokerbot
 from gui.gui_qt_ui_genetic_algorithm import *
+from gui.gui_qt_ui_strategy_manager import *
 from decisionmaker.genetic_algorithm1 import *
 from decisionmaker.curvefitting import *
 
@@ -49,18 +50,19 @@ class UIActionAndSignals(QObject):
     signal_curve_chart_update1=QtCore.pyqtSignal(float,float,float,float,float,float,str,str)
     signal_curve_chart_update2 = QtCore.pyqtSignal(float, float, float, float, float, float, float, float,float)
     signal_lcd_number_update = QtCore.pyqtSignal(str,float)
+    signal_update_selected_strategy = QtCore.pyqtSignal(str)
 
-    def __init__(self,ui,p,l,logger):
+    def __init__(self, ui_main_window, p, l, logger):
         QObject.__init__(self)
-        self.ui=ui
+        self.ui=ui_main_window
         self.progressbar_value=0
         self.logger=logger
 
         # Main Window matplotlip widgets
-        self.gui_funds = FundsPlotter(ui, p)
-        self.gui_bar = BarPlotter(ui, p)
-        self.gui_curve = CurvePlot(ui, p)
-        self.gui_pie = PiePlotter(ui, winnerCardTypeList={'Highcard':22})
+        self.gui_funds = FundsPlotter(ui_main_window, p)
+        self.gui_bar = BarPlotter(ui_main_window, p)
+        self.gui_curve = CurvePlot(ui_main_window, p)
+        self.gui_pie = PiePlotter(ui_main_window, winnerCardTypeList={'Highcard':22})
 
         # main window status update signal connections
         self.signal_progressbar_increase.connect(self.increase_progressbar)
@@ -78,15 +80,28 @@ class UIActionAndSignals(QObject):
         self.signal_curve_chart_update2.connect(self.gui_curve.update_lines)
         self.signal_pie_chart_update.connect(self.gui_pie.drawfigure)
 
-        # ui.button_options.clicked.connect()
-        # ui.button_strategy_editor.clicked.connect()
-        # ui.button_options.clicked.connect()
-        ui.button_genetic_algorithm.clicked.connect(lambda: self.open_genetic_algorithm(p,l))
+        ui_main_window.button_genetic_algorithm.clicked.connect(lambda: self.open_genetic_algorithm(p, l))
+        ui_main_window.button_log_analyser.clicked.connect(lambda: self.open_strategy_analyser(p, l))
+        ui_main_window.button_strategy_editor.clicked.connect(lambda: self.open_strategy_editor(p, l))
+        ui_main_window.button_pause.clicked.connect(lambda: self.pause(ui_main_window, p))
+        ui_main_window.button_resume.clicked.connect(lambda: self.resume(ui_main_window, p))
 
-        ui.button_log_analyser.clicked.connect(lambda: self.open_strategy_analyser(p,l))
+        playable_list=p.get_playable_strategy_list()
+        ui_main_window.comboBox_current_strategy.addItems(playable_list)
+        ui_main_window.comboBox_current_strategy.currentIndexChanged[str].connect(lambda: self.signal_update_selected_strategy(l, p))
+        config = ConfigObj("config.ini")
+        initial_selection=config['last_strategy']
+        for i in [i for i, x in enumerate(playable_list) if x == initial_selection]:
+            idx=i
+        ui_main_window.comboBox_current_strategy.setCurrentIndex(idx)
 
-        ui.button_pause.clicked.connect(lambda: self.pause(ui,p))
-        ui.button_resume.clicked.connect(lambda: self.resume(ui,p))
+    def signal_update_selected_strategy(self, l, p):
+        newly_selected_strategy=self.ui.comboBox_current_strategy.currentText()
+        config = ConfigObj("config.ini")
+        config['last_strategy']= newly_selected_strategy
+        config.write()
+        p.read_strategy()
+        self.logger.info("Active strategy changed to: "+p.current_strategy)
 
     def pause(self,ui,p):
         print ("Game paused")
@@ -94,6 +109,7 @@ class UIActionAndSignals(QObject):
         ui.button_pause.setEnabled(False)
         ui.button_genetic_algorithm.setEnabled(True)
         ui.button_log_analyser.setEnabled(True)
+        ui.button_strategy_editor.setEnabled(True)
         p.pause=True
 
     def resume(self, ui,p):
@@ -102,6 +118,7 @@ class UIActionAndSignals(QObject):
         ui.button_pause.setEnabled(True)
         ui.button_genetic_algorithm.setEnabled(False)
         ui.button_log_analyser.setEnabled(False)
+        ui.button_strategy_editor.setEnabled(False)
         p.pause=False
 
     def increase_progressbar(self, value):
@@ -147,6 +164,13 @@ class UIActionAndSignals(QObject):
         self.gui_bar2 = BarPlotter2(self.ui_analyser,l)
         self.gui_bar2.drawfigure(l, self.ui_analyser.combobox_strategy.currentText())
         self.update_strategy_analyser(l,p)
+
+    def open_strategy_editor(self,p,l):
+        self.signal_progressbar_reset.emit()
+        self.stragegy_editor_form = QtWidgets.QWidget()
+        self.ui_editor = Ui_editor_form()
+        self.ui_editor.setupUi(self.stragegy_editor_form)
+        self.stragegy_editor_form.show()
 
     def open_genetic_algorithm(self, p, l):
         self.ui.button_genetic_algorithm.setEnabled(False)
@@ -482,7 +506,7 @@ class FundsChangePlot(FigureCanvas):
 
     def drawfigure(self):
         LogFilename = 'log'
-        L = Logging(LogFilename)
+        L = GameLogger(LogFilename)
         p_name = str(self.ui_analyser.combobox_strategy.currentText())
         data=L.get_fundschange_chart(p_name)
         self.fig.clf()

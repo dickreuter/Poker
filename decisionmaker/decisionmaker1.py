@@ -38,7 +38,7 @@ class Decision(DecisionBase):
         P = float(t.totalPotValue)
         n = t.coveredCardHolders
         self.maxCallEV = self.calc_EV_call_limit(t.equity, P)
-        self.maxBetEV = self.calc_bet_limit(t.equity, P, float(p.selected_strategy['c']), t, logger)
+        #self.maxBetEV = self.calc_bet_limit(t.equity, P, float(p.selected_strategy['c']), t, logger)
         logger.debug("Max call EV: " + str(self.maxCallEV))
 
         self.DeriveCallButtonFromBetButton = False

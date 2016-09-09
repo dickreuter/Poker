@@ -207,9 +207,9 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>20</x>
+      <x>330</x>
       <y>300</y>
-      <width>151</width>
+      <width>131</width>
       <height>21</height>
      </rect>
     </property>
@@ -403,9 +403,9 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>180</x>
+      <x>470</x>
       <y>300</y>
-      <width>131</width>
+      <width>141</width>
       <height>21</height>
      </rect>
     </property>
@@ -424,7 +424,7 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>330</x>
+      <x>180</x>
       <y>300</y>
       <width>131</width>
       <height>21</height>
@@ -459,25 +459,19 @@
      <string>Dickreuter's Poker bot</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="button_options">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
+   <widget class="QComboBox" name="comboBox_current_strategy">
     <property name="geometry">
      <rect>
-      <x>470</x>
+      <x>20</x>
       <y>300</y>
-      <width>141</width>
-      <height>21</height>
+      <width>151</width>
+      <height>20</height>
      </rect>
     </property>
     <property name="font">
      <font>
       <pointsize>10</pointsize>
      </font>
-    </property>
-    <property name="text">
-     <string>Options</string>
     </property>
    </widget>
   </widget>

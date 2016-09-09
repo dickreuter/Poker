@@ -12,6 +12,7 @@ from decisionmaker.montecarlo_v3 import *
 from mouse_mover import *
 from configobj import ConfigObj
 import os
+import re
 
 class History(object):
     def __init__(self):
@@ -235,7 +236,7 @@ class Table(object):
     def call_genetic_algorithm(self):
         if not terminalmode:
             ui_action_and_signals.signal_progressbar_increase.emit(5)
-            ui_action_and_signals.signal_status.emit("Checking strategy returns")
+            ui_action_and_signals.signal_status.emit("Updating charts")
         n = L.get_game_count(p.current_strategy)
         lg = int(
             p.selected_strategy['considerLastGames'])  # only consider lg last games to see if there was a loss
@@ -1068,8 +1069,7 @@ if __name__ == '__main__':
     p = StrategyHandler()
     p.read_strategy()
 
-    LogFilename = 'log'
-    L = Logging(LogFilename)
+    L = GameLogger()
 
     if setupmode:
         t.setup_get_item_location()

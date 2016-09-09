@@ -34,7 +34,7 @@ class StrategyHandler(object):
             {"$set": strategy}
         )
 
-class Logging(object):
+class GameLogger(object):
     def __init__(self, connection='mongodb://guest:donald@52.201.173.151:27017/POKER'):
         self.mongoclient = MongoClient('mongodb://guest:donald@52.201.173.151:27017/POKER')
         self.mongodb = self.mongoclient.POKER
@@ -51,9 +51,8 @@ class Logging(object):
         dDict = {}
         pDict = {}
 
-        for key, val in vars(p).items():
-            if len(" ".join(str(ele) for ele in self.isIterable(val)))<25:
-                pDict[key] = " ".join(str(ele) for ele in self.isIterable(val))
+        for key, val in p.selected_strategy.items():
+            pDict[key] = val
         for key, val in vars(h).items():
             hDict[key] = " ".join(str(ele) for ele in self.isIterable(val))
         for key, val in vars(t).items():
@@ -72,7 +71,9 @@ class Logging(object):
         Dp = pd.DataFrame(pDict, index=[0])
 
         self.FinalDataFrame = pd.concat([Dd, Dt, Dh, Dp], axis=1)
-        result = self.mongodb.rounds.insert_one(self.FinalDataFrame.to_dict('records')[0])
+        rec=self.FinalDataFrame.to_dict('records')[0]
+        del rec['_id']
+        result = self.mongodb.rounds.insert_one(rec)
 
     def mark_last_game(self, t, h):
         # updates the last game after it becomes know if it was won or lost
@@ -388,7 +389,7 @@ class Logging(object):
         return pd.DataFrame(list(cursor))
 
     def optimize_preflop_call_parameters(self,p_name, p_value, game_stage, decision):
-        L = Logging()
+        L = GameLogger()
         df = L.get_neural_training_data(p_name, p_value, game_stage, decision)
 
         from decisionmaker.curvefitting import Curvefitting
@@ -467,7 +468,7 @@ if __name__ == '__main__':
     t1=(1, 5, 5)
     t2=(0.55, 0.65, 10)
 
-    L=Logging()
+    L=GameLogger()
     # #L.optimize_preflop_call_parameters(p_name, p_value, game_stage, decision)
     # player_list = L.get_frequent_player_names()
     # print (player_list[-10:])

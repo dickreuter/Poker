@@ -3,7 +3,6 @@ Assesses the log file and checks how the parameters in strategies.xml need to be
 '''
 from debug_logger import *
 from mongo_manager import *
-from xml_handler import *
 
 
 class GeneticAlgorithm(object):
@@ -144,7 +143,7 @@ class GeneticAlgorithm(object):
 def run_genetic_algorithm(write, logger):
     logger.info("===Running genetic algorithm===")
     LogFilename = 'log'
-    L = Logging(LogFilename)
+    L = GameLogger(LogFilename)
     GeneticAlgorithm(write, logger, L)
 
 
