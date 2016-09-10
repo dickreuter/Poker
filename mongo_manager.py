@@ -56,7 +56,6 @@ class StrategyHandler(object):
         self.selected_strategy[elementName] = str(round(float(self.selected_strategy[elementName]) + change, 2))
         self.modified = True
 
-
 class GameLogger(object):
     def __init__(self, connection='mongodb://guest:donald@52.201.173.151:27017/POKER'):
         self.mongoclient = MongoClient('mongodb://guest:donald@52.201.173.151:27017/POKER')
