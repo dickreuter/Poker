@@ -6,7 +6,6 @@ import numpy as np
 from pymongo import MongoClient
 from collections import Iterable
 import os
-import datetime
 from configobj import ConfigObj
 import re
 import datetime

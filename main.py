@@ -13,6 +13,8 @@ from mouse_mover import *
 from configobj import ConfigObj
 import os
 import re
+import inspect
+from captcha.captcha_manager import solve_captcha
 
 class History(object):
     def __init__(self):
@@ -39,16 +41,17 @@ class Table(object):
     # General tools that are used to operate the pokerbot and are valid for all tables
     def __init__(self):
         self.load_templates()
+        self.load_coordinates()
 
     def load_templates(self):
-
         self.cardImages = dict()
         self.img = dict()
+        self.tbl=p.selected_strategy['pokerSite']
         values = "23456789TJQKA"
         suites = "CDHS"
         for x in values:
             for y in suites:
-                name = "pics/" + p.selected_strategy['pokerSite'] + "/" + x + y + ".png"
+                name = "pics/" + self.tbl + "/" + x + y + ".png"
                 if os.path.exists(name) == True:
                     self.img[x + y] = Image.open(name)
                     self.cardImages[x + y] = cv2.cvtColor(np.array(self.img[x + y]), cv2.COLOR_BGR2RGB)
@@ -58,46 +61,89 @@ class Table(object):
                 else:
                     logger.critical("Card Temlate File not found: " + str(x) + str(y) + ".png")
 
-        name = "pics/" + p.selected_strategy['pokerSite'] + "/button.png"
+        name = "pics/" + self.tbl + "/button.png"
         template = Image.open(name)
         self.button = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + p.selected_strategy['pokerSite'] + "/topleft.png"
+        name = "pics/" + self.tbl + "/topleft.png"
         template = Image.open(name)
         self.topLeftCorner = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + p.selected_strategy['pokerSite'] + "/coveredcard.png"
+        name = "pics/" + self.tbl + "/coveredcard.png"
         template = Image.open(name)
         self.coveredCardHolder = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + p.selected_strategy['pokerSite'] + "/imback.png"
+        name = "pics/" + self.tbl + "/imback.png"
         template = Image.open(name)
         self.ImBack = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + p.selected_strategy['pokerSite'] + "/check.png"
+        name = "pics/" + self.tbl + "/check.png"
         template = Image.open(name)
         self.check = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + p.selected_strategy['pokerSite'] + "/call.png"
+        name = "pics/" + self.tbl + "/call.png"
         template = Image.open(name)
         self.call = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + p.selected_strategy['pokerSite'] + "/smalldollarsign1.png"
+        name = "pics/" + self.tbl + "/smalldollarsign1.png"
         template = Image.open(name)
         self.smallDollarSign1 = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        if p.selected_strategy['pokerSite'] == "PP":
-            name = "pics/" + p.selected_strategy['pokerSite'] + "/smalldollarsign2.png"
+        if self.tbl == "PP":
+            name = "pics/" + self.tbl + "/smalldollarsign2.png"
             template = Image.open(name)
             self.smallDollarSign2 = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + p.selected_strategy['pokerSite'] + "/allincallbutton.png"
+        name = "pics/" + self.tbl + "/allincallbutton.png"
         template = Image.open(name)
         self.allInCallButton = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + p.selected_strategy['pokerSite'] + "/lostEverything.png"
+        name = "pics/" + self.tbl + "/lostEverything.png"
         template = Image.open(name)
         self.lostEverything = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
+
+    def load_coordinates(self):
+        self.coo={
+                "check_for_button":     {"PP": {"x1":540, "y1": 480, "x2": 700, "y2":580, "tolerance": 0.01},
+                                        "PS":  {"x1": 540, "y1": 480, "x2": 700, "y2": 580, "tolerance": 0.01}
+                                        },
+                "check_for_imback":     {"PP": {"x1":560, "y1": 478, "x2": 670, "y2":442 + 400, "tolerance": 0.01},
+                                        "PS":  {"x1": 540, "y1": 480, "x2": 700, "y2": 580, "tolerance": 0.01}
+                                        },
+                "check_for_checkbutton":{"PP": {"x1": 560, "y1": 478, "x2": 670, "y2": 550, "tolerance": 0.01},
+                                        "PS":  {"x1": 540, "y1": 480, "x2": 700, "y2": 580, "tolerance": 0.01}
+                                        },
+                "check_for_captcha":    {"PP": {"active": False},
+                                        "PS":  {"x1": 3, "y1": 443, "x2": 400, "y2": 443 + 90, "active": True,
+                                                "x1_2": 5, "y1_2": 490, "x2_2": 400, "y2_2": 443 + 90,
+                                                }
+                                        },
+                "check_for_call":       {"PP": {"x1": 575, "y1": 483, "x2": 575 + 100, "y2": 483 + 100, "tolerance": 0.05},
+                                        "PS": {"x1": 540, "y1": 480, "x2": 700, "y2": 580, "tolerance": 0.05}
+                                        },
+                "check_for_allincall":  {"PP": {"x1": 557, "y1": 483, "x2": 670, "y2": 580, "tolerance": 0.01},
+                                         "PS": {"x1": 540, "y1": 480, "x2": 700, "y2": 580, "tolerance": 0.01}
+                                        },
+                "get_lost_everything":  {"PP": {"x1": 100, "y1": 100, "x2": 590 + 50 + 125, "y2": 511 + 14, "tolerance": 0.01},
+                                        "PS": {"x1": 540, "y1": 480, "x2": 700, "y2": 580, "tolerance": 0.01}
+                                        },
+                "get_current_pot_value": {
+                                        "PP": {"x1": 390, "y1": 324, "x2": 431, "y2": 340},
+                                        "PS": {"x1": 540, "y1": 480, "x2": 700, "y2": 580}
+                                        },
+                "get_current_bet_value": {
+                                        "PP": {"x1": 589 + 125, "y1": 516, "x2": 589 + 70 + 125, "y2": 516 + 17},
+                                        "PS": {"x1": 540, "y1": 480, "x2": 700, "y2": 580}
+                                        },
+                "get_current_call_value": {
+                                        "PP": {"x1": 585, "y1": 516, "x2": 585 + 70, "y2": 516 + 17},
+                                        "PS": {"x1": 540, "y1": 480, "x2": 700, "y2": 580}
+                                        },
+                "get_covered_card_holders": {
+                                        "PP": {"x1": 0, "y1": 0, "x2": 800, "y2": 500},
+                                        "PS": {"x1": 540, "y1": 480, "x2": 700, "y2": 580}
+                                        },
+                }
 
     def take_screenshot(self,initial):
         if not terminalmode and initial:
@@ -265,32 +311,32 @@ class Table(object):
     def find_item_location_in_crop(self,x1,y1,x2,y2,template,screentho):
         pass
 
-class TablePP(Table):
+class TableScreenBased(Table):
     def get_top_left_corner(self):
         self.current_strategy=p.current_strategy
         img = cv2.cvtColor(np.array(self.entireScreenPIL), cv2.COLOR_BGR2RGB)
         count, points, bestfit = self.find_template_on_screen(self.topLeftCorner, img, 0.01)
         if count == 1:
-            self.topleftcorner = points[0]
+            self.tlc = points[0]
             logger.debug("Top left corner found")
             t.timeout_start = time.time()
             return True
         else:
 
             if terminalmode == False:
-                ui_action_and_signals.signal_status.emit(p.selected_strategy['pokerSite'] + " not found yet")
+                ui_action_and_signals.signal_status.emit(self.tbl + " not found yet")
                 ui_action_and_signals.signal_progressbar_reset.emit()
             logger.debug("Top left corner NOT found")
             time.sleep(1)
             return False
 
     def check_for_button(self):
+        func_dict=self.coo[inspect.stack()[0][3]][self.tbl]
         if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(5)
         cards = ' '.join(t.mycards)
-        pil_image = self.crop_image(self.entireScreenPIL, self.topleftcorner[0] + 540, self.topleftcorner[1] + 480,
-                                    self.topleftcorner[0] + 700, self.topleftcorner[1] + 580)
+        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1]+func_dict['y1'],self.tlc[0]+func_dict['x2'], self.tlc[1] + func_dict['y2'])
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
-        count, points, bestfit = self.find_template_on_screen(self.button, img, 0.01)
+        count, points, bestfit = self.find_template_on_screen(self.button, img, func_dict['tolerance'])
 
         if count > 0:
             if not terminalmode: ui_action_and_signals.signal_status.emit("Buttons found, cards: " + str(cards))
@@ -302,15 +348,14 @@ class TablePP(Table):
             return False
 
     def check_for_checkbutton(self):
+        func_dict=self.coo[inspect.stack()[0][3]][self.tbl]
         if not terminalmode: ui_action_and_signals.signal_status.emit("Check for Check")
         if not terminalmode: ui_action_and_signals.signal_progressbar_increase.emit(5)
         logger.debug("Checking for check button")
-        pil_image = self.crop_image(self.entireScreenPIL, self.topleftcorner[0] + 560, self.topleftcorner[1] + 478,
-                                    self.topleftcorner[0] + 670, self.topleftcorner[1] + 550)
-        # pil_image.save("pics/getCheckButton.png")
-        # Convert RGB to BGR
+        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
+                                    self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
-        count, points, bestfit = self.find_template_on_screen(self.check, img, 0.01)
+        count, points, bestfit = self.find_template_on_screen(self.check, img, func_dict['tolerance'])
 
         if count > 0:
             self.checkButton = True
@@ -322,69 +367,68 @@ class TablePP(Table):
         logger.debug("Check: " + str(self.checkButton))
         return True
 
-    def check_for_captcha(self):
-        # ChatWindow = self.crop_image(self.entireScreenPIL, self.topleftcorner[0]
-        # + 3, self.topleftcorner[1] + 443,
-        #                             self.topleftcorner[0] + 400,
-        #                             self.topleftcorner[1] + 443 + 90)
-        # basewidth = 500
-        # wpercent = (basewidth / float(ChatWindow.size[0]))
-        # hsize = int((float(ChatWindow.size[1]) * float(wpercent)))
-        # ChatWindow = ChatWindow.resize((basewidth, hsize), Image.ANTIALIAS)
-        # # ChatWindow.show()
-        # try:
-        #     t.chatText = (pytesseract.image_to_string(ChatWindow, None,
-        #     False, "-psm 6"))
-        #     t.chatText =
-        #     re.sub("[^abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\.]",
-        #     "", t.chatText)
-        #     keyword1 = 'disp'
-        #     keyword2 = 'left'
-        #     keyword3 = 'pic'
-        #     keyword4 = 'key'
-        #     keyword5 = 'lete'
-        #     logger.debug( (recognizedText)
-        #     if ((t.chatText.find(keyword1) > 0) or (t.chatText.find(keyword2)
-        #     > 0) or (
-        #                 t.chatText.find(keyword3) > 0) or
-        #                 (t.chatText.find(keyword4) > 0) or (
-        #                 t.chatText.find(keyword5) > 0)):
-        #         gui.statusbar.set("Captcha discovered!  Submitting...")
-        #         captchaIMG = self.crop_image(self.entireScreenPIL,
-        #         self.topleftcorner[0] + 5, self.topleftcorner[1] + 490,
-        #                                     self.topleftcorner[0] + 335,
-        #                                     self.topleftcorner[1] + 550)
-        #         captchaIMG.save("pics/captcha.png")
-        #         # captchaIMG.show()
-        #         time.sleep(0.5)
-        #         t.captcha = solve_captcha("pics/captcha.png")
-        #         mouse.enter_captcha(t.captcha)
-        #         logger.info("Entered captcha")
-        #         logger.info(t.captcha)
-        # except:
-        #     logger.info("CheckingForCaptcha Error")
+    def check_for_captcha(self, mouse):
+        func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        if func_dict['active']:
+            ChatWindow = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
+                                    self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
+            basewidth = 500
+            wpercent = (basewidth / float(ChatWindow.size[0]))
+            hsize = int((float(ChatWindow.size[1]) * float(wpercent)))
+            ChatWindow = ChatWindow.resize((basewidth, hsize), Image.ANTIALIAS)
+            # ChatWindow.show()
+            try:
+                t.chatText = (pytesseract.image_to_string(ChatWindow, None,
+                False, "-psm 6"))
+                t.chatText = re.sub("[^abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\.]",
+                "", t.chatText)
+                keyword1 = 'disp'
+                keyword2 = 'left'
+                keyword3 = 'pic'
+                keyword4 = 'key'
+                keyword5 = 'lete'
+                logger.debug("Recognised text: "+t.chatText)
+
+                if ((t.chatText.find(keyword1) > 0) or (t.chatText.find(keyword2)
+                > 0) or (
+                            t.chatText.find(keyword3) > 0) or
+                            (t.chatText.find(keyword4) > 0) or (
+                            t.chatText.find(keyword5) > 0)):
+                    logger.warning("Submitting Captcha")
+                    captchaIMG = self.crop_image(self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1_2'], self.tlc[1] + func_dict['y1_2'],
+                                    self.tlc[0] + func_dict['x2_2'], self.tlc[1] + func_dict['y2_2']))
+                    captchaIMG.save("pics/captcha.png")
+                    # captchaIMG.show()
+                    time.sleep(0.5)
+                    t.captcha = solve_captcha("pics/captcha.png")
+                    mouse.enter_captcha(t.captcha)
+                    logger.info("Entered captcha: "+str(t.captcha))
+            except:
+                logger.warning("CheckingForCaptcha Error")
         return True
 
     def check_for_imback(self, mouse):
-        pil_image = self.crop_image(self.entireScreenPIL, self.topleftcorner[0] + 402, self.topleftcorner[1] + 458,
-                                    self.topleftcorner[0] + 442 + 400, self.topleftcorner[1] + 550)
+        func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
+                                    self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
         # Convert RGB to BGR
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
-        count, points, bestfit = self.find_template_on_screen(self.ImBack, img, 0.08)
+        count, points, bestfit = self.find_template_on_screen(self.ImBack, img, func_dict['tolerance'])
         if count > 0:
             if not terminalmode: ui_action_and_signals.signal_status.emit("I am back found")
-            mouse.mouse_action("Imback", self.topleftcorner, 0, 0, logger)
+            mouse.mouse_action("Imback", self.tlc, 0, 0, logger)
             return False
         else:
             return True
 
     def check_for_call(self):
+        func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
         if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(5)
         logger.debug("Check for Call")
-        pil_image = self.crop_image(self.entireScreenPIL, self.topleftcorner[0] + 575, self.topleftcorner[1] + 483,
-                                    self.topleftcorner[0] + 575 + 100, self.topleftcorner[1] + 483 + 100)
+        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
+                                    self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
-        count, points, bestfit = self.find_template_on_screen(self.call, img, 0.05)
+        count, points, bestfit = self.find_template_on_screen(self.call, img, func_dict['tolerance'])
         if count > 0:
             self.callButton = True
             logger.debug("Call button found")
@@ -394,10 +438,11 @@ class TablePP(Table):
             pil_image.save("pics/debug_nocall.png")
         return True
 
-    def check_for_allincall_button(self):
+    def check_for_allincall(self):
+        func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
         logger.debug("Check for All in call button")
-        pil_image = self.crop_image(self.entireScreenPIL, self.topleftcorner[0] + 557, self.topleftcorner[1] + 483,
-                                    self.topleftcorner[0] + 670, self.topleftcorner[1] + 580)
+        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
+                                    self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
         # Convert RGB to BGR
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
         count, points, bestfit = self.find_template_on_screen(self.allInCallButton, img, 0.01)
@@ -407,15 +452,15 @@ class TablePP(Table):
         else:
             self.allInCallButton = False
             logger.debug("All in call button not found")
-
         return True
 
     def get_table_cards(self):
+        func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
         if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(5)
         logger.debug("Get Table cards")
         self.cardsOnTable = []
-        pil_image = self.crop_image(self.entireScreenPIL, self.topleftcorner[0] + 206, self.topleftcorner[1] + 158,
-                                    self.topleftcorner[0] + 600, self.topleftcorner[1] + 158 + 120)
+        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + 206, self.tlc[1] + 158,
+                                    self.tlc[0] + 600, self.tlc[1] + 158 + 120)
 
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
         # (thresh, img) = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY |
@@ -459,6 +504,7 @@ class TablePP(Table):
         return True
 
     def get_my_cards(self):
+        func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
         def go_through_each_card(img, debugging):
             dic = {}
             for key, value in self.cardImages.items():
@@ -489,8 +535,8 @@ class TablePP(Table):
 
         if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(5)
         self.mycards = []
-        pil_image = self.crop_image(self.entireScreenPIL, self.topleftcorner[0] + 450, self.topleftcorner[1] + 330,
-                                    self.topleftcorner[0] + 450 + 80, self.topleftcorner[1] + 330 + 80)
+        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + 450, self.tlc[1] + 330,
+                                    self.tlc[0] + 450 + 80, self.tlc[1] + 330 + 80)
 
         # pil_image.show()
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
@@ -508,10 +554,11 @@ class TablePP(Table):
             return False
 
     def get_covered_card_holders(self):
+        func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
         if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(5)
         if terminalmode == False: ui_action_and_signals.signal_status.emit("Analyse other players and position")
-        pil_image = self.crop_image(self.entireScreenPIL, self.topleftcorner[0] + 0, self.topleftcorner[1] + 0,
-                                    self.topleftcorner[0] + 800, self.topleftcorner[1] + 500)
+        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
+                                    self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
         # Convert RGB to BGR
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
         count, points, bestfit = self.find_template_on_screen(self.coveredCardHolder, img, 0.0001)
@@ -576,10 +623,11 @@ class TablePP(Table):
             return True
 
     def get_played_players(self):
+        func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
         if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(5)
         if terminalmode == False: ui_action_and_signals.signal_status.emit("Analyse past players")
-        pil_image = self.crop_image(self.entireScreenPIL, self.topleftcorner[0] + 0, self.topleftcorner[1] + 0,
-                                    self.topleftcorner[0] + 800, self.topleftcorner[1] + 500)
+        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + 0, self.tlc[1] + 0,
+                                    self.tlc[0] + 800, self.tlc[1] + 500)
 
         im = pil_image
         x, y = im.size
@@ -687,6 +735,7 @@ class TablePP(Table):
         return True
 
     def get_total_pot_value(self):
+        func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
         if not terminalmode: ui_action_and_signals.signal_progressbar_increase.emit(5)
         if not terminalmode: ui_action_and_signals.signal_status.emit("Get Pot Value")
         logger.debug("Get TotalPot value")
@@ -695,8 +744,8 @@ class TablePP(Table):
         y1 = 120
         x2 = 430
         y2 = 131
-        pil_image = self.crop_image(self.entireScreenPIL, self.topleftcorner[0] + x1, self.topleftcorner[1] + y1,
-                                    self.topleftcorner[0] + x2, self.topleftcorner[1] + y2)
+        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + x1, self.tlc[1] + y1,
+                                    self.tlc[0] + x2, self.tlc[1] + y2)
 
         self.totalPotValue = self.get_ocr_float(pil_image, 'TotalPotValue')
 
@@ -712,14 +761,15 @@ class TablePP(Table):
         return True
 
     def get_my_funds(self):
+        func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
         if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(5)
         logger.debug("Get my funds")
         x1 = 469
         y1 = 403
         x2 = 469 + 38
         y2 = 403 + 11
-        pil_image = self.crop_image(self.entireScreenPIL, self.topleftcorner[0] + x1, self.topleftcorner[1] + y1,
-                                    self.topleftcorner[0] + x2, self.topleftcorner[1] + y2)
+        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + x1, self.tlc[1] + y1,
+                                    self.tlc[0] + x2, self.tlc[1] + y2)
 
         basewidth = 200
         wpercent = (basewidth / float(pil_image.size[0]))
@@ -748,15 +798,12 @@ class TablePP(Table):
         return True
 
     def get_current_call_value(self):
+        func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
         if not terminalmode: ui_action_and_signals.signal_status.emit("Get Call value")
         if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(5)
-        x1 = 585
-        y1 = 516
-        x2 = 585 + 70
-        y2 = 516 + 17
 
-        pil_image = self.crop_image(self.entireScreenPIL, self.topleftcorner[0] + x1, self.topleftcorner[1] + y1,
-                                    self.topleftcorner[0] + x2, self.topleftcorner[1] + y2)
+        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
+                                    self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
 
         if self.checkButton == False:
 
@@ -778,16 +825,13 @@ class TablePP(Table):
         return True
 
     def get_current_bet_value(self):
+        func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
         if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(5)
         if not terminalmode:  ui_action_and_signals.signal_status.emit("Get Bet Value")
         logger.debug("Get bet value")
-        x1 = 589 + 125
-        y1 = 516
-        x2 = 589 + 70 + 125
-        y2 = 516 + 17
 
-        pil_image = self.crop_image(self.entireScreenPIL, self.topleftcorner[0] + x1, self.topleftcorner[1] + y1,
-                                    self.topleftcorner[0] + x2, self.topleftcorner[1] + y2)
+        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
+                                    self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
 
         self.currentBetValue = self.get_ocr_float(pil_image, 'BetValue')
         if self.currentBetValue == '':
@@ -813,19 +857,14 @@ class TablePP(Table):
         return True
 
     def get_current_pot_value(self):
-        x1 = 390
-        y1 = 324
-        x2 = 431
-        y2 = 340
-        pil_image = self.crop_image(self.entireScreenPIL, self.topleftcorner[0] + x1, self.topleftcorner[1] + y1,
-                                    self.topleftcorner[0] + x2, self.topleftcorner[1] + y2)
+        func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
+                                    self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
         # pil_image.show()
         pil_image.save("pics/currenPotValue.png")
         # blurred = pil_image.filter(ImageFilter.SHARPEN)
         try:
-            self.currentRoundPotValue = pytesseract.image_to_string(pil_image, None, False, "-psm 6").replace(" ",
-                                                                                                              "").replace(
-                "$", "")
+            self.currentRoundPotValue = pytesseract.image_to_string(pil_image, None, False, "-psm 6").replace(" ","").replace("$", "")
         except:
             logger.warning("Error in pytesseract current pot value")
 
@@ -835,12 +874,9 @@ class TablePP(Table):
         return True
 
     def get_lost_everything(self):
-        x1 = 100
-        y1 = 100
-        x2 = 590 + 50 + 125
-        y2 = 511 + 14
-        pil_image = self.crop_image(self.entireScreenPIL, self.topleftcorner[0] + x1, self.topleftcorner[1] + y1,
-                                    self.topleftcorner[0] + x2, self.topleftcorner[1] + y2)
+        func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
+                                    self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
         count, points, bestfit = self.find_template_on_screen(self.lostEverything, img, 0.001)
         if count > 0:
@@ -977,10 +1013,10 @@ class ThreadManager(threading.Thread):
             while True:
                 p.read_strategy()
                 if p.selected_strategy['pokerSite'] == "PS":
-                    logger.critical("Pokerstars no longer supported")
+                    t = TableScreenBased()
                     exit()
                 elif p.selected_strategy['pokerSite'] == "PP":
-                    t = TablePP()
+                    t = TableScreenBased()
                 elif p.selected_strategy['pokerSite'] == "F1":
                     # t = TableF1()
                     logger.critical("Pokerbot tournament not yet supported")
@@ -990,7 +1026,7 @@ class ThreadManager(threading.Thread):
                 while (not ready):
                     ready = t.take_screenshot(True) and \
                             t.get_top_left_corner() and \
-                            t.check_for_captcha() and \
+                            t.check_for_captcha(mouse) and \
                             t.get_lost_everything() and \
                             t.check_for_imback(mouse) and \
                             t.get_my_funds() and \
@@ -1003,7 +1039,7 @@ class ThreadManager(threading.Thread):
                             t.get_played_players() and \
                             t.check_for_checkbutton() and \
                             t.check_for_call() and \
-                            t.check_for_allincall_button() and \
+                            t.check_for_allincall() and \
                             t.get_current_call_value() and \
                             t.get_current_bet_value() and \
                             t.run_montecarlo_wrapper()
@@ -1025,7 +1061,7 @@ class ThreadManager(threading.Thread):
 
                 logger.info("+++++++++++++++++++++++ Decision: " + str(d.decision) + "+++++++++++++++++++++++")
 
-                mouse.mouse_action(d.decision, t.topleftcorner, p.selected_strategy['BetPlusInc'], t.currentBluff,
+                mouse.mouse_action(d.decision, t.tlc, p.selected_strategy['BetPlusInc'], t.currentBluff,
                                    logger)
 
                 t.time_action_completed = time.time()

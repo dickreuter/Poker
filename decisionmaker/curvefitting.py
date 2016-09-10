@@ -1,10 +1,35 @@
-import numpy as np
 from lmfit import minimize, Parameters, Parameter, report_fit
-
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.optimize import curve_fit
+from copy import copy
 '''
 Helps to fit curves when two points and a curvature are given.
 '''
 
+class Curvefitting_scipy():
+    def __init__(self, xf, smallBlind, bigBlind, maxValue, minEquity, maxEquity, pw, pl=False):
+        x = [minEquity, 1]
+        y = [bigBlind, maxValue]
+        self.pw=pw
+        popt, pcov = curve_fit(self.func, x, y,maxfev=10000)
+
+        yf=self.func(xf, *popt)
+        yf2=copy(yf)
+        yf2=[x + smallBlind for x in yf2]
+        yf2=np.array(yf)
+        #print (yf)
+        yf2[yf2 > maxEquity] = 0
+        yf2[yf2 < minEquity] = smallBlind
+        self.x=xf
+        self.y=yf2
+        if pl:
+            plt.figure()
+            plt.plot(xf, yf, 'r-', label="Fitted Curve")
+            plt.show()
+
+    def func(self,x, adj1, adj2):
+        return ((x + adj1) ** self.pw) * adj2
 
 class Curvefitting(object):
     def __init__(self, x, smallBlind, bigBlind, maxValue, minEquity, maxEquity, pw, pl=False):
@@ -38,7 +63,7 @@ class Curvefitting(object):
         params.add('adj2', value=1)
 
         # do fit, here with leastsq model
-        result = minimize(fcn2min, params, args=(xf, yf))
+        result = minimize(fcn2min, params, args=(xf, yf), maxfev=3000)
 
         adj1 = result.params['adj1']
         adj2 = result.params['adj2']
@@ -57,9 +82,9 @@ if __name__ == '__main__':
     minEquity = 0.75
     maxEquity = 0.9
     pw = 16
-    x = np.linspace(0, 1, 100)
-    # x - np.array([0.3])
-    # x=[0.2,0.5,0.8]
-    d = Curvefitting(x, smallBlind, bigBlind, maxValue, minEquity, maxEquity, pw, pl=False)
-    result=dict(zip(d.x,d.y))
-    print(result)
+
+    xf = np.linspace(0, 1, 50)
+    d=Curvefitting(xf, smallBlind, bigBlind, maxValue, minEquity, maxEquity, pw, pl=False)
+
+
+
