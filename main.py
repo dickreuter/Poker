@@ -143,7 +143,43 @@ class Table(object):
                                         "PP": {"x1": 0, "y1": 0, "x2": 800, "y2": 500},
                                         "PS": {"x1": 540, "y1": 480, "x2": 700, "y2": 580}
                                         },
-                }
+                "get_my_funds":         {
+                                        "PP": {"x1": 469, "y1": 403, "x2": 469 + 38, "y2": 403 + 11},
+                                        "PS": {"x1": 540, "y1": 480, "x2": 700, "y2": 580}
+                                        },
+                "get_total_pot_value": {
+                                        "PP": {"x1": 385, "y1": 120, "x2": 430, "y2": 131},
+                                        "PS": {"x1": 540, "y1": 480, "x2": 700, "y2": 580}
+                                       },
+
+
+                "get_played_players": {
+                                           "PP": {"x1": 0, "y1": 0, "x2": 800, "y2": 500,
+                                                  "x1_1": 0, "y1_1": 0, "x2_1": 800, "y2_1": 130,
+                                                  "x1_2": 0, "y1_2": 380, "x2_2": 800, "y2_2": 499,
+                                                  "x1_3": 0, "y1_3": 1, "x2_3": 110, "y2_3": 499,
+                                                  "x1_4": 690, "y1_4": 1, "x2_4": 800, "y2_4": 499,
+                                                  "x1_5": 400, "y1_5": 300, "x2_5": 500, "y2_5": 400,
+
+                                                  },
+                                           "PS": {"x1": 0, "y1": 0, "x2": 800, "y2": 500,
+                                                  "x1_1": 0, "y1_1": 0, "x2_1": 800, "y2_1": 500,
+                                                  "x1_2": 0, "y1_2": 0, "x2_2": 800, "y2_2": 500,
+                                                  "x1_3": 0, "y1_3": 0, "x2_3": 800, "y2_3": 500,
+                                                  "x1_4": 0, "y1_4": 0, "x2_4": 800, "y2_4": 500,
+                                                  "x1_5": 0, "y1_5": 0, "x2_5": 800, "y2_5": 500,
+                                                  },
+                                       },
+                "get_my_cards": {
+                                            "PP": {"x1": 450, "y1": 330, "x2": 450 + 80, "y2": 330 + 80},
+                                            "PS": {"x1": 540, "y1": 480, "x2": 700, "y2": 580}
+                                        },
+                "get_table_cards": {
+                                            "PP": {"x1": 206, "y1": 158, "x2": 600, "y2": 158 + 120},
+                                            "PS": {"x1": 540, "y1": 480, "x2": 700, "y2": 580}
+                                        },
+    }
+
 
     def take_screenshot(self,initial):
         if not terminalmode and initial:
@@ -459,8 +495,8 @@ class TableScreenBased(Table):
         if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(5)
         logger.debug("Get Table cards")
         self.cardsOnTable = []
-        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + 206, self.tlc[1] + 158,
-                                    self.tlc[0] + 600, self.tlc[1] + 158 + 120)
+        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
+                                    self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
 
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
         # (thresh, img) = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY |
@@ -535,8 +571,8 @@ class TableScreenBased(Table):
 
         if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(5)
         self.mycards = []
-        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + 450, self.tlc[1] + 330,
-                                    self.tlc[0] + 450 + 80, self.tlc[1] + 330 + 80)
+        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
+                                    self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
 
         # pil_image.show()
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
@@ -626,19 +662,19 @@ class TableScreenBased(Table):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
         if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(5)
         if terminalmode == False: ui_action_and_signals.signal_status.emit("Analyse past players")
-        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + 0, self.tlc[1] + 0,
-                                    self.tlc[0] + 800, self.tlc[1] + 500)
+        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
+                                    self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
 
         im = pil_image
         x, y = im.size
         eX, eY = 280, 150  # Size of Bounding Box for ellipse
 
         bbox = (x / 2 - eX / 2, y / 2 - eY / 2, x / 2 + eX / 2, y / 2 + eY / 2 - 20)
-        rectangle1 = (0, 0, 800, 130)
-        rectangle2 = (0, 380, 800, 499)
-        rectangle3 = (0, 1, 110, 499)
-        rectangle4 = (690, 1, 800, 499)
-        rectangle5 = (400, 300, 500, 400)
+        rectangle1 = (func_dict['x1_1'],func_dict['y1_1'],func_dict['x2_1'],func_dict['y2_1'])
+        rectangle2 = (func_dict['x1_2'],func_dict['y1_2'],func_dict['x2_2'],func_dict['y2_2'])
+        rectangle3 = (func_dict['x1_3'],func_dict['y1_3'],func_dict['x2_3'],func_dict['y2_3'])
+        rectangle4 = (func_dict['x1_4'],func_dict['y1_4'],func_dict['x2_4'],func_dict['y2_4'])
+        rectangle5 = (func_dict['x1_5'],func_dict['y1_5'],func_dict['x2_5'],func_dict['y2_5'])
         draw = ImageDraw.Draw(im)
         draw.ellipse(bbox, fill=128)
         draw.rectangle(rectangle1, fill=128)
@@ -739,13 +775,8 @@ class TableScreenBased(Table):
         if not terminalmode: ui_action_and_signals.signal_progressbar_increase.emit(5)
         if not terminalmode: ui_action_and_signals.signal_status.emit("Get Pot Value")
         logger.debug("Get TotalPot value")
-        returnvalue = True
-        x1 = 385
-        y1 = 120
-        x2 = 430
-        y2 = 131
-        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + x1, self.tlc[1] + y1,
-                                    self.tlc[0] + x2, self.tlc[1] + y2)
+        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
+                                    self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
 
         self.totalPotValue = self.get_ocr_float(pil_image, 'TotalPotValue')
 
@@ -764,12 +795,8 @@ class TableScreenBased(Table):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
         if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(5)
         logger.debug("Get my funds")
-        x1 = 469
-        y1 = 403
-        x2 = 469 + 38
-        y2 = 403 + 11
-        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + x1, self.tlc[1] + y1,
-                                    self.tlc[0] + x2, self.tlc[1] + y2)
+        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
+                                    self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
 
         basewidth = 200
         wpercent = (basewidth / float(pil_image.size[0]))
