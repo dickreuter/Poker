@@ -11,7 +11,7 @@ class MouseMover():
     def click(self, x, y):
         self.mouse.move(x,y)
         self.mouse.click(x,y)
-        time.sleep(np.random.uniform(0.3, 0.5, 1)[0])
+        time.sleep(np.random.uniform(0.2, 0.3, 1)[0])
 
     def mouse_mover(self, x1, y1, x2, y2):
         speed = .4
@@ -40,7 +40,6 @@ class MouseMover():
         self.mouse.move(x2, y2)
 
     def mouse_clicker(self, x2, y2, buttonToleranceX, buttonToleranceY):
-
         xrand = int(np.random.uniform(0, buttonToleranceX, 1))
         yrand = int(np.random.uniform(0, buttonToleranceY, 1))
         self.mouse.move(x2 + xrand, y2 + yrand)
@@ -51,7 +50,33 @@ class MouseMover():
 
         time.sleep(np.random.uniform(0.1, 0.5, 1)[0])
 
-class MouseMoverPP(MouseMover):
+class MouseMoverTableBased(MouseMover):
+    def __init__(self, pokersite,betplus_inc=1,bet_bluff_inc=1):
+        super().__init__()
+
+        # amount,pre-delay,x1,xy,x1tolerance,x2tolerance
+        coo = {
+            "PP": {"Fold":          [[1,0,419,493,100,35]],
+                   "Imback":        [[1,5,560,492,100,31]],
+                   "Call":          [[1, 0, 543, 492, 100, 31]],
+                   "Check":         [[1, 0, 543, 492, 100, 31]],
+                   "Bet":           [[1, 0, 673, 492, 100, 31]],
+                   "Bet Plus":       [[betplus_inc, 0.3, 673, 465, 30, 10],
+                                     [1,0, 675, 492, 100, 31]],
+                   "Bet Bluff":      [[bet_bluff_inc, 0.3, 673, 465, 30, 10],
+                                    [1, 0, 675, 492, 100, 31]],
+                   "Bet half pot":  [[1, 0.3, 477, 433, 30, 10],
+                                     [1, 0, 675, 492, 100, 31]],
+                   "Bet max":       [[1, 0.3, 722, 492 - 65, 30, 10],
+                                    [1, 0, 675, 492, 100, 31]],
+                   },
+            "PS": {"Fold": [[]],
+                   "Call": [[]]
+            }
+        }
+        self.coo=coo[pokersite]
+
+
     def enter_captcha(self, captchaString, topleftcorner):
         logger.warning("Entering Captcha: " + str(captchaString))
         buttonToleranceX = 30
@@ -67,162 +92,38 @@ class MouseMoverPP(MouseMover):
             write_characters_to_virtualbox(captchaString, "win")
         except:
             logger.info("Captcha Error")
-            pass
 
-    def mouse_action(self, decision, topleftcorner, betplus_inc, current_bluff, logger):
+
+    def mouse_action(self, decision, topleftcorner, logger):
+        if decision  =='Bet Bluff': decision='Bet Plus'
+        if decision == 'Check Deception': decision = 'Check'
+        if decision == 'Call Deception': decision = 'Call'
+        if decision == 'Bet Bluff': decision = 'Bet'
+
         logger.info("Moving Mouse: "+str(decision))
         tlx = int(topleftcorner[0])
         tly = int(topleftcorner[1])
-        (x1, y1) = self.mouse.position()
-        buttonToleranceX = 100
-        buttonToleranceY = 35
 
-        if decision == "Imback":
-            time.sleep(np.random.uniform(1, 5, 1)[0])
-            buttonToleranceX = 100
-            buttonToleranceY = 31
-            x2 = 560 + tlx
-            y2 = 492 + tly
-            logger.debug( "move mouse to I am back")
-            self.mouse_mover(x1, y1, x2, y2)
-            self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
-
-        if decision == "Fold":
-            x2 = 419 + tlx
-            y2 = 493 + tly
-            self.mouse_mover(x1, y1, x2, y2)
-            self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
-
-        if decision == "Call" or decision == "Call Deception":
-            x2 = 543 + tlx
-            y2 = 492 + tly
-
-            self.mouse_mover(x1, y1, x2, y2)
-            self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
-
-        if decision == "Check" or decision == "Check Deception":
-            x2 = 543 + tlx
-            y2 = 492 + tly
-            self.mouse_mover(x1, y1, x2, y2)
-            self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
-
-        if decision == "Bet":
-            x2 = 673 + tlx
-            y2 = 492 + tly
-            self.mouse_mover(x1, y1, x2, y2)
-            self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
-
-        if decision == "BetPlus":
-            buttonToleranceX = 4
-            buttonToleranceY = 5
-            x2 = 673 + tlx
-            y2 = 465 + tly
-            self.mouse_mover(x1, y1, x2, y2)
-
-            for n in range(int(betplus_inc)):
-                self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
-                # if t.minBet > float(betplus_inc): continue
-
-            x1temp = x2
-            y1temp = y2
-
-            buttonToleranceX = 100
-            buttonToleranceY = 35
-            time.sleep(np.random.uniform(0.1, 0.5, 1)[0])
-            x2 = 675 + tlx
-            y2 = 492 + tly
-            self.mouse_mover(x1temp, y1temp, x2, y2)
-            self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
-
-        if decision == "Bet Bluff":
-            buttonToleranceX = 4
-            buttonToleranceY = 5
-            x2 = 673 + tlx
-            y2 = 465 + tly
-            self.mouse_mover(x1, y1, x2, y2)
-
-            if current_bluff > 1:
-                for n in range(current_bluff - 1):
-                    self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
-
-            x1temp = x2
-            y1temp = y2
-
-            buttonToleranceX = 100
-            buttonToleranceY = 35
-            time.sleep(np.random.uniform(0.1, 0.5, 1)[0])
-            x2 = 675 + tlx
-            y2 = 492 + tly
-            self.mouse_mover(x1temp, y1temp, x2, y2)
-            self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
-
-        if decision == "Bet half pot":
-            buttonToleranceX = 10
-            buttonToleranceY = 5
-            x2 = 477 + tlx
-            y2 = 433 + tly
-            self.mouse_mover(x1, y1, x2, y2)
-            self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
-
-            x1temp = x2
-            y1temp = y2
-
-            buttonToleranceX = 635 - 525
-            buttonToleranceY = 564 - 531
-            time.sleep(np.random.uniform(0.1, 0.5, 1)[0])
-            x2 = 675 + tlx
-            y2 = 492 + tly
-            self.mouse_mover(x1temp, y1temp, x2, y2)
-            self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
-
-        if decision == "Bet pot":
-            buttonToleranceX = 30
-            buttonToleranceY = 10
-            x2 = 590 + tlx
-            y2 = 433 + tly
-            self.mouse_mover(x1, y1, x2, y2)
-            self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
-
-            x1temp = x2
-            y1temp = y2
-
-            buttonToleranceX = 635 - 525
-            buttonToleranceY = 564 - 531
-            time.sleep(np.random.uniform(0.1, 0.7, 1)[0])
-            x2 = 675 + tlx
-            y2 = 492 + tly
-            self.mouse_mover(x1temp, y1temp, x2, y2)
-            self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
-
-        if decision == "Bet max":
-            buttonToleranceX = 30
-            buttonToleranceY = 10
-            x2 = 722 + tlx
-            y2 = 492 - 65 + tly
-            self.mouse_mover(x1, y1, x2, y2)
-            self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
-
-            x1temp = x2
-            y1temp = y2
-
-            buttonToleranceX = 635 - 525
-            buttonToleranceY = 564 - 531
-            time.sleep(np.random.uniform(0.1, 0.7, 1)[0])
-            x2 = 675 + tlx
-            y2 = 492 + tly
-            self.mouse_mover(x1temp, y1temp, x2, y2)
-            self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
+        logger.info("Mouse moving to: "+decision)
+        for action in self.coo[decision]:
+            for i in range (action[0]):
+                time.sleep(np.random.uniform(0, action[1], 1)[0])
+                logger.debug("Mouse action:"+str(action))
+                (x1, y1) = self.mouse.position()
+                self.mouse_mover(x1, y1, action[2]+ tlx, action[3]+ tly)
+                self.mouse_clicker(action[2]+ tlx, action[3]+ tly,action[4], action[5])
 
         xscatter = int(np.round(np.random.uniform(1600, 1800, 1), 0))
         yscatter = int(np.round(np.random.uniform(300, 400, 1), 0))
 
         time.sleep(np.random.uniform(0.4, 1.0, 1)[0])
-
+        time.sleep(2)
+        (x2, y2) = self.mouse.position()
         self.mouse_mover(x2, y2, xscatter, yscatter)
 
 
 if __name__=="__main__":
     logger = logging.getLogger()
-    m=MouseMoverPP()
+    m=MouseMoverTableBased('PP',5,5)
     topleftcorner=[22,22]
-    m.mouse_action("Fold", topleftcorner, 0, 0, logger)
+    m.mouse_action("Bet Plus", topleftcorner, logger)

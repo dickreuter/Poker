@@ -180,7 +180,6 @@ class Table(object):
                                         },
     }
 
-
     def take_screenshot(self,initial):
         if not terminalmode and initial:
             ui_action_and_signals.signal_status.emit("")
@@ -452,7 +451,7 @@ class TableScreenBased(Table):
         count, points, bestfit = self.find_template_on_screen(self.ImBack, img, func_dict['tolerance'])
         if count > 0:
             if not terminalmode: ui_action_and_signals.signal_status.emit("I am back found")
-            mouse.mouse_action("Imback", self.tlc, 0, 0, logger)
+            mouse.mouse_action("Imback", self.tlc, logger)
             return False
         else:
             return True
@@ -1029,21 +1028,14 @@ class ThreadManager(threading.Thread):
             global h, L, p, t, d, terminalmode
             h = History()
 
-            if p.selected_strategy['pokerSite'] == "PS":
-                logger.critical("Pokerstars no longer supported")
-                exit()
-            elif p.selected_strategy['pokerSite'] == "PP":
-                mouse = MouseMoverPP()
-            else:
-                raise ("Invalid PokerSite")
-
             while True:
                 p.read_strategy()
                 if p.selected_strategy['pokerSite'] == "PS":
                     t = TableScreenBased()
-                    exit()
+                    mouse = MouseMoverTableBased(p.selected_strategy['pokerSite'])
                 elif p.selected_strategy['pokerSite'] == "PP":
                     t = TableScreenBased()
+                    mouse = MouseMoverTableBased(p.selected_strategy['pokerSite'])
                 elif p.selected_strategy['pokerSite'] == "F1":
                     # t = TableF1()
                     logger.critical("Pokerbot tournament not yet supported")
@@ -1088,8 +1080,8 @@ class ThreadManager(threading.Thread):
 
                 logger.info("+++++++++++++++++++++++ Decision: " + str(d.decision) + "+++++++++++++++++++++++")
 
-                mouse.mouse_action(d.decision, t.tlc, p.selected_strategy['BetPlusInc'], t.currentBluff,
-                                   logger)
+                mouse = MouseMoverTableBased(p.selected_strategy['pokerSite'], p.selected_strategy['BetPlusInc'], t.currentBluff)
+                mouse.mouse_action(d.decision, t.tlc, logger)
 
                 t.time_action_completed = time.time()
 
