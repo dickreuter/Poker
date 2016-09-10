@@ -224,24 +224,6 @@ class Table(object):
         # plt.show()
         return count, points, bestFit
 
-    def setup_get_item_location(self):
-        topleftcorner = "pics/PP/topleft.png"
-        name = "pics/screenshot11.png"
-        findTemplate = "pics/half.png"
-
-        setup = cv2.cvtColor(np.array(Image.open(name)), cv2.COLOR_BGR2RGB)
-        tlc = cv2.cvtColor(np.array(Image.open(topleftcorner)), cv2.COLOR_BGR2RGB)
-        count, points, bestfit = self.find_template_on_screen(setup, tlc, 0.01)
-        rel = tuple(-1 * np.array(bestfit))
-
-        template = cv2.cvtColor(np.array(Image.open(findTemplate)), cv2.COLOR_BGR2RGB)
-
-        count, points, bestfit = self.find_template_on_screen(setup, template, 0.01)
-        print("Count: " + str(count) + " Points: " + str(points) + " Bestfit: " + str(bestfit))
-
-        print(findTemplate + " Relative: ")
-        print(str(tuple(map(sum, zip(points[0], rel)))))
-
     def get_ocr_float(self, img_orig, name):
         def fix_number(t):
             t = t.replace("I", "1").replace("O", "0").replace("o", "0")\
@@ -1117,7 +1099,6 @@ if __name__ == '__main__':
 
     config = ConfigObj("config.ini")
     terminalmode = int(config['terminalmode'])
-    setupmode = int(config['setupmode'])
 
     logger = debug_logger().start_logger()
 
@@ -1125,10 +1106,6 @@ if __name__ == '__main__':
     p.read_strategy()
 
     L = GameLogger()
-
-    if setupmode:
-        t.setup_get_item_location()
-        sys.exit()
 
     if not terminalmode:
         p.exit_thread=False

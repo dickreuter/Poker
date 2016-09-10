@@ -61,12 +61,14 @@ class MouseMoverTableBased(MouseMover):
                    "Call":          [[1, 0, 543, 492, 100, 31]],
                    "Check":         [[1, 0, 543, 492, 100, 31]],
                    "Bet":           [[1, 0, 673, 492, 100, 31]],
-                   "Bet Plus":       [[betplus_inc, 0.3, 673, 465, 30, 10],
+                   "BetPlus":       [[betplus_inc, 0.3, 673, 465, 30, 10],
                                      [1,0, 675, 492, 100, 31]],
                    "Bet Bluff":      [[bet_bluff_inc, 0.3, 673, 465, 30, 10],
                                     [1, 0, 675, 492, 100, 31]],
-                   "Bet half pot":  [[1, 0.3, 477, 433, 30, 10],
+                   "Bet half pot":  [[1, 0.3, 590, 433, 30, 10],
                                      [1, 0, 675, 492, 100, 31]],
+                   "Bet pot":       [[1, 0.3, 722, 492 - 65, 30, 10],
+                                    [1, 0, 675, 492, 100, 31]],
                    "Bet max":       [[1, 0.3, 722, 492 - 65, 30, 10],
                                     [1, 0, 675, 492, 100, 31]],
                    },
@@ -95,10 +97,8 @@ class MouseMoverTableBased(MouseMover):
 
 
     def mouse_action(self, decision, topleftcorner, logger):
-        if decision  =='Bet Bluff': decision='Bet Plus'
         if decision == 'Check Deception': decision = 'Check'
         if decision == 'Call Deception': decision = 'Call'
-        if decision == 'Bet Bluff': decision = 'Bet'
 
         logger.info("Moving Mouse: "+str(decision))
         tlx = int(topleftcorner[0])
