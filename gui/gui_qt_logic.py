@@ -9,6 +9,11 @@ from gui.gui_qt_ui import Ui_Pokerbot
 from gui.gui_qt_ui_genetic_algorithm import *
 from gui.gui_qt_ui_strategy_manager import *
 from gui.GUI_QT_ui_analyser import *
+from gui.setup import *
+from gui.help import *
+from vbox_manager import VirtualBoxController
+
+
 from decisionmaker.genetic_algorithm1 import *
 from decisionmaker.curvefitting import *
 import os
@@ -136,6 +141,9 @@ class UIActionAndSignals(QObject):
         ui_main_window.button_strategy_editor.clicked.connect(lambda: self.open_strategy_editor(p, l))
         ui_main_window.button_pause.clicked.connect(lambda: self.pause(ui_main_window, p))
         ui_main_window.button_resume.clicked.connect(lambda: self.resume(ui_main_window, p))
+
+        ui_main_window.pushButton_setup.clicked.connect(lambda: self.open_setup(p,l))
+        ui_main_window.pushButton_help.clicked.connect(lambda: self.open_help(p,l))
 
         self.signal_update_strategy_sliders.connect(lambda: self.update_strategy_editor_sliders(p.current_strategy))
 
@@ -284,6 +292,55 @@ class UIActionAndSignals(QObject):
         self.genetic_algorithm_dialog.show()
 
         self.genetic_algorithm_form.buttonBox.accepted.connect(lambda: GeneticAlgorithm(True, self.logger, l))
+
+    def open_help(self, p, l):
+        self.help_form = QtWidgets.QWidget()
+        self.ui_help = Ui_help_form()
+        self.ui_help.setupUi(self.help_form)
+        self.help_form.show()
+
+    def open_setup(self, p, l):
+        self.setup_form = QtWidgets.QWidget()
+        self.ui_setup = Ui_setup_form()
+        self.ui_setup.setupUi(self.setup_form)
+        self.setup_form.show()
+
+        self.ui_setup.pushButton_save.clicked.connect(lambda: self.save_setup())
+        vm_list = ['Direct mouse control']
+        try:
+            vm=VirtualBoxController()
+            vm_list+=vm.get_vbox_list()
+        except:
+            pass #no virtual machine
+
+        self.ui_setup.comboBox_vm.addItems(vm_list)
+        timeouts=['10','11','12']
+        self.ui_setup.comboBox_2.addItems(timeouts)
+
+        config = ConfigObj("config.ini")
+        try:
+            mouse_control = config['control']
+        except:
+            mouse_control='Direct mouse control'
+        for i in [i for i, x in enumerate(vm_list) if x == mouse_control]:
+            idx = i
+            self.ui_setup.comboBox_vm.setCurrentIndex(idx)
+
+        try:
+            timeout = config['montecarlo_timeout']
+        except:
+            timeout=10
+        for i in [i for i, x in enumerate(timeouts) if x == timeout]:
+            idx = i
+            self.ui_setup.comboBox_2.setCurrentIndex(idx)
+
+    def save_setup(self):
+        config = ConfigObj("config.ini")
+        config['control'] = self.ui_setup.comboBox_vm.currentText()
+        config['montecarlo_timeout'] = self.ui_setup.comboBox_2.currentText()
+        config.write()
+        self.setup_form.close()
+
 
     def update_strategy_analyser(self, l, p):
         number_of_games = int(l.get_game_count(self.ui_analyser.combobox_strategy.currentText()))

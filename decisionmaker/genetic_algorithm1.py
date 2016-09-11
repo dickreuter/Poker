@@ -15,8 +15,8 @@ class GeneticAlgorithm(object):
         logger.debug("Strategy to analyse: "+p_name)
         self.load_log(p_name, L)
         self.improve_strategy(L, p)
-        if (p.modified and write_update==True) or write_update=="Force":
-            p.save_strategy()
+        if (self.modified and write_update==True) or write_update=="Force":
+            p.save_strategy_genetic_algorithm()
             config = ConfigObj("config.ini")
             config['last_strategy'] = p.current_strategy
             config.write()
@@ -75,6 +75,7 @@ class GeneticAlgorithm(object):
         self.output += stage + " " + decision + ": " + self.recommendation[stage, decision] + '\n'
 
     def improve_strategy(self, L, p):
+        self.modified=False
         self.changed = 0
         maxChanges = 2
         if self.changed <= maxChanges:
@@ -114,7 +115,9 @@ class GeneticAlgorithm(object):
             change = 0.03
             self.assess_call(p, L, decision, stage, coeff1, coeff2, coeff3, coeff4, change)
 
+        if self.changed>0: self.modified=True
         self.changed = 0
+
         if self.changed < maxChanges:
             coeff1 = 2
             stage = 'River'
@@ -142,6 +145,8 @@ class GeneticAlgorithm(object):
             decision = 'Bet'
             change = 0.02
             self.assess_bet(p, L, decision, stage, coeff1, change)
+
+        if self.changed > 0: self.modified = True
 
 
 def run_genetic_algorithm(write, logger):

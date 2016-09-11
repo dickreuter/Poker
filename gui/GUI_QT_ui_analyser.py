@@ -11,6 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
+        Form.setEnabled(True)
         Form.resize(722, 748)
         Form.setMinimumSize(QtCore.QSize(722, 748))
         Form.setMaximumSize(QtCore.QSize(722, 748))
@@ -82,7 +83,7 @@ class Ui_Form(object):
         self.label_5.setFont(font)
         self.label_5.setObjectName("label_5")
         self.label_6 = QtWidgets.QLabel(Form)
-        self.label_6.setGeometry(QtCore.QRect(20, 100, 51, 20))
+        self.label_6.setGeometry(QtCore.QRect(20, 100, 101, 21))
         self.label_6.setObjectName("label_6")
         self.horizontalLayoutWidget_2 = QtWidgets.QWidget(Form)
         self.horizontalLayoutWidget_2.setGeometry(QtCore.QRect(20, 30, 681, 31))
@@ -132,7 +133,7 @@ class Ui_Form(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.WorstGames), _translate("Form", "Worst Hands"))
         self.label_7.setText(_translate("Form", "%"))
         self.label_5.setText(_translate("Form", "Return per game per small blind ($0.02)"))
-        self.label_6.setText(_translate("Form", "Total hads"))
+        self.label_6.setText(_translate("Form", "Total played hands"))
         self.label.setText(_translate("Form", "Strategy"))
         self.label_2.setText(_translate("Form", "Game Stage"))
         self.label_3.setText(_translate("Form", "Action Type"))

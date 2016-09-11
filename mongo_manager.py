@@ -9,6 +9,44 @@ import os
 from configobj import ConfigObj
 import re
 import datetime
+import sys
+import subprocess
+import requests
+
+class UpdateChecker():
+    def __init__(self):
+        self.mongoclient = MongoClient('mongodb://guest:donald@52.201.173.151:27017/POKER')
+        self.mongodb = self.mongoclient.POKER
+
+    def downloader(self):
+        link = "https://www.dropbox.com/s/3s3f3sandfomd1j/Pokerbot_installer.exe?dl=1"
+        file_name = "Pokerbot_installer.exe"
+        with open(file_name, "wb") as f:
+            print
+            "Downloading %s" % file_name
+            response = requests.get(link, stream=True)
+            total_length = response.headers.get('content-length')
+
+            if total_length is None:  # no content length header
+                f.write(response.content)
+            else:
+                dl = 0
+                total_length = int(total_length)
+                for data in response.iter_content(chunk_size=4096):
+                    dl += len(data)
+                    f.write(data)
+                    done = int(50 * dl / total_length)
+                    sys.stdout.write("\r[%s%s]" % ('=' * done, ' ' * (50 - done)))
+                    sys.stdout.flush()
+
+    def check_update(self,version):
+        cursor=self.mongodb.internal.find()
+        current_version=cursor.next()['current_version']
+        if current_version>version:
+            print("This version is out of date. Downloading latest version now.")
+            self.downloader()
+            subprocess.call(["start", "Pokerbot_installer.exe"], shell=True)
+            sys.exit()
 
 class StrategyHandler(object):
     def __init__(self):
@@ -26,7 +64,7 @@ class StrategyHandler(object):
         cursor=self.mongodb.strategies.find({'Strategy': self.current_strategy})
         self.selected_strategy=cursor.next()
 
-    def save_strategy(self):
+    def save_strategy_genetic_algorithm(self):
         r = re.compile("([a-zA-Z]+)([0-9]+)")
         m = r.match(self.current_strategy)
         stringPart = m.group(1)
@@ -36,6 +74,7 @@ class StrategyHandler(object):
         self.new_strategy_name = stringPart + str(numberPart) + suffix
         self.selected_strategy['Strategy'] = self.new_strategy_name
         self.current_strategy=self.new_strategy_name
+        del self.selected_strategy['_id']
         result = self.mongodb.strategies.insert_one(self.selected_strategy)
 
     def save_strategy(self, strategy_dict):

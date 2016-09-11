@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>Form</class>
  <widget class="QWidget" name="Form">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -185,12 +188,12 @@
     <rect>
      <x>20</x>
      <y>100</y>
-     <width>51</width>
-     <height>20</height>
+     <width>101</width>
+     <height>21</height>
     </rect>
    </property>
    <property name="text">
-    <string>Total hads</string>
+    <string>Total played hands</string>
    </property>
   </widget>
   <widget class="QWidget" name="horizontalLayoutWidget_2">

@@ -456,7 +456,7 @@
      </font>
     </property>
     <property name="text">
-     <string>Dickreuter's Poker bot</string>
+     <string>DeepMind PokerBot</string>
     </property>
    </widget>
    <widget class="QComboBox" name="comboBox_current_strategy">
@@ -472,6 +472,42 @@
      <font>
       <pointsize>10</pointsize>
      </font>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_setup">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>10</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Setup</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_help">
+    <property name="geometry">
+     <rect>
+      <x>540</x>
+      <y>10</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Help</string>
     </property>
    </widget>
   </widget>

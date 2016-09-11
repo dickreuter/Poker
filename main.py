@@ -15,6 +15,9 @@ import os
 import re
 import inspect
 from captcha.captcha_manager import solve_captcha
+from vbox_manager import VirtualBoxController
+
+version=1.0
 
 class History(object):
     def __init__(self):
@@ -105,13 +108,13 @@ class Table(object):
     def load_coordinates(self):
         self.coo={
                 "check_for_button":     {"PP": {"x1":540, "y1": 480, "x2": 700, "y2":580, "tolerance": 0.01},
-                                        "PS":  {"x1": 540, "y1": 480, "x2": 700, "y2": 580, "tolerance": 0.01}
+                                        "PS":  {"x1": 374, "y1": 477, "x2": 780, "y2": 580, "tolerance": 0.01}
                                         },
                 "check_for_imback":     {"PP": {"x1":560, "y1": 478, "x2": 670, "y2":442 + 400, "tolerance": 0.01},
-                                        "PS":  {"x1": 540, "y1": 480, "x2": 700, "y2": 580, "tolerance": 0.01}
+                                        "PS":  {"x1": 374, "y1": 477, "x2": 780, "y2": 580, "tolerance": 0.01}
                                         },
                 "check_for_checkbutton":{"PP": {"x1": 560, "y1": 478, "x2": 670, "y2": 550, "tolerance": 0.01},
-                                        "PS":  {"x1": 540, "y1": 480, "x2": 700, "y2": 580, "tolerance": 0.01}
+                                        "PS":  {"x1": 374, "y1": 477, "x2": 780, "y2": 580, "tolerance": 0.01}
                                         },
                 "check_for_captcha":    {"PP": {"active": False},
                                         "PS":  {"x1": 3, "y1": 443, "x2": 400, "y2": 443 + 90, "active": True,
@@ -119,37 +122,37 @@ class Table(object):
                                                 }
                                         },
                 "check_for_call":       {"PP": {"x1": 575, "y1": 483, "x2": 575 + 100, "y2": 483 + 100, "tolerance": 0.05},
-                                        "PS": {"x1": 540, "y1": 480, "x2": 700, "y2": 580, "tolerance": 0.05}
+                                        "PS":  {"x1": 374, "y1": 477, "x2": 780, "y2": 580, "tolerance": 0.05}
                                         },
                 "check_for_allincall":  {"PP": {"x1": 557, "y1": 483, "x2": 670, "y2": 580, "tolerance": 0.01},
-                                         "PS": {"x1": 540, "y1": 480, "x2": 700, "y2": 580, "tolerance": 0.01}
+                                         "PS": {"x1": 374, "y1": 477, "x2": 780, "y2": 580, "tolerance": 0.01}
                                         },
                 "get_lost_everything":  {"PP": {"x1": 100, "y1": 100, "x2": 590 + 50 + 125, "y2": 511 + 14, "tolerance": 0.01},
-                                        "PS": {"x1": 540, "y1": 480, "x2": 700, "y2": 580, "tolerance": 0.01}
+                                        "PS": {"x1": 100, "y1": 100, "x2": 590 + 50 + 125, "y2": 511 + 14, "tolerance": 0.01}
                                         },
                 "get_current_pot_value": {
                                         "PP": {"x1": 390, "y1": 324, "x2": 431, "y2": 340},
-                                        "PS": {"x1": 540, "y1": 480, "x2": 700, "y2": 580}
+                                        "PS-": {"x1": 540, "y1": 480, "x2": 700, "y2": 580}
                                         },
                 "get_current_bet_value": {
                                         "PP": {"x1": 589 + 125, "y1": 516, "x2": 589 + 70 + 125, "y2": 516 + 17},
-                                        "PS": {"x1": 540, "y1": 480, "x2": 700, "y2": 580}
+                                        "PS-": {"x1": 540, "y1": 480, "x2": 700, "y2": 580}
                                         },
                 "get_current_call_value": {
                                         "PP": {"x1": 585, "y1": 516, "x2": 585 + 70, "y2": 516 + 17},
-                                        "PS": {"x1": 540, "y1": 480, "x2": 700, "y2": 580}
+                                        "PS-": {"x1": 540, "y1": 480, "x2": 700, "y2": 580}
                                         },
                 "get_covered_card_holders": {
                                         "PP": {"x1": 0, "y1": 0, "x2": 800, "y2": 500},
-                                        "PS": {"x1": 540, "y1": 480, "x2": 700, "y2": 580}
+                                        "PS-": {"x1": 540, "y1": 480, "x2": 700, "y2": 580}
                                         },
                 "get_my_funds":         {
                                         "PP": {"x1": 469, "y1": 403, "x2": 469 + 38, "y2": 403 + 11},
-                                        "PS": {"x1": 540, "y1": 480, "x2": 700, "y2": 580}
+                                        "PS-": {"x1": 540, "y1": 480, "x2": 700, "y2": 580}
                                         },
                 "get_total_pot_value": {
                                         "PP": {"x1": 385, "y1": 120, "x2": 430, "y2": 131},
-                                        "PS": {"x1": 540, "y1": 480, "x2": 700, "y2": 580}
+                                        "PS-": {"x1": 540, "y1": 480, "x2": 700, "y2": 580}
                                        },
 
 
@@ -162,7 +165,7 @@ class Table(object):
                                                   "x1_5": 400, "y1_5": 300, "x2_5": 500, "y2_5": 400,
 
                                                   },
-                                           "PS": {"x1": 0, "y1": 0, "x2": 800, "y2": 500,
+                                           "PS-": {"x1": 0, "y1": 0, "x2": 800, "y2": 500,
                                                   "x1_1": 0, "y1_1": 0, "x2_1": 800, "y2_1": 500,
                                                   "x1_2": 0, "y1_2": 0, "x2_2": 800, "y2_2": 500,
                                                   "x1_3": 0, "y1_3": 0, "x2_3": 800, "y2_3": 500,
@@ -172,11 +175,11 @@ class Table(object):
                                        },
                 "get_my_cards": {
                                             "PP": {"x1": 450, "y1": 330, "x2": 450 + 80, "y2": 330 + 80},
-                                            "PS": {"x1": 540, "y1": 480, "x2": 700, "y2": 580}
+                                            "PS": {"x1": 320, "y1": 320, "x2": 475, "y2": 400}
                                         },
                 "get_table_cards": {
                                             "PP": {"x1": 206, "y1": 158, "x2": 600, "y2": 158 + 120},
-                                            "PS": {"x1": 540, "y1": 480, "x2": 700, "y2": 580}
+                                            "PS": {"x1": 250, "y1": 164, "x2": 550, "y2": 275}
                                         },
     }
 
@@ -191,7 +194,21 @@ class Table(object):
                     if p.exit_thread == True: sys.exit()
 
         time.sleep(0.1)
-        self.entireScreenPIL = ImageGrab.grab()
+        config = ConfigObj("config.ini")
+        control = config['control']
+        if control=='Direct mouse control':
+            self.entireScreenPIL = ImageGrab.grab()
+
+        else:
+            try:
+                vb = VirtualBoxController()
+                self.entireScreenPIL = vb.get_screenshot_vbox()
+                logger.info("Screenshot taken from virtual machine")
+            except:
+                logger.warning("No virtual machine found")
+                self.entireScreenPIL = ImageGrab.grab()
+
+
         if not terminalmode:ui_action_and_signals.signal_status.emit(str(p.current_strategy))
         if not terminalmode: ui_action_and_signals.signal_progressbar_increase.emit(5)
         return True
@@ -1084,7 +1101,8 @@ class ThreadManager(threading.Thread):
 if __name__ == '__main__':
     # Back up the reference to the exceptionhook
     sys._excepthook = sys.excepthook
-
+    u=UpdateChecker()
+    u.check_update(version)
 
     def my_exception_hook(exctype, value, traceback):
         # Print the error and traceback
