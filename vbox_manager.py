@@ -5,12 +5,15 @@ from configobj import ConfigObj
 
 class VirtualBoxController():
     def __init__(self):
-        self.vbox = virtualbox.VirtualBox()
-        config = ConfigObj("config.ini")
-        mouse_control = config['control']
-        if mouse_control!='Direct mouse control':
-            self.vm = self.vbox.find_machine(mouse_control)
-            self.session = self.vm.create_session()
+        try:
+            self.vbox = virtualbox.VirtualBox()
+            config = ConfigObj("config.ini")
+            mouse_control = config['control']
+            if mouse_control!='Direct mouse control':
+                self.vm = self.vbox.find_machine(mouse_control)
+                self.session = self.vm.create_session()
+        except Exception as e:
+            print (e)
 
     def get_vbox_list(self):
         vm_list=[vm.name for vm in self.vbox.machines]
