@@ -66,8 +66,8 @@ class GeneticAlgorithm(object):
             self.changed += 1
         elif C and not B:
             self.recommendation[stage, decision] = "less agressive"
-            p.modify_XML(stage + 'MinBetEquity', +change)
-            p.modify_XML(stage + 'BetPower', +change * 25)
+            p.modify_strategy(stage + 'MinBetEquity', +change)
+            p.modify_strategy(stage + 'BetPower', +change * 25)
             self.changed += 1
         else:
             self.recommendation[stage, decision] = "inconclusive"

@@ -169,18 +169,12 @@ class UIActionAndSignals(QObject):
         print("Game paused")
         ui.button_resume.setEnabled(True)
         ui.button_pause.setEnabled(False)
-        ui.button_genetic_algorithm.setEnabled(True)
-        ui.button_log_analyser.setEnabled(True)
-        ui.button_strategy_editor.setEnabled(True)
         p.pause = True
 
     def resume(self, ui, p):
         print("Game resumed")
         ui.button_resume.setEnabled(False)
         ui.button_pause.setEnabled(True)
-        ui.button_genetic_algorithm.setEnabled(False)
-        ui.button_log_analyser.setEnabled(False)
-        ui.button_strategy_editor.setEnabled(False)
         p.pause = False
 
     def increase_progressbar(self, value):

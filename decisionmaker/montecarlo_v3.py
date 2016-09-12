@@ -24,10 +24,10 @@ class MonteCarlo(object):
         potential_twopair = score == (2, 2, 1, 1, 1)
         potential_pair = score == (2, 1, 1, 1, 1, 1)
 
-        if score[0:2] == (2, 2):
+        if score[0:2] == (3, 2) or score[0:2] == (3, 3):  # fullhouse (three of a kind and pair, or two three of a kind)
             card_ranks = (card_ranks[0], card_ranks[1])
             score = (3, 2)
-        elif score[0:4] == (2, 1, 1, 1):  # special case: convert three pair to two pair
+        elif score[0:4] == (2, 2, 2, 1):  # special case: convert three pair to two pair
             score = (2, 2, 1)  # as three pair are not worth more than two pair
             sortedCrdRanks = sorted(card_ranks, reverse=True)  # avoid for example 11,8,6,7
             card_ranks = (sortedCrdRanks[0], sortedCrdRanks[1], sortedCrdRanks[2], sortedCrdRanks[3])
@@ -108,8 +108,7 @@ class MonteCarlo(object):
             hand_type = "HighCard"
             card_ranks = card_ranks[:5]
         else:
-            hand_type = "HighCard"
-            card_ranks = card_ranks[:5]
+            raise Exception('Card Type error!')
 
         return score, card_ranks, hand_type
 

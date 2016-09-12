@@ -203,7 +203,7 @@
    </widget>
    <widget class="QPushButton" name="button_log_analyser">
     <property name="enabled">
-     <bool>false</bool>
+     <bool>true</bool>
     </property>
     <property name="geometry">
      <rect>
@@ -399,7 +399,7 @@
    </widget>
    <widget class="QPushButton" name="button_genetic_algorithm">
     <property name="enabled">
-     <bool>false</bool>
+     <bool>true</bool>
     </property>
     <property name="geometry">
      <rect>
@@ -420,7 +420,7 @@
    </widget>
    <widget class="QPushButton" name="button_strategy_editor">
     <property name="enabled">
-     <bool>false</bool>
+     <bool>true</bool>
     </property>
     <property name="geometry">
      <rect>
