@@ -25,3156 +25,2278 @@
   <property name="windowTitle">
    <string>Strategy editor</string>
   </property>
-  <widget class="QLabel" name="label_4">
-   <property name="geometry">
-    <rect>
-     <x>250</x>
-     <y>0</y>
-     <width>261</width>
-     <height>31</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>20</pointsize>
-     <weight>75</weight>
-     <bold>true</bold>
-    </font>
-   </property>
-   <property name="text">
-    <string>Strategy editor</string>
-   </property>
-  </widget>
-  <widget class="QTabWidget" name="tabWidget">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>140</y>
-     <width>681</width>
-     <height>601</height>
-    </rect>
-   </property>
-   <property name="currentIndex">
-    <number>0</number>
-   </property>
-   <widget class="QWidget" name="Generic">
-    <attribute name="title">
-     <string>General</string>
-    </attribute>
-    <widget class="QWidget" name="verticalLayoutWidget_6">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>170</y>
-       <width>521</width>
-       <height>67</height>
-      </rect>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="13" column="0" colspan="3">
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex">
+      <number>0</number>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_6">
-      <item>
-       <widget class="QLabel" name="label_12">
-        <property name="text">
-         <string>Bullying when heads up opponent stacks are below value, original funds divided by:</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="bullyDivider">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>10</number>
-        </property>
-        <property name="pageStep">
-         <number>1</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
+     <widget class="QWidget" name="Generic">
+      <attribute name="title">
+       <string>General</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <item row="0" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_27">
+         <item>
+          <widget class="QLabel" name="label_32">
+           <property name="text">
+            <string>Equity threshold above which everything is called</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="alwaysCallEquity">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string notr="true">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the equity (winning probability) is higher than the value, the bot will never fold.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="singleStep">
+            <number>5</number>
+           </property>
+           <property name="pageStep">
+            <number>10</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+           <property name="tickInterval">
+            <number>0</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_57"/>
+       </item>
+       <item row="1" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_14">
+         <item>
+          <widget class="QLabel" name="label_20">
+           <property name="text">
+            <string>Bet Plus: how many times the + is pressed to increase the bet</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="BetPlusInc">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>20</number>
+           </property>
+           <property name="pageStep">
+            <number>1</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_56"/>
+       </item>
+       <item row="2" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_6">
+         <item>
+          <widget class="QLabel" name="label_12">
+           <property name="text">
+            <string>Bullying when heads up opponent stacks are below value, original funds divided by:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="bullyDivider">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>10</number>
+           </property>
+           <property name="pageStep">
+            <number>1</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_58"/>
+       </item>
+       <item row="3" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_33">
+         <item>
+          <widget class="QLabel" name="label_38">
+           <property name="text">
+            <string>Minimum required equity to bully</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="minBullyEquity">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="pageStep">
+            <number>10</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="3" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_55"/>
+       </item>
+       <item row="4" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_34">
+         <item>
+          <widget class="QLabel" name="label_39">
+           <property name="text">
+            <string>Maximum equity to bully</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="maxBullyEquity">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="singleStep">
+            <number>1</number>
+           </property>
+           <property name="pageStep">
+            <number>10</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="4" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_59"/>
+       </item>
+       <item row="5" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_432">
+         <item>
+          <widget class="QLabel" name="label_449">
+           <property name="text">
+            <string>Minimum loss to initiate Genetic Algorithm</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="minimumLossForIteration">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="singleStep">
+            <number>1</number>
+           </property>
+           <property name="pageStep">
+            <number>10</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="5" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_109"/>
+       </item>
+       <item row="6" column="0" rowspan="2">
+        <layout class="QVBoxLayout" name="verticalLayout_435">
+         <item>
+          <widget class="QLabel" name="label_452">
+           <property name="text">
+            <string>Considering the last # of games and initiating the algorithm ever # of rounds</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="considerLastGames">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>100</number>
+           </property>
+           <property name="maximum">
+            <number>10000</number>
+           </property>
+           <property name="singleStep">
+            <number>1</number>
+           </property>
+           <property name="pageStep">
+            <number>100</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+           <property name="tickInterval">
+            <number>100</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="strategyIterationGames">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>100</number>
+           </property>
+           <property name="maximum">
+            <number>10000</number>
+           </property>
+           <property name="singleStep">
+            <number>1</number>
+           </property>
+           <property name="pageStep">
+            <number>100</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+           <property name="tickInterval">
+            <number>100</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="6" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_112"/>
+       </item>
+       <item row="7" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_113"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="PreFlop">
+      <attribute name="title">
+       <string>PreFlop</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="0" rowspan="2">
+        <widget class="QLabel" name="label_3">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Calling</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QPushButton" name="pushButton_update1">
+         <property name="text">
+          <string>Update Graph</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2" rowspan="7" colspan="2">
+        <layout class="QVBoxLayout" name="verticalLayout_preflop">
+         <item>
+          <widget class="QWidget" name="widget_4" native="true"/>
+         </item>
+        </layout>
+       </item>
+       <item row="2" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_8">
+         <item>
+          <widget class="QLabel" name="label_237">
+           <property name="text">
+            <string>Minimum required equity</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="PreFlopMinCallEquity">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="singleStep">
+            <number>1</number>
+           </property>
+           <property name="pageStep">
+            <number>5</number>
+           </property>
+           <property name="value">
+            <number>50</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLCDNumber" name="lcdNumber"/>
+       </item>
+       <item row="3" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_9">
+         <item>
+          <widget class="QLabel" name="label_15">
+           <property name="text">
+            <string>Curvature</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="PreFlopCallPower">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>2</number>
+           </property>
+           <property name="maximum">
+            <number>30</number>
+           </property>
+           <property name="singleStep">
+            <number>5</number>
+           </property>
+           <property name="pageStep">
+            <number>10</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+           <property name="tickInterval">
+            <number>5</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="3" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_2"/>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_6">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Betting</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_10">
+         <item>
+          <widget class="QLabel" name="label_16">
+           <property name="text">
+            <string>Minimum required equity</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="PreFlopMinBetEquity">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="singleStep">
+            <number>1</number>
+           </property>
+           <property name="pageStep">
+            <number>5</number>
+           </property>
+           <property name="value">
+            <number>50</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="5" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_3"/>
+       </item>
+       <item row="6" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_11">
+         <item>
+          <widget class="QLabel" name="label_17">
+           <property name="text">
+            <string>Curvature</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="PreFlopBetPower">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>20</number>
+           </property>
+           <property name="maximum">
+            <number>30</number>
+           </property>
+           <property name="singleStep">
+            <number>5</number>
+           </property>
+           <property name="pageStep">
+            <number>10</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+           <property name="tickInterval">
+            <number>5</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="6" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_4"/>
+       </item>
+       <item row="7" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_381">
+         <item>
+          <widget class="QLabel" name="label_394">
+           <property name="text">
+            <string>Maximum equity to bet</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="PreFlopMaxBetEquity">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>2</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="singleStep">
+            <number>5</number>
+           </property>
+           <property name="pageStep">
+            <number>10</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+           <property name="tickInterval">
+            <number>5</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="7" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_63"/>
+       </item>
+       <item row="8" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_12">
+         <item>
+          <widget class="QLabel" name="label_18">
+           <property name="text">
+            <string>% Likelyhood following players will call</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="CoveredPlayersCallLikelihoodPreFlop">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="pageStep">
+            <number>5</number>
+           </property>
+           <property name="value">
+            <number>3</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="8" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_9"/>
+       </item>
+       <item row="8" column="2">
+        <layout class="QVBoxLayout" name="verticalLayout_30">
+         <item>
+          <widget class="QLabel" name="label_35">
+           <property name="text">
+            <string>Pot adjustment</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="potAdjustmentPreFlop">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <number>5</number>
+           </property>
+           <property name="pageStep">
+            <number>1</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="8" column="3">
+        <widget class="QLCDNumber" name="lcdNumber_17"/>
+       </item>
+       <item row="9" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_13">
+         <item>
+          <widget class="QLabel" name="label_19">
+           <property name="text">
+            <string>Minimum equity required to potentially bluff</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="slider_FlopBluffMinEquity">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="singleStep">
+            <number>1</number>
+           </property>
+           <property name="pageStep">
+            <number>5</number>
+           </property>
+           <property name="value">
+            <number>50</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="9" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_15"/>
+       </item>
+       <item row="9" column="2">
+        <layout class="QVBoxLayout" name="verticalLayout_31">
+         <item>
+          <widget class="QLabel" name="label_36">
+           <property name="text">
+            <string>Maximum pot adjustment</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="maxPotAdjustmentPreFlop">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>10</number>
+           </property>
+           <property name="pageStep">
+            <number>1</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="9" column="3">
+        <widget class="QLCDNumber" name="lcdNumber_18"/>
+       </item>
+       <item row="10" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_28">
+         <item>
+          <widget class="QLabel" name="label_33">
+           <property name="text">
+            <string>Second round adjustment in equity</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="secondRoundAdjustmentPreFlop">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <number>20</number>
+           </property>
+           <property name="singleStep">
+            <number>1</number>
+           </property>
+           <property name="pageStep">
+            <number>5</number>
+           </property>
+           <property name="value">
+            <number>20</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="10" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_16"/>
+       </item>
+       <item row="10" column="2">
+        <layout class="QVBoxLayout" name="verticalLayout_434">
+         <item>
+          <widget class="QLabel" name="label_451">
+           <property name="text">
+            <string>Second Round adjustment curvature increase</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="secondRoundAdjustmentPowerIncrease">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <number>10</number>
+           </property>
+           <property name="pageStep">
+            <number>1</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="10" column="3">
+        <widget class="QLCDNumber" name="lcdNumber_111"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_2">
+      <attribute name="title">
+       <string>Flop</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_4">
+       <item row="0" column="0" rowspan="2">
+        <widget class="QLabel" name="label_175">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Calling</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QPushButton" name="pushButton_update2">
+         <property name="text">
+          <string>Update Graph</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2" rowspan="6" colspan="2">
+        <layout class="QVBoxLayout" name="verticalLayout_flop">
+         <item>
+          <widget class="QWidget" name="widget_3" native="true"/>
+         </item>
+        </layout>
+       </item>
+       <item row="2" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_183">
+         <item>
+          <widget class="QLabel" name="label_179">
+           <property name="text">
+            <string>Minimum required equity</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="FlopMinCallEquity">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="singleStep">
+            <number>1</number>
+           </property>
+           <property name="pageStep">
+            <number>5</number>
+           </property>
+           <property name="value">
+            <number>50</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_34"/>
+       </item>
+       <item row="3" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_184">
+         <item>
+          <widget class="QLabel" name="label_180">
+           <property name="text">
+            <string>Curvature</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="FlopCallPower">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>2</number>
+           </property>
+           <property name="maximum">
+            <number>30</number>
+           </property>
+           <property name="singleStep">
+            <number>5</number>
+           </property>
+           <property name="pageStep">
+            <number>10</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+           <property name="tickInterval">
+            <number>5</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="3" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_29"/>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_184">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Betting</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_186">
+         <item>
+          <widget class="QLabel" name="label_182">
+           <property name="text">
+            <string>Minimum required equity</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="FlopMinBetEquity">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="singleStep">
+            <number>1</number>
+           </property>
+           <property name="pageStep">
+            <number>5</number>
+           </property>
+           <property name="value">
+            <number>50</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="5" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_36"/>
+       </item>
+       <item row="6" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_179">
+         <item>
+          <widget class="QLabel" name="label_176">
+           <property name="text">
+            <string>Curvature</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="FlopBetPower">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>2</number>
+           </property>
+           <property name="maximum">
+            <number>30</number>
+           </property>
+           <property name="singleStep">
+            <number>5</number>
+           </property>
+           <property name="pageStep">
+            <number>10</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+           <property name="tickInterval">
+            <number>5</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="6" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_28"/>
+       </item>
+       <item row="7" column="2">
+        <layout class="QVBoxLayout" name="verticalLayout_433">
+         <item>
+          <widget class="QLabel" name="label_450">
+           <property name="text">
+            <string>Check deception if equity is above treshold</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="FlopCheckDeceptionMinEquity">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>50</number>
+           </property>
+           <property name="maximum">
+            <number>99</number>
+           </property>
+           <property name="pageStep">
+            <number>1</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="7" column="3">
+        <widget class="QLCDNumber" name="lcdNumber_110"/>
+       </item>
+       <item row="8" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_182">
+         <item>
+          <widget class="QLabel" name="label_178">
+           <property name="text">
+            <string>% Likelyhood following players will call</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="CoveredPlayersCallLikelihoodFlop">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="pageStep">
+            <number>5</number>
+           </property>
+           <property name="value">
+            <number>3</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="8" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_30"/>
+       </item>
+       <item row="8" column="2">
+        <layout class="QVBoxLayout" name="verticalLayout_188">
+         <item>
+          <widget class="QLabel" name="label_185">
+           <property name="text">
+            <string>Pot adjustment</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="potAdjustment">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <number>5</number>
+           </property>
+           <property name="pageStep">
+            <number>1</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="8" column="3">
+        <widget class="QLCDNumber" name="lcdNumber_32"/>
+       </item>
+       <item row="9" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_187">
+         <item>
+          <widget class="QLabel" name="label_183">
+           <property name="text">
+            <string>Minimum equity required to potentially bluff</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="FlopBluffMinEquity">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="singleStep">
+            <number>1</number>
+           </property>
+           <property name="pageStep">
+            <number>5</number>
+           </property>
+           <property name="value">
+            <number>50</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="9" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_33"/>
+       </item>
+       <item row="9" column="2">
+        <layout class="QVBoxLayout" name="verticalLayout_185">
+         <item>
+          <widget class="QLabel" name="label_181">
+           <property name="text">
+            <string>Maximum pot adjustment</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="maxPotAdjustment">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>10</number>
+           </property>
+           <property name="pageStep">
+            <number>1</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="9" column="3">
+        <widget class="QLCDNumber" name="lcdNumber_31"/>
+       </item>
+       <item row="10" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_181">
+         <item>
+          <widget class="QLabel" name="label_177">
+           <property name="text">
+            <string>Second round adjustment in minimum required equity</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="slider_preflop_call_min_equity_46">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <number>20</number>
+           </property>
+           <property name="singleStep">
+            <number>1</number>
+           </property>
+           <property name="pageStep">
+            <number>5</number>
+           </property>
+           <property name="value">
+            <number>20</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="10" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_35"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="WorstGames">
+      <attribute name="title">
+       <string>Turn</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_5">
+       <item row="0" column="0" rowspan="2">
+        <widget class="QLabel" name="label_9">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Calling</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QPushButton" name="pushButton_update3">
+         <property name="text">
+          <string>Update Graph</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2" rowspan="6" colspan="2">
+        <layout class="QVBoxLayout" name="verticalLayout_turn">
+         <item>
+          <widget class="QWidget" name="widget_2" native="true"/>
+         </item>
+        </layout>
+       </item>
+       <item row="2" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_112">
+         <item>
+          <widget class="QLabel" name="label_109">
+           <property name="text">
+            <string>Minimum required equity</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="TurnMinCallEquity">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="singleStep">
+            <number>1</number>
+           </property>
+           <property name="pageStep">
+            <number>5</number>
+           </property>
+           <property name="value">
+            <number>50</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_43"/>
+       </item>
+       <item row="3" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_114">
+         <item>
+          <widget class="QLabel" name="label_111">
+           <property name="text">
+            <string>Curvature</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="TurnCallPower">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>2</number>
+           </property>
+           <property name="maximum">
+            <number>30</number>
+           </property>
+           <property name="singleStep">
+            <number>5</number>
+           </property>
+           <property name="pageStep">
+            <number>10</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+           <property name="tickInterval">
+            <number>5</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="3" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_38"/>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_235">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Betting</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_117">
+         <item>
+          <widget class="QLabel" name="label_114">
+           <property name="text">
+            <string>Minimum required equity</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="TurnMinBetEquity">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="singleStep">
+            <number>1</number>
+           </property>
+           <property name="pageStep">
+            <number>5</number>
+           </property>
+           <property name="value">
+            <number>50</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="5" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_45"/>
+       </item>
+       <item row="6" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_109">
+         <item>
+          <widget class="QLabel" name="label_107">
+           <property name="text">
+            <string>Curvature</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="TurnBetPower">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>2</number>
+           </property>
+           <property name="maximum">
+            <number>30</number>
+           </property>
+           <property name="singleStep">
+            <number>5</number>
+           </property>
+           <property name="pageStep">
+            <number>10</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="6" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_37"/>
+       </item>
+       <item row="7" column="2">
+        <layout class="QVBoxLayout" name="verticalLayout_118">
+         <item>
+          <widget class="QLabel" name="label_115">
+           <property name="text">
+            <string>Pot adjustment</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="slider_small_blind_51">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <number>5</number>
+           </property>
+           <property name="pageStep">
+            <number>1</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="7" column="3">
+        <widget class="QLCDNumber" name="lcdNumber_41"/>
+       </item>
+       <item row="8" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_116">
+         <item>
+          <widget class="QLabel" name="label_113">
+           <property name="text">
+            <string>Minimum equity required to potentially bluff</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="TurnBluffMinEquity">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="singleStep">
+            <number>1</number>
+           </property>
+           <property name="pageStep">
+            <number>5</number>
+           </property>
+           <property name="value">
+            <number>50</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="8" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_42"/>
+       </item>
+       <item row="8" column="2">
+        <layout class="QVBoxLayout" name="verticalLayout_115">
+         <item>
+          <widget class="QLabel" name="label_112">
+           <property name="text">
+            <string>Maximum pot adjustment</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="slider_small_blind_50">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>10</number>
+           </property>
+           <property name="pageStep">
+            <number>1</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="8" column="3">
+        <widget class="QLCDNumber" name="lcdNumber_40"/>
+       </item>
+       <item row="9" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_111">
+         <item>
+          <widget class="QLabel" name="label_108">
+           <property name="text">
+            <string>Second round adjustment in minimum required equity</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="secondRoundAdjustment">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <number>20</number>
+           </property>
+           <property name="singleStep">
+            <number>1</number>
+           </property>
+           <property name="pageStep">
+            <number>5</number>
+           </property>
+           <property name="value">
+            <number>20</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="9" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_44"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab">
+      <attribute name="title">
+       <string>River</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_6">
+       <item row="0" column="0" rowspan="2">
+        <widget class="QLabel" name="label_10">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Calling</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QPushButton" name="pushButton_update4">
+         <property name="text">
+          <string>Update Graph</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2" rowspan="6" colspan="2">
+        <layout class="QVBoxLayout" name="verticalLayout_river">
+         <item>
+          <widget class="QWidget" name="widget" native="true"/>
+         </item>
+        </layout>
+       </item>
+       <item row="2" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_132">
+         <item>
+          <widget class="QLabel" name="label_127">
+           <property name="text">
+            <string>Minimum required equity</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="RiverMinCallEquity">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="singleStep">
+            <number>1</number>
+           </property>
+           <property name="pageStep">
+            <number>5</number>
+           </property>
+           <property name="value">
+            <number>50</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_52"/>
+       </item>
+       <item row="3" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_134">
+         <item>
+          <widget class="QLabel" name="label_129">
+           <property name="text">
+            <string>Curvature</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="RiverCallPower">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>2</number>
+           </property>
+           <property name="maximum">
+            <number>30</number>
+           </property>
+           <property name="singleStep">
+            <number>5</number>
+           </property>
+           <property name="pageStep">
+            <number>10</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+           <property name="tickInterval">
+            <number>5</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="3" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_47"/>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_236">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Betting</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_137">
+         <item>
+          <widget class="QLabel" name="label_132">
+           <property name="text">
+            <string>Minimum required equity</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="RiverMinBetEquity">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="singleStep">
+            <number>1</number>
+           </property>
+           <property name="pageStep">
+            <number>5</number>
+           </property>
+           <property name="value">
+            <number>50</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="5" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_54"/>
+       </item>
+       <item row="6" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_129">
+         <item>
+          <widget class="QLabel" name="label_125">
+           <property name="text">
+            <string>Curvature</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="RiverBetPower">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>2</number>
+           </property>
+           <property name="maximum">
+            <number>30</number>
+           </property>
+           <property name="singleStep">
+            <number>5</number>
+           </property>
+           <property name="pageStep">
+            <number>10</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+           <property name="tickInterval">
+            <number>5</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="6" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_46"/>
+       </item>
+       <item row="7" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_133">
+         <item>
+          <widget class="QLabel" name="label_128">
+           <property name="text">
+            <string>Second Round Minimum equity to bet full pot</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="secondRiverBetPotMinEquity">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="pageStep">
+            <number>5</number>
+           </property>
+           <property name="value">
+            <number>3</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="7" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_48"/>
+       </item>
+       <item row="7" column="2">
+        <layout class="QVBoxLayout" name="verticalLayout_138">
+         <item>
+          <widget class="QLabel" name="label_133">
+           <property name="text">
+            <string>Pot adjustment</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="slider_small_blind_57">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <number>5</number>
+           </property>
+           <property name="pageStep">
+            <number>1</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="7" column="3">
+        <widget class="QLCDNumber" name="lcdNumber_50"/>
+       </item>
+       <item row="8" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_136">
+         <item>
+          <widget class="QLabel" name="label_131">
+           <property name="text">
+            <string>Minimum equity required to potentially bluff</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="RiverBluffMinEquity">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="singleStep">
+            <number>1</number>
+           </property>
+           <property name="pageStep">
+            <number>5</number>
+           </property>
+           <property name="value">
+            <number>50</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="8" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_51"/>
+       </item>
+       <item row="8" column="2">
+        <layout class="QVBoxLayout" name="verticalLayout_135">
+         <item>
+          <widget class="QLabel" name="label_130">
+           <property name="text">
+            <string>Maximum pot adjustment</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="slider_small_blind_56">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>10</number>
+           </property>
+           <property name="pageStep">
+            <number>1</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="8" column="3">
+        <widget class="QLCDNumber" name="lcdNumber_49"/>
+       </item>
+       <item row="9" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_131">
+         <item>
+          <widget class="QLabel" name="label_126">
+           <property name="text">
+            <string>Minimum required equity to bet full pot</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="betPotRiverEquity">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>70</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="singleStep">
+            <number>1</number>
+           </property>
+           <property name="pageStep">
+            <number>1</number>
+           </property>
+           <property name="value">
+            <number>70</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="9" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_53"/>
+       </item>
+       <item row="9" column="2">
+        <layout class="QVBoxLayout" name="verticalLayout_380">
+         <item>
+          <widget class="QLabel" name="label_393">
+           <property name="text">
+            <string>Bet Pot River Equity Max Big blind multiplier</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="betPotRiverEquityMaxBBM">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>5</number>
+           </property>
+           <property name="pageStep">
+            <number>1</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="9" column="3">
+        <widget class="QLCDNumber" name="lcdNumber_60"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_5">
+      <attribute name="title">
+       <string>Table Parameters</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_7">
+       <item row="0" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_7">
+         <item>
+          <widget class="QLabel" name="label_13">
+           <property name="text">
+            <string>Poker Site (Party Poker or Poker Stars)</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="pokerSite"/>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_5">
+         <item>
+          <widget class="QLabel" name="label_11">
+           <property name="text">
+            <string>Small Blind (cents)</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="smallBlind">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>500</number>
+           </property>
+           <property name="pageStep">
+            <number>10</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_62"/>
+       </item>
+       <item row="2" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_437">
+         <item>
+          <widget class="QLabel" name="label_454">
+           <property name="text">
+            <string>Big Blind (cents)</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="bigBlind">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>2</number>
+           </property>
+           <property name="maximum">
+            <number>1000</number>
+           </property>
+           <property name="pageStep">
+            <number>10</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_114"/>
+       </item>
+       <item row="3" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_32">
+         <item>
+          <widget class="QLabel" name="label_37">
+           <property name="text">
+            <string>Initial fundsBlind (cents)</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="initialFunds">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>500</number>
+           </property>
+           <property name="pageStep">
+            <number>10</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="3" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_61"/>
+       </item>
+      </layout>
+     </widget>
     </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_14">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>80</y>
-       <width>521</width>
-       <height>67</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_14">
-      <item>
-       <widget class="QLabel" name="label_20">
-        <property name="text">
-         <string>Bet Plus: how many times the + is pressed to increase the bet</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="BetPlusInc">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>20</number>
-        </property>
-        <property name="pageStep">
-         <number>1</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_27">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>10</y>
-       <width>521</width>
-       <height>67</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_27">
-      <item>
-       <widget class="QLabel" name="label_32">
-        <property name="text">
-         <string>Equity threshold above which everything is called</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="alwaysCallEquity">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="toolTip">
-         <string notr="true">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the equity (winning probability) is higher than the value, the bot will never fold.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>100</number>
-        </property>
-        <property name="singleStep">
-         <number>5</number>
-        </property>
-        <property name="pageStep">
-         <number>10</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-        <property name="tickInterval">
-         <number>0</number>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_33">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>240</y>
-       <width>521</width>
-       <height>67</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_33">
-      <item>
-       <widget class="QLabel" name="label_38">
-        <property name="text">
-         <string>Minimum required equity to bully</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="minBullyEquity">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>0</number>
-        </property>
-        <property name="maximum">
-         <number>100</number>
-        </property>
-        <property name="pageStep">
-         <number>10</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_34">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>310</y>
-       <width>521</width>
-       <height>67</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_34">
-      <item>
-       <widget class="QLabel" name="label_39">
-        <property name="text">
-         <string>Maximum equity to bully</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="maxBullyEquity">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>0</number>
-        </property>
-        <property name="maximum">
-         <number>100</number>
-        </property>
-        <property name="singleStep">
-         <number>1</number>
-        </property>
-        <property name="pageStep">
-         <number>10</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_55">
-     <property name="geometry">
-      <rect>
-       <x>550</x>
-       <y>260</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_56">
-     <property name="geometry">
-      <rect>
-       <x>550</x>
-       <y>100</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_57">
-     <property name="geometry">
-      <rect>
-       <x>550</x>
-       <y>40</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_58">
-     <property name="geometry">
-      <rect>
-       <x>550</x>
-       <y>200</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_59">
-     <property name="geometry">
-      <rect>
-       <x>550</x>
-       <y>330</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_346">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>410</y>
-       <width>521</width>
-       <height>67</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_432">
-      <item>
-       <widget class="QLabel" name="label_449">
-        <property name="text">
-         <string>Minimum loss to initiate Genetic Algorithm</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="minimumLossForIteration">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>0</number>
-        </property>
-        <property name="maximum">
-         <number>100</number>
-        </property>
-        <property name="singleStep">
-         <number>1</number>
-        </property>
-        <property name="pageStep">
-         <number>10</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_109">
-     <property name="geometry">
-      <rect>
-       <x>550</x>
-       <y>430</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_112">
-     <property name="geometry">
-      <rect>
-       <x>550</x>
-       <y>480</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_349">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>480</y>
-       <width>521</width>
-       <height>81</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_435">
-      <item>
-       <widget class="QLabel" name="label_452">
-        <property name="text">
-         <string>Considering the last # of games and initiating the algorithm ever # of rounds</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="considerLastGames">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>100</number>
-        </property>
-        <property name="maximum">
-         <number>10000</number>
-        </property>
-        <property name="singleStep">
-         <number>1</number>
-        </property>
-        <property name="pageStep">
-         <number>100</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-        <property name="tickInterval">
-         <number>100</number>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="strategyIterationGames">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>100</number>
-        </property>
-        <property name="maximum">
-         <number>10000</number>
-        </property>
-        <property name="singleStep">
-         <number>1</number>
-        </property>
-        <property name="pageStep">
-         <number>100</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-        <property name="tickInterval">
-         <number>100</number>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_113">
-     <property name="geometry">
-      <rect>
-       <x>550</x>
-       <y>520</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-   </widget>
-   <widget class="QWidget" name="PreFlop">
-    <attribute name="title">
-     <string>PreFlop</string>
-    </attribute>
-    <widget class="QWidget" name="verticalLayoutWidget">
-     <property name="geometry">
-      <rect>
-       <x>380</x>
-       <y>30</y>
-       <width>291</width>
-       <height>291</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_preflop">
-      <item>
-       <widget class="QWidget" name="widget_4" native="true"/>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QLabel" name="label_3">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>20</y>
-       <width>47</width>
-       <height>13</height>
-      </rect>
-     </property>
+   </item>
+   <item row="5" column="2">
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Select Strategy</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="Strategy"/>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton_save_current_strategy">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Save</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item row="6" column="2">
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>New name</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="lineEdit_new_name"/>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_save_new_strategy">
+       <property name="text">
+        <string>Save under new name</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="0" column="2">
+    <widget class="QLabel" name="label_4">
      <property name="font">
       <font>
+       <pointsize>20</pointsize>
        <weight>75</weight>
        <bold>true</bold>
       </font>
      </property>
      <property name="text">
-      <string>Calling</string>
+      <string>Strategy editor</string>
      </property>
     </widget>
-    <widget class="QLabel" name="label_6">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>160</y>
-       <width>47</width>
-       <height>13</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>Betting</string>
-     </property>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_8">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>40</y>
-       <width>291</width>
-       <height>51</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_8">
-      <item>
-       <widget class="QLabel" name="label_237">
-        <property name="text">
-         <string>Minimum required equity</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="PreFlopMinCallEquity">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>100</number>
-        </property>
-        <property name="singleStep">
-         <number>1</number>
-        </property>
-        <property name="pageStep">
-         <number>5</number>
-        </property>
-        <property name="value">
-         <number>50</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_9">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>100</y>
-       <width>291</width>
-       <height>48</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_9">
-      <item>
-       <widget class="QLabel" name="label_15">
-        <property name="text">
-         <string>Curvature</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="PreFlopCallPower">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>2</number>
-        </property>
-        <property name="maximum">
-         <number>30</number>
-        </property>
-        <property name="singleStep">
-         <number>5</number>
-        </property>
-        <property name="pageStep">
-         <number>10</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-        <property name="tickInterval">
-         <number>5</number>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_10">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>180</y>
-       <width>291</width>
-       <height>53</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_10">
-      <item>
-       <widget class="QLabel" name="label_16">
-        <property name="text">
-         <string>Minimum required equity</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="PreFlopMinBetEquity">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>100</number>
-        </property>
-        <property name="singleStep">
-         <number>1</number>
-        </property>
-        <property name="pageStep">
-         <number>5</number>
-        </property>
-        <property name="value">
-         <number>50</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_11">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>240</y>
-       <width>291</width>
-       <height>53</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_11">
-      <item>
-       <widget class="QLabel" name="label_17">
-        <property name="text">
-         <string>Curvature</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="PreFlopBetPower">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>20</number>
-        </property>
-        <property name="maximum">
-         <number>30</number>
-        </property>
-        <property name="singleStep">
-         <number>5</number>
-        </property>
-        <property name="pageStep">
-         <number>10</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-        <property name="tickInterval">
-         <number>5</number>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_12">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>370</y>
-       <width>291</width>
-       <height>53</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_12">
-      <item>
-       <widget class="QLabel" name="label_18">
-        <property name="text">
-         <string>% Likelyhood following players will call</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="CoveredPlayersCallLikelihoodPreFlop">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>100</number>
-        </property>
-        <property name="pageStep">
-         <number>5</number>
-        </property>
-        <property name="value">
-         <number>3</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_13">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>430</y>
-       <width>291</width>
-       <height>53</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_13">
-      <item>
-       <widget class="QLabel" name="label_19">
-        <property name="text">
-         <string>Minimum equity required to potentially bluff</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="slider_FlopBluffMinEquity">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>100</number>
-        </property>
-        <property name="singleStep">
-         <number>1</number>
-        </property>
-        <property name="pageStep">
-         <number>5</number>
-        </property>
-        <property name="value">
-         <number>50</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_28">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>490</y>
-       <width>291</width>
-       <height>53</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_28">
-      <item>
-       <widget class="QLabel" name="label_33">
-        <property name="text">
-         <string>Second round adjustment in equity</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="secondRoundAdjustmentPreFlop">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>0</number>
-        </property>
-        <property name="maximum">
-         <number>20</number>
-        </property>
-        <property name="singleStep">
-         <number>1</number>
-        </property>
-        <property name="pageStep">
-         <number>5</number>
-        </property>
-        <property name="value">
-         <number>20</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_30">
-     <property name="geometry">
-      <rect>
-       <x>380</x>
-       <y>370</y>
-       <width>231</width>
-       <height>53</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_30">
-      <item>
-       <widget class="QLabel" name="label_35">
-        <property name="text">
-         <string>Pot adjustment</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="potAdjustmentPreFlop">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>0</number>
-        </property>
-        <property name="maximum">
-         <number>5</number>
-        </property>
-        <property name="pageStep">
-         <number>1</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_31">
-     <property name="geometry">
-      <rect>
-       <x>380</x>
-       <y>430</y>
-       <width>231</width>
-       <height>53</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_31">
-      <item>
-       <widget class="QLabel" name="label_36">
-        <property name="text">
-         <string>Maximum pot adjustment</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="maxPotAdjustmentPreFlop">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>10</number>
-        </property>
-        <property name="pageStep">
-         <number>1</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber">
-     <property name="geometry">
-      <rect>
-       <x>320</x>
-       <y>50</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_2">
-     <property name="geometry">
-      <rect>
-       <x>320</x>
-       <y>110</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_3">
-     <property name="geometry">
-      <rect>
-       <x>320</x>
-       <y>190</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_4">
-     <property name="geometry">
-      <rect>
-       <x>320</x>
-       <y>250</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_9">
-     <property name="geometry">
-      <rect>
-       <x>320</x>
-       <y>380</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_15">
-     <property name="geometry">
-      <rect>
-       <x>320</x>
-       <y>440</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_16">
-     <property name="geometry">
-      <rect>
-       <x>320</x>
-       <y>500</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_17">
-     <property name="geometry">
-      <rect>
-       <x>620</x>
-       <y>380</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_18">
-     <property name="geometry">
-      <rect>
-       <x>620</x>
-       <y>440</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_295">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>300</y>
-       <width>291</width>
-       <height>53</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_381">
-      <item>
-       <widget class="QLabel" name="label_394">
-        <property name="text">
-         <string>Maximum equity to bet</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="PreFlopMaxBetEquity">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>2</number>
-        </property>
-        <property name="maximum">
-         <number>100</number>
-        </property>
-        <property name="singleStep">
-         <number>5</number>
-        </property>
-        <property name="pageStep">
-         <number>10</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-        <property name="tickInterval">
-         <number>5</number>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_63">
-     <property name="geometry">
-      <rect>
-       <x>320</x>
-       <y>310</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_111">
-     <property name="geometry">
-      <rect>
-       <x>620</x>
-       <y>500</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_348">
-     <property name="geometry">
-      <rect>
-       <x>380</x>
-       <y>490</y>
-       <width>231</width>
-       <height>53</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_434">
-      <item>
-       <widget class="QLabel" name="label_451">
-        <property name="text">
-         <string>Second Round adjustment curvature increase</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="secondRoundAdjustmentPowerIncrease">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>0</number>
-        </property>
-        <property name="maximum">
-         <number>10</number>
-        </property>
-        <property name="pageStep">
-         <number>1</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QPushButton" name="pushButton_update1">
-     <property name="geometry">
-      <rect>
-       <x>380</x>
-       <y>10</y>
-       <width>91</width>
-       <height>23</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Update Graph</string>
-     </property>
-    </widget>
-   </widget>
-   <widget class="QWidget" name="tab_2">
-    <attribute name="title">
-     <string>Flop</string>
-    </attribute>
-    <widget class="QLabel" name="label_175">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>20</y>
-       <width>47</width>
-       <height>13</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>Calling</string>
-     </property>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_93">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>240</y>
-       <width>291</width>
-       <height>53</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_179">
-      <item>
-       <widget class="QLabel" name="label_176">
-        <property name="text">
-         <string>Curvature</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="FlopBetPower">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>2</number>
-        </property>
-        <property name="maximum">
-         <number>30</number>
-        </property>
-        <property name="singleStep">
-         <number>5</number>
-        </property>
-        <property name="pageStep">
-         <number>10</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-        <property name="tickInterval">
-         <number>5</number>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_94">
-     <property name="geometry">
-      <rect>
-       <x>380</x>
-       <y>30</y>
-       <width>291</width>
-       <height>261</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_flop">
-      <item>
-       <widget class="QWidget" name="widget_3" native="true"/>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_95">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>490</y>
-       <width>291</width>
-       <height>53</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_181">
-      <item>
-       <widget class="QLabel" name="label_177">
-        <property name="text">
-         <string>Second round adjustment in minimum required equity</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="slider_preflop_call_min_equity_46">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>0</number>
-        </property>
-        <property name="maximum">
-         <number>20</number>
-        </property>
-        <property name="singleStep">
-         <number>1</number>
-        </property>
-        <property name="pageStep">
-         <number>5</number>
-        </property>
-        <property name="value">
-         <number>20</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_96">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>370</y>
-       <width>291</width>
-       <height>53</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_182">
-      <item>
-       <widget class="QLabel" name="label_178">
-        <property name="text">
-         <string>% Likelyhood following players will call</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="CoveredPlayersCallLikelihoodFlop">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>100</number>
-        </property>
-        <property name="pageStep">
-         <number>5</number>
-        </property>
-        <property name="value">
-         <number>3</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_97">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>40</y>
-       <width>291</width>
-       <height>51</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_183">
-      <item>
-       <widget class="QLabel" name="label_179">
-        <property name="text">
-         <string>Minimum required equity</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="FlopMinCallEquity">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>100</number>
-        </property>
-        <property name="singleStep">
-         <number>1</number>
-        </property>
-        <property name="pageStep">
-         <number>5</number>
-        </property>
-        <property name="value">
-         <number>50</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_98">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>100</y>
-       <width>291</width>
-       <height>48</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_184">
-      <item>
-       <widget class="QLabel" name="label_180">
-        <property name="text">
-         <string>Curvature</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="FlopCallPower">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>2</number>
-        </property>
-        <property name="maximum">
-         <number>30</number>
-        </property>
-        <property name="singleStep">
-         <number>5</number>
-        </property>
-        <property name="pageStep">
-         <number>10</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-        <property name="tickInterval">
-         <number>5</number>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_99">
-     <property name="geometry">
-      <rect>
-       <x>380</x>
-       <y>430</y>
-       <width>231</width>
-       <height>53</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_185">
-      <item>
-       <widget class="QLabel" name="label_181">
-        <property name="text">
-         <string>Maximum pot adjustment</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="maxPotAdjustment">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>10</number>
-        </property>
-        <property name="pageStep">
-         <number>1</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_100">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>180</y>
-       <width>291</width>
-       <height>53</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_186">
-      <item>
-       <widget class="QLabel" name="label_182">
-        <property name="text">
-         <string>Minimum required equity</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="FlopMinBetEquity">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>100</number>
-        </property>
-        <property name="singleStep">
-         <number>1</number>
-        </property>
-        <property name="pageStep">
-         <number>5</number>
-        </property>
-        <property name="value">
-         <number>50</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_101">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>430</y>
-       <width>291</width>
-       <height>53</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_187">
-      <item>
-       <widget class="QLabel" name="label_183">
-        <property name="text">
-         <string>Minimum equity required to potentially bluff</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="FlopBluffMinEquity">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>100</number>
-        </property>
-        <property name="singleStep">
-         <number>1</number>
-        </property>
-        <property name="pageStep">
-         <number>5</number>
-        </property>
-        <property name="value">
-         <number>50</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QLabel" name="label_184">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>160</y>
-       <width>47</width>
-       <height>13</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>Betting</string>
-     </property>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_102">
-     <property name="geometry">
-      <rect>
-       <x>380</x>
-       <y>370</y>
-       <width>231</width>
-       <height>53</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_188">
-      <item>
-       <widget class="QLabel" name="label_185">
-        <property name="text">
-         <string>Pot adjustment</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="potAdjustment">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>0</number>
-        </property>
-        <property name="maximum">
-         <number>5</number>
-        </property>
-        <property name="pageStep">
-         <number>1</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_28">
-     <property name="geometry">
-      <rect>
-       <x>320</x>
-       <y>250</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_29">
-     <property name="geometry">
-      <rect>
-       <x>320</x>
-       <y>110</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_30">
-     <property name="geometry">
-      <rect>
-       <x>320</x>
-       <y>380</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_31">
-     <property name="geometry">
-      <rect>
-       <x>620</x>
-       <y>440</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_32">
-     <property name="geometry">
-      <rect>
-       <x>620</x>
-       <y>380</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_33">
-     <property name="geometry">
-      <rect>
-       <x>320</x>
-       <y>440</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_34">
-     <property name="geometry">
-      <rect>
-       <x>320</x>
-       <y>50</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_35">
-     <property name="geometry">
-      <rect>
-       <x>320</x>
-       <y>500</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_36">
-     <property name="geometry">
-      <rect>
-       <x>320</x>
-       <y>190</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_110">
-     <property name="geometry">
-      <rect>
-       <x>620</x>
-       <y>310</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_347">
-     <property name="geometry">
-      <rect>
-       <x>380</x>
-       <y>300</y>
-       <width>231</width>
-       <height>53</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_433">
-      <item>
-       <widget class="QLabel" name="label_450">
-        <property name="text">
-         <string>Check deception if equity is above treshold</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="FlopCheckDeceptionMinEquity">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>50</number>
-        </property>
-        <property name="maximum">
-         <number>99</number>
-        </property>
-        <property name="pageStep">
-         <number>1</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QPushButton" name="pushButton_update2">
-     <property name="geometry">
-      <rect>
-       <x>380</x>
-       <y>10</y>
-       <width>91</width>
-       <height>23</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Update Graph</string>
-     </property>
-    </widget>
-   </widget>
-   <widget class="QWidget" name="WorstGames">
-    <attribute name="title">
-     <string>Turn</string>
-    </attribute>
-    <widget class="QLabel" name="label_9">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>20</y>
-       <width>47</width>
-       <height>13</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>Calling</string>
-     </property>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_43">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>240</y>
-       <width>291</width>
-       <height>53</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_109">
-      <item>
-       <widget class="QLabel" name="label_107">
-        <property name="text">
-         <string>Curvature</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="TurnBetPower">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>2</number>
-        </property>
-        <property name="maximum">
-         <number>30</number>
-        </property>
-        <property name="singleStep">
-         <number>5</number>
-        </property>
-        <property name="pageStep">
-         <number>10</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_44">
-     <property name="geometry">
-      <rect>
-       <x>380</x>
-       <y>30</y>
-       <width>291</width>
-       <height>291</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_turn">
-      <item>
-       <widget class="QWidget" name="widget_2" native="true"/>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_45">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>490</y>
-       <width>291</width>
-       <height>53</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_111">
-      <item>
-       <widget class="QLabel" name="label_108">
-        <property name="text">
-         <string>Second round adjustment in minimum required equity</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="secondRoundAdjustment">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>0</number>
-        </property>
-        <property name="maximum">
-         <number>20</number>
-        </property>
-        <property name="singleStep">
-         <number>1</number>
-        </property>
-        <property name="pageStep">
-         <number>5</number>
-        </property>
-        <property name="value">
-         <number>20</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_46">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>40</y>
-       <width>291</width>
-       <height>51</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_112">
-      <item>
-       <widget class="QLabel" name="label_109">
-        <property name="text">
-         <string>Minimum required equity</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="TurnMinCallEquity">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>100</number>
-        </property>
-        <property name="singleStep">
-         <number>1</number>
-        </property>
-        <property name="pageStep">
-         <number>5</number>
-        </property>
-        <property name="value">
-         <number>50</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_48">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>100</y>
-       <width>291</width>
-       <height>48</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_114">
-      <item>
-       <widget class="QLabel" name="label_111">
-        <property name="text">
-         <string>Curvature</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="TurnCallPower">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>2</number>
-        </property>
-        <property name="maximum">
-         <number>30</number>
-        </property>
-        <property name="singleStep">
-         <number>5</number>
-        </property>
-        <property name="pageStep">
-         <number>10</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-        <property name="tickInterval">
-         <number>5</number>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_49">
-     <property name="geometry">
-      <rect>
-       <x>380</x>
-       <y>430</y>
-       <width>231</width>
-       <height>53</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_115">
-      <item>
-       <widget class="QLabel" name="label_112">
-        <property name="text">
-         <string>Maximum pot adjustment</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="slider_small_blind_50">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>10</number>
-        </property>
-        <property name="pageStep">
-         <number>1</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_50">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>430</y>
-       <width>291</width>
-       <height>53</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_116">
-      <item>
-       <widget class="QLabel" name="label_113">
-        <property name="text">
-         <string>Minimum equity required to potentially bluff</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="TurnBluffMinEquity">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>100</number>
-        </property>
-        <property name="singleStep">
-         <number>1</number>
-        </property>
-        <property name="pageStep">
-         <number>5</number>
-        </property>
-        <property name="value">
-         <number>50</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_51">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>180</y>
-       <width>291</width>
-       <height>53</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_117">
-      <item>
-       <widget class="QLabel" name="label_114">
-        <property name="text">
-         <string>Minimum required equity</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="TurnMinBetEquity">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>100</number>
-        </property>
-        <property name="singleStep">
-         <number>1</number>
-        </property>
-        <property name="pageStep">
-         <number>5</number>
-        </property>
-        <property name="value">
-         <number>50</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_52">
-     <property name="geometry">
-      <rect>
-       <x>380</x>
-       <y>370</y>
-       <width>231</width>
-       <height>53</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_118">
-      <item>
-       <widget class="QLabel" name="label_115">
-        <property name="text">
-         <string>Pot adjustment</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="slider_small_blind_51">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>0</number>
-        </property>
-        <property name="maximum">
-         <number>5</number>
-        </property>
-        <property name="pageStep">
-         <number>1</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QLabel" name="label_235">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>160</y>
-       <width>47</width>
-       <height>13</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>Betting</string>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_37">
-     <property name="geometry">
-      <rect>
-       <x>320</x>
-       <y>250</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_38">
-     <property name="geometry">
-      <rect>
-       <x>320</x>
-       <y>110</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_40">
-     <property name="geometry">
-      <rect>
-       <x>620</x>
-       <y>440</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_41">
-     <property name="geometry">
-      <rect>
-       <x>620</x>
-       <y>380</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_42">
-     <property name="geometry">
-      <rect>
-       <x>320</x>
-       <y>440</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_43">
-     <property name="geometry">
-      <rect>
-       <x>320</x>
-       <y>50</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_44">
-     <property name="geometry">
-      <rect>
-       <x>320</x>
-       <y>500</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_45">
-     <property name="geometry">
-      <rect>
-       <x>320</x>
-       <y>190</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="pushButton_update3">
-     <property name="geometry">
-      <rect>
-       <x>380</x>
-       <y>10</y>
-       <width>91</width>
-       <height>23</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Update Graph</string>
-     </property>
-    </widget>
-   </widget>
-   <widget class="QWidget" name="tab">
-    <attribute name="title">
-     <string>River</string>
-    </attribute>
-    <widget class="QLabel" name="label_10">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>20</y>
-       <width>47</width>
-       <height>13</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>Calling</string>
-     </property>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_53">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>240</y>
-       <width>291</width>
-       <height>53</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_129">
-      <item>
-       <widget class="QLabel" name="label_125">
-        <property name="text">
-         <string>Curvature</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="RiverBetPower">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>2</number>
-        </property>
-        <property name="maximum">
-         <number>30</number>
-        </property>
-        <property name="singleStep">
-         <number>5</number>
-        </property>
-        <property name="pageStep">
-         <number>10</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-        <property name="tickInterval">
-         <number>5</number>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_54">
-     <property name="geometry">
-      <rect>
-       <x>380</x>
-       <y>30</y>
-       <width>291</width>
-       <height>291</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_river">
-      <item>
-       <widget class="QWidget" name="widget" native="true"/>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_55">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>490</y>
-       <width>291</width>
-       <height>53</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_131">
-      <item>
-       <widget class="QLabel" name="label_126">
-        <property name="text">
-         <string>Minimum required equity to bet full pot</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="betPotRiverEquity">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>70</number>
-        </property>
-        <property name="maximum">
-         <number>100</number>
-        </property>
-        <property name="singleStep">
-         <number>1</number>
-        </property>
-        <property name="pageStep">
-         <number>1</number>
-        </property>
-        <property name="value">
-         <number>70</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_56">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>40</y>
-       <width>291</width>
-       <height>51</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_132">
-      <item>
-       <widget class="QLabel" name="label_127">
-        <property name="text">
-         <string>Minimum required equity</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="RiverMinCallEquity">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>100</number>
-        </property>
-        <property name="singleStep">
-         <number>1</number>
-        </property>
-        <property name="pageStep">
-         <number>5</number>
-        </property>
-        <property name="value">
-         <number>50</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_57">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>370</y>
-       <width>291</width>
-       <height>53</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_133">
-      <item>
-       <widget class="QLabel" name="label_128">
-        <property name="text">
-         <string>Second Round Minimum equity to bet full pot</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="secondRiverBetPotMinEquity">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>100</number>
-        </property>
-        <property name="pageStep">
-         <number>5</number>
-        </property>
-        <property name="value">
-         <number>3</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_58">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>100</y>
-       <width>291</width>
-       <height>48</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_134">
-      <item>
-       <widget class="QLabel" name="label_129">
-        <property name="text">
-         <string>Curvature</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="RiverCallPower">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>2</number>
-        </property>
-        <property name="maximum">
-         <number>30</number>
-        </property>
-        <property name="singleStep">
-         <number>5</number>
-        </property>
-        <property name="pageStep">
-         <number>10</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-        <property name="tickInterval">
-         <number>5</number>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_59">
-     <property name="geometry">
-      <rect>
-       <x>380</x>
-       <y>430</y>
-       <width>231</width>
-       <height>53</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_135">
-      <item>
-       <widget class="QLabel" name="label_130">
-        <property name="text">
-         <string>Maximum pot adjustment</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="slider_small_blind_56">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>10</number>
-        </property>
-        <property name="pageStep">
-         <number>1</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_60">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>430</y>
-       <width>291</width>
-       <height>53</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_136">
-      <item>
-       <widget class="QLabel" name="label_131">
-        <property name="text">
-         <string>Minimum equity required to potentially bluff</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="RiverBluffMinEquity">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>100</number>
-        </property>
-        <property name="singleStep">
-         <number>1</number>
-        </property>
-        <property name="pageStep">
-         <number>5</number>
-        </property>
-        <property name="value">
-         <number>50</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_61">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>180</y>
-       <width>291</width>
-       <height>53</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_137">
-      <item>
-       <widget class="QLabel" name="label_132">
-        <property name="text">
-         <string>Minimum required equity</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="RiverMinBetEquity">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>100</number>
-        </property>
-        <property name="singleStep">
-         <number>1</number>
-        </property>
-        <property name="pageStep">
-         <number>5</number>
-        </property>
-        <property name="value">
-         <number>50</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_62">
-     <property name="geometry">
-      <rect>
-       <x>380</x>
-       <y>370</y>
-       <width>231</width>
-       <height>53</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_138">
-      <item>
-       <widget class="QLabel" name="label_133">
-        <property name="text">
-         <string>Pot adjustment</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="slider_small_blind_57">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>0</number>
-        </property>
-        <property name="maximum">
-         <number>5</number>
-        </property>
-        <property name="pageStep">
-         <number>1</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QLabel" name="label_236">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>160</y>
-       <width>47</width>
-       <height>13</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>Betting</string>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_46">
-     <property name="geometry">
-      <rect>
-       <x>320</x>
-       <y>250</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_47">
-     <property name="geometry">
-      <rect>
-       <x>320</x>
-       <y>110</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_48">
-     <property name="geometry">
-      <rect>
-       <x>320</x>
-       <y>380</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_49">
-     <property name="geometry">
-      <rect>
-       <x>620</x>
-       <y>440</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_50">
-     <property name="geometry">
-      <rect>
-       <x>620</x>
-       <y>380</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_51">
-     <property name="geometry">
-      <rect>
-       <x>320</x>
-       <y>440</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_52">
-     <property name="geometry">
-      <rect>
-       <x>320</x>
-       <y>50</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_53">
-     <property name="geometry">
-      <rect>
-       <x>320</x>
-       <y>500</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_54">
-     <property name="geometry">
-      <rect>
-       <x>320</x>
-       <y>190</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_294">
-     <property name="geometry">
-      <rect>
-       <x>380</x>
-       <y>490</y>
-       <width>231</width>
-       <height>53</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_380">
-      <item>
-       <widget class="QLabel" name="label_393">
-        <property name="text">
-         <string>Bet Pot River Equity Max Big blind multiplier</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="betPotRiverEquityMaxBBM">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>5</number>
-        </property>
-        <property name="pageStep">
-         <number>1</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_60">
-     <property name="geometry">
-      <rect>
-       <x>620</x>
-       <y>500</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="pushButton_update4">
-     <property name="geometry">
-      <rect>
-       <x>380</x>
-       <y>10</y>
-       <width>91</width>
-       <height>23</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Update Graph</string>
-     </property>
-    </widget>
-   </widget>
-   <widget class="QWidget" name="tab_5">
-    <attribute name="title">
-     <string>Table Parameters</string>
-    </attribute>
-    <widget class="QWidget" name="verticalLayoutWidget_5">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>80</y>
-       <width>521</width>
-       <height>53</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_5">
-      <item>
-       <widget class="QLabel" name="label_11">
-        <property name="text">
-         <string>Small Blind (cents)</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="smallBlind">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>500</number>
-        </property>
-        <property name="pageStep">
-         <number>10</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_7">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>20</y>
-       <width>271</width>
-       <height>51</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_7">
-      <item>
-       <widget class="QLabel" name="label_13">
-        <property name="text">
-         <string>Poker Site (Party Poker or Poker Stars)</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QComboBox" name="pokerSite"/>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_32">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>230</y>
-       <width>521</width>
-       <height>53</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_32">
-      <item>
-       <widget class="QLabel" name="label_37">
-        <property name="text">
-         <string>Initial fundsBlind (cents)</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="initialFunds">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>1</number>
-        </property>
-        <property name="maximum">
-         <number>500</number>
-        </property>
-        <property name="pageStep">
-         <number>10</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_62">
-     <property name="geometry">
-      <rect>
-       <x>550</x>
-       <y>90</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_61">
-     <property name="geometry">
-      <rect>
-       <x>550</x>
-       <y>240</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_350">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>140</y>
-       <width>521</width>
-       <height>53</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_437">
-      <item>
-       <widget class="QLabel" name="label_454">
-        <property name="text">
-         <string>Big Blind (cents)</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QSlider" name="bigBlind">
-        <property name="mouseTracking">
-         <bool>false</bool>
-        </property>
-        <property name="minimum">
-         <number>2</number>
-        </property>
-        <property name="maximum">
-         <number>1000</number>
-        </property>
-        <property name="pageStep">
-         <number>10</number>
-        </property>
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="tickPosition">
-         <enum>QSlider::TicksAbove</enum>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QLCDNumber" name="lcdNumber_114">
-     <property name="geometry">
-      <rect>
-       <x>550</x>
-       <y>150</y>
-       <width>51</width>
-       <height>31</height>
-      </rect>
-     </property>
-    </widget>
-   </widget>
-  </widget>
-  <widget class="QPushButton" name="pushButton_save_new_strategy">
-   <property name="geometry">
-    <rect>
-     <x>560</x>
-     <y>90</y>
-     <width>141</width>
-     <height>41</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Save under new name</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="pushButton_save_current_strategy">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>90</y>
-     <width>151</width>
-     <height>41</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Save</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_2">
-   <property name="geometry">
-    <rect>
-     <x>380</x>
-     <y>90</y>
-     <width>71</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>New name</string>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="lineEdit_new_name">
-   <property name="geometry">
-    <rect>
-     <x>382</x>
-     <y>110</y>
-     <width>171</width>
-     <height>21</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>30</y>
-     <width>149</width>
-     <height>29</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Select Strategy</string>
-   </property>
-  </widget>
-  <widget class="QComboBox" name="Strategy">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>60</y>
-     <width>211</width>
-     <height>20</height>
-    </rect>
-   </property>
-  </widget>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections>

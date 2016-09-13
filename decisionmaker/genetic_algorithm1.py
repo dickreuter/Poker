@@ -44,8 +44,8 @@ class GeneticAlgorithm(object):
             self.changed += 1
         elif A == False and B == True:
             self.recommendation[stage, decision] = "less agressive"
-            p.modify_XML(stage + 'MinCallEquity', +change)
-            p.modify_XML(stage + 'CallPower', +change * 25)
+            p.modify_strategy(stage + 'MinCallEquity', +change)
+            p.modify_strategy(stage + 'CallPower', +change * 25)
             self.changed += 1
         else:
             self.recommendation[stage, decision] = "inconclusive"
