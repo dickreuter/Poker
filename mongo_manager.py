@@ -19,12 +19,11 @@ class UpdateChecker():
         self.mongodb = self.mongoclient.POKER
 
     def downloader(self):
-        link = "https://www.dropbox.com/s/3s3f3sandfomd1j/Pokerbot_installer.exe?dl=1"
-        file_name = "Pokerbot_installer.exe"
-        with open(file_name, "wb") as f:
+        self.file_name = "Pokerbot_installer.exe"
+        with open(self.file_name, "wb") as f:
             print
-            "Downloading %s" % file_name
-            response = requests.get(link, stream=True)
+            "Downloading %s" % self.file_name
+            response = requests.get(self.dl_link, stream=True)
             total_length = response.headers.get('content-length')
 
             if total_length is None:  # no content length header
@@ -41,11 +40,13 @@ class UpdateChecker():
 
     def check_update(self,version):
         cursor=self.mongodb.internal.find()
-        current_version=cursor.next()['current_version']
+        c=cursor.next()
+        current_version=c['current_version']
+        self.dl_link=c['dl']
         if current_version>version:
             print("This version is out of date. Downloading latest version now.")
             self.downloader()
-            subprocess.call(["start", "Pokerbot_installer.exe"], shell=True)
+            subprocess.call(["start", self.file_name], shell=True)
             sys.exit()
 
 class StrategyHandler(object):

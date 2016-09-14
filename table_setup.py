@@ -7,17 +7,19 @@ from main import Table
 class Setup():
     def __init__(self):
         topleftcorner_file = "pics/PS/topleft.png"
-        screenshot_file = "pics/PS/screenshot w7.png"
-        tempalte_file = "pics/half.png"
+        screenshot_file = "pics/PS/Capture4.png"
+        #screenshot_file = "pics/PS/screenshot_old.png"
 
         self.topLeftCorner = cv2.cvtColor(np.array(Image.open(topleftcorner_file)), cv2.COLOR_BGR2RGB)
-        screenshot = cv2.cvtColor(np.array(Image.open(screenshot_file)), cv2.COLOR_BGR2RGB)
-        count, points, bestfit = self.find_template_on_screen(self.topLeftCorner, screenshot, 0.01)
-        self.tlc = points[0]
+        #screenshot = cv2.cvtColor(np.array(Image.open(screenshot_file)), cv2.COLOR_BGR2RGB)
+        screenshot = cv2.imread(screenshot_file)
+
+        count, points, bestfit = self.find_template_on_screen(self.topLeftCorner, screenshot, 0.05)
         #Image.open(screenshot_file).show()
-        # cv2.imshow("Image",screenshot)
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
+        cv2.imshow("Image",screenshot)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+        self.tlc = points[0]
         print ("TLC: "+str(self.tlc))
         cropped_screenshoht=self.crop_image(Image.open(screenshot_file),self.tlc[0],self.tlc[1],800,800)
         cropped_screenshoht.save('cropped_screenshot.png')
@@ -58,10 +60,12 @@ class Setup():
             # cv2.rectangle(img, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
             count += 1
             points.append(pt)
+
         # plt.subplot(121),plt.imshow(res)
         # plt.subplot(122),plt.imshow(img,cmap = 'jet')
         # plt.imshow(img, cmap = 'gray', interpolation = 'bicubic')
         # plt.show()
+
         return count, points, bestFit
 
     def crop_image(self, original, left, top, right, bottom):

@@ -18,7 +18,7 @@ from captcha.captcha_manager import solve_captcha
 from vbox_manager import VirtualBoxController
 import json
 
-version=1.0
+version=1.1
 
 class History(object):
     def __init__(self):
@@ -107,7 +107,8 @@ class Table(object):
         self.lostEverything = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
     def load_coordinates(self):
-        self.coo=json.load(open("coordinates_scraping.txt"))
+        with open('coordinates_scraping.txt','r') as inf:
+            self.coo = eval(inf.read())
 
     def take_screenshot(self,initial):
         if not terminalmode and initial:
@@ -223,7 +224,7 @@ class Table(object):
         try:
             final_value = ''
             for i, j in enumerate(lst):
-                logger.debug("OCR of " + name + " method " + str(i) + " :" + str(j))
+                logger.debug("OCR of " + name + " method " + str(i) + ": " + str(j))
                 lst[i] = fix_number(lst[i]) if lst[i] != '' else lst[i]
                 final_value = lst[i] if final_value == '' else final_value
 
@@ -423,23 +424,13 @@ class TableScreenBased(Table):
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
 
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
-        # (thresh, img) = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY |
-        # cv2.THRESH_OTSU)
+
 
         for key, value in self.cardImages.items():
             template = value
-
             method = eval('cv2.TM_SQDIFF_NORMED')
-
-            # Apply template Matching
             res = cv2.matchTemplate(img, template, method)
             min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-
-            # If the method is TM_SQDIFF or TM_SQDIFF_NORMED, take minimum
-            if method in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
-                top_left = min_loc
-            else:
-                top_left = max_loc
             if min_val < 0.01:
                 self.cardsOnTable.append(key)
 
@@ -521,7 +512,7 @@ class TableScreenBased(Table):
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
         # Convert RGB to BGR
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
-        count, points, bestfit = self.find_template_on_screen(self.coveredCardHolder, img, 0.0001)
+        count, points, bestfit = self.find_template_on_screen(self.coveredCardHolder, img, func_dict['tolerance'])
         self.PlayerNames = []
         self.PlayerFunds = []
 
@@ -561,13 +552,12 @@ class TableScreenBased(Table):
         logger.debug("Player Funds: " + str(self.PlayerFunds))
         if not terminalmode: ui_action_and_signals.signal_status.emit("Analysing other players")
 
-        # plt.subplot(121),plt.imshow(res)
         # plt.subplot(122),plt.imshow(img,cmap = 'jet')
         # plt.imshow(img, cmap = 'gray', interpolation = 'bicubic')
         # plt.show()
         self.coveredCardHolders = np.round(count)
 
-        logger.info("Covered cardholders:" + str(self.coveredCardHolders))
+        logger.info("Covered cardholders: " + str(self.coveredCardHolders))
 
         if self.coveredCardHolders == 1:
             self.isHeadsUp = True
@@ -1042,7 +1032,10 @@ if __name__ == '__main__':
     sys.excepthook = my_exception_hook
 
     config = ConfigObj("config.ini")
-    terminalmode = int(config['terminalmode'])
+    try:
+        terminalmode = int(config['terminalmode'])
+    except:
+        terminalmode=0
 
     logger = debug_logger().start_logger()
 
