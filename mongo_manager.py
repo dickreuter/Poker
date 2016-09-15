@@ -43,7 +43,7 @@ class UpdateChecker():
         current_version=c['current_version']
         self.dl_link=c['dl']
         if current_version>version:
-            print("This version is out of date. Downloading latest version now.")
+            print("Downloading latest version of the DeepMind Pokerbot...")
             self.downloader()
             subprocess.call(["start", self.file_name], shell=True)
             sys.exit()

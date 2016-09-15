@@ -726,6 +726,7 @@ class CurvePlot(FigureCanvas):
 
         self.line1, = self.axes.plot(x, d1.y, 'b-')  # Returns a tuple of line objects, thus the comma
         self.line2, = self.axes.plot(x, d2.y, 'r-')  # Returns a tuple of line objects, thus the comma
+        self.axes.legend((self.line1, self.line2), ('Maximum call limit', 'Maximum bet limit'), loc=2)
 
         self.axes.set_ylim(0, max(1, maxValue))
         self.draw()

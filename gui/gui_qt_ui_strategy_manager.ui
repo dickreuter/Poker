@@ -28,6 +28,9 @@
   <layout class="QGridLayout" name="gridLayout">
    <item row="13" column="0" colspan="3">
     <widget class="QTabWidget" name="tabWidget">
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
      <property name="currentIndex">
       <number>0</number>
      </property>
@@ -95,6 +98,9 @@
            <property name="mouseTracking">
             <bool>false</bool>
            </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When the bot decides a simple press on the bet button is not enough, it can do a 'betPlus'. That means it will shift the slider to the right with x clicks and then only press the bet button. Here you can adjust how many times it should click to slide the slider to the right to increase the bet size.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="minimum">
             <number>1</number>
            </property>
@@ -130,6 +136,9 @@
           <widget class="QSlider" name="bullyDivider">
            <property name="mouseTracking">
             <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In headsup when the single opponent has less than a certain amount of stacks left, the bot can be more agressive. This is activated when he has less funds than initial funds divided by the divider (which is this slide). For example for initial funds of $2 and a divider of 4, the bot would become more agressive if the opponent has less than $0.50.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="minimum">
             <number>1</number>
@@ -167,6 +176,9 @@
            <property name="mouseTracking">
             <bool>false</bool>
            </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In order activate bully mode (meaning the bot is more aggressive), a minimum amounf of equity (winning probability as determined by the simulation) can be selected.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="minimum">
             <number>0</number>
            </property>
@@ -202,6 +214,9 @@
           <widget class="QSlider" name="maxBullyEquity">
            <property name="mouseTracking">
             <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Upper limit of equity where bully mode can be activated if all conditions are met.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="minimum">
             <number>0</number>
@@ -280,6 +295,9 @@
           <widget class="QSlider" name="considerLastGames">
            <property name="mouseTracking">
             <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The genetic algorithm can be activated automatically. Here you can select under what conditions this will happen. It only makes sens to have it activated after playing at least 500 hands.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="minimum">
             <number>100</number>
@@ -370,7 +388,11 @@
        <item row="1" column="2" rowspan="7" colspan="2">
         <layout class="QVBoxLayout" name="verticalLayout_preflop">
          <item>
-          <widget class="QWidget" name="widget_4" native="true"/>
+          <widget class="QWidget" name="widget_4" native="true">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
@@ -387,6 +409,9 @@
           <widget class="QSlider" name="PreFlopMinCallEquity">
            <property name="mouseTracking">
             <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For each stage you can select:&lt;/p&gt;&lt;p&gt;What is the minimum required equity (probability of winning as determined by the simulation) that is required to call the big blind. It is the starting point of the curve that you can see on the right.&lt;/p&gt;&lt;p&gt;How should curve be shaped that determines whether the bot should fold or call. The higher the equity the higher it will call. The higher the curvature (as can be seen in the graph on the right), the more conservative it will be on the lower ranges of the accepted equities. If the curvature is low (minimum is 2), then it almost becomes a straight line.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="minimum">
             <number>1</number>
@@ -429,6 +454,9 @@
           <widget class="QSlider" name="PreFlopCallPower">
            <property name="mouseTracking">
             <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For each stage you can select:&lt;/p&gt;&lt;p&gt;What is the minimum required equity (probability of winning as determined by the simulation) that is required to call the big blind. It is the starting point of the curve that you can see on the right.&lt;/p&gt;&lt;p&gt;How should curve be shaped that determines whether the bot should fold or call. The higher the equity the higher it will call. The higher the curvature (as can be seen in the graph on the right), the more conservative it will be on the lower ranges of the accepted equities. If the curvature is low (minimum is 2), then it almost becomes a straight line.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="minimum">
             <number>2</number>
@@ -485,6 +513,9 @@
            <property name="mouseTracking">
             <bool>false</bool>
            </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For each stage you can select:&lt;/p&gt;&lt;p&gt;What is the minimum required equity (probability of winning as determined by the simulation) to make a bet, if the bet value is 2*big blind. It is the starting point of the curve that you can see on the right.&lt;/p&gt;&lt;p&gt;How should curve be shaped that determines whether the bot should fold or call. The higher the equity the higher it will call. The higher the curvature (as can be seen in the graph on the right), the more conservative it will be on the lower ranges of the accepted equities. If the curvature is low (minimum is 2), then it almost becomes a straight line.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="minimum">
             <number>1</number>
            </property>
@@ -526,6 +557,9 @@
           <widget class="QSlider" name="PreFlopBetPower">
            <property name="mouseTracking">
             <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For each stage you can select:&lt;/p&gt;&lt;p&gt;What is the minimum required equity (probability of winning as determined by the simulation) to make a bet, if the bet value is 2*big blind. It is the starting point of the curve that you can see on the right.&lt;/p&gt;&lt;p&gt;How should curve be shaped that determines whether the bot should fold or call. The higher the equity the higher it will call. The higher the curvature (as can be seen in the graph on the right), the more conservative it will be on the lower ranges of the accepted equities. If the curvature is low (minimum is 2), then it almost becomes a straight line.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="minimum">
             <number>20</number>
@@ -569,6 +603,9 @@
            <property name="mouseTracking">
             <bool>false</bool>
            </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;At the preflop stage you can set a maximum equity where the bot will bet. This is useful for tables where the players are very conservative and get scared easily. So you can avoid giving a way having good preflop cards and not bet (only call assuming you are still on the right of the blue curve). The red curve will break off at this point.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="minimum">
             <number>2</number>
            </property>
@@ -611,6 +648,9 @@
            <property name="mouseTracking">
             <bool>false</bool>
            </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;To calculate the equity (winning probability with given cards), the bot runs a simulation of around 20000 games with the given cards (your cards and the cards on the table) and then counts how many times it won, giving random cards to all other players. However, it is not clear how many players will be in the game. The minimum is always 2 (yourself and one opponent) but it can be more. The bot assumes that the amount of players is always yourself, all players that have played in this round and did not fold + the players that are still to act in this round * probability they will call. If you put it to 0. In zoom / fast forward games this is ususually quite low as only around 20% of the players make it to the flop. In other types of games this may be higher.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="minimum">
             <number>1</number>
            </property>
@@ -650,6 +690,9 @@
            <property name="mouseTracking">
             <bool>false</bool>
            </property>
+           <property name="toolTip">
+            <string>If the pot gets bigger, the bot becomes more agressive. This slider can adjust how more agressive it should become. </string>
+           </property>
            <property name="minimum">
             <number>0</number>
            </property>
@@ -685,6 +728,9 @@
           <widget class="QSlider" name="slider_FlopBluffMinEquity">
            <property name="mouseTracking">
             <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The bot has the ability to bluff (pressing the bet button even though the required equity is not met). This is currently done under the following circumstances:&lt;/p&gt;&lt;p&gt;1. Nobody has bet, so there must be a check button&lt;/p&gt;&lt;p&gt;2. In the last stage there was a check button as well (so nobody bet)&lt;/p&gt;&lt;p&gt;3. The minimum equity is met as selected in this slider (this will be lower than the minimum required equity selected at the top)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="minimum">
             <number>1</number>
@@ -728,6 +774,9 @@
            <property name="mouseTracking">
             <bool>false</bool>
            </property>
+           <property name="toolTip">
+            <string>If the pot becomes extremely high, the adjustment can be limited.</string>
+           </property>
            <property name="minimum">
             <number>1</number>
            </property>
@@ -763,6 +812,9 @@
           <widget class="QSlider" name="secondRoundAdjustmentPreFlop">
            <property name="mouseTracking">
             <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the bot has called or made a bet and then one of the following players raises, another round is played. This is called the 'second round'. It is sometimes a sign that one of the opponents has good cards, that's why it's possible to make an adjustment and increase the minimum amount of equity that is required to call or bet, so the bot becomes more conservative.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="minimum">
             <number>0</number>
@@ -805,6 +857,9 @@
           <widget class="QSlider" name="secondRoundAdjustmentPowerIncrease">
            <property name="mouseTracking">
             <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string comment=" ">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the bot has called or made a bet and then one of the following players raises, another round is played. This is called the 'second round'. It is sometimes a sign that one of the opponents has good cards, that's why it's possible to make an adjustment and increase the curvature of the betting and calling limit, so the bot becomes more conservative.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="minimum">
             <number>0</number>
@@ -876,6 +931,9 @@
            <property name="mouseTracking">
             <bool>false</bool>
            </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For each stage you can select:&lt;/p&gt;&lt;p&gt;What is the minimum required equity (probability of winning as determined by the simulation) that is required to call the big blind. It is the starting point of the curve that you can see on the right.&lt;/p&gt;&lt;p&gt;How should curve be shaped that determines whether the bot should fold or call. The higher the equity the higher it will call. The higher the curvature (as can be seen in the graph on the right), the more conservative it will be on the lower ranges of the accepted equities. If the curvature is low (minimum is 2), then it almost becomes a straight line.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="minimum">
             <number>1</number>
            </property>
@@ -917,6 +975,9 @@
           <widget class="QSlider" name="FlopCallPower">
            <property name="mouseTracking">
             <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For each stage you can select:&lt;/p&gt;&lt;p&gt;What is the minimum required equity (probability of winning as determined by the simulation) that is required to call the big blind. It is the starting point of the curve that you can see on the right.&lt;/p&gt;&lt;p&gt;How should curve be shaped that determines whether the bot should fold or call. The higher the equity the higher it will call. The higher the curvature (as can be seen in the graph on the right), the more conservative it will be on the lower ranges of the accepted equities. If the curvature is low (minimum is 2), then it almost becomes a straight line.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="minimum">
             <number>2</number>
@@ -973,6 +1034,9 @@
            <property name="mouseTracking">
             <bool>false</bool>
            </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For each stage you can select:&lt;/p&gt;&lt;p&gt;What is the minimum required equity (probability of winning as determined by the simulation) to make a bet, if the bet value is 2*big blind. It is the starting point of the curve that you can see on the right.&lt;/p&gt;&lt;p&gt;How should curve be shaped that determines whether the bot should fold or call. The higher the equity the higher it will call. The higher the curvature (as can be seen in the graph on the right), the more conservative it will be on the lower ranges of the accepted equities. If the curvature is low (minimum is 2), then it almost becomes a straight line.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="minimum">
             <number>1</number>
            </property>
@@ -1015,6 +1079,9 @@
            <property name="mouseTracking">
             <bool>false</bool>
            </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For each stage you can select:&lt;/p&gt;&lt;p&gt;What is the minimum required equity (probability of winning as determined by the simulation) to make a bet, if the bet value is 2*big blind. It is the starting point of the curve that you can see on the right.&lt;/p&gt;&lt;p&gt;How should curve be shaped that determines whether the bot should fold or call. The higher the equity the higher it will call. The higher the curvature (as can be seen in the graph on the right), the more conservative it will be on the lower ranges of the accepted equities. If the curvature is low (minimum is 2), then it almost becomes a straight line.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="minimum">
             <number>2</number>
            </property>
@@ -1056,6 +1123,9 @@
           <widget class="QSlider" name="FlopCheckDeceptionMinEquity">
            <property name="mouseTracking">
             <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the equity is very high, you may not want to be aggresssive at the flop stage already. That's why you may simply want to check or call, instead of making a big bet. For example if you suddenly have a 90% equity, you can set the limit here above which amount of equity you want to do a 'check deception' at the flop.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="minimum">
             <number>50</number>
@@ -1322,6 +1392,9 @@
            <property name="mouseTracking">
             <bool>false</bool>
            </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For each stage you can select:&lt;/p&gt;&lt;p&gt;What is the minimum required equity (probability of winning as determined by the simulation) that is required to call the big blind. It is the starting point of the curve that you can see on the right.&lt;/p&gt;&lt;p&gt;How should curve be shaped that determines whether the bot should fold or call. The higher the equity the higher it will call. The higher the curvature (as can be seen in the graph on the right), the more conservative it will be on the lower ranges of the accepted equities. If the curvature is low (minimum is 2), then it almost becomes a straight line.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="minimum">
             <number>1</number>
            </property>
@@ -1363,6 +1436,9 @@
           <widget class="QSlider" name="TurnCallPower">
            <property name="mouseTracking">
             <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For each stage you can select:&lt;/p&gt;&lt;p&gt;What is the minimum required equity (probability of winning as determined by the simulation) that is required to call the big blind. It is the starting point of the curve that you can see on the right.&lt;/p&gt;&lt;p&gt;How should curve be shaped that determines whether the bot should fold or call. The higher the equity the higher it will call. The higher the curvature (as can be seen in the graph on the right), the more conservative it will be on the lower ranges of the accepted equities. If the curvature is low (minimum is 2), then it almost becomes a straight line.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="minimum">
             <number>2</number>
@@ -1419,6 +1495,9 @@
            <property name="mouseTracking">
             <bool>false</bool>
            </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For each stage you can select:&lt;/p&gt;&lt;p&gt;What is the minimum required equity (probability of winning as determined by the simulation) to make a bet, if the bet value is 2*big blind. It is the starting point of the curve that you can see on the right.&lt;/p&gt;&lt;p&gt;How should curve be shaped that determines whether the bot should fold or call. The higher the equity the higher it will call. The higher the curvature (as can be seen in the graph on the right), the more conservative it will be on the lower ranges of the accepted equities. If the curvature is low (minimum is 2), then it almost becomes a straight line.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="minimum">
             <number>1</number>
            </property>
@@ -1460,6 +1539,9 @@
           <widget class="QSlider" name="TurnBetPower">
            <property name="mouseTracking">
             <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For each stage you can select:&lt;/p&gt;&lt;p&gt;What is the minimum required equity (probability of winning as determined by the simulation) to make a bet, if the bet value is 2*big blind. It is the starting point of the curve that you can see on the right.&lt;/p&gt;&lt;p&gt;How should curve be shaped that determines whether the bot should fold or call. The higher the equity the higher it will call. The higher the curvature (as can be seen in the graph on the right), the more conservative it will be on the lower ranges of the accepted equities. If the curvature is low (minimum is 2), then it almost becomes a straight line.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="minimum">
             <number>2</number>
@@ -1696,6 +1778,9 @@
            <property name="mouseTracking">
             <bool>false</bool>
            </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For each stage you can select:&lt;/p&gt;&lt;p&gt;What is the minimum required equity (probability of winning as determined by the simulation) that is required to call the big blind. It is the starting point of the curve that you can see on the right.&lt;/p&gt;&lt;p&gt;How should curve be shaped that determines whether the bot should fold or call. The higher the equity the higher it will call. The higher the curvature (as can be seen in the graph on the right), the more conservative it will be on the lower ranges of the accepted equities. If the curvature is low (minimum is 2), then it almost becomes a straight line.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="minimum">
             <number>1</number>
            </property>
@@ -1737,6 +1822,9 @@
           <widget class="QSlider" name="RiverCallPower">
            <property name="mouseTracking">
             <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For each stage you can select:&lt;/p&gt;&lt;p&gt;What is the minimum required equity (probability of winning as determined by the simulation) that is required to call the big blind. It is the starting point of the curve that you can see on the right.&lt;/p&gt;&lt;p&gt;How should curve be shaped that determines whether the bot should fold or call. The higher the equity the higher it will call. The higher the curvature (as can be seen in the graph on the right), the more conservative it will be on the lower ranges of the accepted equities. If the curvature is low (minimum is 2), then it almost becomes a straight line.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="minimum">
             <number>2</number>
@@ -1793,6 +1881,9 @@
            <property name="mouseTracking">
             <bool>false</bool>
            </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For each stage you can select:&lt;/p&gt;&lt;p&gt;What is the minimum required equity (probability of winning as determined by the simulation) to make a bet, if the bet value is 2*big blind. It is the starting point of the curve that you can see on the right.&lt;/p&gt;&lt;p&gt;How should curve be shaped that determines whether the bot should fold or call. The higher the equity the higher it will call. The higher the curvature (as can be seen in the graph on the right), the more conservative it will be on the lower ranges of the accepted equities. If the curvature is low (minimum is 2), then it almost becomes a straight line.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="minimum">
             <number>1</number>
            </property>
@@ -1834,6 +1925,9 @@
           <widget class="QSlider" name="RiverBetPower">
            <property name="mouseTracking">
             <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For each stage you can select:&lt;/p&gt;&lt;p&gt;What is the minimum required equity (probability of winning as determined by the simulation) to make a bet, if the bet value is 2*big blind. It is the starting point of the curve that you can see on the right.&lt;/p&gt;&lt;p&gt;How should curve be shaped that determines whether the bot should fold or call. The higher the equity the higher it will call. The higher the curvature (as can be seen in the graph on the right), the more conservative it will be on the lower ranges of the accepted equities. If the curvature is low (minimum is 2), then it almost becomes a straight line.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="minimum">
             <number>2</number>
@@ -2117,7 +2211,11 @@
           </widget>
          </item>
          <item>
-          <widget class="QComboBox" name="pokerSite"/>
+          <widget class="QComboBox" name="pokerSite">
+           <property name="toolTip">
+            <string>Currently Partypoker (PP) and Pokerstars (PS) are supported</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
@@ -2245,12 +2343,19 @@
         </widget>
        </item>
        <item>
-        <widget class="QComboBox" name="Strategy"/>
+        <widget class="QComboBox" name="Strategy">
+         <property name="toolTip">
+          <string>Select a strategy you want to edit</string>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QPushButton" name="pushButton_save_current_strategy">
          <property name="enabled">
           <bool>false</bool>
+         </property>
+         <property name="toolTip">
+          <string>You can only save strategies you have created yourself. Otherwise save it under a new name.</string>
          </property>
          <property name="text">
           <string>Save</string>
@@ -2275,6 +2380,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="pushButton_save_new_strategy">
+       <property name="toolTip">
+        <string>Saves the current strategy under a new name</string>
+       </property>
        <property name="text">
         <string>Save under new name</string>
        </property>

@@ -236,7 +236,8 @@ class Decision(DecisionBase):
 
             if (t.equity >= float(p.selected_strategy['minBullyEquity'])) and (
                         t.equity <= float(p.selected_strategy['maxBullyEquity'])) and self.bullyMode:
-                self.decision == "Bet Bluff"
+                self.decision = "Bet Bluff"
+                logger.info("Bullying activated")
                 t.currentBluff = 10
                 self.bullyDecision = True
             else:

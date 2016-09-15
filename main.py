@@ -1015,6 +1015,7 @@ class ThreadManager(threading.Thread):
 
 # ==== MAIN PROGRAM =====
 if __name__ == '__main__':
+    print ("This is a testversion and error messages will appear here. The user interface has opened in a separate window.")
     # Back up the reference to the exceptionhook
     sys._excepthook = sys.excepthook
     u=UpdateChecker()
@@ -1035,8 +1036,9 @@ if __name__ == '__main__':
     try:
         pytesseract.image_to_string(Image.open('pics/PP/3h.png'))
     except Exception as e:
-        print ("Tesseract not installed. Starting installer now. Then try again to start the pokerbot.")
-        subprocess.call(["start", 'tesseract-installer/tesseract-ocr-setup-3.05.00dev.exe'], shell=True)
+        print (e)
+        print ("Tesseract not installed. Please install it into the same folder as the pokerbot or alternatively set the path variable.")
+        #subprocess.call(["start", 'tesseract-installer/tesseract-ocr-setup-3.05.00dev.exe'], shell=True)
         sys.exit()
 
     config = ConfigObj("config.ini")
@@ -1061,7 +1063,6 @@ if __name__ == '__main__':
         ui.setupUi(MainWindow)
 
         ui_action_and_signals = UIActionAndSignals(ui, p, L, logger)
-
         t1 = ThreadManager(1, "Thread-1", 1)
         t1.start()
 

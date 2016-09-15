@@ -71,13 +71,25 @@
    <item row="2" column="0" colspan="3">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QComboBox" name="combobox_strategy"/>
+      <widget class="QComboBox" name="combobox_strategy">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choose the strategy you would like to analyse. '.*' means all strategies together.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="combobox_gamestage"/>
+      <widget class="QComboBox" name="combobox_gamestage">
+       <property name="toolTip">
+        <string>Choose the game stage you want to focus on.</string>
+       </property>
+      </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="combobox_actiontype"/>
+      <widget class="QComboBox" name="combobox_actiontype">
+       <property name="toolTip">
+        <string>Choose what kind of decision you want to analyse in more detail.</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>

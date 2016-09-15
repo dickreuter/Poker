@@ -52,13 +52,25 @@
     <item row="3" column="5">
      <layout class="QVBoxLayout" name="verticalLayout_6">
       <item>
-       <widget class="QLCDNumber" name="assumed_players"/>
+       <widget class="QLCDNumber" name="assumed_players">
+        <property name="toolTip">
+         <string>To calculate the equity (winning probability), the simulation assumes this amount of players in the game (including yourself)</string>
+        </property>
+       </widget>
       </item>
       <item>
-       <widget class="QLCDNumber" name="required_mincall"/>
+       <widget class="QLCDNumber" name="required_mincall">
+        <property name="toolTip">
+         <string>$ on the call button</string>
+        </property>
+       </widget>
       </item>
       <item>
-       <widget class="QLCDNumber" name="required_minbet"/>
+       <widget class="QLCDNumber" name="required_minbet">
+        <property name="toolTip">
+         <string>$ on the bet button</string>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QLCDNumber" name="zero_ev"/>
@@ -192,6 +204,9 @@
           <pointsize>10</pointsize>
          </font>
         </property>
+        <property name="toolTip">
+         <string>Analyse past hands that the bot has played so you can improve the strategies</string>
+        </property>
         <property name="text">
          <string>Strategy Analyser</string>
         </property>
@@ -207,6 +222,9 @@
           <pointsize>10</pointsize>
          </font>
         </property>
+        <property name="toolTip">
+         <string>Here you can edit strategies and adjust the bot to your needs</string>
+        </property>
         <property name="text">
          <string>Strategy Editor</string>
         </property>
@@ -221,6 +239,9 @@
          <font>
           <pointsize>10</pointsize>
          </font>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;An automatic algorithm that suggests what you need to change. It shows you at each stage whether you need to be more or less aggressive in calling, betting, bluffing etc.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="text">
          <string>Genetic Algorithm</string>
@@ -253,6 +274,9 @@
           <weight>75</weight>
           <bold>true</bold>
          </font>
+        </property>
+        <property name="toolTip">
+         <string>Last made decision by the bot</string>
         </property>
         <property name="autoFillBackground">
          <bool>false</bool>
@@ -287,6 +311,9 @@
           <pointsize>10</pointsize>
          </font>
         </property>
+        <property name="toolTip">
+         <string>Choose the strategy that the bot should use to play</string>
+        </property>
         <property name="sizeAdjustPolicy">
          <enum>QComboBox::AdjustToContents</enum>
         </property>
@@ -298,6 +325,9 @@
          <font>
           <pointsize>8</pointsize>
          </font>
+        </property>
+        <property name="toolTip">
+         <string/>
         </property>
         <property name="frameShadow">
          <enum>QFrame::Sunken</enum>
@@ -312,6 +342,9 @@
       </item>
       <item row="5" column="0">
        <widget class="QProgressBar" name="progress_bar">
+        <property name="toolTip">
+         <string>Shows progress when the buttons appear</string>
+        </property>
         <property name="value">
          <number>0</number>
         </property>
@@ -332,19 +365,39 @@
     <item row="3" column="2">
      <layout class="QVBoxLayout" name="verticalLayout_3">
       <item>
-       <widget class="QLCDNumber" name="equity"/>
+       <widget class="QLCDNumber" name="equity">
+        <property name="toolTip">
+         <string>Winning probability as calculated by the simulation</string>
+        </property>
+       </widget>
       </item>
       <item>
-       <widget class="QLCDNumber" name="calllimit"/>
+       <widget class="QLCDNumber" name="calllimit">
+        <property name="toolTip">
+         <string>The maximum amount on the call button where the bot would still call</string>
+        </property>
+       </widget>
       </item>
       <item>
-       <widget class="QLCDNumber" name="betlimit"/>
+       <widget class="QLCDNumber" name="betlimit">
+        <property name="toolTip">
+         <string>The maximum amount on the bet button where the bot would still bet</string>
+        </property>
+       </widget>
       </item>
       <item>
-       <widget class="QLCDNumber" name="potsize"/>
+       <widget class="QLCDNumber" name="potsize">
+        <property name="toolTip">
+         <string>Pot size as show on the table</string>
+        </property>
+       </widget>
       </item>
       <item>
-       <widget class="QLCDNumber" name="gamenumber"/>
+       <widget class="QLCDNumber" name="gamenumber">
+        <property name="toolTip">
+         <string>How many hands have been played with the current strategy</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </item>
@@ -366,6 +419,9 @@
        <font>
         <pointsize>10</pointsize>
        </font>
+      </property>
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Setup which virtual machine the bot should access. You need to install Virtualbox to use this function (available for free). The pokerstars software will then run in the virtualbox and the pokerbot needs to run outside of the virtualbox.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="text">
        <string>Setup</string>
