@@ -1031,6 +1031,14 @@ if __name__ == '__main__':
     # Set the exception hook to our wrapping function
     sys.excepthook = my_exception_hook
 
+    # check for tesseract
+    try:
+        pytesseract.image_to_string(Image.open('pics/PP/3h.png'))
+    except Exception as e:
+        print ("Tesseract not installed. Starting installer now. Then try again to start the pokerbot.")
+        subprocess.call(["start", 'tesseract-installer/tesseract-ocr-setup-3.05.00dev.exe'], shell=True)
+        sys.exit()
+
     config = ConfigObj("config.ini")
     try:
         terminalmode = int(config['terminalmode'])

@@ -21,8 +21,7 @@ class UpdateChecker():
     def downloader(self):
         self.file_name = "Pokerbot_installer.exe"
         with open(self.file_name, "wb") as f:
-            print
-            "Downloading %s" % self.file_name
+            print ("Downloading %s" % self.file_name)
             response = requests.get(self.dl_link, stream=True)
             total_length = response.headers.get('content-length')
 
