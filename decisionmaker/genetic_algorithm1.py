@@ -2,22 +2,25 @@
 Assesses the log file and checks how the parameters in strategies.xml need to be adjusted to optimize playing
 '''
 from debug_logger import *
-from log_manager import *
-from xml_handler import *
+from mongo_manager import *
 
 
 class GeneticAlgorithm(object):
     def __init__(self, write_update, logger, L):
         self.logger = logger
         self.output = ''
-        p = XMLHandler('strategies.xml')
-        p.read_XML()
-        p_name = p.current_strategy.text
+        p = StrategyHandler()
+        p.read_strategy()
+        p_name = p.current_strategy
+        logger.debug("Strategy to analyse: "+p_name)
         self.load_log(p_name, L)
         self.improve_strategy(L, p)
-        if (p.modified and write_update==True) or write_update=="Force":
-            p.save_XML()
-            self.logger.info("New strategy saved in XML file")
+        if (self.modified and write_update==True) or write_update=="Force":
+            p.save_strategy_genetic_algorithm()
+            config = ConfigObj("config.ini")
+            config['last_strategy'] = p.current_strategy
+            config.write()
+            self.logger.info("Genetic algorithm: New strategy saved")
 
     def get_results(self):
         return self.output
@@ -36,13 +39,13 @@ class GeneticAlgorithm(object):
             self.recommendation[stage, decision] = "ok"
         elif A and B == False and C:
             self.recommendation[stage, decision] = "more agressive"
-            p.modify_XML(stage + 'MinCallEquity', -change)
-            p.modify_XML(stage + 'CallPower', -change * 25)
+            p.modify_strategy(stage + 'MinCallEquity', -change)
+            p.modify_strategy(stage + 'CallPower', -change * 25)
             self.changed += 1
         elif A == False and B == True:
             self.recommendation[stage, decision] = "less agressive"
-            p.modify_XML(stage + 'MinCallEquity', +change)
-            p.modify_XML(stage + 'CallPower', +change * 25)
+            p.modify_strategy(stage + 'MinCallEquity', +change)
+            p.modify_strategy(stage + 'CallPower', +change * 25)
             self.changed += 1
         else:
             self.recommendation[stage, decision] = "inconclusive"
@@ -58,13 +61,13 @@ class GeneticAlgorithm(object):
             self.recommendation[stage, decision] = "ok"
         elif A and B:
             self.recommendation[stage, decision] = "more agressive"
-            p.modify_XML(stage + 'MinBetEquity', -change)
-            p.modify_XML(stage + 'BetPower', -change * 25)
+            p.modify_strategy(stage + 'MinBetEquity', -change)
+            p.modify_strategy(stage + 'BetPower', -change * 25)
             self.changed += 1
         elif C and not B:
             self.recommendation[stage, decision] = "less agressive"
-            p.modify_XML(stage + 'MinBetEquity', +change)
-            p.modify_XML(stage + 'BetPower', +change * 25)
+            p.modify_strategy(stage + 'MinBetEquity', +change)
+            p.modify_strategy(stage + 'BetPower', +change * 25)
             self.changed += 1
         else:
             self.recommendation[stage, decision] = "inconclusive"
@@ -72,6 +75,7 @@ class GeneticAlgorithm(object):
         self.output += stage + " " + decision + ": " + self.recommendation[stage, decision] + '\n'
 
     def improve_strategy(self, L, p):
+        self.modified=False
         self.changed = 0
         maxChanges = 2
         if self.changed <= maxChanges:
@@ -111,7 +115,9 @@ class GeneticAlgorithm(object):
             change = 0.03
             self.assess_call(p, L, decision, stage, coeff1, coeff2, coeff3, coeff4, change)
 
+        if self.changed>0: self.modified=True
         self.changed = 0
+
         if self.changed < maxChanges:
             coeff1 = 2
             stage = 'River'
@@ -140,11 +146,12 @@ class GeneticAlgorithm(object):
             change = 0.02
             self.assess_bet(p, L, decision, stage, coeff1, change)
 
+        if self.changed > 0: self.modified = True
+
 
 def run_genetic_algorithm(write, logger):
     logger.info("===Running genetic algorithm===")
-    LogFilename = 'log'
-    L = Logging(LogFilename)
+    L = GameLogger()
     GeneticAlgorithm(write, logger, L)
 
 

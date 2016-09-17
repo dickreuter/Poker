@@ -1,6 +1,5 @@
 from PyQt5.QtCore import *
 import matplotlib
-from .GUI_QT_ui_analyser import *
 matplotlib.use('Qt5Agg')
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas)
@@ -8,13 +7,23 @@ from matplotlib.figure import Figure
 from weakref import proxy
 from gui.gui_qt_ui import Ui_Pokerbot
 from gui.gui_qt_ui_genetic_algorithm import *
+from gui.gui_qt_ui_strategy_manager import *
+from gui.GUI_QT_ui_analyser import *
+from gui.setup import *
+from gui.help import *
+from vbox_manager import VirtualBoxController
+from PyQt5.QtWidgets import QMessageBox
+
+
 from decisionmaker.genetic_algorithm1 import *
 from decisionmaker.curvefitting import *
+import os
 
 class PandasModel(QtCore.QAbstractTableModel):
     """
     Class to populate a table view with a pandas dataframe
     """
+
     def __init__(self, data, parent=None):
         QtCore.QAbstractTableModel.__init__(self, parent)
         self._data = data
@@ -43,24 +52,76 @@ class UIActionAndSignals(QObject):
     signal_status = QtCore.pyqtSignal(str)
     signal_decision = QtCore.pyqtSignal(str)
 
-    signal_bar_chart_update=QtCore.pyqtSignal(object)
-    signal_funds_chart_update=QtCore.pyqtSignal(object)
-    signal_pie_chart_update=QtCore.pyqtSignal(dict)
-    signal_curve_chart_update1=QtCore.pyqtSignal(float,float,float,float,float,float,str,str)
-    signal_curve_chart_update2 = QtCore.pyqtSignal(float, float, float, float, float, float, float, float,float)
-    signal_lcd_number_update = QtCore.pyqtSignal(str,float)
+    signal_bar_chart_update = QtCore.pyqtSignal(object, str)
+    signal_funds_chart_update = QtCore.pyqtSignal(object)
+    signal_pie_chart_update = QtCore.pyqtSignal(dict)
+    signal_curve_chart_update1 = QtCore.pyqtSignal(float, float, float, float, float, float, str, str)
+    signal_curve_chart_update2 = QtCore.pyqtSignal(float, float, float, float, float, float, float, float, float)
+    signal_lcd_number_update = QtCore.pyqtSignal(str, float)
+    signal_update_selected_strategy = QtCore.pyqtSignal(str)
 
-    def __init__(self,ui,p,l,logger):
+    signal_update_strategy_sliders = QtCore.pyqtSignal(str)
+
+    def __init__(self, ui_main_window, p, l, logger):
         QObject.__init__(self)
-        self.ui=ui
-        self.progressbar_value=0
-        self.logger=logger
+        self.strategy_items_with_multipliers = {
+            "PreFlopMinCallEquity": 100,
+            "PreFlopCallPower": 1,
+            "secondRiverBetPotMinEquity": 100,
+            "FlopBetPower": 1,
+            "betPotRiverEquityMaxBBM": 1,
+            "CoveredPlayersCallLikelihoodPreFlop": 100,
+            "TurnMinBetEquity": 100,
+            "PreFlopBetPower": 1,
+            "potAdjustmentPreFlop": 1,
+            "RiverCallPower": 1,
+            "minBullyEquity": 100,
+            "PreFlopMinBetEquity": 100,
+            "BetPlusInc": 1,
+            "FlopMinCallEquity": 100,
+            "secondRoundAdjustmentPreFlop": 100,
+            "FlopBluffMinEquity": 100,
+            "TurnBluffMinEquity": 100,
+            "FlopCallPower": 1,
+            "TurnCallPower": 1,
+            "RiverMinCallEquity": 100,
+            "CoveredPlayersCallLikelihoodFlop": 100,
+            "TurnMinCallEquity": 100,
+            "secondRoundAdjustment": 100,
+            "maxPotAdjustmentPreFlop": 100,
+            "bullyDivider": 1,
+            "maxBullyEquity": 100,
+            "alwaysCallEquity": 100,
+            "PreFlopMaxBetEquity": 100,
+            "RiverBetPower": 1,
+            "minimumLossForIteration": -1,
+            "initialFunds": 100,
+            "potAdjustment": 1,
+            "FlopCheckDeceptionMinEquity": 100,
+            "bigBlind": 100,
+            "secondRoundAdjustmentPowerIncrease": 1,
+            "considerLastGames": 1,
+            "betPotRiverEquity": 100,
+            "RiverBluffMinEquity": 100,
+            "smallBlind": 100,
+            "TurnBetPower": 1,
+            "FlopMinBetEquity": 100,
+            "strategyIterationGames": 1,
+            "RiverMinBetEquity": 100,
+            "maxPotAdjustment": 100
+        }
+        self.p = p
+        self.pokersite_types=['PP', 'PS', 'PS2']
+
+        self.ui = ui_main_window
+        self.progressbar_value = 0
+        self.logger = logger
 
         # Main Window matplotlip widgets
-        self.gui_funds = FundsPlotter(ui, p)
-        self.gui_bar = BarPlotter(ui, p)
-        self.gui_curve = CurvePlot(ui, p)
-        self.gui_pie = PiePlotter(ui, winnerCardTypeList={'Highcard':22})
+        self.gui_funds = FundsPlotter(ui_main_window, p)
+        self.gui_bar = BarPlotter(ui_main_window, p)
+        self.gui_curve = CurvePlot(ui_main_window, p)
+        self.gui_pie = PiePlotter(ui_main_window, winnerCardTypeList={'Highcard': 22})
 
         # main window status update signal connections
         self.signal_progressbar_increase.connect(self.increase_progressbar)
@@ -70,47 +131,59 @@ class UIActionAndSignals(QObject):
 
         self.signal_lcd_number_update.connect(self.update_lcd_number)
 
-        strategy=p.current_strategy.text
-        self.signal_bar_chart_update.connect(lambda: self.gui_bar.drawfigure(l,strategy))
+        self.signal_bar_chart_update.connect(lambda: self.gui_bar.drawfigure(l, p.current_strategy))
 
         self.signal_funds_chart_update.connect(lambda: self.gui_funds.drawfigure(l))
         self.signal_curve_chart_update1.connect(self.gui_curve.update_plots)
         self.signal_curve_chart_update2.connect(self.gui_curve.update_lines)
         self.signal_pie_chart_update.connect(self.gui_pie.drawfigure)
 
-        # ui.button_options.clicked.connect()
-        # ui.button_strategy_editor.clicked.connect()
-        # ui.button_options.clicked.connect()
-        ui.button_genetic_algorithm.clicked.connect(lambda: self.open_genetic_algorithm(p,l))
+        ui_main_window.button_genetic_algorithm.clicked.connect(lambda: self.open_genetic_algorithm(p, l))
+        ui_main_window.button_log_analyser.clicked.connect(lambda: self.open_strategy_analyser(p, l))
+        ui_main_window.button_strategy_editor.clicked.connect(lambda: self.open_strategy_editor(p, l))
+        ui_main_window.button_pause.clicked.connect(lambda: self.pause(ui_main_window, p))
+        ui_main_window.button_resume.clicked.connect(lambda: self.resume(ui_main_window, p))
 
-        ui.button_log_analyser.clicked.connect(lambda: self.open_strategy_analyser(p,l))
+        ui_main_window.pushButton_setup.clicked.connect(lambda: self.open_setup(p,l))
+        ui_main_window.pushButton_help.clicked.connect(lambda: self.open_help(p,l))
 
-        ui.button_pause.clicked.connect(lambda: self.pause(ui,p))
-        ui.button_resume.clicked.connect(lambda: self.resume(ui,p))
+        self.signal_update_strategy_sliders.connect(lambda: self.update_strategy_editor_sliders(p.current_strategy))
 
-    def pause(self,ui,p):
-        print ("Game paused")
+        playable_list = p.get_playable_strategy_list()
+        ui_main_window.comboBox_current_strategy.addItems(playable_list)
+        ui_main_window.comboBox_current_strategy.currentIndexChanged[str].connect(
+            lambda: self.signal_update_selected_strategy(l, p))
+        config = ConfigObj("config.ini")
+        initial_selection = config['last_strategy']
+        for i in [i for i, x in enumerate(playable_list) if x == initial_selection]:
+            idx = i
+        ui_main_window.comboBox_current_strategy.setCurrentIndex(idx)
+
+    def signal_update_selected_strategy(self, l, p):
+        newly_selected_strategy = self.ui.comboBox_current_strategy.currentText()
+        config = ConfigObj("config.ini")
+        config['last_strategy'] = newly_selected_strategy
+        config.write()
+        p.read_strategy()
+        self.logger.info("Active strategy changed to: " + p.current_strategy)
+
+    def pause(self, ui, p):
         ui.button_resume.setEnabled(True)
         ui.button_pause.setEnabled(False)
-        ui.button_genetic_algorithm.setEnabled(True)
-        ui.button_log_analyser.setEnabled(True)
-        p.pause=True
+        p.pause = True
 
-    def resume(self, ui,p):
-        print("Game resumed")
+    def resume(self, ui, p):
         ui.button_resume.setEnabled(False)
         ui.button_pause.setEnabled(True)
-        ui.button_genetic_algorithm.setEnabled(False)
-        ui.button_log_analyser.setEnabled(False)
-        p.pause=False
+        p.pause = False
 
     def increase_progressbar(self, value):
-        self.progressbar_value+=value
-        if self.progressbar_value>100: self.progressbar_value=100
+        self.progressbar_value += value
+        if self.progressbar_value > 100: self.progressbar_value = 100
         self.ui.progress_bar.setValue(self.progressbar_value)
 
     def reset_progressbar(self):
-        self.progressbar_value=0
+        self.progressbar_value = 0
         self.ui.progress_bar.setValue(0)
 
     def update_mainwindow_status(self, text):
@@ -119,11 +192,11 @@ class UIActionAndSignals(QObject):
     def update_mainwindow_decision(self, text):
         self.ui.last_decision.setText(text)
 
-    def update_lcd_number(self,item,value):
-        func=getattr(self.ui, item)
+    def update_lcd_number(self, item, value):
+        func = getattr(self.ui, item)
         func.display(value)
 
-    def open_strategy_analyser(self,p,l):
+    def open_strategy_analyser(self, p, l):
         self.signal_progressbar_reset.emit()
         self.stragegy_analyser_form = QtWidgets.QWidget()
         self.ui_analyser = Ui_Form()
@@ -133,26 +206,78 @@ class UIActionAndSignals(QObject):
         self.gui_fundschange = FundsChangePlot(self.ui_analyser)
         self.gui_fundschange.drawfigure()
 
-        self.ui_analyser.combobox_actiontype.addItems(['Fold','Check','Call','Bet','BetPlus','Bet half pot','Bet pot','Bet Bluff'])
-        self.ui_analyser.combobox_gamestage.addItems(['PreFlop','Flop','Turn','River'])
-        self.ui_analyser.combobox_strategy.addItems(l.get_strategy_list())
+        self.ui_analyser.combobox_actiontype.addItems(
+            ['Fold', 'Check', 'Call', 'Bet', 'BetPlus', 'Bet half pot', 'Bet pot', 'Bet Bluff'])
+        self.ui_analyser.combobox_gamestage.addItems(['PreFlop', 'Flop', 'Turn', 'River'])
+        self.ui_analyser.combobox_strategy.addItems(l.get_played_strategy_list())
 
         self.gui_histogram = HistogramEquityWinLoss(self.ui_analyser)
         self.gui_scatterplot = ScatterPlot(self.ui_analyser)
 
-        self.ui_analyser.combobox_gamestage.currentIndexChanged[str].connect(lambda: self.strategy_analyser_update_plots(l))
-        self.ui_analyser.combobox_actiontype.currentIndexChanged[str].connect(lambda: self.strategy_analyser_update_plots(l))
-        self.ui_analyser.combobox_strategy.currentIndexChanged[str].connect(lambda: self.update_strategy_analyser(l))
+        self.ui_analyser.combobox_gamestage.currentIndexChanged[str].connect(
+            lambda: self.strategy_analyser_update_plots(l, p))
+        self.ui_analyser.combobox_actiontype.currentIndexChanged[str].connect(
+            lambda: self.strategy_analyser_update_plots(l, p))
+        self.ui_analyser.combobox_strategy.currentIndexChanged[str].connect(lambda: self.update_strategy_analyser(l, p))
 
-        self.gui_bar2 = BarPlotter2(self.ui_analyser,l)
+        self.gui_bar2 = BarPlotter2(self.ui_analyser, l)
         self.gui_bar2.drawfigure(l, self.ui_analyser.combobox_strategy.currentText())
-        self.update_strategy_analyser(l)
+        self.update_strategy_analyser(l, p)
+
+    def open_strategy_editor(self, p, l):
+        self.signal_progressbar_reset.emit()
+        self.stragegy_editor_form = QtWidgets.QWidget()
+        self.ui_editor = Ui_editor_form()
+        self.ui_editor.setupUi(self.stragegy_editor_form)
+        self.stragegy_editor_form.show()
+
+        self.curveplot_preflop = CurvePlot(self.ui_editor, self.p, layout='verticalLayout_preflop')
+        self.curveplot_flop = CurvePlot(self.ui_editor, self.p, layout='verticalLayout_flop')
+        self.curveplot_turn = CurvePlot(self.ui_editor, self.p, layout='verticalLayout_turn')
+        self.curveplot_river = CurvePlot(self.ui_editor, self.p, layout='verticalLayout_river')
+
+        # self.ui_editor.PreFlopMinCallEquity.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
+        # self.ui_editor.PreFlopCallPower.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
+        # self.ui_editor.PreFlopMinBetEquity.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
+        # self.ui_editor.PreFlopBetPower.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
+        # self.ui_editor.PreFlopMaxBetEquity.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
+        # self.ui_editor.FlopMinCallEquity.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
+        # self.ui_editor.FlopCallPower.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
+        # self.ui_editor.FlopMinBetEquity.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
+        # self.ui_editor.FlopBetPower.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
+        # self.ui_editor.TurnMinCallEquity.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
+        # self.ui_editor.TurnCallPower.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
+        # self.ui_editor.TurnMinBetEquity.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
+        # self.ui_editor.TurnBetPower.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
+        # self.ui_editor.RiverMinCallEquity.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
+        # self.ui_editor.RiverCallPower.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
+        # self.ui_editor.RiverMinBetEquity.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
+        # self.ui_editor.RiverBetPower.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
+
+        self.ui_editor.pushButton_update1.clicked.connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
+        self.ui_editor.pushButton_update2.clicked.connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
+        self.ui_editor.pushButton_update3.clicked.connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
+        self.ui_editor.pushButton_update4.clicked.connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
+
+        self.ui_editor.pokerSite.addItems(self.pokersite_types)
+
+        self.signal_update_strategy_sliders.emit(p.current_strategy)
+        self.ui_editor.Strategy.currentIndexChanged.connect(lambda: self.update_strategy_editor_sliders(self.ui_editor.Strategy.currentText()))
+        self.ui_editor.pushButton_save_new_strategy.clicked.connect(lambda: self.save_strategy(self.ui_editor.lineEdit_new_name.text(), False))
+        self.ui_editor.pushButton_save_current_strategy.clicked.connect(lambda: self.save_strategy(self.ui_editor.Strategy.currentText(), True))
+
+        self.playable_list = self.p.get_playable_strategy_list()
+        self.ui_editor.Strategy.addItems(self.playable_list)
+        config = ConfigObj("config.ini")
+        initial_selection = config['last_strategy']
+        for i in [i for i, x in enumerate(self.playable_list) if x == initial_selection]:
+            idx = i
+        self.ui_editor.Strategy.setCurrentIndex(idx)
 
     def open_genetic_algorithm(self, p, l):
         self.ui.button_genetic_algorithm.setEnabled(False)
-        g=GeneticAlgorithm(False, self.logger, l)
-        r=g.get_results()
-
+        g = GeneticAlgorithm(False, self.logger, l)
+        r = g.get_results()
 
         self.genetic_algorithm_dialog = QtWidgets.QDialog()
         self.genetic_algorithm_form = Ui_Dialog()
@@ -164,39 +289,89 @@ class UIActionAndSignals(QObject):
 
         self.genetic_algorithm_form.buttonBox.accepted.connect(lambda: GeneticAlgorithm(True, self.logger, l))
 
-    def update_strategy_analyser(self,l):
-        number_of_games=int(l.get_game_count(self.ui_analyser.combobox_strategy.currentText()))
-        total_return=l.get_strategy_total_funds_change(self.ui_analyser.combobox_strategy.currentText(),999999)
-        small_blind=0.02
+    def open_help(self, p, l):
+        self.help_form = QtWidgets.QWidget()
+        self.ui_help = Ui_help_form()
+        self.ui_help.setupUi(self.help_form)
+        self.help_form.show()
+
+    def open_setup(self, p, l):
+        self.setup_form = QtWidgets.QWidget()
+        self.ui_setup = Ui_setup_form()
+        self.ui_setup.setupUi(self.setup_form)
+        self.setup_form.show()
+
+        self.ui_setup.pushButton_save.clicked.connect(lambda: self.save_setup())
+        vm_list = ['Direct mouse control']
+        try:
+            vm=VirtualBoxController()
+            vm_list+=vm.get_vbox_list()
+        except:
+            pass #no virtual machine
+
+        self.ui_setup.comboBox_vm.addItems(vm_list)
+        timeouts=['10','11','12']
+        self.ui_setup.comboBox_2.addItems(timeouts)
+
+        config = ConfigObj("config.ini")
+        try:
+            mouse_control = config['control']
+        except:
+            mouse_control='Direct mouse control'
+        for i in [i for i, x in enumerate(vm_list) if x == mouse_control]:
+            idx = i
+            self.ui_setup.comboBox_vm.setCurrentIndex(idx)
+
+        try:
+            timeout = config['montecarlo_timeout']
+        except:
+            timeout=10
+        for i in [i for i, x in enumerate(timeouts) if x == timeout]:
+            idx = i
+            self.ui_setup.comboBox_2.setCurrentIndex(idx)
+
+    def save_setup(self):
+        config = ConfigObj("config.ini")
+        config['control'] = self.ui_setup.comboBox_vm.currentText()
+        config['montecarlo_timeout'] = self.ui_setup.comboBox_2.currentText()
+        config.write()
+        self.setup_form.close()
+
+    def update_strategy_analyser(self, l, p):
+        number_of_games = int(l.get_game_count(self.ui_analyser.combobox_strategy.currentText()))
+        total_return = l.get_strategy_return(self.ui_analyser.combobox_strategy.currentText(), 999999)
+        small_blind = 0.02
 
         self.ui_analyser.lcdNumber_2.display(number_of_games)
-        self.ui_analyser.lcdNumber.display(total_return/number_of_games/small_blind*100)
-        self.gui_bar2.drawfigure(l,self.ui_analyser.combobox_strategy.currentText())
+        self.ui_analyser.lcdNumber.display(total_return / number_of_games / small_blind * 100)
+        self.gui_bar2.drawfigure(l, self.ui_analyser.combobox_strategy.currentText())
         self.gui_fundschange.drawfigure()
-        self.strategy_analyser_update_plots(l)
+        self.strategy_analyser_update_plots(l, p)
         self.strategy_analyser_update_table(l)
 
-    def strategy_analyser_update_plots(self,l):
+    def strategy_analyser_update_plots(self, l, p):
         p_name = str(self.ui_analyser.combobox_strategy.currentText())
         game_stage = str(self.ui_analyser.combobox_gamestage.currentText())
         decision = str(self.ui_analyser.combobox_actiontype.currentText())
 
-        self.gui_histogram.drawfigure(p_name, game_stage, decision,l)
+        self.gui_histogram.drawfigure(p_name, game_stage, decision, l)
 
-        p = XMLHandler('strategies.xml')
-        if p_name=='.*': p.read_XML()
-        else: p.read_XML(p_name)
+        if p_name == '.*':
+            p.read_strategy()
+        else:
+            p.read_strategy(p_name)
 
-        call_or_bet='Bet' if decision[0]=='B' else 'Call'
+        call_or_bet = 'Bet' if decision[0] == 'B' else 'Call'
 
-        max_value=1
-        min_equity=float(p.XML_entries_list1[game_stage+'Min'+call_or_bet+'Equity'].text)
-        max_equity=float(p.XML_entries_list1['PreFlopMaxBetEquity'].text) if game_stage=='PreFlop' and call_or_bet=='Bet' else 1
-        power=float(p.XML_entries_list1[game_stage+call_or_bet+'Power'].text)
+        max_value = float(p.selected_strategy['initialFunds'])
+        min_equity = float(p.selected_strategy[game_stage + 'Min' + call_or_bet + 'Equity'])
+        max_equity = float(
+            p.selected_strategy['PreFlopMaxBetEquity']) if game_stage == 'PreFlop' and call_or_bet == 'Bet' else 1
+        power = float(p.selected_strategy[game_stage + call_or_bet + 'Power'])
 
-        self.gui_scatterplot.drawfigure(p_name, game_stage, decision,l,
-                                        float(p.XML_entries_list1['smallBlind'].text),
-                                        float(p.XML_entries_list1['bigBlind'].text),
+        self.gui_scatterplot.drawfigure(p_name, game_stage, decision, l,
+                                        float(p.selected_strategy['smallBlind']),
+                                        float(p.selected_strategy['bigBlind']),
                                         max_value,
                                         min_equity,
                                         max_equity,
@@ -204,9 +379,110 @@ class UIActionAndSignals(QObject):
 
     def strategy_analyser_update_table(self, l):
         p_name = str(self.ui_analyser.combobox_strategy.currentText())
-        df=l.get_worst_games(p_name)
+        df = l.get_worst_games(p_name)
         model = PandasModel(df)
         self.ui_analyser.tableView.setModel(model)
+
+    def update_strategy_editor_sliders(self, strategy_name):
+        self.p.read_strategy(strategy_name)
+        for key, value in self.strategy_items_with_multipliers.items():
+            func = getattr(self.ui_editor, key)
+            func.setValue(100)
+            v=float(self.p.selected_strategy[key]) * value
+            func.setValue(v)
+            #print (key)
+
+        self.ui_editor.pushButton_save_current_strategy.setEnabled(False)
+        try:
+            if self.p.selected_strategy['computername'] == os.environ[
+                'COMPUTERNAME']: self.ui_editor.pushButton_save_current_strategy.setEnabled(True)
+        except:
+            pass
+
+        selection = self.p.selected_strategy['pokerSite']
+        for i in [i for i, x in enumerate(self.pokersite_types) if x == selection]:
+            idx = i
+        self.ui_editor.pokerSite.setCurrentIndex(idx)
+
+        self.update_strategy_editor_graphs(strategy_name)
+
+    def update_strategy_editor_graphs(self,strategy_name):
+        strategy_dict=self.update_dictionary(strategy_name)
+
+        try:
+            self.curveplot_preflop.update_lines(float(strategy_dict['PreFlopCallPower']),
+                                                float(strategy_dict['PreFlopBetPower']),
+                                                float(strategy_dict['PreFlopMinCallEquity']),
+                                                float(strategy_dict['PreFlopMinBetEquity']),
+                                                float(strategy_dict['smallBlind']),
+                                                float(strategy_dict['bigBlind']),
+                                                float(strategy_dict['initialFunds']),
+                                                1,
+                                                float(strategy_dict['PreFlopMaxBetEquity']))
+
+            self.curveplot_flop.update_lines(float(strategy_dict['FlopCallPower']),
+                                                float(strategy_dict['FlopBetPower']),
+                                                float(strategy_dict['FlopMinCallEquity']),
+                                                float(strategy_dict['FlopMinBetEquity']),
+                                                float(strategy_dict['smallBlind']),
+                                                float(strategy_dict['bigBlind']),
+                                                float(strategy_dict['initialFunds']),
+                                                1,
+                                                1)
+
+            self.curveplot_turn.update_lines(float(strategy_dict['TurnCallPower']),
+                                                float(strategy_dict['TurnBetPower']),
+                                                float(strategy_dict['TurnMinCallEquity']),
+                                                float(strategy_dict['TurnMinBetEquity']),
+                                                float(strategy_dict['smallBlind']),
+                                                float(strategy_dict['bigBlind']),
+                                               float(strategy_dict['initialFunds']),
+                                                1,
+                                                1)
+
+            self.curveplot_river.update_lines(float(strategy_dict['RiverCallPower']),
+                                                float(strategy_dict['RiverBetPower']),
+                                                float(strategy_dict['RiverMinCallEquity']),
+                                                float(strategy_dict['RiverMinBetEquity']),
+                                                float(strategy_dict['smallBlind']),
+                                                float(strategy_dict['bigBlind']),
+                                                float(strategy_dict['initialFunds']),
+                                                1,
+                                                1)
+        except:
+            print("retry")
+
+    def update_dictionary(self, name):
+        self.strategy_dict = self.p.selected_strategy
+        for key, value in self.strategy_items_with_multipliers.items():
+            func = getattr(self.ui_editor, key)
+            self.strategy_dict[key] = func.value() / value
+        self.strategy_dict['Strategy'] = name
+        self.strategy_dict['pokerSite'] = self.ui_editor.pokerSite.currentText()
+        self.strategy_dict['computername'] = os.environ['COMPUTERNAME']
+        return self.strategy_dict
+
+    def save_strategy(self, name, update):
+        if (name != "" and name not in self.playable_list) or update:
+            strategy_dict=self.update_dictionary(name)
+            if update:
+                self.p.update_strategy(strategy_dict)
+            else:
+                self.p.save_strategy(strategy_dict)
+                self.ui_editor.Strategy.addItem(name)
+                idx = len(self.p.get_playable_strategy_list())
+                self.ui_editor.Strategy.setCurrentIndex(idx - 1)
+                self.ui.comboBox_current_strategy.addItem(name)
+            print("saved")
+            msg=QMessageBox()
+            msg.setIcon(QMessageBox.Information)
+            msg.setText("Saved")
+            msg.setWindowTitle("Strategy editor")
+            msg.setStandardButtons(QMessageBox.Ok)
+            retval=msg.exec()
+
+        else:
+            print("not saved")
 
 class FundsPlotter(FigureCanvas):
     def __init__(self, ui, p):
@@ -214,13 +490,13 @@ class FundsPlotter(FigureCanvas):
         self.ui = proxy(ui)
         self.fig = Figure(dpi=50)
         super(FundsPlotter, self).__init__(self.fig)
-        #self.drawfigure()
+        # self.drawfigure()
         self.ui.vLayout.insertWidget(1, self)
 
-    def drawfigure(self,L):
-        Strategy = str(self.p.current_strategy.text)
-        data=L.get_fundschange_chart(Strategy)
-        data=np.cumsum(data)
+    def drawfigure(self, L):
+        Strategy = str(self.p.current_strategy)
+        data = L.get_fundschange_chart(Strategy)
+        data = np.cumsum(data)
         self.fig.clf()
         self.axes = self.fig.add_subplot(111)  # create an axis
         self.axes.hold(False)  # discards the old graph
@@ -232,14 +508,14 @@ class FundsPlotter(FigureCanvas):
 
 class BarPlotter(FigureCanvas):
     def __init__(self, ui, p):
-        self.p=p
+        self.p = p
         self.ui = proxy(ui)
         self.fig = Figure(dpi=50)
         super(BarPlotter, self).__init__(self.fig)
-        #self.drawfigure()
+        # self.drawfigure()
         self.ui.vLayout2.insertWidget(1, self)
 
-    def drawfigure(self,l,strategy):
+    def drawfigure(self, l, strategy):
         self.axes = self.fig.add_subplot(111)  # create an axis
         self.axes.hold(True)  # discards the old graph
 
@@ -271,7 +547,7 @@ class BarPlotter(FigureCanvas):
         self.axes.legend((self.p0[0], self.p1[0], self.p2[0], self.p3[0], self.p4[0], self.p5[0], self.p6[0]),
                          ('Bluff', 'BetPot', 'BetHfPot', 'Bet/Bet+', 'Call', 'Check', 'Fold'), labelspacing=0.03,
                          prop={'size': 12})
-        maxh = float(self.p.XML_entries_list1['bigBlind'].text) * 10
+        maxh = float(self.p.selected_strategy['bigBlind']) * 10
         i = 0
         for rect0, rect1, rect2, rect3, rect4, rect5, rect6 in zip(self.p0.patches, self.p1.patches,
                                                                    self.p2.patches,
@@ -300,14 +576,14 @@ class BarPlotter(FigureCanvas):
         self.draw()
 
 class BarPlotter2(FigureCanvas):
-    def __init__(self, ui_analyser,l):
+    def __init__(self, ui_analyser, l):
         self.ui_analyser = proxy(ui_analyser)
         self.fig = Figure(dpi=70)
         super(BarPlotter2, self).__init__(self.fig)
-        self.drawfigure(l,self.ui_analyser.combobox_strategy.currentText())
+        self.drawfigure(l, self.ui_analyser.combobox_strategy.currentText())
         self.ui_analyser.vLayout_bar.insertWidget(1, self)
 
-    def drawfigure(self,l,strategy):
+    def drawfigure(self, l, strategy):
         self.fig.clf()
         self.axes = self.fig.add_subplot(111)  # create an axis
         self.axes.hold(True)  # discards the old graph
@@ -344,7 +620,7 @@ class BarPlotter2(FigureCanvas):
                          ('Bluff', 'BetPot', 'BetHfPot', 'Bet/Bet+', 'Call', 'Check', 'Fold'), labelspacing=0.03,
                          prop={'size': 12})
         i = 0
-        maxh=0.02
+        maxh = 0.02
         for rect0, rect1, rect2, rect3, rect4, rect5, rect6 in zip(self.p0.patches, self.p1.patches,
                                                                    self.p2.patches,
                                                                    self.p3.patches, self.p4.patches,
@@ -367,8 +643,7 @@ class BarPlotter2(FigureCanvas):
             rect6.set_height(height[6])
             maxh = max(height[0] + height[1] + height[2] + height[3] + height[4] + height[5] + height[6], maxh)
 
-
-        #self.axes.set_ylim((0, maxh))
+        # self.axes.set_ylim((0, maxh))
 
         self.draw()
 
@@ -377,10 +652,10 @@ class HistogramEquityWinLoss(FigureCanvas):
         self.ui = proxy(ui)
         self.fig = Figure(dpi=50)
         super(HistogramEquityWinLoss, self).__init__(self.fig)
-        #self.drawfigure(template,game_stage,decision)
+        # self.drawfigure(template,game_stage,decision)
         self.ui.horizontalLayout_3.insertWidget(1, self)
 
-    def drawfigure(self,p_name, game_stage, decision,l):
+    def drawfigure(self, p_name, game_stage, decision, l):
         data = l.get_histrogram_data('Template', p_name, game_stage, decision)
         wins = data[0]
         losses = data[1]
@@ -403,7 +678,7 @@ class PiePlotter(FigureCanvas):
         self.ui = proxy(ui)
         self.fig = Figure(dpi=50)
         super(PiePlotter, self).__init__(self.fig)
-        #self.drawfigure(winnerCardTypeList)
+        # self.drawfigure(winnerCardTypeList)
         self.ui.vLayout4.insertWidget(1, self)
 
     def drawfigure(self, winnerCardTypeList):
@@ -411,32 +686,24 @@ class PiePlotter(FigureCanvas):
         self.axes = self.fig.add_subplot(111)  # create an axis
         self.axes.hold(False)
         self.axes.pie([float(v) for v in winnerCardTypeList.values()],
-                        labels=[k for k in winnerCardTypeList.keys()], autopct=None)
+                      labels=[k for k in winnerCardTypeList.keys()], autopct=None)
         self.axes.set_title('Winning probabilities')
         self.draw()
 
 class CurvePlot(FigureCanvas):
-    def __init__(self, ui, p):
+    def __init__(self, ui, p, layout='vLayout3'):
         self.ui = proxy(ui)
         self.fig = Figure(dpi=50)
         super(CurvePlot, self).__init__(self.fig)
         self.drawfigure()
-        self.ui.vLayout3.insertWidget(1, self)
+        layout = getattr(self.ui, layout)
+        func = getattr(layout, 'insertWidget')
+        func(1, self)
 
     def drawfigure(self):
         self.axes = self.fig.add_subplot(111)  # create an axis
         self.axes.hold(True)  # discards the old graph
 
-        self.x2 = []
-        self.y2 = []
-        self.y3 = []
-        self.x2 = np.arange(0, 1, 0.01)
-        for each in self.x2:
-            self.y2.append(0.5)
-            self.y3.append(0.7)
-
-        self.line2, = self.axes.plot(self.x2, self.y2, 'b-')  # Returns a tuple of line objects, thus the comma
-        self.line3, = self.axes.plot(self.x2, self.y3, 'r-')  # Returns a tuple of line objects, thus the comma
         self.axes.axis((0, 1, 0, 1))
         self.axes.set_title('Maximum bet')
         self.axes.set_xlabel('Equity')
@@ -465,11 +732,17 @@ class CurvePlot(FigureCanvas):
 
         d1 = Curvefitting(x2, smallBlind, bigBlind * 2, maxValue, minEquityCall, maxEquityCall, power1)
         d2 = Curvefitting(x2, smallBlind, bigBlind, maxValue, minEquityBet, maxEquityBet, power2)
+        x = np.arange(0, 1, 0.01)
+        try:
+            self.line1.remove()
+            self.line2.remove()
+        except:
+            pass
 
-        self.y2.extend(d1.y)
-        self.y3.extend(d2.y)
-        self.line2.set_ydata(self.y2[-100:])
-        self.line3.set_ydata(self.y3[-100:])
+        self.line1, = self.axes.plot(x, d1.y, 'b-')  # Returns a tuple of line objects, thus the comma
+        self.line2, = self.axes.plot(x, d2.y, 'r-')  # Returns a tuple of line objects, thus the comma
+        self.axes.legend((self.line1, self.line2), ('Maximum call limit', 'Maximum bet limit'), loc=2)
+
         self.axes.set_ylim(0, max(1, maxValue))
         self.draw()
 
@@ -483,9 +756,9 @@ class FundsChangePlot(FigureCanvas):
 
     def drawfigure(self):
         LogFilename = 'log'
-        L = Logging(LogFilename)
+        L = GameLogger(LogFilename)
         p_name = str(self.ui_analyser.combobox_strategy.currentText())
-        data=L.get_fundschange_chart(p_name)
+        data = L.get_fundschange_chart(p_name)
         self.fig.clf()
         self.axes = self.fig.add_subplot(111)  # create an axis
         self.axes.hold(False)  # discards the old graph
@@ -502,8 +775,9 @@ class ScatterPlot(FigureCanvas):
         super(ScatterPlot, self).__init__(self.fig)
         self.ui.horizontalLayout_4.insertWidget(1, self)
 
-    def drawfigure(self,p_name, game_stage, decision,l,smallBlind, bigBlind, maxValue, minEquityBet, maxEquityBet, power):
-        wins,losses=l.get_scatterplot_data('Template', p_name, game_stage, decision)
+    def drawfigure(self, p_name, game_stage, decision, l, smallBlind, bigBlind, maxValue, minEquityBet, maxEquityBet,
+                   power):
+        wins, losses = l.get_scatterplot_data('Template', p_name, game_stage, decision)
         self.fig.clf()
         self.axes = self.fig.add_subplot(111)  # create an axis
         self.axes.hold(True)
@@ -511,49 +785,38 @@ class ScatterPlot(FigureCanvas):
         self.axes.set_xlabel('Equity')
         self.axes.set_ylabel('Minimum required call')
 
-        try: self.axes.set_ylim(0, max(wins['minCall'].tolist()+losses['minCall'].tolist())*1.1)
-        except: self.axes.set_ylim(0,1)
+        try:
+            self.axes.set_ylim(0, max(wins['minCall'].tolist() + losses['minCall'].tolist()) * 1.1)
+        except:
+            self.axes.set_ylim(0, 1)
         self.axes.set_xlim(0, 1)
 
         # self.axes.set_xlim(.5, .8)
         # self.axes.set_ylim(0, .2)
 
         area = np.pi * (50 * wins['FinalFundsChange'])  # 0 to 15 point radiuses
-        green_dots=self.axes.scatter(x=wins['equity'].tolist(), y=wins['minCall'], s=area, c='green', alpha=0.5)
+        green_dots = self.axes.scatter(x=wins['equity'].tolist(), y=wins['minCall'], s=area, c='green', alpha=0.5)
 
         area = np.pi * (50 * abs(losses['FinalFundsChange']))
-        red_dots=self.axes.scatter(x=losses['equity'].tolist(), y=losses['minCall'], s=area, c='red', alpha=0.5)
+        red_dots = self.axes.scatter(x=losses['equity'].tolist(), y=losses['minCall'], s=area, c='red', alpha=0.5)
 
-        self.axes.legend((green_dots,red_dots),
+        self.axes.legend((green_dots, red_dots),
                          ('Wins', 'Losses'), loc=2)
 
         x2 = np.linspace(0, 1, 100)
         d2 = Curvefitting(x2, smallBlind, bigBlind, maxValue, minEquityBet, maxEquityBet, power)
-        self.line3, = self.axes.plot(np.arange(0, 1, 0.01), d2.y[-100:], 'r-')  # Returns a tuple of line objects, thus the comma
+        self.line3, = self.axes.plot(np.arange(0, 1, 0.01), d2.y[-100:],
+                                     'r-')  # Returns a tuple of line objects, thus the comma
 
         self.axes.grid()
         self.draw()
 
 if __name__ == "__main__":
     import sys
-    app = QtGui.QApplication(sys.argv)
-    MainWindow = QtGui.QMainWindow()
-    ui = Ui_Pokerbot()
-    ui.setupUi(MainWindow)
 
-    p = XMLHandler('strategies.xml')
-    p.read_XML()
-
-    # plotter logic and binding needs to be added here
-    gui_funds = FundsPlotter(ui, p)
-    #ui.button_config.clicked.connect(plotter1.drawfigure)
-    gui_bar = BarPlotter(ui, p)
-    gui_curve = CurvePlot(ui, p)
-    gui_pie = PiePlotter(ui, p)
-
-
-
-
-
-    MainWindow.show()
+    app = QtWidgets.QApplication(sys.argv)
+    editor_form = QtWidgets.QWidget()
+    ui = Ui_editor_form()
+    ui.setupUi(editor_form)
+    editor_form.show()
     sys.exit(app.exec_())

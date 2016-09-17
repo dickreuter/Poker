@@ -6,9 +6,102 @@ import numpy as np
 from pymongo import MongoClient
 from collections import Iterable
 import os
+from configobj import ConfigObj
+import re
 import datetime
+import sys
+import subprocess
+import requests
 
-class Logging(object):
+class UpdateChecker():
+    def __init__(self):
+        self.mongoclient = MongoClient('mongodb://guest:donald@52.201.173.151:27017/POKER')
+        self.mongodb = self.mongoclient.POKER
+
+    def downloader(self):
+        self.file_name = "Pokerbot_installer.exe"
+        with open(self.file_name, "wb") as f:
+            print ("Downloading %s" % self.file_name)
+            response = requests.get(self.dl_link, stream=True)
+            total_length = response.headers.get('content-length')
+
+            if total_length is None:  # no content length header
+                f.write(response.content)
+            else:
+                dl = 0
+                total_length = int(total_length)
+                for data in response.iter_content(chunk_size=4096):
+                    dl += len(data)
+                    f.write(data)
+                    done = int(50 * dl / total_length)
+                    sys.stdout.write("\r[%s%s]" % ('=' * done, ' ' * (50 - done)))
+                    sys.stdout.flush()
+
+    def check_update(self,version):
+        cursor=self.mongodb.internal.find()
+        c=cursor.next()
+        current_version=c['current_version']
+        self.dl_link=c['dl']
+        latest_updates=c['latest_updates']
+        if current_version>version:
+            print("Downloading latest version of the DeepMind Pokerbot...")
+            print ("\n")
+            print("Version changes:")
+            for latest_update in latest_updates:
+                print ("* "+latest_update)
+            print("\n")
+            self.downloader()
+            subprocess.call(["start", self.file_name], shell=True)
+            sys.exit()
+
+class StrategyHandler(object):
+    def __init__(self):
+        self.mongoclient = MongoClient('mongodb://guest:donald@52.201.173.151:27017/POKER')
+        self.mongodb = self.mongoclient.POKER
+
+    def get_playable_strategy_list(self):
+        l=list(self.mongodb.strategies.distinct("Strategy"))[::-1]
+        return l
+
+    def read_strategy(self,strategy_override=''):
+        config = ConfigObj("config.ini")
+        last_strategy = (config['last_strategy'])
+        self.current_strategy = last_strategy if strategy_override == '' else strategy_override
+        cursor=self.mongodb.strategies.find({'Strategy': self.current_strategy})
+        self.selected_strategy=cursor.next()
+        return self.selected_strategy
+
+    def save_strategy_genetic_algorithm(self):
+        r = re.compile("([a-zA-Z]+)([0-9]+)")
+        m = r.match(self.current_strategy)
+        stringPart = m.group(1)
+        numberPart = int(m.group(2))
+        numberPart += 1
+        suffix="_"+str(datetime.datetime.now())
+        self.new_strategy_name = stringPart + str(numberPart) + suffix
+        self.selected_strategy['Strategy'] = self.new_strategy_name
+        self.current_strategy=self.new_strategy_name
+        del self.selected_strategy['_id']
+        result = self.mongodb.strategies.insert_one(self.selected_strategy)
+
+    def save_strategy(self, strategy_dict):
+        del strategy_dict['_id']
+        result = self.mongodb.strategies.insert_one(strategy_dict)
+
+    def update_strategy(self,strategy):
+        result = self.mongodb.strategies.update_one(
+            {"Strategy": strategy['Strategy']},
+            {"$set": strategy}
+        )
+
+    def create_new_strategy(self,strategy):
+        result = self.mongodb.strategies.insert_one(strategy)
+
+    def modify_strategy(self, elementName, change):
+        self.selected_strategy[elementName] = str(round(float(self.selected_strategy[elementName]) + change, 2))
+        self.modified = True
+
+class GameLogger(object):
     def __init__(self, connection='mongodb://guest:donald@52.201.173.151:27017/POKER'):
         self.mongoclient = MongoClient('mongodb://guest:donald@52.201.173.151:27017/POKER')
         self.mongodb = self.mongoclient.POKER
@@ -25,9 +118,8 @@ class Logging(object):
         dDict = {}
         pDict = {}
 
-        for key, val in vars(p).items():
-            if len(" ".join(str(ele) for ele in self.isIterable(val)))<25:
-                pDict[key] = " ".join(str(ele) for ele in self.isIterable(val))
+        for key, val in p.selected_strategy.items():
+            pDict[key] = val
         for key, val in vars(h).items():
             hDict[key] = " ".join(str(ele) for ele in self.isIterable(val))
         for key, val in vars(t).items():
@@ -46,7 +138,9 @@ class Logging(object):
         Dp = pd.DataFrame(pDict, index=[0])
 
         self.FinalDataFrame = pd.concat([Dd, Dt, Dh, Dp], axis=1)
-        result = self.mongodb.rounds.insert_one(self.FinalDataFrame.to_dict('records')[0])
+        rec=self.FinalDataFrame.to_dict('records')[0]
+        del rec['_id']
+        result = self.mongodb.rounds.insert_one(rec)
 
     def mark_last_game(self, t, h):
         # updates the last game after it becomes know if it was won or lost
@@ -259,9 +353,10 @@ class Logging(object):
 
         return games
 
-    def get_strategy_total_funds_change(self, strategy, days):
+    def get_strategy_return(self, strategy, days):
         cursor = self.mongodb.games.aggregate([
             {"$match": {"Template": {"$regex": strategy}}},
+            {"$sort":  {"logging_timestamp": -1}},
             {"$limit": days},
             {"$group": {
                 "_id": "none",
@@ -288,9 +383,13 @@ class Logging(object):
             y=[0]
         return y
 
-    def get_strategy_list(self):
+    def get_played_strategy_list(self):
         l=list(self.mongodb.games.distinct("Template"))[::-1]
         l.append('.*')
+        return l
+
+    def get_played_players(self):
+        l=list(self.mongodb.games.distinct("ComputerName"))
         return l
 
     def get_scatterplot_data(self, p_name, p_value, game_stage, decision):
@@ -361,7 +460,7 @@ class Logging(object):
         return pd.DataFrame(list(cursor))
 
     def optimize_preflop_call_parameters(self,p_name, p_value, game_stage, decision):
-        L = Logging()
+        L = GameLogger()
         df = L.get_neural_training_data(p_name, p_value, game_stage, decision)
 
         from decisionmaker.curvefitting import Curvefitting
@@ -440,15 +539,20 @@ if __name__ == '__main__':
     t1=(1, 5, 5)
     t2=(0.55, 0.65, 10)
 
-    L=Logging()
-    #L.optimize_preflop_call_parameters(p_name, p_value, game_stage, decision)
-    player_list = L.get_frequent_player_names()
-    print (player_list[-10:])
+    L=GameLogger()
+    # #L.optimize_preflop_call_parameters(p_name, p_value, game_stage, decision)
+    # player_list = L.get_frequent_player_names()
+    # print (player_list[-10:])
+    #
+    # print(L.get_flop_frequency_of_player('MMHRIHM'))
+    # print(L.get_flop_frequency_of_player('Mnanqn1no'))
+    # print(L.get_flop_frequency_of_player('Annv'))
+    # print(L.get_flop_frequency_of_player('7UDILI'))
+    # print(L.get_flop_frequency_of_player('hfqq'))
+    #
+    #
+    # worst_games=L.get_worst_games('.(')
 
-    print(L.get_flop_frequency_of_player('MMHRIHM'))
-    print(L.get_flop_frequency_of_player('Mnanqn1no'))
-    print(L.get_flop_frequency_of_player('Annv'))
-    print(L.get_flop_frequency_of_player('7UDILI'))
-    print(L.get_flop_frequency_of_player('hfqq'))
-
+    strategy_return=L.get_strategy_return('.*', 500)
+    print ("Return: "+str(strategy_return))
 
