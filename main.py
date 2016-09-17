@@ -16,7 +16,7 @@ from captcha.captcha_manager import solve_captcha
 from vbox_manager import VirtualBoxController
 from functools import lru_cache
 
-version=100
+version=1.5
 
 class History(object):
     def __init__(self):
