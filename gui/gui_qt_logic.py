@@ -12,6 +12,7 @@ from gui.GUI_QT_ui_analyser import *
 from gui.setup import *
 from gui.help import *
 from vbox_manager import VirtualBoxController
+from PyQt5.QtWidgets import QMessageBox
 
 
 from decisionmaker.genetic_algorithm1 import *
@@ -362,7 +363,7 @@ class UIActionAndSignals(QObject):
 
         call_or_bet = 'Bet' if decision[0] == 'B' else 'Call'
 
-        max_value = 1
+        max_value = float(p.selected_strategy['initialFunds'])
         min_equity = float(p.selected_strategy[game_stage + 'Min' + call_or_bet + 'Equity'])
         max_equity = float(
             p.selected_strategy['PreFlopMaxBetEquity']) if game_stage == 'PreFlop' and call_or_bet == 'Bet' else 1
@@ -415,7 +416,7 @@ class UIActionAndSignals(QObject):
                                                 float(strategy_dict['PreFlopMinBetEquity']),
                                                 float(strategy_dict['smallBlind']),
                                                 float(strategy_dict['bigBlind']),
-                                                1,
+                                                float(strategy_dict['initialFunds']),
                                                 1,
                                                 float(strategy_dict['PreFlopMaxBetEquity']))
 
@@ -425,7 +426,7 @@ class UIActionAndSignals(QObject):
                                                 float(strategy_dict['FlopMinBetEquity']),
                                                 float(strategy_dict['smallBlind']),
                                                 float(strategy_dict['bigBlind']),
-                                                1,
+                                                float(strategy_dict['initialFunds']),
                                                 1,
                                                 1)
 
@@ -435,7 +436,7 @@ class UIActionAndSignals(QObject):
                                                 float(strategy_dict['TurnMinBetEquity']),
                                                 float(strategy_dict['smallBlind']),
                                                 float(strategy_dict['bigBlind']),
-                                                1,
+                                               float(strategy_dict['initialFunds']),
                                                 1,
                                                 1)
 
@@ -445,7 +446,7 @@ class UIActionAndSignals(QObject):
                                                 float(strategy_dict['RiverMinBetEquity']),
                                                 float(strategy_dict['smallBlind']),
                                                 float(strategy_dict['bigBlind']),
-                                                1,
+                                                float(strategy_dict['initialFunds']),
                                                 1,
                                                 1)
         except:
@@ -471,7 +472,15 @@ class UIActionAndSignals(QObject):
                 self.ui_editor.Strategy.addItem(name)
                 idx = len(self.p.get_playable_strategy_list())
                 self.ui_editor.Strategy.setCurrentIndex(idx - 1)
+                self.ui.comboBox_current_strategy.addItem(name)
             print("saved")
+            msg=QMessageBox()
+            msg.setIcon(QMessageBox.Information)
+            msg.setText("Saved")
+            msg.setWindowTitle("Strategy editor")
+            msg.setStandardButtons(QMessageBox.Ok)
+            retval=msg.exec()
+
         else:
             print("not saved")
 

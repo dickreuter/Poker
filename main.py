@@ -16,7 +16,7 @@ from captcha.captcha_manager import solve_captcha
 from vbox_manager import VirtualBoxController
 from functools import lru_cache
 
-version=1.3
+version=100
 
 class History(object):
     def __init__(self):
@@ -104,9 +104,14 @@ class Table(object):
         template = Image.open(name)
         self.lostEverything = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
+        name = "pics/" + self.tbl[0:2] + "/dealer.png"
+        template = Image.open(name)
+        self.dealer = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
+
     def load_coordinates(self):
-        with open('coordinates_scraping.txt','r') as inf:
-            self.coo = eval(inf.read())
+        with open('coordinates.txt','r') as inf:
+            c = eval(inf.read())
+            self.coo=c['screen_scraping']
 
     def take_screenshot(self,initial):
         if not terminalmode and initial:
@@ -173,10 +178,12 @@ class Table(object):
     def get_ocr_float(self, img_orig, name):
         def fix_number(t):
             t = t.replace("I", "1").replace("O", "0").replace("o", "0")\
-                .replace("-", ".").replace("D", "0").replace("I","1").replace("_",".")
+                .replace("-", ".").replace("D", "0").replace("I","1").replace("_",".").replace("-", ".")
             t = re.sub("[^0123456789.]", "", t)
             try:
                 if t[0] == ".": t = t[1:]
+                if t[-1]==".": t = t[0:-1]
+                if t[-1] == "-": t = t[0:-1]
             except:
                 pass
             return t
@@ -519,35 +526,35 @@ class TableScreenBased(Table):
         self.PlayerFunds = []
 
         count = 0
-        # for pt in points:
-        #     if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(1)
-        #     # cv2.rectangle(img, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
-        #     count += 1
-        #     playerNameImage = pil_image.crop((pt[0] - (955 - 890), pt[1] + 270 - 222, pt[0] + 20, pt[1] + +280 - 222))
-        #     basewidth = 500
-        #     wpercent = (basewidth / float(playerNameImage.size[0]))
-        #     hsize = int((float(playerNameImage.size[1]) * float(wpercent)))
-        #     playerNameImage = playerNameImage.resize((basewidth, hsize), Image.ANTIALIAS)
-        #     # playerNameImage.show()
-        #     try:
-        #         recognizedText = (pytesseract.image_to_string(playerNameImage, None, False, "-psm 6"))
-        #         recognizedText = re.sub("[^abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789]", "",
-        #                                 recognizedText)
-        #         self.PlayerNames.append(recognizedText)
-        #     except:
-        #         logger.debug("Pyteseract error in player name recognition")
-        #
-        #     playerFundsImage = pil_image.crop(
-        #         (pt[0] - (955 - 890) + 10, pt[1] + 270 - 222 + 20, pt[0] + 10, pt[1] + +280 - 222 + 22))
-        #     basewidth = 500
-        #     wpercent = (basewidth / float(playerNameImage.size[0]))
-        #     hsize = int((float(playerNameImage.size[1]) * float(wpercent)))
-        #     playerFundsImage = playerFundsImage.resize((basewidth, hsize), Image.ANTIALIAS)
-        #     # playerFundsImage = playerFundsImage.filter(ImageFilter.MaxFilter)
-        #     # playerFundsImage.show()
-        #
-        #
-        #     self.PlayerFunds.append(self.get_ocr_float(playerFundsImage,'PlayerFunds'))
+        for pt in points:
+            if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(1)
+            # cv2.rectangle(img, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
+            count += 1
+            playerNameImage = pil_image.crop((pt[0] - (955 - 890), pt[1] + 270 - 222, pt[0] + 20, pt[1] + +280 - 222))
+            basewidth = 500
+            wpercent = (basewidth / float(playerNameImage.size[0]))
+            hsize = int((float(playerNameImage.size[1]) * float(wpercent)))
+            playerNameImage = playerNameImage.resize((basewidth, hsize), Image.ANTIALIAS)
+            # playerNameImage.show()
+            try:
+                recognizedText = (pytesseract.image_to_string(playerNameImage, None, False, "-psm 6"))
+                recognizedText = re.sub("[^abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789]", "",
+                                        recognizedText)
+                self.PlayerNames.append(recognizedText)
+            except:
+                logger.debug("Pyteseract error in player name recognition")
+
+            playerFundsImage = pil_image.crop(
+                (pt[0] - (955 - 890) + 10, pt[1] + 270 - 222 + 20, pt[0] + 10, pt[1] + +280 - 222 + 22))
+            basewidth = 500
+            wpercent = (basewidth / float(playerNameImage.size[0]))
+            hsize = int((float(playerNameImage.size[1]) * float(wpercent)))
+            playerFundsImage = playerFundsImage.resize((basewidth, hsize), Image.ANTIALIAS)
+            # playerFundsImage = playerFundsImage.filter(ImageFilter.MaxFilter)
+            # playerFundsImage.show()
+
+
+            self.PlayerFunds.append(self.get_ocr_float(playerFundsImage,'PlayerFunds'))
 
 
         logger.debug("Player Names: " + str(self.PlayerNames))
@@ -686,6 +693,30 @@ class TableScreenBased(Table):
 
         return True
 
+    def get_dealer_position(self):
+        func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(5)
+        if terminalmode == False: ui_action_and_signals.signal_status.emit("Analyse dealer position")
+        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + 0, self.tlc[1] + 0,
+                                    self.tlc[0] +800, self.tlc[1] + 500)
+
+        img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
+        count, points, bestfit = self.find_template_on_screen(self.dealer, img, 0.01)
+        point=points[0]
+
+        self.position_utg_plus = ''
+        for n, fd in enumerate(func_dict, start=0):
+            if point[0]>fd[0] and point[1]>fd[1] and point[0]<fd[2] and point[1]<fd[3]:
+                self.position_utg_plus=n
+                logger.info('Position is UTG+'+str(self.position_utg_plus))
+
+        if self.position_utg_plus=='':
+            self.position_utg_plus=0
+            logger.error('Could not determine dealer position. Assuming UTG')
+
+
+        return True
+
     def get_total_pot_value(self):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
         if not terminalmode: ui_action_and_signals.signal_progressbar_increase.emit(5)
@@ -751,22 +782,20 @@ class TableScreenBased(Table):
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
 
-        if self.checkButton == False:
+        if not self.checkButton:
+            if  p.selected_strategy['pokerSite'][0:2] and self.allInCallButton: self.currentCallValue = ''
+            else: self.currentCallValue = self.get_ocr_float(pil_image, 'CallValue')
+        elif self.checkButton:
+            self.currentCallValue=0
 
+
+        if self.currentCallValue!='':  self.getCallButtonValueSuccess = True
+        else:
             try:
-                self.currentCallValue = self.get_ocr_float(pil_image, 'CallValue')
-                self.getCallButtonValueSuccess = True
-                if self.allInCallButton == True and self.myFundsError == False and self.currentCallValue < self.myFunds:
-                    self.getCallButtonValueSuccess = False
-                    pil_image.save("pics/ErrCallValue.png")
-                    self.currentCallValue = self.myFunds
-            except:
-                self.currentCallValue = 0
-                self.CallValueReadError = True
                 pil_image.save("pics/ErrCallValue.png")
+            except:
+                pass
 
-        # if len(self.currentRoundPotValue)>0: return True
-        # else: return False
 
         return True
 
@@ -780,12 +809,22 @@ class TableScreenBased(Table):
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
 
         self.currentBetValue = self.get_ocr_float(pil_image, 'BetValue')
+
+        if self.currentCallValue=='' and p.selected_strategy['pokerSite'][0:2] == "PS" and self.allInCallButton:
+            logger.warning("Taking call value from button on the right")
+            self.currentCallValue = self.currentBetValue
+            self.currentBetValue=9999999
+
+
         if self.currentBetValue == '':
-            returnvalue = False
+            logger.warning("No bet value")
             self.currentBetValue = 9999999.0
 
         if self.currentCallValue=='':
-            logger.error("Call Value was empty")
+            logger.error("Call Value was empty. ")
+            if p.selected_strategy['pokerSite'][0:2] == "PS" and self.allInCallButton:
+                self.currentCallValue = self.currentBetValue
+                self.currentBetValue=9999999
             try:
                 self.entireScreenPIL.save('pics/err_debug_fullscreen.png')
             except:
@@ -836,7 +875,7 @@ class TableScreenBased(Table):
         else:
             return True
 
-    def get_new_hand(self):
+    def get_new_hand(self, mouse):
         if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(5)
         if h.previousCards != self.mycards:
             self.time_new_cards_recognised=time.time()
@@ -859,13 +898,6 @@ class TableScreenBased(Table):
             h.lastSecondRoundAdjustment = 0
 
             self.take_screenshot(False)
-        return True
-
-    def run_montecarlo_wrapper(self):
-        # self.montecarlo_thread = Process(target=self.run_montecarlo, args=())
-        # self.montecarlo_thread.start()
-        self.run_montecarlo()
-        ui_action_and_signals.signal_progressbar_increase.emit(30)
         return True
 
     def run_montecarlo(self):
@@ -895,9 +927,9 @@ class TableScreenBased(Table):
         #     self.PlayerCardList.add
 
         if self.gameStage == "PreFlop":
-            maxRuns = 20000
-        else:
             maxRuns = 10000
+        else:
+            maxRuns = 8000
 
         if terminalmode == False: ui_action_and_signals.signal_status.emit("Running Monte Carlo: " + str(maxRuns))
         logger.debug("Running Monte Carlo")
@@ -911,6 +943,67 @@ class TableScreenBased(Table):
 
         self.equity = np.round(m.equity, 3)
         self.winnerCardTypeList = m.winnerCardTypeList
+
+        ui_action_and_signals.signal_progressbar_increase.emit(30)
+
+class TablePartyPoker(TableScreenBased):
+    def get_covered_card_holders(self):
+        func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(5)
+        if terminalmode == False: ui_action_and_signals.signal_status.emit("Analyse other players and position")
+        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
+                                    self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
+        if not terminalmode: ui_action_and_signals.signal_status.emit("Analysing other players")
+
+        img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
+        count, points, bestfit = self.find_template_on_screen(self.coveredCardHolder, img, func_dict['tolerance'])
+        self.coveredCardHolders = np.round(count)
+        logger.info("Covered cardholders (number of other players ex luding myself): " + str(self.coveredCardHolders))
+
+        if self.coveredCardHolders == 1:
+            self.isHeadsUp = True
+            logger.debug("HeadSUP detected!")
+        else:
+            self.isHeadsUp = False
+
+        self.PlayerNames = []
+        self.PlayerFunds = []
+
+        if self.coveredCardHolders == 0:
+            logger.error("No other players found. Assuming 1 player")
+            self.coveredCardHolders = 1
+
+        return True
+
+    def get_played_players(self):
+        func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(5)
+        if terminalmode == False: ui_action_and_signals.signal_status.emit("Analyse past players")
+        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
+                                    self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
+
+        # Convert RGB to BGR
+        img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
+        count, points, bestfit = self.find_template_on_screen(self.smallDollarSign1, img, 0.01)
+
+        if not terminalmode: ui_action_and_signals.signal_status.emit("Checking for played players")
+        self.playersBehind = count
+
+        self.PlayerPots = []
+        for pt in points:
+            if not terminalmode: ui_action_and_signals.signal_progressbar_increase.emit(1)
+            x1 = pt[0] + 7 +self.tlc[0]
+            y1 = pt[1] + 1 +self.tlc[1]
+            x2=x1+ 40
+            y2=y1+ 15
+            player_pot_image = self.crop_image(self.entireScreenPIL, x1,y1,x2,y2)
+            self.PlayerPots.append(self.get_ocr_float(player_pot_image, 'PlayerPot'))
+            self.PlayerPots=sorted(self.PlayerPots)
+            player_pot_diff = np.diff(self.PlayerPots)
+
+            self.playersAhead = self.coveredCardHolders - self.playersBehind
+
+        return True
 
 class ThreadManager(threading.Thread):
     def __init__(self, threadID, name, counter):
@@ -950,14 +1043,14 @@ class ThreadManager(threading.Thread):
             h = History()
 
             while True:
-                if p.pause == True:
+                if p.pause:
                     while p.pause == True:
                         time.sleep(1)
                         if p.exit_thread == True: sys.exit()
 
                 p.read_strategy()
-                if p.selected_strategy['pokerSite'] == "PS" or p.selected_strategy['pokerSite'] == "PS2":
-                    t = TableScreenBased()
+                if p.selected_strategy['pokerSite'][0:2] == "PS":
+                    t = TablePartyPoker()
                     mouse = MouseMoverTableBased(p.selected_strategy['pokerSite'])
                 elif p.selected_strategy['pokerSite'] == "PP":
                     t = TableScreenBased()
@@ -976,70 +1069,59 @@ class ThreadManager(threading.Thread):
                             t.check_for_imback(mouse) and \
                             t.get_my_funds() and \
                             t.get_my_cards() and \
-                            t.get_new_hand() and \
+                            t.get_new_hand(mouse) and \
                             t.check_for_button() and \
                             t.get_table_cards() and \
                             t.get_covered_card_holders() and \
                             t.get_total_pot_value() and \
+                            t.get_dealer_position() and \
                             t.get_played_players() and \
                             t.check_for_checkbutton() and \
                             t.check_for_call() and \
                             t.check_for_allincall() and \
                             t.get_current_call_value() and \
-                            t.get_current_bet_value() and \
-                            t.run_montecarlo_wrapper()
+                            t.get_current_bet_value()
 
-                d = Decision()
-                d.make_decision(t, h, p, logger, L)
+                if not p.pause:
+                    t.run_montecarlo()
+                    d = Decision(t, h, p, logger, L)
+                    d.make_decision(t, h, p, logger, L)
 
-                if p.exit_thread == True: sys.exit()
+                    if p.exit_thread: sys.exit()
 
-                self.update_most_gui_items()
+                    self.update_most_gui_items()
 
-                logger.info(
-                    "Equity: " + str(t.equity * 100) + "% -> " + str(int(t.assumedPlayers)) + " (" + str(
-                        int(t.coveredCardHolders)) + "-" + str(int(t.playersAhead)) + "+1) Plr")
+                    logger.info(
+                        "Equity: " + str(t.equity * 100) + "% -> " + str(int(t.assumedPlayers)) + " (" + str(
+                            int(t.coveredCardHolders)) + "-" + str(int(t.playersAhead)) + "+1) Plr")
 
-                logger.info("Final Call Limit: " + str(d.finalCallLimit) + " --> " + str(t.minCall))
+                    logger.info("Final Call Limit: " + str(d.finalCallLimit) + " --> " + str(t.minCall))
 
-                logger.info("Final Bet Limit: " + str(d.finalBetLimit) + " --> " + str(t.currentBetValue))
+                    logger.info("Final Bet Limit: " + str(d.finalBetLimit) + " --> " + str(t.currentBetValue))
 
-                logger.info("Pot size: " + str((t.totalPotValue)) + " -> Zero EV Call: " + str(round(d.maxCallEV, 2)))
+                    logger.info("Pot size: " + str((t.totalPotValue)) + " -> Zero EV Call: " + str(round(d.maxCallEV, 2)))
 
-                logger.info("+++++++++++++++++++++++ Decision: " + str(d.decision) + "+++++++++++++++++++++++")
+                    logger.info("+++++++++++++++++++++++ Decision: " + str(d.decision) + "+++++++++++++++++++++++")
 
-                mouse = MouseMoverTableBased(p.selected_strategy['pokerSite'], p.selected_strategy['BetPlusInc'], t.currentBluff)
-                mouse_target=d.decision
-                if mouse_target=='Call' and t.allInCallButton:
-                    mouse_target='Call2'
-                mouse.mouse_action(mouse_target, t.tlc, logger)
+                    mouse = MouseMoverTableBased(p.selected_strategy['pokerSite'], p.selected_strategy['BetPlusInc'], t.currentBluff)
+                    mouse_target=d.decision
+                    if mouse_target=='Call' and t.allInCallButton:
+                        mouse_target='Call2'
+                    mouse.mouse_action(mouse_target, t.tlc, logger)
 
+                    t.time_action_completed = time.time()
 
-                # time.sleep(1)
-                # t.take_screenshot(False)
-                # if t.check_for_button:
-                #     mouse.mouse_action(mouse_target, t.tlc, logger)
-                #     time.sleep(1)
-                #     t.take_screenshot(False)
-                #     if t.check_for_button:
-                #         mouse.mouse_action(mouse_target, t.tlc, logger)
+                    if terminalmode == False: ui_action_and_signals.signal_status.emit("Writing log file")
 
+                    L.write_log_file(p, h, t, d)
 
-
-
-                t.time_action_completed = time.time()
-
-                if terminalmode == False: ui_action_and_signals.signal_status.emit("Writing log file")
-
-                L.write_log_file(p, h, t, d)
-
-                h.previousPot = t.totalPotValue
-                h.histGameStage = t.gameStage
-                h.histDecision = d.decision
-                h.histEquity = t.equity
-                h.histMinCall = t.minCall
-                h.histMinBet = t.minBet
-                h.histPlayerPots = t.PlayerPots
+                    h.previousPot = t.totalPotValue
+                    h.histGameStage = t.gameStage
+                    h.histDecision = d.decision
+                    h.histEquity = t.equity
+                    h.histMinCall = t.minCall
+                    h.histMinBet = t.minBet
+                    h.histPlayerPots = t.PlayerPots
 
 
 # ==== MAIN PROGRAM =====

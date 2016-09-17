@@ -6,8 +6,9 @@ from main import Table
 
 class Setup():
     def __init__(self):
-        topleftcorner_file = "pics/PS/topleft.png"
+        topleftcorner_file = "pics/PP/topleft.png"
         screenshot_file = "pics/PS/hailey2.PNG"
+        screenshot_file = "pics/PP/screenshot4.PNG"
         #screenshot_file = "pics/PS/screenshot_old.png"
 
         self.topLeftCorner = cv2.cvtColor(np.array(Image.open(topleftcorner_file)), cv2.COLOR_BGR2RGB)
