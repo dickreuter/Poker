@@ -42,8 +42,14 @@ class UpdateChecker():
         c=cursor.next()
         current_version=c['current_version']
         self.dl_link=c['dl']
+        latest_updates=c['latest_updates']
         if current_version>version:
             print("Downloading latest version of the DeepMind Pokerbot...")
+            print ("\n")
+            print("Version changes:")
+            for latest_update in latest_updates:
+                print ("* "+latest_update)
+            print("\n")
             self.downloader()
             subprocess.call(["start", self.file_name], shell=True)
             sys.exit()
@@ -63,6 +69,7 @@ class StrategyHandler(object):
         self.current_strategy = last_strategy if strategy_override == '' else strategy_override
         cursor=self.mongodb.strategies.find({'Strategy': self.current_strategy})
         self.selected_strategy=cursor.next()
+        return self.selected_strategy
 
     def save_strategy_genetic_algorithm(self):
         r = re.compile("([a-zA-Z]+)([0-9]+)")

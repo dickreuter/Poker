@@ -6,9 +6,9 @@ p contains values from the Strategy as defined in the xml file
 """
 
 from .base import DecisionBase, Collusion
-import numpy as np
 from .curvefitting import *
 from .montecarlo_v3 import *
+
 
 
 class Decision(DecisionBase):
@@ -168,7 +168,7 @@ class Decision(DecisionBase):
         if self.finalBetLimit >= t.minBet:
             self.decision = "Bet"
         if self.finalBetLimit >= (t.minBet + t.bigBlind * float(p.selected_strategy['BetPlusInc'])) and (
-                    (t.gameStage == "Turn" and t.totalPotValue > t.bigBlind * 3) or t.gameStage == "River"):
+                    t.gameStage == "PreFlop" or (t.gameStage == "Turn" and t.totalPotValue > t.bigBlind * 3) or t.gameStage == "River"):
             self.decision = "BetPlus"
         if (self.finalBetLimit >= float(t.totalPotValue) / 2) and (t.minBet < float(t.totalPotValue) / 2) and (
                     (t.minBet + t.bigBlind * float(p.selected_strategy['BetPlusInc'])) < float(
@@ -253,6 +253,8 @@ class Decision(DecisionBase):
 
         if self.decision == "Check" or self.decision == "Check Deception": h.myLastBet = 0
         if self.decision == "Call" or self.decision == "Call Deception":  h.myLastBet = t.minCall
+        if self.decision == "Bet": self.decision = "Bet half pot"
+        if self.decision == "BetPLus":  self.decision = "Bet half pot"
 
         if self.decision == "Bet": h.myLastBet = t.minBet
         if self.decision == "BetPlus": h.myLastBet = t.minBet * float(p.selected_strategy['BetPlusInc']) + t.minBet

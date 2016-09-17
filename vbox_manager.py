@@ -2,18 +2,27 @@ import virtualbox
 from PIL import Image
 import time
 from configobj import ConfigObj
+import numpy as np
 
 class VirtualBoxController():
     def __init__(self):
         try:
             self.vbox = virtualbox.VirtualBox()
             config = ConfigObj("config.ini")
-            mouse_control = config['control']
-            if mouse_control!='Direct mouse control':
-                self.vm = self.vbox.find_machine(mouse_control)
+            self.control_name = config['control']
+            self.control_name='Windows'
+            self.start_vm()
+        except Exception as e:
+            print (e)
+
+    def start_vm(self):
+        try:
+            if self.control_name!='Direct mouse control':
+                self.vm = self.vbox.find_machine(self.control_name)
                 self.session = self.vm.create_session()
         except Exception as e:
             print (e)
+
 
     def get_vbox_list(self):
         vm_list=[vm.name for vm in self.vbox.machines]
@@ -33,12 +42,13 @@ class VirtualBoxController():
 
     def mouse_click_vbox(self,x,y,dz=0,dw=0):
         self.session.console.mouse.put_mouse_event_absolute(x, y, dz, dw, 0b1)
-        time.sleep(0.2)
+        time.sleep(np.random.uniform(0.27, 0.4, 1)[0])
         self.session.console.mouse.put_mouse_event_absolute(x, y, dz, dw, 0)
 
 if __name__=='__main__':
     vb=VirtualBoxController()
-    vb.mouse_move_vbox(1,1)
-    vb.mouse_click_vbox()
-    vb.get_screenshot_vbox()
-    vb.get_vbox_list()
+    #vb.get_vbox_list()
+    # vb.mouse_move_vbox(1,1)
+    # vb.mouse_click_vbox(1,1)
+    # vb.get_screenshot_vbox()
+

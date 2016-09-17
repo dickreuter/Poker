@@ -6,19 +6,17 @@ import operator
 import os.path
 import cv2  # opencv 3.0
 import pytesseract
+import re
 from PIL import Image, ImageGrab, ImageDraw, ImageFilter
-from decisionmaker.decisionmaker1 import *
+from decisionmaker.decisionmaker2 import *
 from decisionmaker.montecarlo_v3 import *
 from mouse_mover import *
-from configobj import ConfigObj
-import os
-import re
 import inspect
 from captcha.captcha_manager import solve_captcha
 from vbox_manager import VirtualBoxController
-import json
+from functools import lru_cache
 
-version=1.1
+version=1.3
 
 class History(object):
     def __init__(self):
@@ -55,7 +53,7 @@ class Table(object):
         suites = "CDHS"
         for x in values:
             for y in suites:
-                name = "pics/" + self.tbl + "/" + x + y + ".png"
+                name = "pics/" + self.tbl[0:2] + "/" + x + y + ".png"
                 if os.path.exists(name) == True:
                     self.img[x + y] = Image.open(name)
                     self.cardImages[x + y] = cv2.cvtColor(np.array(self.img[x + y]), cv2.COLOR_BGR2RGB)
@@ -65,44 +63,44 @@ class Table(object):
                 else:
                     logger.critical("Card Temlate File not found: " + str(x) + str(y) + ".png")
 
-        name = "pics/" + self.tbl + "/button.png"
+        name = "pics/" + self.tbl[0:2] + "/button.png"
         template = Image.open(name)
         self.button = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + self.tbl + "/topleft.png"
+        name = "pics/" + self.tbl[0:2] + "/topleft.png"
         template = Image.open(name)
         self.topLeftCorner = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + self.tbl + "/coveredcard.png"
+        name = "pics/" + self.tbl[0:2] + "/coveredcard.png"
         template = Image.open(name)
         self.coveredCardHolder = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + self.tbl + "/imback.png"
+        name = "pics/" + self.tbl[0:2] + "/imback.png"
         template = Image.open(name)
         self.ImBack = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + self.tbl + "/check.png"
+        name = "pics/" + self.tbl[0:2] + "/check.png"
         template = Image.open(name)
         self.check = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + self.tbl + "/call.png"
+        name = "pics/" + self.tbl[0:2] + "/call.png"
         template = Image.open(name)
         self.call = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + self.tbl + "/smalldollarsign1.png"
+        name = "pics/" + self.tbl[0:2] + "/smalldollarsign1.png"
         template = Image.open(name)
         self.smallDollarSign1 = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        if self.tbl == "PP":
-            name = "pics/" + self.tbl + "/smalldollarsign2.png"
+        if self.tbl[0:2] == "PP":
+            name = "pics/" + self.tbl[0:2] + "/smalldollarsign2.png"
             template = Image.open(name)
             self.smallDollarSign2 = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + self.tbl + "/allincallbutton.png"
+        name = "pics/" + self.tbl[0:2] + "/allincallbutton.png"
         template = Image.open(name)
         self.allInCallButton = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + self.tbl + "/lostEverything.png"
+        name = "pics/" + self.tbl[0:2] + "/lostEverything.png"
         template = Image.open(name)
         self.lostEverything = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
@@ -115,10 +113,14 @@ class Table(object):
             ui_action_and_signals.signal_status.emit("")
             ui_action_and_signals.signal_progressbar_reset.emit()
             if p.exit_thread == True: sys.exit()
+
             if p.pause == True:
                 while p.pause == True:
                     time.sleep(1)
                     if p.exit_thread == True: sys.exit()
+
+
+
 
         time.sleep(0.1)
         config = ConfigObj("config.ini")
@@ -329,43 +331,43 @@ class TableScreenBased(Table):
         return True
 
     def check_for_captcha(self, mouse):
-        func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
-        if func_dict['active']:
-            ChatWindow = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
-                                    self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
-            basewidth = 500
-            wpercent = (basewidth / float(ChatWindow.size[0]))
-            hsize = int((float(ChatWindow.size[1]) * float(wpercent)))
-            ChatWindow = ChatWindow.resize((basewidth, hsize), Image.ANTIALIAS)
-            # ChatWindow.show()
-            try:
-                t.chatText = (pytesseract.image_to_string(ChatWindow, None,
-                False, "-psm 6"))
-                t.chatText = re.sub("[^abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\.]",
-                "", t.chatText)
-                keyword1 = 'disp'
-                keyword2 = 'left'
-                keyword3 = 'pic'
-                keyword4 = 'key'
-                keyword5 = 'lete'
-                logger.debug("Recognised text: "+t.chatText)
-
-                if ((t.chatText.find(keyword1) > 0) or (t.chatText.find(keyword2)
-                > 0) or (
-                            t.chatText.find(keyword3) > 0) or
-                            (t.chatText.find(keyword4) > 0) or (
-                            t.chatText.find(keyword5) > 0)):
-                    logger.warning("Submitting Captcha")
-                    captchaIMG = self.crop_image(self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1_2'], self.tlc[1] + func_dict['y1_2'],
-                                    self.tlc[0] + func_dict['x2_2'], self.tlc[1] + func_dict['y2_2']))
-                    captchaIMG.save("pics/captcha.png")
-                    # captchaIMG.show()
-                    time.sleep(0.5)
-                    t.captcha = solve_captcha("pics/captcha.png")
-                    mouse.enter_captcha(t.captcha)
-                    logger.info("Entered captcha: "+str(t.captcha))
-            except:
-                logger.warning("CheckingForCaptcha Error")
+        # func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        # if func_dict['active']:
+        #     ChatWindow = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
+        #                             self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
+        #     basewidth = 500
+        #     wpercent = (basewidth / float(ChatWindow.size[0]))
+        #     hsize = int((float(ChatWindow.size[1]) * float(wpercent)))
+        #     ChatWindow = ChatWindow.resize((basewidth, hsize), Image.ANTIALIAS)
+        #     # ChatWindow.show()
+        #     try:
+        #         t.chatText = (pytesseract.image_to_string(ChatWindow, None,
+        #         False, "-psm 6"))
+        #         t.chatText = re.sub("[^abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\.]",
+        #         "", t.chatText)
+        #         keyword1 = 'disp'
+        #         keyword2 = 'left'
+        #         keyword3 = 'pic'
+        #         keyword4 = 'key'
+        #         keyword5 = 'lete'
+        #         logger.debug("Recognised text: "+t.chatText)
+        #
+        #         if ((t.chatText.find(keyword1) > 0) or (t.chatText.find(keyword2)
+        #         > 0) or (
+        #                     t.chatText.find(keyword3) > 0) or
+        #                     (t.chatText.find(keyword4) > 0) or (
+        #                     t.chatText.find(keyword5) > 0)):
+        #             logger.warning("Submitting Captcha")
+        #             captchaIMG = self.crop_image(self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1_2'], self.tlc[1] + func_dict['y1_2'],
+        #                             self.tlc[0] + func_dict['x2_2'], self.tlc[1] + func_dict['y2_2']))
+        #             captchaIMG.save("pics/captcha.png")
+        #             # captchaIMG.show()
+        #             time.sleep(0.5)
+        #             t.captcha = solve_captcha("pics/captcha.png")
+        #             mouse.enter_captcha(t.captcha)
+        #             logger.info("Entered captcha: "+str(t.captcha))
+        #     except:
+        #         logger.warning("CheckingForCaptcha Error")
         return True
 
     def check_for_imback(self, mouse):
@@ -517,35 +519,35 @@ class TableScreenBased(Table):
         self.PlayerFunds = []
 
         count = 0
-        for pt in points:
-            if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(1)
-            # cv2.rectangle(img, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
-            count += 1
-            playerNameImage = pil_image.crop((pt[0] - (955 - 890), pt[1] + 270 - 222, pt[0] + 20, pt[1] + +280 - 222))
-            basewidth = 500
-            wpercent = (basewidth / float(playerNameImage.size[0]))
-            hsize = int((float(playerNameImage.size[1]) * float(wpercent)))
-            playerNameImage = playerNameImage.resize((basewidth, hsize), Image.ANTIALIAS)
-            # playerNameImage.show()
-            try:
-                recognizedText = (pytesseract.image_to_string(playerNameImage, None, False, "-psm 6"))
-                recognizedText = re.sub("[^abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789]", "",
-                                        recognizedText)
-                self.PlayerNames.append(recognizedText)
-            except:
-                logger.debug("Pyteseract error in player name recognition")
-
-            playerFundsImage = pil_image.crop(
-                (pt[0] - (955 - 890) + 10, pt[1] + 270 - 222 + 20, pt[0] + 10, pt[1] + +280 - 222 + 22))
-            basewidth = 500
-            wpercent = (basewidth / float(playerNameImage.size[0]))
-            hsize = int((float(playerNameImage.size[1]) * float(wpercent)))
-            playerFundsImage = playerFundsImage.resize((basewidth, hsize), Image.ANTIALIAS)
-            # playerFundsImage = playerFundsImage.filter(ImageFilter.MaxFilter)
-            # playerFundsImage.show()
-
-
-            self.PlayerFunds.append(self.get_ocr_float(playerFundsImage,'PlayerFunds'))
+        # for pt in points:
+        #     if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(1)
+        #     # cv2.rectangle(img, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
+        #     count += 1
+        #     playerNameImage = pil_image.crop((pt[0] - (955 - 890), pt[1] + 270 - 222, pt[0] + 20, pt[1] + +280 - 222))
+        #     basewidth = 500
+        #     wpercent = (basewidth / float(playerNameImage.size[0]))
+        #     hsize = int((float(playerNameImage.size[1]) * float(wpercent)))
+        #     playerNameImage = playerNameImage.resize((basewidth, hsize), Image.ANTIALIAS)
+        #     # playerNameImage.show()
+        #     try:
+        #         recognizedText = (pytesseract.image_to_string(playerNameImage, None, False, "-psm 6"))
+        #         recognizedText = re.sub("[^abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789]", "",
+        #                                 recognizedText)
+        #         self.PlayerNames.append(recognizedText)
+        #     except:
+        #         logger.debug("Pyteseract error in player name recognition")
+        #
+        #     playerFundsImage = pil_image.crop(
+        #         (pt[0] - (955 - 890) + 10, pt[1] + 270 - 222 + 20, pt[0] + 10, pt[1] + +280 - 222 + 22))
+        #     basewidth = 500
+        #     wpercent = (basewidth / float(playerNameImage.size[0]))
+        #     hsize = int((float(playerNameImage.size[1]) * float(wpercent)))
+        #     playerFundsImage = playerFundsImage.resize((basewidth, hsize), Image.ANTIALIAS)
+        #     # playerFundsImage = playerFundsImage.filter(ImageFilter.MaxFilter)
+        #     # playerFundsImage.show()
+        #
+        #
+        #     self.PlayerFunds.append(self.get_ocr_float(playerFundsImage,'PlayerFunds'))
 
 
         logger.debug("Player Names: " + str(self.PlayerNames))
@@ -712,18 +714,21 @@ class TableScreenBased(Table):
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
 
-        basewidth = 200
-        wpercent = (basewidth / float(pil_image.size[0]))
-        hsize = int((float(pil_image.size[1]) * float(wpercent)))
-        pil_image = pil_image.resize((basewidth, hsize), Image.ANTIALIAS)
-        pil_image_filtered = pil_image.filter(ImageFilter.ModeFilter)
-        pil_image_filtered2 = pil_image.filter(ImageFilter.MedianFilter)
-        self.myFundsError = False
 
+        if p.selected_strategy['pokerSite'][0:2]=='PP':
+            basewidth = 200
+            wpercent = (basewidth / float(pil_image.size[0]))
+            hsize = int((float(pil_image.size[1]) * float(wpercent)))
+            pil_image = pil_image.resize((basewidth, hsize), Image.ANTIALIAS)
+            pil_image_filtered = pil_image.filter(ImageFilter.ModeFilter)
+            pil_image_filtered2 = pil_image.filter(ImageFilter.MedianFilter)
+
+        self.myFundsError = False
         try:
             pil_image.save("pics/myFunds.png")
         except:
             logger.info("Could not save myFunds.png")
+
 
         self.myFunds = self.get_ocr_float(pil_image, 'MyFunds')
 
@@ -899,6 +904,7 @@ class TableScreenBased(Table):
         self.montecarlo_timeout = float(config['montecarlo_timeout'])
         timeout = self.timeout_start + self.montecarlo_timeout
         m = MonteCarlo()
+
         m.run_montecarlo(self.PlayerCardList, self.cardsOnTable, int(self.assumedPlayers), ui, maxRuns=maxRuns, timeout=timeout)
         if terminalmode == False: ui_action_and_signals.signal_status.emit("Monte Carlo completed successfully")
         logger.debug("Monte Carlo completed successfully with runs: " + str(m.runs))
@@ -921,12 +927,12 @@ class ThreadManager(threading.Thread):
             ui_action_and_signals.signal_lcd_number_update.emit('equity', np.round(t.equity * 100, 2))
             ui_action_and_signals.signal_lcd_number_update.emit('required_minbet', t.currentBetValue)
             ui_action_and_signals.signal_lcd_number_update.emit('required_mincall', t.minCall)
-            ui_action_and_signals.signal_lcd_number_update.emit('potsize', t.totalPotValue)
+            #ui_action_and_signals.signal_lcd_number_update.emit('potsize', t.totalPotValue)
             ui_action_and_signals.signal_lcd_number_update.emit('gamenumber', int(L.get_game_count(p.current_strategy)))
             ui_action_and_signals.signal_lcd_number_update.emit('assumed_players', int(t.assumedPlayers))
             ui_action_and_signals.signal_lcd_number_update.emit('calllimit', d.finalCallLimit)
             ui_action_and_signals.signal_lcd_number_update.emit('betlimit', d.finalBetLimit)
-            ui_action_and_signals.signal_lcd_number_update.emit('zero_ev', round(d.maxCallEV, 2))
+            #ui_action_and_signals.signal_lcd_number_update.emit('zero_ev', round(d.maxCallEV, 2))
 
             ui_action_and_signals.signal_pie_chart_update.emit(t.winnerCardTypeList)
             ui_action_and_signals.signal_curve_chart_update1.emit(h.histEquity, h.histMinCall, h.histMinBet, t.equity,
@@ -944,8 +950,13 @@ class ThreadManager(threading.Thread):
             h = History()
 
             while True:
+                if p.pause == True:
+                    while p.pause == True:
+                        time.sleep(1)
+                        if p.exit_thread == True: sys.exit()
+
                 p.read_strategy()
-                if p.selected_strategy['pokerSite'] == "PS":
+                if p.selected_strategy['pokerSite'] == "PS" or p.selected_strategy['pokerSite'] == "PS2":
                     t = TableScreenBased()
                     mouse = MouseMoverTableBased(p.selected_strategy['pokerSite'])
                 elif p.selected_strategy['pokerSite'] == "PP":
@@ -981,6 +992,8 @@ class ThreadManager(threading.Thread):
                 d = Decision()
                 d.make_decision(t, h, p, logger, L)
 
+                if p.exit_thread == True: sys.exit()
+
                 self.update_most_gui_items()
 
                 logger.info(
@@ -996,7 +1009,23 @@ class ThreadManager(threading.Thread):
                 logger.info("+++++++++++++++++++++++ Decision: " + str(d.decision) + "+++++++++++++++++++++++")
 
                 mouse = MouseMoverTableBased(p.selected_strategy['pokerSite'], p.selected_strategy['BetPlusInc'], t.currentBluff)
-                mouse.mouse_action(d.decision, t.tlc, logger)
+                mouse_target=d.decision
+                if mouse_target=='Call' and t.allInCallButton:
+                    mouse_target='Call2'
+                mouse.mouse_action(mouse_target, t.tlc, logger)
+
+
+                # time.sleep(1)
+                # t.take_screenshot(False)
+                # if t.check_for_button:
+                #     mouse.mouse_action(mouse_target, t.tlc, logger)
+                #     time.sleep(1)
+                #     t.take_screenshot(False)
+                #     if t.check_for_button:
+                #         mouse.mouse_action(mouse_target, t.tlc, logger)
+
+
+
 
                 t.time_action_completed = time.time()
 
@@ -1055,7 +1084,7 @@ if __name__ == '__main__':
 
     if not terminalmode:
         p.exit_thread=False
-        p.pause=False
+        p.pause=True
         app = QtWidgets.QApplication(sys.argv)
         MainWindow = QtWidgets.QMainWindow()
         ui = Ui_Pokerbot()
@@ -1069,7 +1098,7 @@ if __name__ == '__main__':
         try:
             sys.exit(app.exec_())
         except:
-            print("Exiting")
+            print("Preparing to exit...")
             p.exit_thread = True
 
     elif terminalmode:

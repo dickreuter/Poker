@@ -110,6 +110,7 @@ class UIActionAndSignals(QObject):
             "maxPotAdjustment": 100
         }
         self.p = p
+        self.pokersite_types=['PP', 'PS', 'PS2']
 
         self.ui = ui_main_window
         self.progressbar_value = 0
@@ -166,13 +167,11 @@ class UIActionAndSignals(QObject):
         self.logger.info("Active strategy changed to: " + p.current_strategy)
 
     def pause(self, ui, p):
-        print("Game paused")
         ui.button_resume.setEnabled(True)
         ui.button_pause.setEnabled(False)
         p.pause = True
 
     def resume(self, ui, p):
-        print("Game resumed")
         ui.button_resume.setEnabled(False)
         ui.button_pause.setEnabled(True)
         p.pause = False
@@ -253,16 +252,18 @@ class UIActionAndSignals(QObject):
         # self.ui_editor.RiverCallPower.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
         # self.ui_editor.RiverMinBetEquity.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
         # self.ui_editor.RiverBetPower.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
+
         self.ui_editor.pushButton_update1.clicked.connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
         self.ui_editor.pushButton_update2.clicked.connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
         self.ui_editor.pushButton_update3.clicked.connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
         self.ui_editor.pushButton_update4.clicked.connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
 
+        self.ui_editor.pokerSite.addItems(self.pokersite_types)
+
         self.signal_update_strategy_sliders.emit(p.current_strategy)
         self.ui_editor.Strategy.currentIndexChanged.connect(lambda: self.update_strategy_editor_sliders(self.ui_editor.Strategy.currentText()))
         self.ui_editor.pushButton_save_new_strategy.clicked.connect(lambda: self.save_strategy(self.ui_editor.lineEdit_new_name.text(), False))
         self.ui_editor.pushButton_save_current_strategy.clicked.connect(lambda: self.save_strategy(self.ui_editor.Strategy.currentText(), True))
-        self.ui_editor.pokerSite.addItems(['PP', 'PS'])
 
         self.playable_list = self.p.get_playable_strategy_list()
         self.ui_editor.Strategy.addItems(self.playable_list)
@@ -335,7 +336,6 @@ class UIActionAndSignals(QObject):
         config.write()
         self.setup_form.close()
 
-
     def update_strategy_analyser(self, l, p):
         number_of_games = int(l.get_game_count(self.ui_analyser.combobox_strategy.currentText()))
         total_return = l.get_strategy_return(self.ui_analyser.combobox_strategy.currentText(), 999999)
@@ -397,6 +397,12 @@ class UIActionAndSignals(QObject):
                 'COMPUTERNAME']: self.ui_editor.pushButton_save_current_strategy.setEnabled(True)
         except:
             pass
+
+        selection = self.p.selected_strategy['pokerSite']
+        for i in [i for i, x in enumerate(self.pokersite_types) if x == selection]:
+            idx = i
+        self.ui_editor.pokerSite.setCurrentIndex(idx)
+
         self.update_strategy_editor_graphs(strategy_name)
 
     def update_strategy_editor_graphs(self,strategy_name):

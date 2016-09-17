@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>Pokerbot</class>
  <widget class="QMainWindow" name="Pokerbot">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -73,9 +76,6 @@
        </widget>
       </item>
       <item>
-       <widget class="QLCDNumber" name="zero_ev"/>
-      </item>
-      <item>
        <widget class="QLCDNumber" name="winnings"/>
       </item>
      </layout>
@@ -107,13 +107,6 @@
        <widget class="QLabel" name="label_8">
         <property name="text">
          <string>Required minimum bet</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_9">
-        <property name="text">
-         <string>Zero EV Call</string>
         </property>
        </widget>
       </item>
@@ -150,13 +143,6 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>Pot Size</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QLabel" name="label">
         <property name="text">
          <string>Hand number</string>
@@ -168,19 +154,22 @@
     <item row="5" column="0" colspan="3">
      <layout class="QVBoxLayout" name="verticalLayout_7">
       <item>
-       <widget class="QPushButton" name="button_pause">
+       <widget class="QPushButton" name="button_resume">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
         <property name="font">
          <font>
           <pointsize>10</pointsize>
          </font>
         </property>
         <property name="text">
-         <string>Pause</string>
+         <string>Start</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="button_resume">
+       <widget class="QPushButton" name="button_pause">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -190,7 +179,7 @@
          </font>
         </property>
         <property name="text">
-         <string>Resume</string>
+         <string>Stop</string>
         </property>
        </widget>
       </item>
@@ -382,13 +371,6 @@
        <widget class="QLCDNumber" name="betlimit">
         <property name="toolTip">
          <string>The maximum amount on the bet button where the bot would still bet</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLCDNumber" name="potsize">
-        <property name="toolTip">
-         <string>Pot size as show on the table</string>
         </property>
        </widget>
       </item>

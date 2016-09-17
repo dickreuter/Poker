@@ -89,6 +89,7 @@ class MouseMoverTableBased(MouseMover):
             "PP": {"Fold":          [[1,0,419,493,100,35]],
                    "Imback":        [[1,5,560,492,100,31]],
                    "Call":          [[1, 0, 543, 492, 100, 31]],
+                   "Call2":          [[1, 0, 543, 492, 100, 31]],
                    "Check":         [[1, 0, 543, 492, 100, 31]],
                    "Bet":           [[1, 0, 673, 492, 100, 31]],
                    "BetPlus":       [[betplus_inc, 0.3, 673, 465, 30, 10],
@@ -102,24 +103,25 @@ class MouseMoverTableBased(MouseMover):
                    "Bet max":       [[1, 0.3, 722, 492 - 65, 30, 10],
                                     [1, 0, 675, 492, 100, 31]],
                    },
-            "PS": {"Fold":          [[1,0,391,499,100,30]],
+            "PS": {"Fold":          [[1,0,391,499,100,27]],
                    "Imback":        [[1,5,614,475,150,31]],
-                   "Call":          [[1, 0, 526, 499,100,30]],
-                   "Check":         [[1, 0, 526, 499,100,30]],
-                   "Bet":           [[1, 0, 663, 499,100,30]],
-                   "BetPlus":       [[betplus_inc, 0.3, 690, 467, 50, 5],
+                   "Call":          [[1, 0, 526, 499,100,25]],
+                   "Call2":          [[1, 0, 663, 499,100,25]],
+                   "Check":         [[1, 0, 526, 499,100,25]],
+                   "Bet":           [[1, 0, 663, 499,100,25]],
+                   "BetPlus":       [[betplus_inc, 0.3, 690, 467, 30, 5],
                                      [1, 0, 663, 499, 100, 30]],
-                   "Bet Bluff":      [[bet_bluff_inc, 0.3, 690, 467, 50, 5],
-                                     [1, 0, 663, 499, 100, 30]],
-                   "Bet half pot":  [[1, 0.3, 0.3, 592, 436, 35, 15],
-                                     [1, 0, 663, 499, 100, 30]],
-                   "Bet pot":       [[1, 0.3, 0.3, 657, 436, 35, 15],
-                                     [1, 0, 663, 499, 100, 30]],
-                   "Bet max":       [[1, 0.3, 0.3, 726, 436, 35, 15],
-                                     [1, 0, 663, 499, 100, 30]],
+                   "Bet Bluff":      [[bet_bluff_inc, 0.3, 690, 467, 30, 5],
+                                     [1, 0, 663, 499, 100, 26]],
+                   "Bet half pot":  [[1, 0.3, 592, 436, 30, 12],
+                                     [1, 0, 663, 499, 100, 26]],
+                   "Bet pot":       [[1, 0.3, 657, 436, 30, 12],
+                                     [1, 0, 663, 499, 100, 25]],
+                   "Bet max":       [[1, 0.3, 726, 436, 30, 12],
+                                     [1, 0, 663, 499, 100, 25]],
             }
         }
-        self.coo=coo[pokersite]
+        self.coo=coo[pokersite[0:2]]
 
 
     def enter_captcha(self, captchaString, topleftcorner):
@@ -157,7 +159,7 @@ class MouseMoverTableBased(MouseMover):
                 self.mouse_clicker(action[2]+ tlx, action[3]+ tly,action[4], action[5])
 
         xscatter = int(np.round(np.random.uniform(1600, 1800, 1), 0))
-        yscatter = int(np.round(np.random.uniform(300, 400, 1), 0))
+        yscatter = int(np.round(np.random.uniform(1, 400, 1), 0))
 
         time.sleep(np.random.uniform(0.4, 1.0, 1)[0])
         (x2, y2) = self.mouse.position()

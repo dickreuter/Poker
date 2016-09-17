@@ -7,7 +7,7 @@ from main import Table
 class Setup():
     def __init__(self):
         topleftcorner_file = "pics/PS/topleft.png"
-        screenshot_file = "pics/PS/Capture4.png"
+        screenshot_file = "pics/PS/hailey2.PNG"
         #screenshot_file = "pics/PS/screenshot_old.png"
 
         self.topLeftCorner = cv2.cvtColor(np.array(Image.open(topleftcorner_file)), cv2.COLOR_BGR2RGB)
@@ -16,12 +16,12 @@ class Setup():
 
         count, points, bestfit = self.find_template_on_screen(self.topLeftCorner, screenshot, 0.05)
         #Image.open(screenshot_file).show()
-        cv2.imshow("Image",screenshot)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        # cv2.imshow("Image",screenshot)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
         self.tlc = points[0]
         print ("TLC: "+str(self.tlc))
-        cropped_screenshoht=self.crop_image(Image.open(screenshot_file),self.tlc[0],self.tlc[1],800,800)
+        cropped_screenshoht=self.crop_image(Image.open(screenshot_file),self.tlc[0],self.tlc[1],900,800)
         cropped_screenshoht.save('cropped_screenshot.png')
 
         #
