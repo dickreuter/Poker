@@ -927,7 +927,7 @@ class TableScreenBased(Table):
         #     self.PlayerCardList.add
 
         if self.gameStage == "PreFlop":
-            maxRuns = 10000
+            maxRuns=1000 if p.selected_strategy['preflop_override'] else 10000
         else:
             maxRuns = 8000
 

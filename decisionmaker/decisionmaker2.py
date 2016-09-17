@@ -9,6 +9,7 @@ from .base import DecisionBase, Collusion
 from .curvefitting import *
 from .montecarlo_v3 import *
 from enum import Enum
+import pandas as pd
 
 class DecisionTypes(Enum):
     i_am_back,fold,check,call,bet1,bet2,bet3,bet4,bet_bluff,call_deception, check_deception=['Imback','Fold','Check','Call','Bet half pot', 'Bet half pot','Bet half pot', 'Bet pot','Bet Bluff','Call Deception','Check Deception']
@@ -157,9 +158,59 @@ class Decision(DecisionBase):
         self.finalCallLimit = self.maxCallE  # min(self.maxCallE, self.maxCallEV)
         self.finalBetLimit = self.maxBetE  # min(self.maxBetE, self.maxCallEV)
 
-    def preflop_override(self,t):
+    def preflop_override(self,t,logger):
+        def check_probability(sheet):
+            try:
+                probability = sheet[sheet.ix[:, 0] == card_str1].ix[:, 1].iloc[0]
+            except:
+                try:
+                    probability = sheet[sheet.ix[:, 0] == card_str2].ix[:, 1].iloc[0]
+                except:
+                    probability = 100
+
+            if probability > rnd:
+                return True
+            else:
+                return False
+
         if t.gameStage==GameStages.PreFlop.value:
             pass
+            rnd=np.random.uniform(0, 100, 1)[0]
+            cards=''.join([x[0] for x in t.mycards])
+            cards2=cards[1]+cards[0]
+            suits=''.join([x[1] for x in t.mycards])
+            suited='S' if suits[0]==suits[1] else 'O'
+            suited=suited if not cards[0]==cards[1] else ''
+            card_str1=cards+suited
+            card_str2=cards2+suited
+
+            if t.position_utg_plus==0:
+                pass
+
+            call_sheet=pd.ExcelFile('preflop_table.xlsx').parse('Blad1')
+            bet_sheet=pd.ExcelFile('preflop_table.xlsx').parse('Blad1')
+
+            bet_list=list(map(lambda x:x.upper(),bet_sheet.ix[:,0].astype(str).tolist()))
+            call_list=list(map(lambda x: x.upper(),call_sheet.ix[:, 0].astype(str).tolist()))
+
+            try:
+                max_player_pot = max(t.PlayerPots) if max(t.PlayerPots) != '' else 0
+            except:
+                max_player_pot = 0
+
+            self.decision = DecisionTypes.fold
+
+            if (card_str1 in bet_list or card_str2 in bet_list) and max_player_pot < 2 * t.bigBlind:
+                if check_probability(bet_sheet):
+                    self.decision=DecisionTypes.bet3
+                    logger.info('Preflop betting activated from table')
+
+            elif (card_str1 in call_list or card_str2 in call_list):
+                if check_probability(call_sheet):
+                    self.decision = DecisionTypes.call
+                    logger.info('Preflop calling activated from table')
+
+
 
     def calling(self,t,p,h,logger):
         if self.finalCallLimit < t.minCall:
@@ -290,6 +341,8 @@ class Decision(DecisionBase):
 
         self.bluff(t,p,h,logger)
         self.bully(t,p,h,logger)
-        self.preflop_override(t)
+
+        if p.selected_strategy['preflop_override']:
+            self.preflop_override(t,logger)
 
         self.admin(t,p,h,logger)

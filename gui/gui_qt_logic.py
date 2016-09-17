@@ -404,6 +404,8 @@ class UIActionAndSignals(QObject):
             idx = i
         self.ui_editor.pokerSite.setCurrentIndex(idx)
 
+        self.ui_editor.preflop_override.setChecked(self.p.selected_strategy['preflop_override'])
+
         self.update_strategy_editor_graphs(strategy_name)
 
     def update_strategy_editor_graphs(self,strategy_name):
@@ -460,6 +462,7 @@ class UIActionAndSignals(QObject):
         self.strategy_dict['Strategy'] = name
         self.strategy_dict['pokerSite'] = self.ui_editor.pokerSite.currentText()
         self.strategy_dict['computername'] = os.environ['COMPUTERNAME']
+        self.strategy_dict['preflop_override']=int(self.ui_editor.preflop_override.isChecked())
         return self.strategy_dict
 
     def save_strategy(self, name, update):

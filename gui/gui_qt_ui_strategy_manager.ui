@@ -972,7 +972,7 @@
         </rect>
        </property>
       </widget>
-      <widget class="QCheckBox" name="preflop_manual">
+      <widget class="QCheckBox" name="preflop_override">
        <property name="geometry">
         <rect>
          <x>10</x>

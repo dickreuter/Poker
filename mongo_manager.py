@@ -63,12 +63,16 @@ class StrategyHandler(object):
         l=list(self.mongodb.strategies.distinct("Strategy"))[::-1]
         return l
 
+    def check_defaults(self):
+        if not 'preflop_override' in self.selected_strategy: self.selected_strategy['preflop_override'] = 0
+
     def read_strategy(self,strategy_override=''):
         config = ConfigObj("config.ini")
         last_strategy = (config['last_strategy'])
         self.current_strategy = last_strategy if strategy_override == '' else strategy_override
         cursor=self.mongodb.strategies.find({'Strategy': self.current_strategy})
         self.selected_strategy=cursor.next()
+        self.check_defaults()
         return self.selected_strategy
 
     def save_strategy_genetic_algorithm(self):

@@ -126,8 +126,8 @@ class MouseMoverTableBased(MouseMover):
                 self.mouse_mover(x1, y1, action[2]+ tlx, action[3]+ tly)
                 self.mouse_clicker(action[2]+ tlx, action[3]+ tly,action[4], action[5])
 
-        xscatter = int(np.round(np.random.uniform(1600, 1800, 1), 0))
-        yscatter = int(np.round(np.random.uniform(1, 400, 1), 0))
+        xscatter = int(np.round(np.random.uniform(1700, 2000, 1), 0))
+        yscatter = int(np.round(np.random.uniform(10, 400, 1), 0))
 
         time.sleep(np.random.uniform(0.4, 1.0, 1)[0])
         (x2, y2) = self.mouse.position()
