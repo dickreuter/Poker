@@ -26,8 +26,8 @@ class MouseMover(VirtualBoxController):
         speed = .4
         stepMin = 7
         stepMax = 50
-        rd1 = int(np.round(np.random.uniform(stepMin, stepMax, 1)))
-        rd2 = int(np.round(np.random.uniform(stepMin, stepMax, 1)))
+        rd1 = int(np.round(np.random.uniform(stepMin, stepMax, 1)[0]))
+        rd2 = int(np.round(np.random.uniform(stepMin, stepMax, 1)[0]))
 
         xa = list(range(x1, x2, rd1))
         ya = list(range(y1, y2, rd2))
@@ -57,8 +57,8 @@ class MouseMover(VirtualBoxController):
 
 
     def mouse_clicker(self, x2, y2, buttonToleranceX, buttonToleranceY):
-        xrand = int(np.random.uniform(0, buttonToleranceX, 1))
-        yrand = int(np.random.uniform(0, buttonToleranceY, 1))
+        xrand = int(np.random.uniform(0, buttonToleranceX, 1)[0])
+        yrand = int(np.random.uniform(0, buttonToleranceY, 1)[0])
 
         if self.vbox_mode:
             self.mouse_move_vbox(x2 + xrand, y2 + yrand)
@@ -131,6 +131,7 @@ class MouseMoverTableBased(MouseMover):
 
         time.sleep(np.random.uniform(0.4, 1.0, 1)[0])
         (x2, y2) = self.mouse.position()
+        logger.debug("Moving mouse away")
         self.mouse_mover(x2, y2, xscatter, yscatter)
 
 if __name__=="__main__":

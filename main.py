@@ -184,8 +184,8 @@ class Table(object):
                 if t[0] == ".": t = t[1:]
                 if t[-1]==".": t = t[0:-1]
                 if t[-1] == "-": t = t[0:-1]
-            except:
-                pass
+            except Exception as e:
+                logger.warning("Exception in cutting number: "+str(t)+" "++str(e))
             return t
         try:
             img_orig.save('pics/ocr_debug_' + name + '.png')
