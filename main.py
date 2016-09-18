@@ -179,14 +179,21 @@ class Table(object):
         def fix_number(t):
             t = t.replace("I", "1").replace("O", "0").replace("o", "0")\
                 .replace("-", ".").replace("D", "0").replace("I","1").replace("_",".").replace("-", ".")
-            t = re.sub("[^0123456789.]", "", t)
+            t = re.sub("[^0123456789\.]", "", t)
             try:
                 if t[0] == ".": t = t[1:]
+            except: pass
+            try:
+                if t[-1] == ".": t = t[0:-1]
+            except: pass
+            try:
                 if t[-1]==".": t = t[0:-1]
+            except: pass
+            try:
                 if t[-1] == "-": t = t[0:-1]
-            except Exception as e:
-                logger.warning("Exception in cutting number: "+str(t)+" "++str(e))
+            except: pass
             return t
+
         try:
             img_orig.save('pics/ocr_debug_' + name + '.png')
         except:

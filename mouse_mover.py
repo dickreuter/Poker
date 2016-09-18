@@ -9,8 +9,10 @@ from configobj import ConfigObj
 
 class MouseMover(VirtualBoxController):
     def __init__(self, vbox_mode):
-        super().__init__()
+        if vbox_mode:
+            super().__init__()
         self.mouse=pymouse.PyMouse()
+        self.vbox_mode=vbox_mode
 
     def click(self, x, y):
         if self.vbox_mode:
@@ -131,7 +133,7 @@ class MouseMoverTableBased(MouseMover):
 
         time.sleep(np.random.uniform(0.4, 1.0, 1)[0])
         (x2, y2) = self.mouse.position()
-        logger.debug("Moving mouse away")
+        logger.debug("Moving mouse away: "+str(x2)+","+str(y2)+","+str(xscatter)+","+str(yscatter))
         self.mouse_mover(x2, y2, xscatter, yscatter)
 
 if __name__=="__main__":

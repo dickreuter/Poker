@@ -9,7 +9,7 @@ class debug_logger(object):
         er = logging.handlers.RotatingFileHandler('errors.log', maxBytes=1000000, backupCount=2)
         er.setLevel(logging.WARNING)
         ch = logging.StreamHandler(sys.stdout)
-        ch.setLevel(logging.ERROR)
+        ch.setLevel(logging.WARNING)
         fh.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
         er.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
         ch.setFormatter(logging.Formatter('%(levelname)s - %(message)s'))
