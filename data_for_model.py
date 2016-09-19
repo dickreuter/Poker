@@ -71,4 +71,69 @@ class AgregateData(object):
 
         return gameStages_data
 
+    def get_timeout_between_actions(self,GameID):
+        cursor = self.mongodb.games.aggregate([
+            {"$unwind" : "$rounds"},
+            {"$match": {"GameID": GameID,
+                        "Template": "Vid PP Supersonic 2 5"}},
+            {"$group": {
+                "time_new_cards_recognised": {"$max": {"$cond": [{"$eq": ["$rounds.round_values.gameStage",'PreFlop']},"$rounds.round_values.time_new_cards_recognised","-1"]}},
+                "logging_timestamp": {"$max": {"$cond": [{"$eq": ["$rounds.round_values.gameStage",'PreFlop']},"$rounds.round_values.logging_timestamp","-1"]}},
+
+                "PreFlop_action_completed": {"$max": {"$cond": [{"$eq": ["$rounds.round_values.gameStage",'PreFlop']},"$rounds.round_values.time_action_completed","-1"]}},
+                "Flop_action_completed": {"$max": {"$cond": [{"$eq": ["$rounds.round_values.gameStage",'Flop']},"$rounds.round_values.time_action_completed","-1"]}},
+                "Turn_action_completed": {"$max": {"$cond": [{"$eq": ["$rounds.round_values.gameStage",'Turn']},"$rounds.round_values.time_action_completed","-1"]}},
+                "River_action_completed": {"$max": {"$cond": [{"$eq": ["$rounds.round_values.gameStage",'River']},"$rounds.round_values.time_action_completed","-1"]}},
+
+                "PreFlop_timeout_start": {"$max": {"$cond": [{"$eq": ["$rounds.round_values.gameStage",'PreFlop']},"$rounds.round_values.timeout_start","-1"]}},
+                "Flop_timeout_start": {"$max": {"$cond": [{"$eq": ["$rounds.round_values.gameStage",'Flop']},"$rounds.round_values.timeout_start","-1"]}},
+                "Turn_timeout_start": {"$max": {"$cond": [{"$eq": ["$rounds.round_values.gameStage",'Turn']},"$rounds.round_values.timeout_start","-1"]}},
+                "River_timeout_start": {"$max": {"$cond": [{"$eq": ["$rounds.round_values.gameStage",'River']},"$rounds.round_values.timeout_start","-1"]}},
+
+                "_id": 0}},
+            {"$project": {
+                "PreFlop_action_completed": "$PreFlop_action_completed",
+                "Flop_action_completed": "$Flop_action_completed",
+                "Turn_action_completed": "$Turn_action_completed",
+                "River_action_completed": "$River_action_completed",
+
+                "PreFlop_timeout_start": "$PreFlop_timeout_start",
+                "Flop_timeout_start": "$Flop_timeout_start",
+                "Turn_timeout_start": "$Turn_timeout_start",
+                "River_timeout_start": "$River_timeout_start",
+
+                "time_new_cards_recognised": "$time_new_cards_recognised",
+                "logging_timestamp": "$logging_timestamp"
+            }}
+            ])
+
+        action_time_data = pd.DataFrame(list(cursor))
+        action_time_data = action_time_data.convert_objects(convert_numeric=True)
+        action_time_data['logging_timestamp'] = pd.to_datetime(action_time_data['logging_timestamp'])
+
+        timeout_output_data  = pd.DataFrame()
+
+        timeout_output_data['PreFlop_decision_My_timeout'] = round(action_time_data['PreFlop_action_completed'] - action_time_data['PreFlop_timeout_start'],1)
+        timeout_output_data['Flop_decision_My_timeout'] = round(action_time_data['Flop_action_completed'] - action_time_data['Flop_timeout_start'],1)
+        timeout_output_data['Turn_decision_My_timeout'] = round(action_time_data['Turn_action_completed'] - action_time_data['Turn_timeout_start'],1)
+        timeout_output_data['River_decision_My_timeout'] = round(action_time_data['River_action_completed'] - action_time_data['River_timeout_start'],1)
+
+
+        timeout_output_data['Between_CardReco_PreFlop_timeout'] = round(action_time_data['PreFlop_timeout_start'] - action_time_data['time_new_cards_recognised'],1)
+        timeout_output_data['Between_PreFlop_Flop_timeout'] = round(action_time_data['Flop_timeout_start'] - action_time_data['PreFlop_action_completed'],1)
+        timeout_output_data['Between_Flop_Turn_timeout'] = round(action_time_data['Turn_timeout_start'] - action_time_data['Flop_action_completed'],1)
+        timeout_output_data['Between_Turn_River_timeout'] = round(action_time_data['River_timeout_start'] - action_time_data['Turn_action_completed'],1)
+
+        timeout_output_data[timeout_output_data>30] = -1
+        timeout_output_data[timeout_output_data<=0] = -1
+
+        timeout_output_data['Game_WeekDay']  = action_time_data['logging_timestamp'][0].weekday()
+        timeout_output_data['Game_Hour'] = action_time_data['logging_timestamp'][0].hour
+        timeout_output_data['Game_MonthDay'] = action_time_data['logging_timestamp'][0].day
+
+        return timeout_output_data
+
+L = AgregateData()
+L.get_timeout_between_actions(GameID)
+
 
