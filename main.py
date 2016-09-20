@@ -16,7 +16,7 @@ from captcha.captcha_manager import solve_captcha
 from vbox_manager import VirtualBoxController
 from functools import lru_cache
 
-version=1.5
+version=1.6
 
 class History(object):
     def __init__(self):
@@ -42,6 +42,7 @@ class History(object):
 class Table(object):
     # General tools that are used to operate the pokerbot and are valid for all tables
     def __init__(self):
+        self.version=version
         self.load_templates()
         self.load_coordinates()
 
@@ -275,8 +276,9 @@ class Table(object):
             GeneticAlgorithm(True, logger, L)
             p.read_strategy()
         else:
-            logger.debug("Criteria not met for running genetic algorithm. Recommendation would be as follows:")
-            if n % 50 == 0: GeneticAlgorithm(False, logger, L)
+            pass
+            # logger.debug("Criteria not met for running genetic algorithm. Recommendation would be as follows:")
+            # if n % 50 == 0: GeneticAlgorithm(False, logger, L)
 
     def crop_image(self, original, left, top, right, bottom):
         # original.show()
@@ -296,7 +298,8 @@ class TableScreenBased(Table):
         if count == 1:
             self.tlc = points[0]
             logger.debug("Top left corner found")
-            t.timeout_start = time.time()
+            self.timeout_start = datetime.datetime.utcnow()
+            self.mt_tm = time.time()
             return True
         else:
 
@@ -478,27 +481,16 @@ class TableScreenBased(Table):
                 template = value
                 method = eval('cv2.TM_SQDIFF_NORMED')
 
-                # Apply template Matching
-                # kernel = np.ones((5, 5), np.float32) / 25
-                # img = cv2.filter2D(img, -1, kernel)
-                # template = cv2.filter2D(template, -1, kernel)
-
                 res = cv2.matchTemplate(img, template, method)
 
                 min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-                # If the method is TM_SQDIFF or TM_SQDIFF_NORMED, take minimum
-                if method in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
-                    top_left = min_loc
-                else:
-                    top_left = max_loc
+                dic={}
                 if min_val < 0.01:
                     self.mycards.append(key)
-                if debugging:
-                    dic[key] = min_val
+                dic[key] = min_val
 
-            if debugging:
-                dic = sorted(dic.items(), key=operator.itemgetter(1))
-                logger.error("Analysing cards: " + str(dic))
+                ##dic = sorted(dic.items(), key=operator.itemgetter(1))
+                #logger.debug(str(dic))
 
         if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(5)
         self.mycards = []
@@ -520,183 +512,119 @@ class TableScreenBased(Table):
             # go_through_each_card(img,True)
             return False
 
-    def get_covered_card_holders(self):
-        func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
-        if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(5)
-        if terminalmode == False: ui_action_and_signals.signal_status.emit("Analyse other players and position")
-        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
-                                    self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
-        # Convert RGB to BGR
-        img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
-        count, points, bestfit = self.find_template_on_screen(self.coveredCardHolder, img, func_dict['tolerance'])
-        self.PlayerNames = []
-        self.PlayerFunds = []
+    def init_get_other_players_info(self):
+        self.other_players=dict()
+        for i in range (5):
+            self.other_players[i]=dict()
+            self.other_players[i]['abs_position']=''
+            self.other_players[i]['utg_position'] = ''
+            self.other_players[i]['name'] = ''
+            self.other_players[i]['status'] = ''
+            self.other_players[i]['funds'] = ''
+            self.other_players[i]['pot'] = ''
+        return True
 
-        count = 0
-        for pt in points:
+    def get_other_player_names(self):
+        func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        if terminalmode == False: ui_action_and_signals.signal_status.emit("Get player names")
+
+        for i, fd in enumerate(func_dict):
+            if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(2)
+            pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1],
+                                    self.tlc[0] + fd[2], self.tlc[1] + fd[3])
+            basewidth = 500
+            wpercent = (basewidth / float(pil_image.size[0]))
+            hsize = int((float(pil_image.size[1]) * float(wpercent)))
+            pil_image = pil_image.resize((basewidth, hsize), Image.ANTIALIAS)
+            try:
+                recognizedText = (pytesseract.image_to_string(pil_image, None, False, "-psm 6"))
+                recognizedText = re.sub(r'[\W+]', '', recognizedText)
+                logger.debug("Player name: "+recognizedText)
+                self.other_players[i]['name'] = recognizedText
+            except Exception as e:
+                logger.debug("Pyteseract error in player name recognition: " + str(e))
+        return True
+
+    def get_other_player_funds(self):
+        func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        if terminalmode == False: ui_action_and_signals.signal_status.emit("Get player funds")
+        for i, fd in enumerate(func_dict, start=0):
             if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(1)
-            # cv2.rectangle(img, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
-            count += 1
-            playerNameImage = pil_image.crop((pt[0] - (955 - 890), pt[1] + 270 - 222, pt[0] + 20, pt[1] + +280 - 222))
-            basewidth = 500
-            wpercent = (basewidth / float(playerNameImage.size[0]))
-            hsize = int((float(playerNameImage.size[1]) * float(wpercent)))
-            playerNameImage = playerNameImage.resize((basewidth, hsize), Image.ANTIALIAS)
-            # playerNameImage.show()
-            try:
-                recognizedText = (pytesseract.image_to_string(playerNameImage, None, False, "-psm 6"))
-                recognizedText = re.sub("[^abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789]", "",
-                                        recognizedText)
-                self.PlayerNames.append(recognizedText)
-            except:
-                logger.debug("Pyteseract error in player name recognition")
+            pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1],self.tlc[0] + fd[2], self.tlc[1] + fd[3])
+            #pil_image.show()
+            value=self.get_ocr_float(pil_image,str(inspect.stack()[0][3]))
+            value = float(value) if value != '' else ''
+            self.other_players[i]['funds'] = value
+        return True
 
-            playerFundsImage = pil_image.crop(
-                (pt[0] - (955 - 890) + 10, pt[1] + 270 - 222 + 20, pt[0] + 10, pt[1] + +280 - 222 + 22))
-            basewidth = 500
-            wpercent = (basewidth / float(playerNameImage.size[0]))
-            hsize = int((float(playerNameImage.size[1]) * float(wpercent)))
-            playerFundsImage = playerFundsImage.resize((basewidth, hsize), Image.ANTIALIAS)
-            # playerFundsImage = playerFundsImage.filter(ImageFilter.MaxFilter)
-            # playerFundsImage.show()
-
-
-            self.PlayerFunds.append(self.get_ocr_float(playerFundsImage,'PlayerFunds'))
-
-
-        logger.debug("Player Names: " + str(self.PlayerNames))
-        logger.debug("Player Funds: " + str(self.PlayerFunds))
-        if not terminalmode: ui_action_and_signals.signal_status.emit("Analysing other players")
-
-        # plt.subplot(122),plt.imshow(img,cmap = 'jet')
-        # plt.imshow(img, cmap = 'gray', interpolation = 'bicubic')
-        # plt.show()
-        self.coveredCardHolders = np.round(count)
-
-        logger.info("Covered cardholders: " + str(self.coveredCardHolders))
-
-        if self.coveredCardHolders == 1:
-            self.isHeadsUp = True
-            logger.debug("HeadSUP detected!")
-        else:
-            self.isHeadsUp = False
-
-        if self.coveredCardHolders > 0:
-            return True
-        else:
-            logger.info("No other players found. Assuming 1 player")
-            self.coveredCardHolders = 1
-            return True
-
-    def get_played_players(self):
+    def get_other_player_pots(self):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
-        if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(5)
-        if terminalmode == False: ui_action_and_signals.signal_status.emit("Analyse past players")
-        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
-                                    self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
+        if terminalmode == False: ui_action_and_signals.signal_status.emit("Get player pots")
+        for n, fd in enumerate(func_dict, start=0):
+            if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(1)
+            pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1],self.tlc[0] + fd[2], self.tlc[1] + fd[3])
+            value = self.get_ocr_float(pil_image, str(inspect.stack()[0][3]))
+            value=float(value) if value!='' else ''
+            self.other_players[n]['pot'] = value
+        return True
 
-        im = pil_image
-        x, y = im.size
-        eX, eY = 280, 150  # Size of Bounding Box for ellipse
+    def get_other_player_status(self):
+        func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        if terminalmode == False: ui_action_and_signals.signal_status.emit("Get other playsrs' status")
 
-        bbox = (x / 2 - eX / 2, y / 2 - eY / 2, x / 2 + eX / 2, y / 2 + eY / 2 - 20)
-        rectangle1 = (func_dict['x1_1'],func_dict['y1_1'],func_dict['x2_1'],func_dict['y2_1'])
-        rectangle2 = (func_dict['x1_2'],func_dict['y1_2'],func_dict['x2_2'],func_dict['y2_2'])
-        rectangle3 = (func_dict['x1_3'],func_dict['y1_3'],func_dict['x2_3'],func_dict['y2_3'])
-        rectangle4 = (func_dict['x1_4'],func_dict['y1_4'],func_dict['x2_4'],func_dict['y2_4'])
-        rectangle5 = (func_dict['x1_5'],func_dict['y1_5'],func_dict['x2_5'],func_dict['y2_5'])
-        draw = ImageDraw.Draw(im)
-        draw.ellipse(bbox, fill=128)
-        draw.rectangle(rectangle1, fill=128)
-        draw.rectangle(rectangle2, fill=128)
-        draw.rectangle(rectangle3, fill=128)
-        draw.rectangle(rectangle4, fill=128)
-        draw.rectangle(rectangle5, fill=128)
-        del draw
-        # im.show()
-        pil_image_ellipsed = im
+        self.covered_players=0
 
-        # Convert RGB to BGR
-        img = cv2.cvtColor(np.array(pil_image_ellipsed), cv2.COLOR_BGR2RGB)
-        count, points, bestfit = self.find_template_on_screen(self.smallDollarSign1, img, 0.05)
+        for i, fd in enumerate(func_dict, start=0):
+            if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(1)
+            pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1],self.tlc[0] + fd[2], self.tlc[1] + fd[3])
+            img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
+            count, points, bestfit = self.find_template_on_screen(self.coveredCardHolder, img, 0.01)
+            logger.debug("Player status: " + str(i)+": "+str(count))
+            if count>0:
+                self.covered_players+=1
+                self.other_players[i]['status'] = 1
+            else:
+                self.other_players[i]['status'] = 0
 
-        if not terminalmode: ui_action_and_signals.signal_status.emit("Analysing other players")
+            self.other_players[i]['utg_position'] = (i + self.position_utg_plus + 1) % 5
 
-        self.PlayerPots = []
-        for pt in points:
-            if not terminalmode: ui_action_and_signals.signal_progressbar_increase.emit(1)
-            x = pt[0] + 9
-            y = pt[1] + 1
-            modpt = (x, y)
-            w = 40
-            h = 15
-            cv2.rectangle(img, modpt, (x + w, y + h), (0, 0, 255), 2)
-            # cv2.imshow("Image",img)
-            playerPotImage = pil_image_ellipsed.crop((x, y, x + w, y + h))
+        self.playersAhead=0
+        self.playersBehind=0
+        self.other_active_players=sum([v['status']  for _,v in self.other_players.items()])
+        self.isHeadsUp=True if self.other_active_players<2 else False
+        logger.debug("Other players in the game: "+str(self.other_active_players))
 
-            basewidth = 100
-            wpercent = (basewidth / float(playerPotImage.size[0]))
-            hsize = int((float(playerPotImage.size[1]) * float(wpercent)))
-            playerPotImage = playerPotImage.resize((basewidth, hsize), Image.ANTIALIAS)
+        # get first raiser in preflop
+        self.first_raiser=np.nan
+        self.first_caller = np.nan
+        if self.gameStage=="PreFlop":
+            for n in range(5):
+                i=(self.dealer_position+n+3)%5
+                logger.debug("Go through pots to find raiser: "+str(i)+": "+str(self.other_players[i]['pot']))
+                if self.other_players[int(i)]['pot']!='': # check if not empty (otherwise can't convert string)
+                    if self.other_players[int(i)]['pot'] > float(p.selected_strategy['bigBlind']):
+                        self.first_raiser=int(i)
+                        break
 
-            playerPotImage = playerPotImage.filter(ImageFilter.MinFilter)
+            # get first caller after raise in preflop
+            if self.first_raiser!=np.nan and self.other_active_players>3:
+                for n in list(range(self.first_raiser,5)):
+                    i = (self.dealer_position + n + 3) % 5
+                    logger.debug("Go through pots to find caller: " + str(i) + ": " + str(self.other_players[i]['pot']))
+                    if self.other_players[int(i)]['pot'] != '':  # check if not empty (otherwise can't convert string)
+                        if self.other_players[int(i)]['pot'] > float(p.selected_strategy['bigBlind']):
+                            self.first_caller = int(i)
+                            break
 
-            self.PlayerPots.append(self.get_ocr_float(playerPotImage, 'PlayerPot'))
+        logger.info("First raiser abs: " + str(self.first_raiser))
+        logger.info("First raiser utg+" + str((self.first_raiser - self.dealer_position - 3) % 5))
 
+        logger.info("First caller abs: " + str(self.first_caller))
+        logger.info("First caller utg+" + str((self.first_caller - self.dealer_position - 3) % 5))
 
-        try:
-            t = [float(x) for x in self.PlayerPots]
-            self.playerBetIncreases = [t[i + 1] - t[i] for i in range(len(t) - 1)]
-            self.maxPlayerBetIncrease = max(self.playerBetIncreases)
-
-            self.playerBetIncreasesAsPotPercentage = [(x / self.totalPotValue) for x in self.playerBetIncreases]
-            self.maxPlayerBetIncreasesAsPotPercentage = max(self.playerBetIncreasesAsPotPercentage)
-        except:  # when no other players are around (avoid division by zero)
-            self.maxPlayerBetIncrease = 0
-            self.playerBetIncreasesAsPotPercentage = [0]
-            self.maxPlayerBetIncreasesAsPotPercentage = 0
-
-        try:
-            self.playerBetIncreasesPercentage = [t[i + 1] / t[i] for i in range(len(t) - 1)]
-            self.maxPlayerBetIncreasesPercentage = max(self.playerBetIncreasesPercentage)
-
-            logger.debug("Player Pots:           " + str(self.PlayerPots))
-            logger.debug("Player Pots increases: " + str(self.playerBetIncreases))
-            logger.debug("Player increase as %:  " + str(self.playerBetIncreasesPercentage))
-
-        except:
-            self.playerBetIncreasesPercentage = [0]
-            self.maxPlayerBetIncreasesPercentage = 0
-        if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(5)
-        if self.isHeadsUp:
-            try:
-                self.maxPlayerBetIncreasesPercentage = (self.totalPotValue - h.previousPot - h.myLastBet) / h.myLastBet
-                self.maxPlayerBetIncrease = (self.totalPotValue - h.previousPot - h.myLastBet) - h.myLastBet
-                logger.info("Remembering last bet: " + str(self.myLastBet))
-            except:
-                logger.debug("Not remembering last bet")
-                self.maxPlayerBetIncreasesPercentage = 0
-                self.maxPlayerBetIncrease = 0
-
-        # raw_input("Press Enter to continue...")
-        # plt.subplot(121),plt.imshow(res)
-        # plt.subplot(122),plt.imshow(img,cmap = 'jet')
-        # plt.imshow(img, cmap = 'gray', interpolation = 'bicubic')
-        # plt.show()
-
-
-        self.playersBehind = count
-
-        self.playersAhead = int(np.round(self.coveredCardHolders - self.playersBehind))
-        logger.debug("Player pots: " + str(self.PlayerPots))
-
-        if p.selected_strategy['smallBlind'] in self.PlayerPots:
-            self.playersAhead += 1
-            self.playersBehind -= 1
-            logger.debug("Found small blind")
-
-        self.playersAhead = int(max(self.playersAhead, 0))
-        logger.debug(("Played players: " + str(self.playersBehind)))
+        # legacy
+        self.playersAhead=5-self.position_utg_plus
+        self.playersBehind=self.position_utg_plus
 
         return True
 
@@ -715,12 +643,13 @@ class TableScreenBased(Table):
         for n, fd in enumerate(func_dict, start=0):
             if point[0]>fd[0] and point[1]>fd[1] and point[0]<fd[2] and point[1]<fd[3]:
                 self.position_utg_plus=n
-                logger.info('Position is UTG+'+str(self.position_utg_plus))
+                self.dealer_position = (7-n)%5 #0 is myself, 1 is player to the left
+                logger.info('Position is UTG+'+str(self.position_utg_plus)) # 0 mean bot is UTG
 
         if self.position_utg_plus=='':
             self.position_utg_plus=0
+            self.dealer_position = 2
             logger.error('Could not determine dealer position. Assuming UTG')
-
 
         return True
 
@@ -885,7 +814,7 @@ class TableScreenBased(Table):
     def get_new_hand(self, mouse):
         if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(5)
         if h.previousCards != self.mycards:
-            self.time_new_cards_recognised=time.time()
+            self.time_new_cards_recognised=datetime.datetime.utcnow()
             h.lastGameID = str(h.GameID)
             h.GameID = int(round(np.random.uniform(0, 999999999), 0))
             cards = ' '.join(self.mycards)
@@ -916,11 +845,11 @@ class TableScreenBased(Table):
             self.assumedPlayers = 2
 
         elif self.gameStage == "Flop":
-            self.assumedPlayers = self.coveredCardHolders - int(
+            self.assumedPlayers = self.other_active_players - int(
                 round(self.playersAhead * (1 - float(p.selected_strategy['CoveredPlayersCallLikelihoodFlop'])))) + 1
 
         else:
-            self.assumedPlayers = self.coveredCardHolders + 1
+            self.assumedPlayers = self.other_active_players + 1
 
         self.assumedPlayers = min(max(self.assumedPlayers, 2), 3)
 
@@ -941,7 +870,7 @@ class TableScreenBased(Table):
         if terminalmode == False: ui_action_and_signals.signal_status.emit("Running Monte Carlo: " + str(maxRuns))
         logger.debug("Running Monte Carlo")
         self.montecarlo_timeout = float(config['montecarlo_timeout'])
-        timeout = self.timeout_start + self.montecarlo_timeout
+        timeout = self.mt_tm + self.montecarlo_timeout
         m = MonteCarlo()
 
         m.run_montecarlo(self.PlayerCardList, self.cardsOnTable, int(self.assumedPlayers), ui, maxRuns=maxRuns, timeout=timeout)
@@ -952,65 +881,6 @@ class TableScreenBased(Table):
         self.winnerCardTypeList = m.winnerCardTypeList
 
         ui_action_and_signals.signal_progressbar_increase.emit(30)
-
-class TablePartyPoker(TableScreenBased):
-    def get_covered_card_holders(self):
-        func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
-        if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(5)
-        if terminalmode == False: ui_action_and_signals.signal_status.emit("Analyse other players and position")
-        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
-                                    self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
-        if not terminalmode: ui_action_and_signals.signal_status.emit("Analysing other players")
-
-        img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
-        count, points, bestfit = self.find_template_on_screen(self.coveredCardHolder, img, func_dict['tolerance'])
-        self.coveredCardHolders = np.round(count)
-        logger.info("Covered cardholders (number of other players ex luding myself): " + str(self.coveredCardHolders))
-
-        if self.coveredCardHolders == 1:
-            self.isHeadsUp = True
-            logger.debug("HeadSUP detected!")
-        else:
-            self.isHeadsUp = False
-
-        self.PlayerNames = []
-        self.PlayerFunds = []
-
-        if self.coveredCardHolders == 0:
-            logger.error("No other players found. Assuming 1 player")
-            self.coveredCardHolders = 1
-
-        return True
-
-    def get_played_players(self):
-        func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
-        if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(5)
-        if terminalmode == False: ui_action_and_signals.signal_status.emit("Analyse past players")
-        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
-                                    self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
-
-        # Convert RGB to BGR
-        img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
-        count, points, bestfit = self.find_template_on_screen(self.smallDollarSign1, img, 0.01)
-
-        if not terminalmode: ui_action_and_signals.signal_status.emit("Checking for played players")
-        self.playersBehind = count
-
-        self.PlayerPots = []
-        for pt in points:
-            if not terminalmode: ui_action_and_signals.signal_progressbar_increase.emit(1)
-            x1 = pt[0] + 7 +self.tlc[0]
-            y1 = pt[1] + 1 +self.tlc[1]
-            x2=x1+ 40
-            y2=y1+ 15
-            player_pot_image = self.crop_image(self.entireScreenPIL, x1,y1,x2,y2)
-            self.PlayerPots.append(self.get_ocr_float(player_pot_image, 'PlayerPot'))
-            self.PlayerPots=sorted(self.PlayerPots)
-            player_pot_diff = np.diff(self.PlayerPots)
-
-            self.playersAhead = self.coveredCardHolders - self.playersBehind
-
-        return True
 
 class ThreadManager(threading.Thread):
     def __init__(self, threadID, name, counter):
@@ -1057,7 +927,7 @@ class ThreadManager(threading.Thread):
 
                 p.read_strategy()
                 if p.selected_strategy['pokerSite'][0:2] == "PS":
-                    t = TablePartyPoker()
+                    t = TableScreenBased()
                     mouse = MouseMoverTableBased(p.selected_strategy['pokerSite'])
                 elif p.selected_strategy['pokerSite'] == "PP":
                     t = TableScreenBased()
@@ -1079,10 +949,13 @@ class ThreadManager(threading.Thread):
                             t.get_new_hand(mouse) and \
                             t.check_for_button() and \
                             t.get_table_cards() and \
-                            t.get_covered_card_holders() and \
-                            t.get_total_pot_value() and \
                             t.get_dealer_position() and \
-                            t.get_played_players() and \
+                            t.init_get_other_players_info() and \
+                            t.get_other_player_names() and \
+                            t.get_other_player_funds() and \
+                            t.get_other_player_pots() and \
+                            t.get_other_player_status() and \
+                            t.get_total_pot_value() and \
                             t.check_for_checkbutton() and \
                             t.check_for_call() and \
                             t.check_for_allincall() and \
@@ -1100,7 +973,7 @@ class ThreadManager(threading.Thread):
 
                     logger.info(
                         "Equity: " + str(t.equity * 100) + "% -> " + str(int(t.assumedPlayers)) + " (" + str(
-                            int(t.coveredCardHolders)) + "-" + str(int(t.playersAhead)) + "+1) Plr")
+                            int(t.other_active_players)) + "-" + str(int(t.playersAhead)) + "+1) Plr")
 
                     logger.info("Final Call Limit: " + str(d.finalCallLimit) + " --> " + str(t.minCall))
 
@@ -1116,7 +989,7 @@ class ThreadManager(threading.Thread):
                         mouse_target='Call2'
                     mouse.mouse_action(mouse_target, t.tlc, logger)
 
-                    t.time_action_completed = time.time()
+                    t.time_action_completed = datetime.datetime.utcnow()
 
                     if terminalmode == False: ui_action_and_signals.signal_status.emit("Writing log file")
 
@@ -1128,7 +1001,7 @@ class ThreadManager(threading.Thread):
                     h.histEquity = t.equity
                     h.histMinCall = t.minCall
                     h.histMinBet = t.minBet
-                    h.histPlayerPots = t.PlayerPots
+                    h.hist_other_players=t.other_players
 
 
 # ==== MAIN PROGRAM =====
@@ -1194,3 +1067,5 @@ if __name__ == '__main__':
         print("Terminal mode selected. To view GUI set terminalmode=False")
         t1 = ThreadManager(1, "Thread-1", 1)
         t1.start()
+
+

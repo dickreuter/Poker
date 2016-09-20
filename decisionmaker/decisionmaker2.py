@@ -37,7 +37,6 @@ class Decision(DecisionBase):
             secondRoundAdjustmentPowerIncrease = 0
 
         P = float(t.totalPotValue)
-        n = t.coveredCardHolders
         self.maxCallEV = self.calc_EV_call_limit(t.equity, P)
         # self.maxBetEV = self.calc_bet_limit(t.equity, P, float(p.selected_strategy['c']), t, logger)
         logger.debug("Max call EV: " + str(self.maxCallEV))
@@ -209,8 +208,6 @@ class Decision(DecisionBase):
                 if check_probability(call_sheet):
                     self.decision = DecisionTypes.call
                     logger.info('Preflop calling activated from table')
-
-
 
     def calling(self,t,p,h,logger):
         if self.finalCallLimit < t.minCall:

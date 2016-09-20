@@ -10,7 +10,6 @@ class VirtualBoxController():
             self.vbox = virtualbox.VirtualBox()
             config = ConfigObj("config.ini")
             self.control_name = config['control']
-            self.control_name='Windows'
             self.start_vm()
         except Exception as e:
             print (e)
@@ -22,7 +21,6 @@ class VirtualBoxController():
                 self.session = self.vm.create_session()
         except Exception as e:
             print (e)
-
 
     def get_vbox_list(self):
         vm_list=[vm.name for vm in self.vbox.machines]

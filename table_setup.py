@@ -5,12 +5,7 @@ import numpy as np
 from main import Table
 
 class Setup():
-    def __init__(self):
-        topleftcorner_file = "pics/PP/topleft.png"
-        screenshot_file = "pics/PS/hailey2.PNG"
-        screenshot_file = "pics/PP/screenshot4.PNG"
-        #screenshot_file = "pics/PS/screenshot_old.png"
-
+    def __init__(self,topleftcorner_file,screenshot_file,output_file):
         self.topLeftCorner = cv2.cvtColor(np.array(Image.open(topleftcorner_file)), cv2.COLOR_BGR2RGB)
         #screenshot = cv2.cvtColor(np.array(Image.open(screenshot_file)), cv2.COLOR_BGR2RGB)
         screenshot = cv2.imread(screenshot_file)
@@ -22,8 +17,8 @@ class Setup():
         # cv2.destroyAllWindows()
         self.tlc = points[0]
         print ("TLC: "+str(self.tlc))
-        cropped_screenshoht=self.crop_image(Image.open(screenshot_file),self.tlc[0],self.tlc[1],900,800)
-        cropped_screenshoht.save('cropped_screenshot.png')
+        cropped_screenshoht=self.crop_image(Image.open(screenshot_file),self.tlc[0],self.tlc[1],self.tlc[0]+1000,self.tlc[1]+900)
+        cropped_screenshoht.save(output_file)
 
         #
         # setup = cv2.cvtColor(np.array(Image.open(name)), cv2.COLOR_BGR2RGB)
@@ -76,6 +71,7 @@ class Setup():
         # cropped_example.show()
         return cropped_example
 
-s=Setup()
+if __name__=='__main__':
+    s=Setup()
 
 

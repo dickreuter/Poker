@@ -25,7 +25,7 @@ class MouseMover(VirtualBoxController):
         time.sleep(np.random.uniform(0.2, 0.3, 1)[0])
 
     def mouse_mover(self, x1, y1, x2, y2):
-        speed = .4
+        speed = .6
         stepMin = 7
         stepMax = 50
         rd1 = int(np.round(np.random.uniform(stepMin, stepMax, 1)[0]))
@@ -47,9 +47,10 @@ class MouseMover(VirtualBoxController):
             y = ya[i] + int(+random.random() * yTremble)
             if self.vbox_mode:
                 self.mouse_move_vbox(x, y)
+                time.sleep(np.random.uniform(0.01 * speed, 0.03 * speed, 1)[0])
             else:
                 self.mouse.move(x, y)
-            time.sleep(np.random.uniform(0.01 * speed, 0.03 * speed, 1)[0])
+                time.sleep(np.random.uniform(0.01 * speed, 0.03 * speed, 1)[0])
 
         if self.vbox_mode:
             self.mouse_move_vbox(x2, y2)
@@ -128,10 +129,10 @@ class MouseMoverTableBased(MouseMover):
                 self.mouse_mover(x1, y1, action[2]+ tlx, action[3]+ tly)
                 self.mouse_clicker(action[2]+ tlx, action[3]+ tly,action[4], action[5])
 
-        xscatter = int(np.round(np.random.uniform(1700, 2000, 1), 0))
-        yscatter = int(np.round(np.random.uniform(10, 400, 1), 0))
+        xscatter = int(np.round(np.random.uniform(1700, 2000, 1), 0)[0])
+        yscatter = int(np.round(np.random.uniform(10, 200, 1), 0)[0])
 
-        time.sleep(np.random.uniform(0.4, 1.0, 1)[0])
+        time.sleep(np.random.uniform(0.5, 1.2, 1)[0])
         (x2, y2) = self.mouse.position()
         logger.debug("Moving mouse away: "+str(x2)+","+str(y2)+","+str(xscatter)+","+str(yscatter))
         self.mouse_mover(x2, y2, xscatter, yscatter)
