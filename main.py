@@ -8,7 +8,7 @@ import cv2  # opencv 3.0
 import pytesseract
 import re
 from PIL import Image, ImageGrab, ImageDraw, ImageFilter
-from decisionmaker.decisionmaker2 import *
+from decisionmaker.decisionmaker3 import *
 from decisionmaker.montecarlo_v3 import *
 from mouse_mover import *
 import inspect
@@ -594,27 +594,26 @@ class TableScreenBased(Table):
         self.isHeadsUp=True if self.other_active_players<2 else False
         logger.debug("Other players in the game: "+str(self.other_active_players))
 
-        # get first raiser in preflop
+        # get first raiser in (tested for preflop)
         self.first_raiser=np.nan
         self.first_caller = np.nan
-        if self.gameStage=="PreFlop":
-            for n in range(5):
-                i=(self.dealer_position+n+3)%5
-                logger.debug("Go through pots to find raiser: "+str(i)+": "+str(self.other_players[i]['pot']))
-                if self.other_players[int(i)]['pot']!='': # check if not empty (otherwise can't convert string)
-                    if self.other_players[int(i)]['pot'] > float(p.selected_strategy['bigBlind']):
-                        self.first_raiser=int(i)
-                        break
+        for n in range(5):
+            i=(self.dealer_position+n+3)%5
+            logger.debug("Go through pots to find raiser: "+str(i)+": "+str(self.other_players[i]['pot']))
+            if self.other_players[int(i)]['pot']!='': # check if not empty (otherwise can't convert string)
+                if self.other_players[int(i)]['pot'] > float(p.selected_strategy['bigBlind']):
+                    self.first_raiser=int(i)
+                    break
 
-            # get first caller after raise in preflop
-            if self.first_raiser!=np.nan and self.other_active_players>3:
-                for n in list(range(self.first_raiser,5)):
-                    i = (self.dealer_position + n + 3) % 5
-                    logger.debug("Go through pots to find caller: " + str(i) + ": " + str(self.other_players[i]['pot']))
-                    if self.other_players[int(i)]['pot'] != '':  # check if not empty (otherwise can't convert string)
-                        if self.other_players[int(i)]['pot'] > float(p.selected_strategy['bigBlind']):
-                            self.first_caller = int(i)
-                            break
+        # get first caller after raise in preflop
+        if not np.isnan(self.first_raiser) and self.other_active_players>3:
+            for n in list(range(self.first_raiser,5)):
+                i = (self.dealer_position + n + 3) % 5
+                logger.debug("Go through pots to find caller: " + str(i) + ": " + str(self.other_players[i]['pot']))
+                if self.other_players[int(i)]['pot'] != '':  # check if not empty (otherwise can't convert string)
+                    if self.other_players[int(i)]['pot'] > float(p.selected_strategy['bigBlind']):
+                        self.first_caller = int(i)
+                        break
 
         logger.info("First raiser abs: " + str(self.first_raiser))
         logger.info("First raiser utg+" + str((self.first_raiser - self.dealer_position - 3) % 5))
