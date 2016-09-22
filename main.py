@@ -15,8 +15,10 @@ import inspect
 from captcha.captcha_manager import solve_captcha
 from vbox_manager import VirtualBoxController
 from functools import lru_cache
+import ipgetter
 
 version=1.6
+IP=ipgetter.myip()
 
 class History(object):
     def __init__(self):
@@ -43,6 +45,7 @@ class Table(object):
     # General tools that are used to operate the pokerbot and are valid for all tables
     def __init__(self):
         self.version=version
+        self.ip=IP
         self.load_templates()
         self.load_coordinates()
 
@@ -515,13 +518,13 @@ class TableScreenBased(Table):
     def init_get_other_players_info(self):
         self.other_players=dict()
         for i in range (5):
-            self.other_players[i]=dict()
-            self.other_players[i]['abs_position']=''
-            self.other_players[i]['utg_position'] = ''
-            self.other_players[i]['name'] = ''
-            self.other_players[i]['status'] = ''
-            self.other_players[i]['funds'] = ''
-            self.other_players[i]['pot'] = ''
+            self.other_players[str(i)]=dict()
+            self.other_players[str(i)]['abs_position']=i
+            self.other_players[str(i)]['utg_position'] = ''
+            self.other_players[str(i)]['name'] = ''
+            self.other_players[str(i)]['status'] = ''
+            self.other_players[str(i)]['funds'] = ''
+            self.other_players[str(i)]['pot'] = ''
         return True
 
     def get_other_player_names(self):
@@ -540,7 +543,7 @@ class TableScreenBased(Table):
                 recognizedText = (pytesseract.image_to_string(pil_image, None, False, "-psm 6"))
                 recognizedText = re.sub(r'[\W+]', '', recognizedText)
                 logger.debug("Player name: "+recognizedText)
-                self.other_players[i]['name'] = recognizedText
+                self.other_players[str(i)]['name'] = recognizedText
             except Exception as e:
                 logger.debug("Pyteseract error in player name recognition: " + str(e))
         return True
@@ -554,7 +557,7 @@ class TableScreenBased(Table):
             #pil_image.show()
             value=self.get_ocr_float(pil_image,str(inspect.stack()[0][3]))
             value = float(value) if value != '' else ''
-            self.other_players[i]['funds'] = value
+            self.other_players[str(i)]['funds'] = value
         return True
 
     def get_other_player_pots(self):
@@ -562,10 +565,15 @@ class TableScreenBased(Table):
         if terminalmode == False: ui_action_and_signals.signal_status.emit("Get player pots")
         for n, fd in enumerate(func_dict, start=0):
             if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(1)
-            pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1],self.tlc[0] + fd[2], self.tlc[1] + fd[3])
-            value = self.get_ocr_float(pil_image, str(inspect.stack()[0][3]))
-            value=float(value) if value!='' else ''
-            self.other_players[n]['pot'] = value
+            pot_area_image = self.crop_image(self.entireScreenPIL, self.tlc[0]-20 + fd[0], self.tlc[1] + fd[1]-20,self.tlc[0] + fd[2]+20, self.tlc[1] + fd[3]+20)
+            img = cv2.cvtColor(np.array(pot_area_image), cv2.COLOR_BGR2RGB)
+            count, points, bestfit = self.find_template_on_screen(self.smallDollarSign1, img, 0.01)
+            has_small_dollarsign=count>0
+            if has_small_dollarsign:
+                pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1],self.tlc[0] + fd[2], self.tlc[1] + fd[3])
+                value = self.get_ocr_float(pil_image, str(inspect.stack()[0][3]))
+                value=float(value) if value!='' else ''
+                self.other_players[str(n)]['pot'] = value
         return True
 
     def get_other_player_status(self):
@@ -582,11 +590,11 @@ class TableScreenBased(Table):
             logger.debug("Player status: " + str(i)+": "+str(count))
             if count>0:
                 self.covered_players+=1
-                self.other_players[i]['status'] = 1
+                self.other_players[str(i)]['status'] = 1
             else:
-                self.other_players[i]['status'] = 0
+                self.other_players[str(i)]['status'] = 0
 
-            self.other_players[i]['utg_position'] = (i + self.position_utg_plus + 1) % 5
+            self.other_players[str(i)]['utg_position'] = (i + self.position_utg_plus + 1) % 5
 
         self.playersAhead=0
         self.playersBehind=0
@@ -599,9 +607,9 @@ class TableScreenBased(Table):
         self.first_caller = np.nan
         for n in range(5):
             i=(self.dealer_position+n+3)%5
-            logger.debug("Go through pots to find raiser: "+str(i)+": "+str(self.other_players[i]['pot']))
-            if self.other_players[int(i)]['pot']!='': # check if not empty (otherwise can't convert string)
-                if self.other_players[int(i)]['pot'] > float(p.selected_strategy['bigBlind']):
+            logger.debug("Go through pots to find raiser: "+str(i)+": "+str(self.other_players[str(i)]['pot']))
+            if self.other_players[str(i)]['pot']!='': # check if not empty (otherwise can't convert string)
+                if self.other_players[str(i)]['pot'] > float(p.selected_strategy['bigBlind']):
                     self.first_raiser=int(i)
                     break
 
@@ -609,9 +617,10 @@ class TableScreenBased(Table):
         if not np.isnan(self.first_raiser) and self.other_active_players>3:
             for n in list(range(self.first_raiser,5)):
                 i = (self.dealer_position + n + 3) % 5
-                logger.debug("Go through pots to find caller: " + str(i) + ": " + str(self.other_players[i]['pot']))
-                if self.other_players[int(i)]['pot'] != '':  # check if not empty (otherwise can't convert string)
-                    if self.other_players[int(i)]['pot'] > float(p.selected_strategy['bigBlind']):
+                logger.debug("Go through pots to find caller: " + str(i) + ": " + str(self.other_players[str(i)]['pot']))
+                if self.other_players[str(i)]['pot'] != '':  # check if not empty (otherwise can't convert string)
+                    if (self.other_players[str(i)]['pot'] >= float(p.selected_strategy['bigBlind']) and not n==4) or \
+                    self.other_players[str(i)]['pot'] > float(p.selected_strategy['bigBlind']):
                         self.first_caller = int(i)
                         break
 
@@ -1001,6 +1010,8 @@ class ThreadManager(threading.Thread):
                     h.histMinCall = t.minCall
                     h.histMinBet = t.minBet
                     h.hist_other_players=t.other_players
+                    h.first_raiser=t.first_raiser
+                    h.first_caller=t.first_caller
 
 
 # ==== MAIN PROGRAM =====

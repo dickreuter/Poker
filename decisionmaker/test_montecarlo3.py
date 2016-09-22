@@ -125,12 +125,12 @@ class TestMonteCarlo(unittest.TestCase):
         def testRun(Simulation, my_cards, cards_on_table, players, expected_results):
             maxRuns = 15000  # maximum number of montecarlo runs
             testRuns = 5  # make several testruns to get standard deviation of winning probability
-            secs = 5  # cut simulation short if amount of seconds are exceeded
+            secs = 1  # cut simulation short if amount of seconds are exceeded
 
             total_result = []
             for n in range(testRuns):
-                start_time = time.time()
-                Simulation.run_montecarlo(my_cards, cards_on_table, players, 1, maxRuns=maxRuns, maxSecs=secs)
+                start_time = time.time() + secs
+                Simulation.run_montecarlo(my_cards, cards_on_table, players, 1, maxRuns=maxRuns, timeout=start_time, opponent_call_probability=1)
                 equity = Simulation.equity
                 total_result.append(equity * 100)
                 print("--- %s seconds ---" % (time.time() - start_time))

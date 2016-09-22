@@ -122,6 +122,7 @@ class GameLogger(object):
         dDict = {}
         pDict = {}
 
+
         for key, val in p.selected_strategy.items():
             pDict[key] = val
         for key, val in vars(h).items():
@@ -133,7 +134,7 @@ class GameLogger(object):
             if len(" ".join(str(ele) for ele in self.isIterable(val)))<20:
                 dDict[key] = " ".join(str(ele) for ele in self.isIterable(val))
 
-        pDict['logging_timestamp']=str(datetime.datetime.now())
+        pDict['logging_timestamp']=datetime.datetime.utcnow()
         pDict['computername']=os.environ['COMPUTERNAME']
 
         Dh = pd.DataFrame(hDict, index=[0])
@@ -143,6 +144,7 @@ class GameLogger(object):
 
         self.FinalDataFrame = pd.concat([Dd, Dt, Dh, Dp], axis=1)
         rec=self.FinalDataFrame.to_dict('records')[0]
+        rec['other_players']=t.other_players
         del rec['_id']
         result = self.mongodb.rounds.insert_one(rec)
 
@@ -183,6 +185,9 @@ class GameLogger(object):
             summary_dict['FinalDecision'] = h.histDecision
             summary_dict['FinalEquity'] = h.histEquity
             summary_dict['Template'] = t.current_strategy
+            summary_dict['software_version'] = t.version
+            summary_dict['ip'] = t.ip
+
 
             result = self.mongodb.games.insert_one(summary_dict)
 
@@ -559,4 +564,5 @@ if __name__ == '__main__':
 
     strategy_return=L.get_strategy_return('.*', 500)
     print ("Return: "+str(strategy_return))
+
 

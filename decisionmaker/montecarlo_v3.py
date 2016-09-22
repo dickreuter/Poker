@@ -6,9 +6,34 @@ import time
 import numpy as np
 from collections import Counter
 from copy import copy
+import json
+from collections import OrderedDict
 
+class CardTools():
+    def __init__(self):
+        pass
+
+    def get_two_short_notation(self,input_cards):
+        card1 = input_cards[0][0]
+        card2 = input_cards[1][0]
+        suited_str = 's' if input_cards[0][1] == input_cards[1][1] else 'o'
+        return card1+card2+suited_str,card2+card1+suited_str
 
 class MonteCarlo(object):
+    def __init__(self):
+        self.card_tools=CardTools()
+
+    def get_opponent_allowed_cards_list(self,opponent_call_probability):
+        with open('preflop_equity.json') as json_data:
+            peflop_equity_list = json.load(json_data,object_pairs_hook=OrderedDict)
+            counts=len(peflop_equity_list.keys())
+            take_top=int(counts*opponent_call_probability)
+            allowed_cards = list(peflop_equity_list.keys())[-take_top:]
+            print (allowed_cards)
+
+        return allowed_cards
+
+
     def eval_best_hand(self, hands):  # evaluate which hand is best
         scores = [(i, self.calc_score(hand)) for i, hand in enumerate(hands)]
         winner = sorted(scores, key=lambda x: x[1], reverse=True)[0][0]
@@ -119,7 +144,7 @@ class MonteCarlo(object):
         [Deck.append(x + y) for x in values for y in suites]
         return Deck
 
-    def distribute_cards_to_players(self, deck, player_amount, player_card_list, table_card_list):
+    def distribute_cards_to_players(self, deck, player_amount, player_card_list, table_card_list, opponent_allowed_cards):
         Players = []
         CardsOnTable = []
         knownPlayers = 0  # for potential collusion if more than one bot is running on the same table
@@ -137,32 +162,40 @@ class MonteCarlo(object):
 
         for n in range(0, player_amount - knownPlayers):
             plr = []
-            plr.append(deck.pop(np.random.random_integers(0, len(deck) - 1)))
-            plr.append(deck.pop(np.random.random_integers(0, len(deck) - 1)))
+
+            random_card1=np.random.random_integers(0, len(deck) - 1)
+            plr.append(deck.pop(random_card1))
+            random_card2=np.random.random_integers(0, len(deck) - 1)
+            plr.append(deck.pop(random_card2))
+
             Players.append(plr)
 
-        return Players, deck
+            # check for rangees
+            crd1,crd2=self.card_tools.get_two_short_notation(plr)
+            allowed_range=True if crd1 in opponent_allowed_cards or crd2 in opponent_allowed_cards else False
+        return Players, deck, allowed_range
 
     def distribute_cards_to_table(self, Deck, table_card_list):
         remaningRandoms = 5 - len(table_card_list)
         for n in range(0, remaningRandoms):
             table_card_list.append(Deck.pop(np.random.random_integers(0, len(Deck) - 1)))
-
         return table_card_list
 
     def run_montecarlo(self, original_player_card_list, original_table_card_list, player_amount, ui, maxRuns,
-                       timeout):
+                       timeout,opponent_call_probability=1):
+        opponent_allowed_cards=self.get_opponent_allowed_cards_list(opponent_call_probability)
+
         winnerCardTypeList = []
         wins = 0
         runs = 0
         OriginalDeck = self.create_card_deck()
         for m in range(maxRuns):
-            runs += 1
-
             Deck = copy(OriginalDeck)
             PlayerCardList = original_player_card_list[:]
             TableCardsList = original_table_card_list[:]
-            Players, Deck = self.distribute_cards_to_players(Deck, player_amount, PlayerCardList, TableCardsList)
+            Players, Deck, allowed_range = self.distribute_cards_to_players(Deck, player_amount, PlayerCardList, TableCardsList,opponent_allowed_cards)
+            if not allowed_range: continue
+            runs += 1
             Deck5Cards = self.distribute_cards_to_table(Deck, TableCardsList)
             PlayerFinalCardsWithTableCards = []
             for o in range(0, player_amount):
@@ -210,10 +243,12 @@ class MonteCarlo(object):
 if __name__ == '__main__':
     Simulation = MonteCarlo()
     my_cards = [['8H', 'TH']]
-    cards_on_table = []
+    cards_on_table = ['7H','2H','3S']
     players = 4
-    start_time = time.time()
-    Simulation.run_montecarlo(my_cards, cards_on_table, players, 1, maxRuns=15000, timeout=10)
+    secs=5
+    start_time=time.time()
+    timeout=start_time+secs
+    Simulation.run_montecarlo(my_cards, cards_on_table, players, 1, maxRuns=15000, timeout=timeout,opponent_call_probability=.2)
     print("--- %s seconds ---" % (time.time() - start_time))
     equity = Simulation.equity  # considering draws as wins
     print("Equity: " + str(equity))

@@ -18,6 +18,7 @@ class DecisionTypes(Enum):
 class GameStages(Enum):
     PreFlop,Flop,Turn,River=['PreFlop','Flop','Turn','River']
 
+
 class Decision(DecisionBase):
     def __init__(self, t, h, p, logger, l):
         t.bigBlind = float(p.selected_strategy['bigBlind'])
