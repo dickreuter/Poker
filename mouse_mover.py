@@ -75,8 +75,9 @@ class MouseMover(VirtualBoxController):
         time.sleep(np.random.uniform(0.1, 0.5, 1)[0])
 
 class MouseMoverTableBased(MouseMover):
-    def __init__(self, pokersite,betplus_inc=1,bet_bluff_inc=1):
+    def __init__(self, logger,pokersite,betplus_inc=1,bet_bluff_inc=1):
         config = ConfigObj("config.ini")
+        self.logger=logger
 
         try:
             mouse_control = config['control']
@@ -102,7 +103,7 @@ class MouseMoverTableBased(MouseMover):
         (x1, y1) = self.mouse.position()
 
 
-        logger.debug("Moving mouse away: "+str(x1)+","+str(y1)+","+str(x2)+","+str(y2))
+        self.logger.debug("Moving mouse away: "+str(x1)+","+str(y1)+","+str(x2)+","+str(y2))
         self.mouse_mover(x1, y1, x2, y2)
 
     def enter_captcha(self, captchaString, topleftcorner):
@@ -144,4 +145,4 @@ if __name__=="__main__":
     logger = logging.getLogger()
     m=MouseMoverTableBased('PP',5,5)
     topleftcorner=[22,22]
-    m.mouse_action("BetPlus", topleftcorner, logger)
+    m.mouse_action(logger, "BetPlus", topleftcorner, )

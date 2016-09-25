@@ -1,8 +1,8 @@
 import logging
 import sys
 class debug_logger(object):
-    def start_logger(self):
-        logger = logging.getLogger('Poker')
+    def start_logger(self,name):
+        logger = logging.getLogger(name)
         logger.setLevel(logging.DEBUG)
         fh = logging.handlers.RotatingFileHandler('log/pokerprogram.log', maxBytes=1000000, backupCount=5)
         fh.setLevel(logging.DEBUG)

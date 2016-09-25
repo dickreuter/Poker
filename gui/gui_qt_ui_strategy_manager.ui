@@ -26,7 +26,7 @@
    <string>Strategy editor</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="2">
+   <item row="0" column="0">
     <widget class="QLabel" name="label_4">
      <property name="font">
       <font>
@@ -40,7 +40,7 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="2">
+   <item row="1" column="0">
     <layout class="QVBoxLayout" name="verticalLayout_2">
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -75,7 +75,7 @@
      </item>
     </layout>
    </item>
-   <item row="6" column="2">
+   <item row="2" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
       <widget class="QLabel" name="label_2">
@@ -99,13 +99,13 @@
      </item>
     </layout>
    </item>
-   <item row="13" column="0" colspan="3">
+   <item row="3" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="toolTip">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>7</number>
      </property>
      <widget class="QWidget" name="Generic">
       <attribute name="title">
@@ -881,7 +881,7 @@
        <item row="2" column="0">
         <widget class="QCheckBox" name="preflop_override">
          <property name="text">
-          <string>Override with Pokersnowie table when available</string>
+          <string>Override with Pokersnowie table</string>
          </property>
         </widget>
        </item>
@@ -931,103 +931,6 @@
        <string>Flop</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_4">
-       <item row="5" column="0">
-        <layout class="QVBoxLayout" name="verticalLayout">
-         <item>
-          <widget class="QCheckBox" name="checkBox">
-           <property name="text">
-            <string>Override betting with manual ranges:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout">
-           <item>
-            <widget class="QSlider" name="verticalSlider_2">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QSlider" name="verticalSlider">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <layout class="QVBoxLayout" name="verticalLayout_54">
-             <item>
-              <widget class="QLabel" name="label_8">
-               <property name="text">
-                <string>Max range 1</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLCDNumber" name="lcdNumber_12"/>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_57">
-               <property name="text">
-                <string>Min range 1</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLCDNumber" name="lcdNumber_11"/>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <widget class="QSlider" name="verticalSlider_3">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QSlider" name="verticalSlider_4">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <layout class="QVBoxLayout" name="verticalLayout_55">
-             <item>
-              <widget class="QLabel" name="label_58">
-               <property name="text">
-                <string>Max range 2</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLCDNumber" name="lcdNumber_14"/>
-             </item>
-             <item>
-              <widget class="QLabel" name="label_59">
-               <property name="text">
-                <string>Min range 2</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLCDNumber" name="lcdNumber_13"/>
-             </item>
-            </layout>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QVBoxLayout" name="verticalLayout_4"/>
-         </item>
-         <item>
-          <layout class="QVBoxLayout" name="verticalLayout_3"/>
-         </item>
-        </layout>
-       </item>
        <item row="3" column="0">
         <layout class="QVBoxLayout" name="verticalLayout_184">
          <item>
@@ -1125,14 +1028,14 @@
          </item>
         </layout>
        </item>
-       <item row="1" column="2" rowspan="8" colspan="2">
+       <item row="1" column="2" rowspan="7" colspan="2">
         <layout class="QVBoxLayout" name="verticalLayout_flop">
          <item>
           <widget class="QWidget" name="widget_3" native="true"/>
          </item>
         </layout>
        </item>
-       <item row="7" column="0">
+       <item row="6" column="0">
         <layout class="QVBoxLayout" name="verticalLayout_186">
          <item>
           <widget class="QLabel" name="label_182">
@@ -1177,7 +1080,7 @@
        <item row="3" column="1">
         <widget class="QLCDNumber" name="lcdNumber_29"/>
        </item>
-       <item row="8" column="0">
+       <item row="7" column="0">
         <layout class="QVBoxLayout" name="verticalLayout_179">
          <item>
           <widget class="QLabel" name="label_176">
@@ -1219,7 +1122,7 @@
          </item>
         </layout>
        </item>
-       <item row="10" column="0">
+       <item row="9" column="0">
         <layout class="QVBoxLayout" name="verticalLayout_182">
          <item>
           <widget class="QLabel" name="label_178">
@@ -1258,13 +1161,13 @@
          </item>
         </layout>
        </item>
-       <item row="10" column="3">
+       <item row="9" column="3">
         <widget class="QLCDNumber" name="lcdNumber_32"/>
        </item>
-       <item row="8" column="1">
+       <item row="7" column="1">
         <widget class="QLCDNumber" name="lcdNumber_28"/>
        </item>
-       <item row="11" column="0">
+       <item row="10" column="0">
         <layout class="QVBoxLayout" name="verticalLayout_187">
          <item>
           <widget class="QLabel" name="label_183">
@@ -1303,10 +1206,10 @@
          </item>
         </layout>
        </item>
-       <item row="10" column="1">
+       <item row="9" column="1">
         <widget class="QLCDNumber" name="lcdNumber_30"/>
        </item>
-       <item row="10" column="2">
+       <item row="9" column="2">
         <layout class="QVBoxLayout" name="verticalLayout_188">
          <item>
           <widget class="QLabel" name="label_185">
@@ -1339,7 +1242,7 @@
          </item>
         </layout>
        </item>
-       <item row="7" column="1">
+       <item row="6" column="1">
         <widget class="QLCDNumber" name="lcdNumber_36"/>
        </item>
        <item row="0" column="2">
@@ -1365,10 +1268,10 @@
        <item row="2" column="1">
         <widget class="QLCDNumber" name="lcdNumber_34"/>
        </item>
-       <item row="11" column="1">
+       <item row="10" column="1">
         <widget class="QLCDNumber" name="lcdNumber_33"/>
        </item>
-       <item row="11" column="2">
+       <item row="10" column="2">
         <layout class="QVBoxLayout" name="verticalLayout_185">
          <item>
           <widget class="QLabel" name="label_181">
@@ -1401,10 +1304,10 @@
          </item>
         </layout>
        </item>
-       <item row="11" column="3">
+       <item row="10" column="3">
         <widget class="QLCDNumber" name="lcdNumber_31"/>
        </item>
-       <item row="13" column="0">
+       <item row="12" column="0">
         <layout class="QVBoxLayout" name="verticalLayout_181">
          <item>
           <widget class="QLabel" name="label_177">
@@ -1443,10 +1346,10 @@
          </item>
         </layout>
        </item>
-       <item row="13" column="1">
+       <item row="12" column="1">
         <widget class="QLCDNumber" name="lcdNumber_35"/>
        </item>
-       <item row="13" column="2">
+       <item row="12" column="2">
         <layout class="QVBoxLayout" name="verticalLayout_433">
          <item>
           <widget class="QLabel" name="label_450">
@@ -1482,7 +1385,7 @@
          </item>
         </layout>
        </item>
-       <item row="13" column="3">
+       <item row="12" column="3">
         <widget class="QLCDNumber" name="lcdNumber_110"/>
        </item>
       </layout>
@@ -2855,6 +2758,610 @@
       <zorder>verticalSpacer</zorder>
       <zorder>horizontalLayoutWidget_15</zorder>
      </widget>
+     <widget class="QWidget" name="ManualOverrides">
+      <attribute name="title">
+       <string>Manual Oveerrides</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_14">
+       <item row="3" column="1">
+        <layout class="QVBoxLayout" name="verticalLayout_105">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_111">
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_108">
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_30">
+               <item>
+                <widget class="QSlider" name="verticalSlider_49">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSlider" name="verticalSlider_50">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <layout class="QVBoxLayout" name="verticalLayout_106">
+                 <item>
+                  <widget class="QLabel" name="label_100">
+                   <property name="text">
+                    <string>Max range 1</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLCDNumber" name="lcdNumber_154"/>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_101">
+                   <property name="text">
+                    <string>Min range 1</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLCDNumber" name="lcdNumber_155"/>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <widget class="QSlider" name="verticalSlider_51">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSlider" name="verticalSlider_52">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <layout class="QVBoxLayout" name="verticalLayout_107">
+                 <item>
+                  <widget class="QLabel" name="label_102">
+                   <property name="text">
+                    <string>Max range 2</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLCDNumber" name="lcdNumber_156"/>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_103">
+                   <property name="text">
+                    <string>Min range 2</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLCDNumber" name="lcdNumber_157"/>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+       <item row="5" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_75">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_24">
+           <item>
+            <widget class="QSlider" name="verticalSlider_25">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="verticalSlider_26">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_76">
+             <item>
+              <widget class="QLabel" name="label_76">
+               <property name="text">
+                <string>Max range 1</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLCDNumber" name="lcdNumber_130"/>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_77">
+               <property name="text">
+                <string>Min range 1</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLCDNumber" name="lcdNumber_131"/>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QSlider" name="verticalSlider_27">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="verticalSlider_28">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_77">
+             <item>
+              <widget class="QLabel" name="label_78">
+               <property name="text">
+                <string>Max range 2</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLCDNumber" name="lcdNumber_132"/>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_79">
+               <property name="text">
+                <string>Min range 2</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLCDNumber" name="lcdNumber_133"/>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_78"/>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_79"/>
+         </item>
+        </layout>
+       </item>
+       <item row="5" column="1">
+        <layout class="QVBoxLayout" name="verticalLayout_95">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_28">
+           <item>
+            <widget class="QSlider" name="verticalSlider_41">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="verticalSlider_42">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_96">
+             <item>
+              <widget class="QLabel" name="label_92">
+               <property name="text">
+                <string>Max range 1</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLCDNumber" name="lcdNumber_146"/>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_93">
+               <property name="text">
+                <string>Min range 1</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLCDNumber" name="lcdNumber_147"/>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QSlider" name="verticalSlider_43">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="verticalSlider_44">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_97">
+             <item>
+              <widget class="QLabel" name="label_94">
+               <property name="text">
+                <string>Max range 2</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLCDNumber" name="lcdNumber_148"/>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_95">
+               <property name="text">
+                <string>Min range 2</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLCDNumber" name="lcdNumber_149"/>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_98"/>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_99"/>
+         </item>
+        </layout>
+       </item>
+       <item row="7" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_85">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_26">
+           <item>
+            <widget class="QSlider" name="verticalSlider_33">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="verticalSlider_34">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_86">
+             <item>
+              <widget class="QLabel" name="label_84">
+               <property name="text">
+                <string>Max range 1</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLCDNumber" name="lcdNumber_138"/>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_85">
+               <property name="text">
+                <string>Min range 1</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLCDNumber" name="lcdNumber_139"/>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QSlider" name="verticalSlider_35">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="verticalSlider_36">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_87">
+             <item>
+              <widget class="QLabel" name="label_86">
+               <property name="text">
+                <string>Max range 2</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLCDNumber" name="lcdNumber_140"/>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_87">
+               <property name="text">
+                <string>Min range 2</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLCDNumber" name="lcdNumber_141"/>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_88"/>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_89"/>
+         </item>
+        </layout>
+       </item>
+       <item row="7" column="1">
+        <layout class="QVBoxLayout" name="verticalLayout_90">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_27">
+           <item>
+            <widget class="QSlider" name="verticalSlider_37">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="verticalSlider_38">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_91">
+             <item>
+              <widget class="QLabel" name="label_88">
+               <property name="text">
+                <string>Max range 1</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLCDNumber" name="lcdNumber_142"/>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_89">
+               <property name="text">
+                <string>Min range 1</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLCDNumber" name="lcdNumber_143"/>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QSlider" name="verticalSlider_39">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="verticalSlider_40">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_92">
+             <item>
+              <widget class="QLabel" name="label_90">
+               <property name="text">
+                <string>Max range 2</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLCDNumber" name="lcdNumber_144"/>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_91">
+               <property name="text">
+                <string>Min range 2</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLCDNumber" name="lcdNumber_145"/>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_93"/>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_94"/>
+         </item>
+        </layout>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_75">
+         <property name="text">
+          <string>Turn</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="0">
+        <widget class="QLabel" name="label_80">
+         <property name="text">
+          <string>River</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QCheckBox" name="checkBox">
+         <property name="text">
+          <string>Use Manual Override</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_72">
+         <property name="text">
+          <string>Calling</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <widget class="QSlider" name="verticalSlider_2">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="verticalSlider">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_54">
+             <item>
+              <widget class="QLabel" name="label_8">
+               <property name="text">
+                <string>Max range 1</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLCDNumber" name="lcdNumber_12"/>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_57">
+               <property name="text">
+                <string>Min range 1</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLCDNumber" name="lcdNumber_11"/>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QSlider" name="verticalSlider_3">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="verticalSlider_4">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_55">
+             <item>
+              <widget class="QLabel" name="label_58">
+               <property name="text">
+                <string>Max range 2</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLCDNumber" name="lcdNumber_14"/>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_59">
+               <property name="text">
+                <string>Min range 2</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLCDNumber" name="lcdNumber_13"/>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_4"/>
+         </item>
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_3"/>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLabel" name="label_73">
+         <property name="text">
+          <string>Betting</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_81">
+         <property name="text">
+          <string>Flop</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+      <zorder>verticalLayoutWidget</zorder>
+      <zorder>verticalLayoutWidget_3</zorder>
+      <zorder>verticalLayoutWidget_5</zorder>
+      <zorder>verticalLayoutWidget_6</zorder>
+      <zorder>verticalLayoutWidget_7</zorder>
+      <zorder>verticalLayoutWidget_8</zorder>
+      <zorder>label_72</zorder>
+      <zorder>label_73</zorder>
+      <zorder>checkBox_8</zorder>
+      <zorder>checkBox</zorder>
+      <zorder>label_80</zorder>
+      <zorder>label_75</zorder>
+      <zorder>label_81</zorder>
+     </widget>
     </widget>
    </item>
   </layout>
@@ -2869,11 +3376,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>628</x>
-     <y>616</y>
+     <y>612</y>
     </hint>
     <hint type="destinationlabel">
      <x>699</x>
-     <y>617</y>
+     <y>611</y>
     </hint>
    </hints>
   </connection>
@@ -2933,11 +3440,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>190</x>
-     <y>562</y>
+     <y>556</y>
     </hint>
     <hint type="destinationlabel">
      <x>383</x>
-     <y>563</y>
+     <y>555</y>
     </hint>
    </hints>
   </connection>
@@ -2949,11 +3456,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>289</x>
-     <y>616</y>
+     <y>612</y>
     </hint>
     <hint type="destinationlabel">
      <x>383</x>
-     <y>617</y>
+     <y>611</y>
     </hint>
    </hints>
   </connection>
@@ -3093,7 +3600,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>240</x>
-     <y>670</y>
+     <y>668</y>
     </hint>
     <hint type="destinationlabel">
      <x>360</x>
@@ -3397,11 +3904,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>628</x>
-     <y>670</y>
+     <y>668</y>
     </hint>
     <hint type="destinationlabel">
      <x>699</x>
-     <y>671</y>
+     <y>667</y>
     </hint>
    </hints>
   </connection>
@@ -3493,11 +4000,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>298</x>
-     <y>224</y>
+     <y>276</y>
     </hint>
     <hint type="destinationlabel">
      <x>383</x>
-     <y>225</y>
+     <y>275</y>
     </hint>
    </hints>
   </connection>
@@ -3509,11 +4016,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>291</x>
-     <y>278</y>
+     <y>332</y>
     </hint>
     <hint type="destinationlabel">
      <x>383</x>
-     <y>279</y>
+     <y>331</y>
     </hint>
    </hints>
   </connection>
@@ -3525,11 +4032,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>263</x>
-     <y>508</y>
+     <y>500</y>
     </hint>
     <hint type="destinationlabel">
      <x>383</x>
-     <y>509</y>
+     <y>499</y>
     </hint>
    </hints>
   </connection>
@@ -3742,70 +4249,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>verticalSlider_2</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_11</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>37</x>
-     <y>376</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>105</x>
-     <y>430</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>verticalSlider</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_12</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>63</x>
-     <y>364</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>144</x>
-     <y>368</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>verticalSlider_3</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_13</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>185</x>
-     <y>383</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>246</x>
-     <y>430</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>verticalSlider_4</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_14</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>205</x>
-     <y>366</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>250</x>
-     <y>377</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>CoveredPlayersCallLikelihoodPreFlop</sender>
    <signal>valueChanged(int)</signal>
    <receiver>lcdNumber_9</receiver>
@@ -3818,6 +4261,390 @@
     <hint type="destinationlabel">
      <x>346</x>
      <y>617</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_2</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_11</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>40</x>
+     <y>315</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>139</x>
+     <y>331</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_12</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>67</x>
+     <y>272</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>135</x>
+     <y>267</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_3</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_13</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>200</x>
+     <y>297</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>294</x>
+     <y>332</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_4</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_14</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>235</x>
+     <y>252</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>312</x>
+     <y>262</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_49</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_155</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>386</x>
+     <y>314</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>458</x>
+     <y>342</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_50</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_154</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>410</x>
+     <y>273</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>465</x>
+     <y>263</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_51</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_157</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>548</x>
+     <y>297</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>632</x>
+     <y>343</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_52</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_156</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>575</x>
+     <y>258</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>626</x>
+     <y>264</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_25</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_131</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>35</x>
+     <y>451</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>127</x>
+     <y>518</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_26</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_130</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>62</x>
+     <y>419</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>140</x>
+     <y>446</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_27</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_133</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>211</x>
+     <y>453</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>300</x>
+     <y>514</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_28</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_132</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>233</x>
+     <y>432</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>298</x>
+     <y>436</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_41</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_147</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>381</x>
+     <y>465</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>457</x>
+     <y>508</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_42</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_146</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>410</x>
+     <y>433</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>484</x>
+     <y>443</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_43</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_149</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>537</x>
+     <y>435</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>613</x>
+     <y>507</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_44</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_148</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>575</x>
+     <y>421</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>650</x>
+     <y>440</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_33</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_139</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>40</x>
+     <y>648</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>136</x>
+     <y>684</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_34</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_138</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>61</x>
+     <y>612</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>143</x>
+     <y>626</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_35</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_141</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>200</x>
+     <y>630</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>287</x>
+     <y>680</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_36</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_140</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>238</x>
+     <y>594</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>306</x>
+     <y>617</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_37</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_143</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>374</x>
+     <y>633</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>468</x>
+     <y>692</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_38</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_142</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>413</x>
+     <y>601</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>471</x>
+     <y>615</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_39</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_145</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>543</x>
+     <y>637</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>612</x>
+     <y>689</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_40</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_144</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>576</x>
+     <y>607</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>646</x>
+     <y>612</y>
     </hint>
    </hints>
   </connection>

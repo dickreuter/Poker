@@ -1,6 +1,6 @@
 import cv2
 from table_setup import Setup
-screenshot_file="log/screenshots/16662491_PreFlop_0.png"
+screenshot_file="tests/691119677_PreFlop_0.png"
 output_file='log/screenshots/table_check.png'
 table='PP'
 

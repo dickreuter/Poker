@@ -258,13 +258,13 @@ class Decision(DecisionBase):
 
         if t.gameStage != GameStages.PreFlop.value or t.gameStage == GameStages.PreFlop.value and max_player_pot < 2 * t.bigBlind:
             if self.finalBetLimit >= t.minBet:
-                self.decision = DecisionTypes.bet3
+                self.decision = DecisionTypes.bet2
                 logger.info("Bet1 condition met")
 
             if self.finalBetLimit >= (t.minBet + t.bigBlind * float(p.selected_strategy['BetPlusInc'])) and (
                                 t.gameStage == GameStages.PreFlop.value or (
                                 t.gameStage == GameStages.Turn.value and t.totalPotValue > t.bigBlind * 3) or t.gameStage == GameStages.River.value):
-                self.decision = DecisionTypes.bet3
+                self.decision = DecisionTypes.bet2
                 logger.info("Bet2 condition met")
 
             if (self.finalBetLimit >= float(t.totalPotValue) / 2) and (t.minBet < float(t.totalPotValue) / 2) and (

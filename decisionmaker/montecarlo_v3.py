@@ -6,8 +6,7 @@ import time
 import numpy as np
 from collections import Counter
 from copy import copy
-import json
-from collections import OrderedDict
+import operator
 
 
 class MonteCarlo(object):
@@ -17,8 +16,8 @@ class MonteCarlo(object):
         suited_str = 's' if input_cards[0][1] == input_cards[1][1] else 'o'
         return card1+card2+suited_str,card2+card1+suited_str
 
-    def get_opponent_allowed_cards_list(self,opponent_call_probability):
-        peflop_equity_list = OrderedDict({
+    def get_opponent_allowed_cards_list(self,opponent_call_probability,logger):
+        peflop_equity_list = {
             "23o": 0.354,
             "24o": 0.36233333333333334,
             "26o": 0.3758666666666667,
@@ -188,10 +187,14 @@ class MonteCarlo(object):
             "QQo": 0.8024,
             "KKo": 0.8305333333333333,
             "AAo": 0.8527333333333333
-        })
-        counts=len(peflop_equity_list.keys())
+        }
+        peflop_equity_list = sorted(peflop_equity_list.items(), key=operator.itemgetter(1))
+
+        counts=len(peflop_equity_list)
         take_top=int(counts*opponent_call_probability)
-        allowed_cards = set(list(peflop_equity_list.keys())[-take_top:])
+        allowed = set(list(peflop_equity_list)[-take_top:])
+        allowed_cards=[i[0] for i in allowed]
+        logger.debug("Allowed range: "+str(allowed_cards))
         return allowed_cards
 
     def eval_best_hand(self, hands):  # evaluate which hand is best
@@ -329,12 +332,11 @@ class MonteCarlo(object):
             random_card2=np.random.random_integers(0, len(deck) - 1)
             plr.append(deck.pop(random_card2))
 
-            # check for rangees
+            # check for ranges
             crd1,crd2=self.get_two_short_notation(plr)
             if not(crd1 in opponent_allowed_cards or crd2 in opponent_allowed_cards):
                 deck.append(plr[0])
                 deck.append(plr[1])
-                plr = []
             else:
                 Players.append(plr)
                 n+=1
@@ -349,9 +351,9 @@ class MonteCarlo(object):
             table_card_list.append(Deck.pop(np.random.random_integers(0, len(Deck) - 1)))
         return table_card_list
 
-    def run_montecarlo(self, original_player_card_list, original_table_card_list, player_amount, ui, maxRuns,
+    def run_montecarlo(self, logger,original_player_card_list, original_table_card_list, player_amount, ui, maxRuns,
                        timeout,opponent_call_probability=1):
-        opponent_allowed_cards=self.get_opponent_allowed_cards_list(opponent_call_probability)
+        opponent_allowed_cards=self.get_opponent_allowed_cards_list(opponent_call_probability,logger)
 
         winnerCardTypeList = []
         wins = 0
@@ -406,7 +408,7 @@ class MonteCarlo(object):
 
         return self.equity, self.winTypesDict
 
-def run_montecarlo_wrapper(p,terminalmode,ui_action_and_signals,config,logger,ui,t):
+def run_montecarlo_wrapper(logger,p,ui_action_and_signals,config,ui,t):
     # Prepare for montecarlo simulation to evaluate equity (probability of winning with given cards)
 
     if t.gameStage == "PreFlop":
@@ -441,14 +443,16 @@ def run_montecarlo_wrapper(p,terminalmode,ui_action_and_signals,config,logger,ui
     else:
         maxRuns = 10000
 
-    if terminalmode == False: ui_action_and_signals.signal_status.emit("Running Monte Carlo: " + str(maxRuns))
+    ui_action_and_signals.signal_status.emit("Running Monte Carlo: " + str(maxRuns))
     logger.debug("Running Monte Carlo")
     t.montecarlo_timeout = float(config['montecarlo_timeout'])
     timeout = t.mt_tm + t.montecarlo_timeout
     m = MonteCarlo()
-
-    m.run_montecarlo(t.PlayerCardList, t.cardsOnTable, int(t.assumedPlayers), ui, maxRuns=maxRuns, timeout=timeout, opponent_call_probability=opponent_call_probability)
-    if terminalmode == False: ui_action_and_signals.signal_status.emit("Monte Carlo completed successfully")
+    logger.debug("Oppoenent call range: " + str(opponent_call_probability))
+    logger.debug("maxRuns: " + str(maxRuns))
+    logger.debug("Player amount: " + str(t.assumedPlayers))
+    m.run_montecarlo(logger,t.PlayerCardList, t.cardsOnTable, int(t.assumedPlayers), ui, maxRuns=maxRuns, timeout=timeout, opponent_call_probability=opponent_call_probability)
+    ui_action_and_signals.signal_status.emit("Monte Carlo completed successfully")
     logger.debug("Monte Carlo completed successfully with runs: " + str(m.runs))
 
     t.equity = np.round(m.equity, 3)
@@ -459,13 +463,15 @@ def run_montecarlo_wrapper(p,terminalmode,ui_action_and_signals,config,logger,ui
 
 if __name__ == '__main__':
     Simulation = MonteCarlo()
-    my_cards = [['6H', '5H']]
-    cards_on_table = ['7H','2H','3S']
-    players = 4
+    import logging
+    logger = logging.getLogger('Montecarlo main')
+    my_cards = [['2D', 'AD']]
+    cards_on_table = ['3S', 'AH', '8D', '3D']
+    players = 2
     secs=3
     start_time=time.time()
     timeout=start_time+secs
-    Simulation.run_montecarlo(my_cards, cards_on_table, players, 1, maxRuns=15000, timeout=timeout,opponent_call_probability=.2)
+    Simulation.run_montecarlo(my_cards, cards_on_table, players, 1, maxRuns=15000, timeout=timeout,opponent_call_probability=0.3)
     print("--- %s seconds ---" % (time.time() - start_time))
     print ("Runs: "+str(Simulation.runs))
     equity = Simulation.equity  # considering draws as wins
