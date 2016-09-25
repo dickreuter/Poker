@@ -1,16 +1,19 @@
 import cv2
 from table_setup import Setup
+screenshot_file="log/screenshots/16662491_PreFlop_0.png"
+output_file='log/screenshots/table_check.png'
+table='PP'
 
-s=Setup(topleftcorner_file = "pics/PS/topleft.png",
-        screenshot_file = "pics/PS/cap4.PNG",
-        output_file='checker.png')
+s=Setup(topleftcorner_file = "pics/PP/topleft.png",
+        screenshot_file = screenshot_file,
+        output_file=output_file)
 
 with open('coordinates.txt', 'r') as inf:
     c = eval(inf.read())
     coo = c['screen_scraping']
-table='PS2'
 
-img = cv2.imread('checker.png',0)
+
+img = cv2.imread(output_file,0)
 
 for key,item in coo.items():
     try:

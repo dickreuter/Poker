@@ -94,6 +94,16 @@ class MouseMoverTableBased(MouseMover):
 
         self.coo=coo[pokersite[0:2]]
 
+    def move_mouse_away_from_buttons(self,logger):
+        x2 = int(np.round(np.random.uniform(1700, 2000, 1), 0)[0])
+        y2 = int(np.round(np.random.uniform(10, 200, 1), 0)[0])
+
+        time.sleep(np.random.uniform(0.5, 1.2, 1)[0])
+        (x1, y1) = self.mouse.position()
+
+
+        logger.debug("Moving mouse away: "+str(x1)+","+str(y1)+","+str(x2)+","+str(y2))
+        self.mouse_mover(x1, y1, x2, y2)
 
     def enter_captcha(self, captchaString, topleftcorner):
         logger.warning("Entering Captcha: " + str(captchaString))
@@ -110,7 +120,6 @@ class MouseMoverTableBased(MouseMover):
             write_characters_to_virtualbox(captchaString, "win")
         except:
             logger.info("Captcha Error")
-
 
     def mouse_action(self, decision, topleftcorner, logger):
         if decision == 'Check Deception': decision = 'Check'
@@ -129,13 +138,7 @@ class MouseMoverTableBased(MouseMover):
                 self.mouse_mover(x1, y1, action[2]+ tlx, action[3]+ tly)
                 self.mouse_clicker(action[2]+ tlx, action[3]+ tly,action[4], action[5])
 
-        xscatter = int(np.round(np.random.uniform(1700, 2000, 1), 0)[0])
-        yscatter = int(np.round(np.random.uniform(10, 200, 1), 0)[0])
-
-        time.sleep(np.random.uniform(0.5, 1.2, 1)[0])
-        (x2, y2) = self.mouse.position()
-        logger.debug("Moving mouse away: "+str(x2)+","+str(y2)+","+str(xscatter)+","+str(yscatter))
-        self.mouse_mover(x2, y2, xscatter, yscatter)
+        self.move_mouse_away_from_buttons(logger)
 
 if __name__=="__main__":
     logger = logging.getLogger()

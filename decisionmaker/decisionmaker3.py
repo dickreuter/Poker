@@ -13,7 +13,7 @@ import pandas as pd
 import numpy as np
 
 class DecisionTypes(Enum):
-    i_am_back,fold,check,call,bet1,bet2,bet3,bet4,bet_bluff,call_deception, check_deception=['Imback','Fold','Check','Call','Bet half pot', 'Bet half pot','Bet half pot', 'Bet pot','Bet Bluff','Call Deception','Check Deception']
+    i_am_back,fold,check,call,bet1,bet2,bet3,bet4,bet_bluff,call_deception, check_deception=['Imback','Fold','Check','Call','Bet', 'BetPlus','Bet half pot', 'Bet pot','Bet Bluff','Call Deception','Check Deception']
 
 class GameStages(Enum):
     PreFlop,Flop,Turn,River=['PreFlop','Flop','Turn','River']
@@ -159,57 +159,90 @@ class Decision(DecisionBase):
         self.finalCallLimit = self.maxCallE  # min(self.maxCallE, self.maxCallEV)
         self.finalBetLimit = self.maxBetE  # min(self.maxBetE, self.maxCallEV)
 
-    def preflop_override(self,t,logger):
-        def check_probability(sheet):
-            try:
-                probability = sheet[sheet.ix[:, 0] == card_str1].ix[:, 1].iloc[0]
-            except:
-                try:
-                    probability = sheet[sheet.ix[:, 0] == card_str2].ix[:, 1].iloc[0]
-                except:
-                    probability = 100
-
-            if probability > rnd:
-                return True
-            else:
-                return False
-
+    def preflop_override(self,t,logger,h,p):
         if t.gameStage==GameStages.PreFlop.value:
-            pass
-            rnd=np.random.uniform(0, 100, 1)[0]
-            cards=''.join([x[0] for x in t.mycards])
-            cards2=cards[1]+cards[0]
-            suits=''.join([x[1] for x in t.mycards])
-            suited='S' if suits[0]==suits[1] else 'O'
-            suited=suited if not cards[0]==cards[1] else ''
-            card_str1=cards+suited
-            card_str2=cards2+suited
+            m=MonteCarlo()
+            crd1, crd2 = m.get_two_short_notation(t.mycards)
+            crd1=crd1.upper()
+            crd2=crd2.upper()
 
-            if t.position_utg_plus==0:
-                pass
+            first_raiser_string='R' if not np.isnan(t.first_raiser_utg) else ''
+            first_raiser_number = str(t.first_raiser_utg+1) if first_raiser_string != '' else ''
 
-            call_sheet=pd.ExcelFile('preflop_table.xlsx').parse('Blad1')
-            bet_sheet=pd.ExcelFile('preflop_table.xlsx').parse('Blad1')
+            first_caller_string = 'C' if not np.isnan(t.first_caller_utg) else ''
+            first_caller_number = str(t.first_caller_utg+1) if first_caller_string != '' else ''
 
-            bet_list=list(map(lambda x:x.upper(),bet_sheet.ix[:,0].astype(str).tolist()))
-            call_list=list(map(lambda x: x.upper(),call_sheet.ix[:, 0].astype(str).tolist()))
+            sheet_name = str(t.position_utg_plus + 1) + str(first_raiser_string) + str(first_raiser_number)+ str(first_caller_string)+ str(first_caller_number)
+            if h.round_number == 1: sheet_name = 'R1R2'
+            if h.round_number==2: sheet_name='R1R2R1A2'
+            if t.minCall>=(float(p.selected_strategy['bigBlind'])*20): sheet_name = '5R3R5R3'
 
+            self.preflop_sheet_name = sheet_name
+
+            logger.info("Sheet name: "+sheet_name)
+            excel_file = pd.ExcelFile('tables/preflop.xlsx')
+            info_sheet = excel_file.parse('Info')
+            sheet_version=info_sheet['Version'].iloc[0]
+            logger.info("Preflop Excelsheet Version: "+str(sheet_version))
+            if sheet_name in excel_file.sheet_names:
+                sheet=excel_file.parse(sheet_name)
+                logger.debug("Sheetname found")
+            else:
+                backup_sheet_name='2R1'
+                sheet = excel_file.parse(backup_sheet_name)
+                logger.warning("Sheetname not found: "+sheet_name)
+                logger.warning("Backup sheet in use: "+backup_sheet_name)
+                t.entireScreenPIL.save('sheet_not_found.png')
+            sheet['Hand']=sheet['Hand'].apply(lambda x: str(x).upper())
+
+            handlist=set(sheet['Hand'].tolist())
+
+            found_card=''
+
+            if crd1 in handlist:
+                found_card=crd1
+            elif crd2 in handlist:
+                found_card=crd2
+            elif crd1[0:2] in handlist:
+                found_card=crd1[0:2]
+
+            logger.debug("Looking in table for: " + crd1+", "+ crd2+", "+ crd1[0:2])
+            logger.debug("Found in table: "+found_card)
+
+            if found_card!='':
+                call_probability=sheet[sheet['Hand']==found_card]['Call'].iloc[0]
+                bet_probability = sheet[sheet['Hand']==found_card]['Raise'].iloc[0]
+                rnd = np.random.uniform(0, 100, 1)[0]/100
+                logger.debug("Random number: " + str(rnd))
+                logger.debug("Call probability: " + str(call_probability))
+                logger.debug("Raise probability: "+str(bet_probability))
+
+                if rnd < call_probability:
+                    self.decision = DecisionTypes.call
+                    logger.info('Preflop calling activated from table')
+
+                elif rnd >= call_probability and rnd <= bet_probability+call_probability:
+                    if sheet_name in ['1','2','3','4']:
+                        self.decision = DecisionTypes.bet3
+                        logger.info('Preflop betting 3 activated from table')
+                    else:
+                        self.decision = DecisionTypes.bet4
+                        logger.info('Preflop betting 4 activated from table')
+                        # 1, 2, 3, 4 = half pot
+                        # 5 = pot and the
+                        # rest POT
+                else:
+                    self.decision = DecisionTypes.fold
+                    logger.info('Preflop folding from table')
+            else:
+                self.decision = DecisionTypes.fold
+                logger.info('Preflop folding, hands not found in table')
+
+            t.currentBluff=0
             try:
                 max_player_pot = max(t.PlayerPots) if max(t.PlayerPots) != '' else 0
             except:
                 max_player_pot = 0
-
-            self.decision = DecisionTypes.fold
-
-            if (card_str1 in bet_list or card_str2 in bet_list) and max_player_pot < 2 * t.bigBlind:
-                if check_probability(bet_sheet):
-                    self.decision=DecisionTypes.bet3
-                    logger.info('Preflop betting activated from table')
-
-            elif (card_str1 in call_list or card_str2 in call_list):
-                if check_probability(call_sheet):
-                    self.decision = DecisionTypes.call
-                    logger.info('Preflop calling activated from table')
 
     def calling(self,t,p,h,logger):
         if self.finalCallLimit < t.minCall:
@@ -225,41 +258,47 @@ class Decision(DecisionBase):
 
         if t.gameStage != GameStages.PreFlop.value or t.gameStage == GameStages.PreFlop.value and max_player_pot < 2 * t.bigBlind:
             if self.finalBetLimit >= t.minBet:
-                self.decision = DecisionTypes.bet1
+                self.decision = DecisionTypes.bet3
+                logger.info("Bet1 condition met")
+
             if self.finalBetLimit >= (t.minBet + t.bigBlind * float(p.selected_strategy['BetPlusInc'])) and (
                                 t.gameStage == GameStages.PreFlop.value or (
                                 t.gameStage == GameStages.Turn.value and t.totalPotValue > t.bigBlind * 3) or t.gameStage == GameStages.River.value):
-                self.decision = DecisionTypes.bet2
-            if (self.finalBetLimit >= float(t.totalPotValue) / 2) and (t.minBet < float(t.totalPotValue) / 2) and (
-                        (t.minBet + t.bigBlind * float(p.selected_strategy['BetPlusInc'])) < float(
-                        t.totalPotValue) / 2) and (
-                        (t.gameStage == GameStages.Turn.value and float(
-                            t.totalPotValue) / 2 < t.bigBlind * 20) or t.gameStage == GameStages.River.value):
                 self.decision = DecisionTypes.bet3
+                logger.info("Bet2 condition met")
+
+            if (self.finalBetLimit >= float(t.totalPotValue) / 2) and (t.minBet < float(t.totalPotValue) / 2) and (
+                        (t.gameStage == GameStages.Flop.value or
+                         t.gameStage == GameStages.Turn.value) or
+                         t.gameStage == GameStages.River.value):
+                logger.info("Bet3 condition met")
+                self.decision = DecisionTypes.bet3
+
             if (t.allInCallButton == False and t.equity >= float(p.selected_strategy['betPotRiverEquity'])) and (
                         t.minBet <= float(t.totalPotValue)) and t.gameStage == GameStages.River.value and (
                         float(t.totalPotValue) < t.bigBlind * float(
                         p.selected_strategy['betPotRiverEquityMaxBBM'])) and (
                         (t.minBet + t.bigBlind * float(p.selected_strategy['BetPlusInc'])) < float(t.totalPotValue)):
+                logger.info("Bet4 condition met")
                 self.decision = DecisionTypes.bet4
 
     def bluff(self,t,p,h,logger):
         t.currentBluff = 0
         if t.isHeadsUp == True:
-            if t.gameStage == GameStages.Flop.value and np.isnan(t.first_raiser) and t.equity > float(
+            if t.gameStage == GameStages.Flop.value and t.playersAhead==0 and t.equity > float(
                     p.selected_strategy['FlopBluffMinEquity']) and self.decision == DecisionTypes.check and float(
-                p.selected_strategy['FlopBluff']) > 0:
+                int(p.selected_strategy['FlopBluff'])) > 0:
                 t.currentBluff = 1
                 self.decision = DecisionTypes.bet_bluff
                 logger.debug("Bluffing activated")
-            elif t.gameStage == GameStages.Turn.value and np.isnan(h.first_raiser) and np.isnan(t.first_raiser) and self.decision == DecisionTypes.check and float(
-                    p.selected_strategy['TurnBluff']) > 0 and t.equity > float(
+            elif t.gameStage == GameStages.Turn.value and t.playersAhead==0 and np.isnan(t.first_raiser) and self.decision == DecisionTypes.check and float(
+                    int(p.selected_strategy['TurnBluff'])) > 0 and t.equity > float(
                 p.selected_strategy['TurnBluffMinEquity']):
                 t.currentBluff = 1
                 self.decision = DecisionTypes.bet_bluff
                 logger.debug("Bluffing activated")
-            elif t.gameStage == GameStages.River.value and np.isnan(h.first_raiser) and np.isnan(t.first_raiser) and self.decision == DecisionTypes.check and float(
-                    p.selected_strategy['RiverBluff']) > 0 and t.equity > float(
+            elif t.gameStage == GameStages.River.value and t.playersAhead==0 and np.isnan(t.first_raiser) and self.decision == DecisionTypes.check and float(
+                    int(p.selected_strategy['RiverBluff'])) > 0 and t.equity > float(
                 p.selected_strategy['RiverBluffMinEquity']):
                 t.currentBluff = 1
                 self.decision = DecisionTypes.bet_bluff
@@ -328,20 +367,25 @@ class Decision(DecisionBase):
         self.decision = self.decision.value
 
     def make_decision(self, t, h, p, logger, l):
+        self.preflop_sheet_name=''
         if t.equity >= float(p.selected_strategy['alwaysCallEquity']):
             self.finalCallLimit = 99999999
 
-        self.calling(t,p,h,logger)
-        self.betting(t,p,h,logger)
-        self.check_deception(t,p,logger)
+        if p.selected_strategy['preflop_override'] and t.gameStage==GameStages.PreFlop.value:
+            self.preflop_override(t,logger,h,p)
 
-        if t.allInCallButton == False and t.equity >= float(p.selected_strategy['secondRiverBetPotMinEquity']) and t.gameStage == GameStages.River.value and h.histGameStage == GameStages.River.value:
-            self.decision = DecisionTypes.bet3
+        else:
+            self.calling(t,p,h,logger)
+            self.betting(t,p,h,logger)
+            self.check_deception(t,p,logger)
 
-        self.bluff(t,p,h,logger)
-        self.bully(t,p,h,logger)
+            if t.allInCallButton == False and t.equity >= float(p.selected_strategy['secondRiverBetPotMinEquity']) and t.gameStage == GameStages.River.value and h.histGameStage == GameStages.River.value:
+                self.decision = DecisionTypes.bet3
 
-        if p.selected_strategy['preflop_override']:
-            self.preflop_override(t,logger)
+            self.bully(t,p,h,logger)
 
         self.admin(t,p,h,logger)
+        self.bluff(t, p, h, logger)
+
+
+

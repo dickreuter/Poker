@@ -548,7 +548,7 @@ class BarPlotter(FigureCanvas):
         self.axes.set_title('FinalFundsChange ABS')
         self.axes.set_xlabel(['PF Win', 'Loss', '', 'F Win', 'Loss', '', 'T Win', 'Loss', '', 'R Win', 'Loss'])
         self.axes.legend((self.p0[0], self.p1[0], self.p2[0], self.p3[0], self.p4[0], self.p5[0], self.p6[0]),
-                         ('Bluff', 'BetPot', 'BetHfPot', 'Bet/Bet+', 'Call', 'Check', 'Fold'), labelspacing=0.03,
+                         ('Bluff/Decept.', 'BetPot', 'BetHfPot', 'Bet/Bet+', 'Call', 'Check', 'Fold'), labelspacing=0.03,
                          prop={'size': 12})
         maxh = float(self.p.selected_strategy['bigBlind']) * 10
         i = 0

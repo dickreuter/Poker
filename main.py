@@ -15,10 +15,9 @@ import inspect
 from captcha.captcha_manager import solve_captcha
 from vbox_manager import VirtualBoxController
 from functools import lru_cache
-import ipgetter
 
 version=1.6
-IP=ipgetter.myip()
+IP=''
 
 class History(object):
     def __init__(self):
@@ -40,6 +39,7 @@ class History(object):
         self.histMinCall = 0
         self.histMinBet = 0
         self.histPlayerPots = 0
+        self.first_raiser=np.nan
 
 class Table(object):
     # General tools that are used to operate the pokerbot and are valid for all tables
@@ -112,6 +112,10 @@ class Table(object):
         template = Image.open(name)
         self.dealer = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
+        name = "pics/" + self.tbl[0:2] + "/betbutton.png"
+        template = Image.open(name)
+        self.betbutton = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
+
     def load_coordinates(self):
         with open('coordinates.txt','r') as inf:
             c = eval(inf.read())
@@ -122,14 +126,10 @@ class Table(object):
             ui_action_and_signals.signal_status.emit("")
             ui_action_and_signals.signal_progressbar_reset.emit()
             if p.exit_thread == True: sys.exit()
-
             if p.pause == True:
                 while p.pause == True:
                     time.sleep(1)
                     if p.exit_thread == True: sys.exit()
-
-
-
 
         time.sleep(0.1)
         config = ConfigObj("config.ini")
@@ -263,7 +263,7 @@ class Table(object):
     def call_genetic_algorithm(self):
         if not terminalmode:
             ui_action_and_signals.signal_progressbar_increase.emit(5)
-            ui_action_and_signals.signal_status.emit("Updating charts")
+            ui_action_and_signals.signal_status.emit("Updating charts and work in background")
         n = L.get_game_count(p.current_strategy)
         lg = int(
             p.selected_strategy['considerLastGames'])  # only consider lg last games to see if there was a loss
@@ -391,6 +391,7 @@ class TableScreenBased(Table):
         return True
 
     def check_for_imback(self, mouse):
+        mouse.move_mouse_away_from_buttons(logger)
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
@@ -421,6 +422,22 @@ class TableScreenBased(Table):
             pil_image.save("pics/debug_nocall.png")
         return True
 
+    def check_for_betbutton(self):
+        func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(5)
+        logger.debug("Check for betbutton")
+        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
+                                    self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
+        img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
+        count, points, bestfit = self.find_template_on_screen(self.betbutton, img, func_dict['tolerance'])
+        if count > 0:
+            self.bet_button_found = True
+            logger.debug("Bet button found")
+        else:
+            self.bet_button_found = False
+            logger.info("Bet button NOT found")
+        return True
+
     def check_for_allincall(self):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
         logger.debug("Check for All in call button")
@@ -435,6 +452,11 @@ class TableScreenBased(Table):
         else:
             self.allInCallButton = False
             logger.debug("All in call button not found")
+
+        if not self.bet_button_found:
+            self.allInCallButton = True
+            logger.debug("Assume all in call because there is no bet button")
+
         return True
 
     def get_table_cards(self):
@@ -471,8 +493,15 @@ class TableScreenBased(Table):
             logger.critical("Table cards not recognised correctly")
             exit()
 
+        logger.info("---")
         logger.info("Gamestage: " + self.gameStage)
         logger.info("Cards on table: " + str(self.cardsOnTable))
+        logger.info("---")
+
+        if h.histGameStage == t.gameStage and h.lastRoundGameID == h.GameID:
+            h.round_number+=1
+        else:
+            h.round_number=0
 
         return True
 
@@ -528,36 +557,36 @@ class TableScreenBased(Table):
         return True
 
     def get_other_player_names(self):
-        func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
-        if terminalmode == False: ui_action_and_signals.signal_status.emit("Get player names")
-
-        for i, fd in enumerate(func_dict):
-            if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(2)
-            pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1],
-                                    self.tlc[0] + fd[2], self.tlc[1] + fd[3])
-            basewidth = 500
-            wpercent = (basewidth / float(pil_image.size[0]))
-            hsize = int((float(pil_image.size[1]) * float(wpercent)))
-            pil_image = pil_image.resize((basewidth, hsize), Image.ANTIALIAS)
-            try:
-                recognizedText = (pytesseract.image_to_string(pil_image, None, False, "-psm 6"))
-                recognizedText = re.sub(r'[\W+]', '', recognizedText)
-                logger.debug("Player name: "+recognizedText)
-                self.other_players[str(i)]['name'] = recognizedText
-            except Exception as e:
-                logger.debug("Pyteseract error in player name recognition: " + str(e))
+        # func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        # if terminalmode == False: ui_action_and_signals.signal_status.emit("Get player names")
+        #
+        # for i, fd in enumerate(func_dict):
+        #     if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(2)
+        #     pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1],
+        #                             self.tlc[0] + fd[2], self.tlc[1] + fd[3])
+        #     basewidth = 500
+        #     wpercent = (basewidth / float(pil_image.size[0]))
+        #     hsize = int((float(pil_image.size[1]) * float(wpercent)))
+        #     pil_image = pil_image.resize((basewidth, hsize), Image.ANTIALIAS)
+        #     try:
+        #         recognizedText = (pytesseract.image_to_string(pil_image, None, False, "-psm 6"))
+        #         recognizedText = re.sub(r'[\W+]', '', recognizedText)
+        #         logger.debug("Player name: "+recognizedText)
+        #         self.other_players[str(i)]['name'] = recognizedText
+        #     except Exception as e:
+        #         logger.debug("Pyteseract error in player name recognition: " + str(e))
         return True
 
     def get_other_player_funds(self):
-        func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
-        if terminalmode == False: ui_action_and_signals.signal_status.emit("Get player funds")
-        for i, fd in enumerate(func_dict, start=0):
-            if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(1)
-            pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1],self.tlc[0] + fd[2], self.tlc[1] + fd[3])
-            #pil_image.show()
-            value=self.get_ocr_float(pil_image,str(inspect.stack()[0][3]))
-            value = float(value) if value != '' else ''
-            self.other_players[str(i)]['funds'] = value
+        # func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        # if terminalmode == False: ui_action_and_signals.signal_status.emit("Get player funds")
+        # for i, fd in enumerate(func_dict, start=0):
+        #     if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(1)
+        #     pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1],self.tlc[0] + fd[2], self.tlc[1] + fd[3])
+        #     #pil_image.show()
+        #     value=self.get_ocr_float(pil_image,str(inspect.stack()[0][3]))
+        #     value = float(value) if value != '' else ''
+        #     self.other_players[str(i)]['funds'] = value
         return True
 
     def get_other_player_pots(self):
@@ -567,12 +596,18 @@ class TableScreenBased(Table):
             if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(1)
             pot_area_image = self.crop_image(self.entireScreenPIL, self.tlc[0]-20 + fd[0], self.tlc[1] + fd[1]-20,self.tlc[0] + fd[2]+20, self.tlc[1] + fd[3]+20)
             img = cv2.cvtColor(np.array(pot_area_image), cv2.COLOR_BGR2RGB)
-            count, points, bestfit = self.find_template_on_screen(self.smallDollarSign1, img, 0.01)
+            count, points, bestfit = self.find_template_on_screen(self.smallDollarSign1, img, 0.02)
             has_small_dollarsign=count>0
             if has_small_dollarsign:
                 pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1],self.tlc[0] + fd[2], self.tlc[1] + fd[3])
                 value = self.get_ocr_float(pil_image, str(inspect.stack()[0][3]))
+                try:
+                    value = re.findall(r'\d{1}\.\d{1,2}', str(value))[0]
+                except:
+                    logger.warning("Player pot regex problem: "+str(value))
+                    value=''
                 value=float(value) if value!='' else ''
+                logger.debug("FINAL POT after regex: "+str(value))
                 self.other_players[str(n)]['pot'] = value
         return True
 
@@ -581,7 +616,6 @@ class TableScreenBased(Table):
         if terminalmode == False: ui_action_and_signals.signal_status.emit("Get other playsrs' status")
 
         self.covered_players=0
-
         for i, fd in enumerate(func_dict, start=0):
             if not terminalmode:  ui_action_and_signals.signal_progressbar_increase.emit(1)
             pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1],self.tlc[0] + fd[2], self.tlc[1] + fd[3])
@@ -594,45 +628,60 @@ class TableScreenBased(Table):
             else:
                 self.other_players[str(i)]['status'] = 0
 
-            self.other_players[str(i)]['utg_position'] = (i + self.position_utg_plus + 1) % 5
+            self.other_players[str(i)]['utg_position'] = (self.other_players[str(i)]['abs_position']-self.dealer_position+7) %6
 
-        self.playersAhead=0
-        self.playersBehind=0
+
         self.other_active_players=sum([v['status']  for _,v in self.other_players.items()])
+        self.playersBehind=sum([v['status']  for _,v in self.other_players.items() if v['abs_position']>self.dealer_position-1])
+        self.playersAhead = self.other_active_players-self.playersBehind
         self.isHeadsUp=True if self.other_active_players<2 else False
         logger.debug("Other players in the game: "+str(self.other_active_players))
+        logger.debug("Players behind: " + str(self.playersBehind))
+        logger.debug("Players ahead: " + str(self.playersAhead))
 
         # get first raiser in (tested for preflop)
         self.first_raiser=np.nan
+        self.second_raiser=np.nan
         self.first_caller = np.nan
         for n in range(5):
-            i=(self.dealer_position+n+3)%5
-            logger.debug("Go through pots to find raiser: "+str(i)+": "+str(self.other_players[str(i)]['pot']))
+            i=(self.dealer_position+n+3-2)%5 #less mysself as 0 is now first other player to my left and no longer myself
+            logger.debug("Go through pots to find raiser abs:: "+str(i)+": "+str(self.other_players[str(i)]['pot']))
             if self.other_players[str(i)]['pot']!='': # check if not empty (otherwise can't convert string)
                 if self.other_players[str(i)]['pot'] > float(p.selected_strategy['bigBlind']):
-                    self.first_raiser=int(i)
-                    break
+                    if np.isnan(self.first_raiser):
+                        self.first_raiser=int(i)
+                        self.first_raiser_pot = self.other_players[str(i)]['pot']
+                    else:
+                        if self.other_players[str(i)]['pot']>self.first_raiser_pot:
+                            self.second_raiser = int(i)
 
-        # get first caller after raise in preflop
-        if not np.isnan(self.first_raiser) and self.other_active_players>3:
-            for n in list(range(self.first_raiser,5)):
-                i = (self.dealer_position + n + 3) % 5
-                logger.debug("Go through pots to find caller: " + str(i) + ": " + str(self.other_players[str(i)]['pot']))
-                if self.other_players[str(i)]['pot'] != '':  # check if not empty (otherwise can't convert string)
-                    if (self.other_players[str(i)]['pot'] >= float(p.selected_strategy['bigBlind']) and not n==4) or \
-                    self.other_players[str(i)]['pot'] > float(p.selected_strategy['bigBlind']):
-                        self.first_caller = int(i)
-                        break
+
+        self.highest_raiser = np.nanmax([self.first_raiser, self.second_raiser])
 
         logger.info("First raiser abs: " + str(self.first_raiser))
-        logger.info("First raiser utg+" + str((self.first_raiser - self.dealer_position - 3) % 5))
+        self.first_raiser_utg=(self.first_raiser - self.dealer_position+4) % 6
+        logger.info("First raiser utg+" + str(self.first_raiser_utg))
+
+        logger.info("Second raiser abs: " + str(self.second_raiser))
+        logger.info("Highest raiser abs: " + str(self.highest_raiser))
+
+        first_possible_caller=int(self.big_blind_position_abs_op+1 if np.isnan(self.highest_raiser) else self.highest_raiser+1)
+        logger.debug("First possible potential caller is: "+str(first_possible_caller))
+
+        # get first caller after raise in preflop
+        for n in list(range(first_possible_caller,5)): # n is absolute position of other player, 0 is player to my left
+            logger.debug("Go through pots to find caller abs: " + str(n) + ": " + str(self.other_players[str(n)]['pot']))
+            if self.other_players[str(n)]['pot'] != '':  # check if not empty (otherwise can't convert string)
+                if (self.other_players[str(n)]['pot'] == float(p.selected_strategy['bigBlind']) and not n==self.big_blind_position_abs_op) or \
+                self.other_players[str(n)]['pot'] > float(p.selected_strategy['bigBlind']):
+                    self.first_caller = int(n)
+                    break
+
+
 
         logger.info("First caller abs: " + str(self.first_caller))
-        logger.info("First caller utg+" + str((self.first_caller - self.dealer_position - 3) % 5))
-
-        # legacy
-        self.playersAhead=5-self.position_utg_plus
-        self.playersBehind=self.position_utg_plus
+        self.first_caller_utg=(self.first_caller - self.dealer_position +4) % 6
+        logger.info("First caller utg+" + str(self.first_caller_utg))
 
         return True
 
@@ -651,13 +700,18 @@ class TableScreenBased(Table):
         for n, fd in enumerate(func_dict, start=0):
             if point[0]>fd[0] and point[1]>fd[1] and point[0]<fd[2] and point[1]<fd[3]:
                 self.position_utg_plus=n
-                self.dealer_position = (7-n)%5 #0 is myself, 1 is player to the left
-                logger.info('Position is UTG+'+str(self.position_utg_plus)) # 0 mean bot is UTG
+                self.dealer_position = (9-n)%6 #0 is myself, 1 is player to the left
+                logger.info('Bot position is UTG+'+str(self.position_utg_plus)) # 0 mean bot is UTG
 
         if self.position_utg_plus=='':
             self.position_utg_plus=0
-            self.dealer_position = 2
+            self.dealer_position = 3
             logger.error('Could not determine dealer position. Assuming UTG')
+        else:
+            logger.info('Dealer position (0 is myself and 1 is to my left): '+str(self.dealer_position))
+
+        self.big_blind_position_abs_all = (self.dealer_position+2)%6 #0 is myself, 1 is player to my left
+        self.big_blind_position_abs_op=self.big_blind_position_abs_all-1
 
         return True
 
@@ -726,11 +780,8 @@ class TableScreenBased(Table):
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
 
-        if not self.checkButton:
-            if  p.selected_strategy['pokerSite'][0:2] and self.allInCallButton: self.currentCallValue = ''
-            else: self.currentCallValue = self.get_ocr_float(pil_image, 'CallValue')
-        elif self.checkButton:
-            self.currentCallValue=0
+        if not self.checkButton: self.currentCallValue = self.get_ocr_float(pil_image, 'CallValue')
+        elif self.checkButton: self.currentCallValue=0
 
 
         if self.currentCallValue!='':  self.getCallButtonValueSuccess = True
@@ -770,7 +821,7 @@ class TableScreenBased(Table):
                 self.currentCallValue = self.currentBetValue
                 self.currentBetValue=9999999
             try:
-                self.entireScreenPIL.save('pics/err_debug_fullscreen.png')
+                self.entireScreenPIL.save('log/call_err_debug_fullscreen.png')
             except:
                 pass
 
@@ -840,55 +891,11 @@ class TableScreenBased(Table):
             h.myFundsHistory.append(str(self.myFunds))
             h.previousCards = self.mycards
             h.lastSecondRoundAdjustment = 0
+            mouse.move_mouse_away_from_buttons(logger)
+            h.round_number=0
 
             self.take_screenshot(False)
         return True
-
-    def run_montecarlo(self):
-        # Prepare for montecarlo simulation to evaluate equity (probability of winning with given cards)
-
-        if self.gameStage == "PreFlop":
-            # self.assumedPlayers = self.coveredCardHolders - int(
-            #    round(self.playersAhead * (1 - float(p.selected_strategy['CoveredPlayersCallLikelihoodPreFlop'])))) + 1
-            self.assumedPlayers = 2
-
-        elif self.gameStage == "Flop":
-            self.assumedPlayers = self.other_active_players - int(
-                round(self.playersAhead * (1 - float(p.selected_strategy['CoveredPlayersCallLikelihoodFlop'])))) + 1
-
-        else:
-            self.assumedPlayers = self.other_active_players + 1
-
-        self.assumedPlayers = min(max(self.assumedPlayers, 2), 3)
-
-        self.PlayerCardList = []
-        self.PlayerCardList.append(self.mycards)
-
-        # add cards from colluding players (not yet implemented)
-        # col = Collusion()
-        # col.
-        # if col.got_info==True:
-        #     self.PlayerCardList.add
-
-        if self.gameStage == "PreFlop":
-            maxRuns=1000 if p.selected_strategy['preflop_override'] else 10000
-        else:
-            maxRuns = 8000
-
-        if terminalmode == False: ui_action_and_signals.signal_status.emit("Running Monte Carlo: " + str(maxRuns))
-        logger.debug("Running Monte Carlo")
-        self.montecarlo_timeout = float(config['montecarlo_timeout'])
-        timeout = self.mt_tm + self.montecarlo_timeout
-        m = MonteCarlo()
-
-        m.run_montecarlo(self.PlayerCardList, self.cardsOnTable, int(self.assumedPlayers), ui, maxRuns=maxRuns, timeout=timeout)
-        if terminalmode == False: ui_action_and_signals.signal_status.emit("Monte Carlo completed successfully")
-        logger.debug("Monte Carlo completed successfully with runs: " + str(m.runs))
-
-        self.equity = np.round(m.equity, 3)
-        self.winnerCardTypeList = m.winnerCardTypeList
-
-        ui_action_and_signals.signal_progressbar_increase.emit(30)
 
 class ThreadManager(threading.Thread):
     def __init__(self, threadID, name, counter):
@@ -899,7 +906,7 @@ class ThreadManager(threading.Thread):
 
     def update_most_gui_items(self):
         if terminalmode == False:
-            ui_action_and_signals.signal_decision.emit(d.decision)
+            ui_action_and_signals.signal_decision.emit(str(d.decision+" "+d.preflop_sheet_name))
             ui_action_and_signals.signal_status.emit(d.decision)
 
             ui_action_and_signals.signal_lcd_number_update.emit('equity', np.round(t.equity * 100, 2))
@@ -966,15 +973,15 @@ class ThreadManager(threading.Thread):
                             t.get_total_pot_value() and \
                             t.check_for_checkbutton() and \
                             t.check_for_call() and \
+                            t.check_for_betbutton() and \
                             t.check_for_allincall() and \
                             t.get_current_call_value() and \
                             t.get_current_bet_value()
 
                 if not p.pause:
-                    t.run_montecarlo()
+                    run_montecarlo_wrapper(p,terminalmode,ui_action_and_signals,config,logger,ui,t)
                     d = Decision(t, h, p, logger, L)
                     d.make_decision(t, h, p, logger, L)
-
                     if p.exit_thread: sys.exit()
 
                     self.update_most_gui_items()
@@ -982,13 +989,9 @@ class ThreadManager(threading.Thread):
                     logger.info(
                         "Equity: " + str(t.equity * 100) + "% -> " + str(int(t.assumedPlayers)) + " (" + str(
                             int(t.other_active_players)) + "-" + str(int(t.playersAhead)) + "+1) Plr")
-
                     logger.info("Final Call Limit: " + str(d.finalCallLimit) + " --> " + str(t.minCall))
-
                     logger.info("Final Bet Limit: " + str(d.finalBetLimit) + " --> " + str(t.currentBetValue))
-
                     logger.info("Pot size: " + str((t.totalPotValue)) + " -> Zero EV Call: " + str(round(d.maxCallEV, 2)))
-
                     logger.info("+++++++++++++++++++++++ Decision: " + str(d.decision) + "+++++++++++++++++++++++")
 
                     mouse = MouseMoverTableBased(p.selected_strategy['pokerSite'], p.selected_strategy['BetPlusInc'], t.currentBluff)
@@ -999,7 +1002,13 @@ class ThreadManager(threading.Thread):
 
                     t.time_action_completed = datetime.datetime.utcnow()
 
-                    if terminalmode == False: ui_action_and_signals.signal_status.emit("Writing log file")
+
+                    filename=str(h.GameID)+"_"+str(t.gameStage)+"_"+str(h.round_number)+".png"
+                    logger.debug("Saving screenshot: "+filename)
+                    pil_image = t.crop_image(t.entireScreenPIL, t.tlc[0],t.tlc[1],t.tlc[0] + 1000, t.tlc[1] + 900)
+                    pil_image.save("log/screenshots/"+filename)
+
+                    if terminalmode == False: ui_action_and_signals.signal_status.emit("Logging data")
 
                     L.write_log_file(p, h, t, d)
 
