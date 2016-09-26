@@ -5,6 +5,8 @@ is calculated correctly and within a given amount of time without a timeout
 
 import time
 import unittest
+from unittest.mock import MagicMock
+
 
 import numpy as np
 
@@ -130,7 +132,8 @@ class TestMonteCarlo(unittest.TestCase):
             total_result = []
             for n in range(testRuns):
                 start_time = time.time() + secs
-                Simulation.run_montecarlo(my_cards, cards_on_table, players, 1, maxRuns=maxRuns, timeout=start_time, opponent_call_probability=1)
+                logger=MagicMock()
+                Simulation.run_montecarlo(logger, my_cards, cards_on_table, players,1 , maxRuns=maxRuns, timeout=start_time, opponent_call_probability=1)
                 equity = Simulation.equity
                 total_result.append(equity * 100)
                 print("--- %s seconds ---" % (time.time() - start_time))

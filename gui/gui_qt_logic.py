@@ -476,16 +476,22 @@ class UIActionAndSignals(QObject):
                 idx = len(self.p.get_playable_strategy_list())
                 self.ui_editor.Strategy.setCurrentIndex(idx - 1)
                 self.ui.comboBox_current_strategy.addItem(name)
-            print("saved")
             msg=QMessageBox()
             msg.setIcon(QMessageBox.Information)
             msg.setText("Saved")
             msg.setWindowTitle("Strategy editor")
             msg.setStandardButtons(QMessageBox.Ok)
             retval=msg.exec()
+            self.logger.warning("Strategy saved successfully")
 
         else:
-            print("not saved")
+            msg=QMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            msg.setText("There has been a problem and the strategy is not saved. Check if the name is already taken.")
+            msg.setWindowTitle("Strategy editor")
+            msg.setStandardButtons(QMessageBox.Ok)
+            retval=msg.exec()
+            self.logger.warning("Strategy not saved")
 
 class FundsPlotter(FigureCanvas):
     def __init__(self, ui, p):

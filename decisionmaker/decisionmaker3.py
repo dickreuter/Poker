@@ -18,7 +18,6 @@ class DecisionTypes(Enum):
 class GameStages(Enum):
     PreFlop,Flop,Turn,River=['PreFlop','Flop','Turn','River']
 
-
 class Decision(DecisionBase):
     def __init__(self, t, h, p, logger, l):
         t.bigBlind = float(p.selected_strategy['bigBlind'])
@@ -285,21 +284,26 @@ class Decision(DecisionBase):
     def bluff(self,t,p,h,logger):
         t.currentBluff = 0
         if t.isHeadsUp == True:
-            if t.gameStage == GameStages.Flop.value and t.playersAhead==0 and t.equity > float(
-                    p.selected_strategy['FlopBluffMinEquity']) and self.decision == DecisionTypes.check and float(
-                int(p.selected_strategy['FlopBluff'])) > 0:
+            if t.gameStage == GameStages.Flop.value and \
+                    t.equity < float(p.selected_strategy['FlopBluffMinEquity']) and \
+                    self.decision == DecisionTypes.check and \
+                    t.playersAhead == 0:
                 t.currentBluff = 1
                 self.decision = DecisionTypes.bet_bluff
                 logger.debug("Bluffing activated")
-            elif t.gameStage == GameStages.Turn.value and t.playersAhead==0 and np.isnan(t.first_raiser) and self.decision == DecisionTypes.check and float(
-                    int(p.selected_strategy['TurnBluff'])) > 0 and t.equity > float(
-                p.selected_strategy['TurnBluffMinEquity']):
+            elif t.gameStage == GameStages.Turn.value and \
+                    h.previous_decision!=DecisionTypes.bet_bluff and \
+                    t.playersAhead==0 and \
+                    self.decision == DecisionTypes.check and \
+                    t.equity > float(p.selected_strategy['TurnBluffMinEquity']):
                 t.currentBluff = 1
                 self.decision = DecisionTypes.bet_bluff
                 logger.debug("Bluffing activated")
-            elif t.gameStage == GameStages.River.value and t.playersAhead==0 and np.isnan(t.first_raiser) and self.decision == DecisionTypes.check and float(
-                    int(p.selected_strategy['RiverBluff'])) > 0 and t.equity > float(
-                p.selected_strategy['RiverBluffMinEquity']):
+            elif t.gameStage == GameStages.River.value and \
+                    h.previous_decision != DecisionTypes.bet_bluff and \
+                    t.playersAhead == 0 and \
+                    self.decision == DecisionTypes.check and \
+                    t.equity > float(p.selected_strategy['RiverBluffMinEquity']):
                 t.currentBluff = 1
                 self.decision = DecisionTypes.bet_bluff
                 logger.debug("Bluffing activated")
@@ -364,7 +368,6 @@ class Decision(DecisionBase):
         if self.decision == DecisionTypes.bet4: h.myLastBet = t.totalPotValue
 
         self.decision_obj = copy(self.decision)
-        self.decision = self.decision.value
 
     def make_decision(self, t, h, p, logger, l):
         self.preflop_sheet_name=''
@@ -386,6 +389,9 @@ class Decision(DecisionBase):
 
         self.admin(t,p,h,logger)
         self.bluff(t, p, h, logger)
+
+
+        self.decision = self.decision.value
 
 
 

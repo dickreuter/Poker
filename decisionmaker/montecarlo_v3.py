@@ -441,7 +441,7 @@ def run_montecarlo_wrapper(logger,p,ui_action_and_signals,config,ui,t):
     if t.gameStage == "PreFlop":
         maxRuns=1000 if p.selected_strategy['preflop_override'] else 10000
     else:
-        maxRuns = 10000
+        maxRuns = 7500
 
     ui_action_and_signals.signal_status.emit("Running Monte Carlo: " + str(maxRuns))
     logger.debug("Running Monte Carlo")

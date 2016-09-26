@@ -1170,45 +1170,6 @@
        <item row="7" column="1">
         <widget class="QLCDNumber" name="lcdNumber_28"/>
        </item>
-       <item row="10" column="0">
-        <layout class="QVBoxLayout" name="verticalLayout_187">
-         <item>
-          <widget class="QLabel" name="label_183">
-           <property name="text">
-            <string>Minimum equity required to potentially bluff</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSlider" name="FlopBluffMinEquity">
-           <property name="mouseTracking">
-            <bool>false</bool>
-           </property>
-           <property name="minimum">
-            <number>1</number>
-           </property>
-           <property name="maximum">
-            <number>100</number>
-           </property>
-           <property name="singleStep">
-            <number>1</number>
-           </property>
-           <property name="pageStep">
-            <number>5</number>
-           </property>
-           <property name="value">
-            <number>50</number>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="tickPosition">
-            <enum>QSlider::TicksAbove</enum>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
        <item row="9" column="1">
         <widget class="QLCDNumber" name="lcdNumber_30"/>
        </item>
@@ -1390,6 +1351,45 @@
        </item>
        <item row="12" column="3">
         <widget class="QLCDNumber" name="lcdNumber_110"/>
+       </item>
+       <item row="10" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_187">
+         <item>
+          <widget class="QLabel" name="label_183">
+           <property name="text">
+            <string>Bluff if equity is below this value</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="FlopBluffMinEquity">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="singleStep">
+            <number>1</number>
+           </property>
+           <property name="pageStep">
+            <number>5</number>
+           </property>
+           <property name="value">
+            <number>50</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>
@@ -1949,45 +1949,6 @@
        <item row="2" column="1">
         <widget class="QLCDNumber" name="lcdNumber_52"/>
        </item>
-       <item row="8" column="0">
-        <layout class="QVBoxLayout" name="verticalLayout_136">
-         <item>
-          <widget class="QLabel" name="label_131">
-           <property name="text">
-            <string>Minimum equity required to potentially bluff</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSlider" name="RiverBluffMinEquity">
-           <property name="mouseTracking">
-            <bool>false</bool>
-           </property>
-           <property name="minimum">
-            <number>1</number>
-           </property>
-           <property name="maximum">
-            <number>100</number>
-           </property>
-           <property name="singleStep">
-            <number>1</number>
-           </property>
-           <property name="pageStep">
-            <number>5</number>
-           </property>
-           <property name="value">
-            <number>50</number>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="tickPosition">
-            <enum>QSlider::TicksAbove</enum>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
        <item row="8" column="1">
         <widget class="QLCDNumber" name="lcdNumber_51"/>
        </item>
@@ -2199,6 +2160,45 @@
        <item row="9" column="1">
         <widget class="QLCDNumber" name="lcdNumber_53"/>
        </item>
+       <item row="8" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_136">
+         <item>
+          <widget class="QLabel" name="label_131">
+           <property name="text">
+            <string>Minimum equity required to potentially bluff</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="RiverBluffMinEquity">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="singleStep">
+            <number>1</number>
+           </property>
+           <property name="pageStep">
+            <number>5</number>
+           </property>
+           <property name="value">
+            <number>50</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="tab_5">
@@ -2314,10 +2314,13 @@
             <number>1</number>
            </property>
            <property name="maximum">
-            <number>500</number>
+            <number>5000</number>
+           </property>
+           <property name="singleStep">
+            <number>10</number>
            </property>
            <property name="pageStep">
-            <number>10</number>
+            <number>100</number>
            </property>
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
@@ -2410,6 +2413,9 @@
           </item>
           <item>
            <widget class="QSlider" name="range_utg0">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="mouseTracking">
              <bool>false</bool>
             </property>
@@ -2461,6 +2467,9 @@
           </item>
           <item>
            <widget class="QSlider" name="range_utg2">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="mouseTracking">
              <bool>false</bool>
             </property>
@@ -2512,6 +2521,9 @@
           </item>
           <item>
            <widget class="QSlider" name="range_utg1">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="mouseTracking">
              <bool>false</bool>
             </property>
@@ -2563,6 +2575,9 @@
           </item>
           <item>
            <widget class="QSlider" name="range_utg3">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="mouseTracking">
              <bool>false</bool>
             </property>
@@ -2614,6 +2629,9 @@
           </item>
           <item>
            <widget class="QSlider" name="range_utg4">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="mouseTracking">
              <bool>false</bool>
             </property>
@@ -2665,6 +2683,9 @@
           </item>
           <item>
            <widget class="QSlider" name="range_utg5">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="mouseTracking">
              <bool>false</bool>
             </property>
@@ -2716,6 +2737,9 @@
           </item>
           <item>
            <widget class="QSlider" name="minimum_bet_size">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
             <property name="mouseTracking">
              <bool>false</bool>
             </property>
@@ -2730,6 +2754,9 @@
             </property>
             <property name="pageStep">
              <number>1</number>
+            </property>
+            <property name="value">
+             <number>3</number>
             </property>
             <property name="orientation">
              <enum>Qt::Horizontal</enum>

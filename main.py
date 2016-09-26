@@ -637,7 +637,10 @@ class TableScreenBased(Table):
 
 
         self.other_active_players=sum([v['status']  for _,v in self.other_players.items()])
-        self.playersBehind=sum([v['status']  for _,v in self.other_players.items() if v['abs_position']>self.dealer_position-1])
+        if self.gameStage=="PreFlop":
+            self.playersBehind=sum([v['status']  for _,v in self.other_players.items() if v['abs_position']>=self.dealer_position+3-1])
+        else:
+            self.playersBehind = sum([v['status'] for _, v in self.other_players.items() if v['abs_position'] >= self.dealer_position+1-1])
         self.playersAhead = self.other_active_players-self.playersBehind
         self.isHeadsUp=True if self.other_active_players<2 else False
         self.logger.debug("Other players in the game: "+str(self.other_active_players))
@@ -1029,6 +1032,7 @@ class ThreadManager(threading.Thread):
                     h.hist_other_players=t.other_players
                     h.first_raiser=t.first_raiser
                     h.first_caller=t.first_caller
+                    h.previous_decision=d.decision
 
 # ==== MAIN PROGRAM =====
 if __name__ == '__main__':
