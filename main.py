@@ -904,7 +904,6 @@ class TableScreenBased(Table):
 
         return True
 
-
 class ThreadManager(threading.Thread):
     def __init__(self, threadID, name, counter):
         threading.Thread.__init__(self)
@@ -939,6 +938,7 @@ class ThreadManager(threading.Thread):
 
     def run(self):
             h = History()
+            h.preflop_sheet=pd.read_excel(preflop_url, sheetname=None)
 
             while True:
                 if p.pause:
@@ -1030,7 +1030,6 @@ class ThreadManager(threading.Thread):
                     h.first_raiser=t.first_raiser
                     h.first_caller=t.first_caller
 
-
 # ==== MAIN PROGRAM =====
 if __name__ == '__main__':
     print ("This is a testversion and error messages will appear here. The user interface has opened in a separate window.")
@@ -1038,6 +1037,7 @@ if __name__ == '__main__':
     sys._excepthook = sys.excepthook
     u=UpdateChecker()
     u.check_update(version)
+    preflop_url=u.get_preflop_sheet_url()
 
     def my_exception_hook(exctype, value, traceback):
         # Print the error and traceback

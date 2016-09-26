@@ -180,16 +180,16 @@ class Decision(DecisionBase):
             self.preflop_sheet_name = sheet_name
 
             logger.info("Sheet name: "+sheet_name)
-            excel_file = pd.ExcelFile('tables/preflop.xlsx')
-            info_sheet = excel_file.parse('Info')
+            excel_file = h.preflop_sheet
+            info_sheet = excel_file['Info']
             sheet_version=info_sheet['Version'].iloc[0]
             logger.info("Preflop Excelsheet Version: "+str(sheet_version))
-            if sheet_name in excel_file.sheet_names:
-                sheet=excel_file.parse(sheet_name)
+            if sheet_name in excel_file:
+                sheet=excel_file[sheet_name]
                 logger.debug("Sheetname found")
             else:
                 backup_sheet_name='2R1'
-                sheet = excel_file.parse(backup_sheet_name)
+                sheet = excel_file[backup_sheet_name]
                 logger.warning("Sheetname not found: "+sheet_name)
                 logger.warning("Backup sheet in use: "+backup_sheet_name)
                 t.entireScreenPIL.save('sheet_not_found.png')

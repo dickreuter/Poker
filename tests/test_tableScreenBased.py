@@ -2,7 +2,6 @@ from unittest import TestCase
 from . import main
 from PIL import Image
 from mongo_manager import StrategyHandler
-from unittest.mock import patch
 from unittest.mock import MagicMock
 import numpy as np
 import logging

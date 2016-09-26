@@ -194,7 +194,7 @@ class MonteCarlo(object):
         take_top=int(counts*opponent_call_probability)
         allowed = set(list(peflop_equity_list)[-take_top:])
         allowed_cards=[i[0] for i in allowed]
-        logger.debug("Allowed range: "+str(allowed_cards))
+        #logger.debug("Allowed range: "+str(allowed_cards))
         return allowed_cards
 
     def eval_best_hand(self, hands):  # evaluate which hand is best

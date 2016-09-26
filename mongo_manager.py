@@ -54,6 +54,15 @@ class UpdateChecker():
             subprocess.call(["start", self.file_name], shell=True)
             sys.exit()
 
+
+    def get_preflop_sheet_url(self):
+        cursor=self.mongodb.internal.find()
+        c=cursor.next()
+        self.preflop_url=c['preflop_url']
+        return self.preflop_url
+
+
+
 class StrategyHandler(object):
     def __init__(self):
         self.mongoclient = MongoClient('mongodb://guest:donald@52.201.173.151:27017/POKER')
