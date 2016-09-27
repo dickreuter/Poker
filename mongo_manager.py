@@ -74,6 +74,14 @@ class StrategyHandler(object):
 
     def check_defaults(self):
         if not 'preflop_override' in self.selected_strategy: self.selected_strategy['preflop_override'] = 0
+        if not 'range_utg0' in self.selected_strategy: self.selected_strategy['range_utg0'] = 0.2
+        if not 'range_utg1' in self.selected_strategy: self.selected_strategy['range_utg1'] = 0.2
+        if not 'range_utg2' in self.selected_strategy: self.selected_strategy['range_utg2'] = 0.2
+        if not 'range_utg3' in self.selected_strategy: self.selected_strategy['range_utg3'] = 0.2
+        if not 'range_utg4' in self.selected_strategy: self.selected_strategy['range_utg4'] = 0.2
+        if not 'range_utg5' in self.selected_strategy: self.selected_strategy['range_utg5'] = 0.2
+        if not 'minimum_bet_size' in self.selected_strategy: self.selected_strategy['minimum_bet_size'] = 3
+
 
     def read_strategy(self,strategy_override=''):
         config = ConfigObj("config.ini")

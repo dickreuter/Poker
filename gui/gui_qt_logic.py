@@ -65,7 +65,13 @@ class UIActionAndSignals(QObject):
     def __init__(self, ui_main_window, p, l, logger):
         QObject.__init__(self)
         self.strategy_items_with_multipliers = {
-            "PreFlopMinCallEquity": 100,
+            "minimum_bet_size": 1,
+            "range_utg0": 100,
+            "range_utg1": 100,
+            "range_utg2": 100,
+            "range_utg3": 100,
+            "range_utg4": 100,
+            "range_utg5": 100,
             "PreFlopCallPower": 1,
             "secondRiverBetPotMinEquity": 100,
             "FlopBetPower": 1,
@@ -482,7 +488,7 @@ class UIActionAndSignals(QObject):
             msg.setWindowTitle("Strategy editor")
             msg.setStandardButtons(QMessageBox.Ok)
             retval=msg.exec()
-            self.logger.warning("Strategy saved successfully")
+            self.logger.info("Strategy saved successfully")
 
         else:
             msg=QMessageBox()

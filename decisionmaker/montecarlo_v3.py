@@ -418,12 +418,30 @@ def run_montecarlo_wrapper(logger,p,ui_action_and_signals,config,ui,t):
         opponent_call_probability=1
 
     elif t.gameStage == "Flop":
-        opponent_call_probability=float(p.selected_strategy['CoveredPlayersCallLikelihoodFlop'])
+
+
+        if t.isHeadsUp:
+            for i in range (5):
+                if t.other_players[str(i)]['status']==1:
+                    break
+            opponent_call_probability=float(p.selected_strategy['range_utg'+str(i)])
+        else:
+            opponent_call_probability=float(p.selected_strategy['CoveredPlayersCallLikelihoodFlop'])
+
         t.assumedPlayers = t.other_active_players - int(round(t.playersAhead * (1 - opponent_call_probability))) + 1
 
 
+
+
     else:
-        opponent_call_probability = p.selected_strategy['CoveredPlayersCallLikelihoodFlop']
+        if t.isHeadsUp:
+            for i in range (5):
+                if t.other_players[str(i)]['status']==1:
+                    break
+            opponent_call_probability=float(p.selected_strategy['range_utg'+str(i)])
+        else:
+            opponent_call_probability=float(p.selected_strategy['CoveredPlayersCallLikelihoodFlop'])
+
         t.assumedPlayers = t.other_active_players + 1
 
 

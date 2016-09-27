@@ -26,19 +26,29 @@
    <string>Strategy editor</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
-    <widget class="QLabel" name="label_4">
-     <property name="font">
-      <font>
-       <pointsize>20</pointsize>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>Strategy editor</string>
-     </property>
-    </widget>
+   <item row="2" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>New name</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="lineEdit_new_name"/>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_save_new_strategy">
+       <property name="toolTip">
+        <string>Saves the current strategy under a new name</string>
+       </property>
+       <property name="text">
+        <string>Save under new name</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item row="1" column="0">
     <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -75,29 +85,19 @@
      </item>
     </layout>
    </item>
-   <item row="2" column="0">
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
-     <item>
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>New name</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="lineEdit_new_name"/>
-     </item>
-     <item>
-      <widget class="QPushButton" name="pushButton_save_new_strategy">
-       <property name="toolTip">
-        <string>Saves the current strategy under a new name</string>
-       </property>
-       <property name="text">
-        <string>Save under new name</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label_4">
+     <property name="font">
+      <font>
+       <pointsize>20</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Strategy editor</string>
+     </property>
+    </widget>
    </item>
    <item row="3" column="0">
     <widget class="QTabWidget" name="tabWidget">
@@ -2414,7 +2414,7 @@
           <item>
            <widget class="QSlider" name="range_utg0">
             <property name="enabled">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="mouseTracking">
              <bool>false</bool>
@@ -2468,7 +2468,7 @@
           <item>
            <widget class="QSlider" name="range_utg2">
             <property name="enabled">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="mouseTracking">
              <bool>false</bool>
@@ -2522,7 +2522,7 @@
           <item>
            <widget class="QSlider" name="range_utg1">
             <property name="enabled">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="mouseTracking">
              <bool>false</bool>
@@ -2576,7 +2576,7 @@
           <item>
            <widget class="QSlider" name="range_utg3">
             <property name="enabled">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="mouseTracking">
              <bool>false</bool>
@@ -2630,7 +2630,7 @@
           <item>
            <widget class="QSlider" name="range_utg4">
             <property name="enabled">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="mouseTracking">
              <bool>false</bool>
@@ -2684,7 +2684,7 @@
           <item>
            <widget class="QSlider" name="range_utg5">
             <property name="enabled">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="mouseTracking">
              <bool>false</bool>
@@ -3482,6 +3482,22 @@
    </hints>
   </connection>
   <connection>
+   <sender>CoveredPlayersCallLikelihoodPreFlop</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_9</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>236</x>
+     <y>616</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>346</x>
+     <y>617</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
    <sender>CoveredPlayersCallLikelihoodFlop</sender>
    <signal>valueChanged(int)</signal>
    <receiver>lcdNumber_30</receiver>
@@ -4170,18 +4186,18 @@
    </hints>
   </connection>
   <connection>
-   <sender>range_utg1</sender>
+   <sender>range_utg3</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_70</receiver>
+   <receiver>lcdNumber_103</receiver>
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>195</x>
-     <y>401</y>
+     <x>255</x>
+     <y>517</y>
     </hint>
     <hint type="destinationlabel">
-     <x>391</x>
-     <y>402</y>
+     <x>396</x>
+     <y>510</y>
     </hint>
    </hints>
   </connection>
@@ -4202,18 +4218,18 @@
    </hints>
   </connection>
   <connection>
-   <sender>range_utg3</sender>
+   <sender>range_utg1</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_103</receiver>
+   <receiver>lcdNumber_70</receiver>
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>255</x>
-     <y>517</y>
+     <x>195</x>
+     <y>401</y>
     </hint>
     <hint type="destinationlabel">
-     <x>396</x>
-     <y>510</y>
+     <x>391</x>
+     <y>402</y>
     </hint>
    </hints>
   </connection>
@@ -4250,22 +4266,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>minimum_bet_size</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_106</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>250</x>
-     <y>174</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>387</x>
-     <y>179</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>BetPlusInc</sender>
    <signal>valueChanged(int)</signal>
    <receiver>lcdNumber_56</receiver>
@@ -4282,210 +4282,34 @@
    </hints>
   </connection>
   <connection>
-   <sender>CoveredPlayersCallLikelihoodPreFlop</sender>
+   <sender>minimum_bet_size</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_9</receiver>
+   <receiver>lcdNumber_106</receiver>
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>236</x>
-     <y>616</y>
+     <x>250</x>
+     <y>174</y>
     </hint>
     <hint type="destinationlabel">
-     <x>346</x>
-     <y>617</y>
+     <x>387</x>
+     <y>179</y>
     </hint>
    </hints>
   </connection>
   <connection>
-   <sender>verticalSlider_2</sender>
+   <sender>verticalSlider_44</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_11</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>40</x>
-     <y>315</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>139</x>
-     <y>331</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>verticalSlider</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_12</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>67</x>
-     <y>272</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>135</x>
-     <y>267</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>verticalSlider_3</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_13</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>200</x>
-     <y>297</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>294</x>
-     <y>332</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>verticalSlider_4</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_14</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>235</x>
-     <y>252</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>312</x>
-     <y>262</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>verticalSlider_49</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_155</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>386</x>
-     <y>314</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>458</x>
-     <y>342</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>verticalSlider_50</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_154</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>410</x>
-     <y>273</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>465</x>
-     <y>263</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>verticalSlider_51</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_157</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>548</x>
-     <y>297</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>632</x>
-     <y>343</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>verticalSlider_52</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_156</receiver>
+   <receiver>lcdNumber_148</receiver>
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>575</x>
-     <y>258</y>
+     <y>421</y>
     </hint>
     <hint type="destinationlabel">
-     <x>626</x>
-     <y>264</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>verticalSlider_25</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_131</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>35</x>
-     <y>451</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>127</x>
-     <y>518</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>verticalSlider_26</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_130</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>62</x>
-     <y>419</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>140</x>
-     <y>446</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>verticalSlider_27</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_133</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>211</x>
-     <y>453</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>300</x>
-     <y>514</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>verticalSlider_28</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_132</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>233</x>
-     <y>432</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>298</x>
-     <y>436</y>
+     <x>650</x>
+     <y>440</y>
     </hint>
    </hints>
   </connection>
@@ -4502,6 +4326,22 @@
     <hint type="destinationlabel">
      <x>457</x>
      <y>508</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_38</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_142</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>413</x>
+     <y>601</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>471</x>
+     <y>615</y>
     </hint>
    </hints>
   </connection>
@@ -4538,86 +4378,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>verticalSlider_44</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_148</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>575</x>
-     <y>421</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>650</x>
-     <y>440</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>verticalSlider_33</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_139</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>40</x>
-     <y>648</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>136</x>
-     <y>684</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>verticalSlider_34</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_138</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>61</x>
-     <y>612</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>143</x>
-     <y>626</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>verticalSlider_35</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_141</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>200</x>
-     <y>630</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>287</x>
-     <y>680</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>verticalSlider_36</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_140</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>238</x>
-     <y>594</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>306</x>
-     <y>617</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>verticalSlider_37</sender>
    <signal>valueChanged(int)</signal>
    <receiver>lcdNumber_143</receiver>
@@ -4634,18 +4394,98 @@
    </hints>
   </connection>
   <connection>
-   <sender>verticalSlider_38</sender>
+   <sender>verticalSlider_51</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_142</receiver>
+   <receiver>lcdNumber_157</receiver>
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>413</x>
-     <y>601</y>
+     <x>548</x>
+     <y>297</y>
     </hint>
     <hint type="destinationlabel">
-     <x>471</x>
-     <y>615</y>
+     <x>632</x>
+     <y>343</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_40</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_144</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>576</x>
+     <y>607</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>646</x>
+     <y>612</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_52</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_156</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>575</x>
+     <y>258</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>626</x>
+     <y>264</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_25</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_131</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>35</x>
+     <y>451</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>127</x>
+     <y>518</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_49</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_155</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>386</x>
+     <y>314</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>458</x>
+     <y>342</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_12</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>67</x>
+     <y>272</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>135</x>
+     <y>267</y>
     </hint>
    </hints>
   </connection>
@@ -4666,18 +4506,178 @@
    </hints>
   </connection>
   <connection>
-   <sender>verticalSlider_40</sender>
+   <sender>verticalSlider_2</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_144</receiver>
+   <receiver>lcdNumber_11</receiver>
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>576</x>
-     <y>607</y>
+     <x>40</x>
+     <y>315</y>
     </hint>
     <hint type="destinationlabel">
-     <x>646</x>
+     <x>139</x>
+     <y>331</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_50</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_154</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>410</x>
+     <y>273</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>465</x>
+     <y>263</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_3</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_13</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>200</x>
+     <y>297</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>294</x>
+     <y>332</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_34</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_138</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>61</x>
      <y>612</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>143</x>
+     <y>626</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_4</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_14</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>235</x>
+     <y>252</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>312</x>
+     <y>262</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_26</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_130</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>62</x>
+     <y>419</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>140</x>
+     <y>446</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_33</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_139</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>40</x>
+     <y>648</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>136</x>
+     <y>684</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_28</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_132</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>233</x>
+     <y>432</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>298</x>
+     <y>436</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_27</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_133</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>211</x>
+     <y>453</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>300</x>
+     <y>514</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_36</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_140</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>238</x>
+     <y>594</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>306</x>
+     <y>617</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_35</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_141</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>200</x>
+     <y>630</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>287</x>
+     <y>680</y>
     </hint>
    </hints>
   </connection>
