@@ -25,7 +25,7 @@ def init_table(file):
     t.get_other_player_names()
     t.get_other_player_funds()
     t.get_other_player_pots()
-    t.get_other_player_status(p)
+    t.get_other_player_status(p,h)
     p = MagicMock()
     gui_signals = MagicMock()
     return t,p,gui_signals,h,logger

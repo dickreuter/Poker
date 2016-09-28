@@ -255,29 +255,32 @@ class Decision(DecisionBase):
         try: max_player_pot=max(t.PlayerPots) if max(t.PlayerPots)!='' else 0
         except: max_player_pot=0
 
-        if t.gameStage != GameStages.PreFlop.value or t.gameStage == GameStages.PreFlop.value and max_player_pot < 2 * t.bigBlind:
+        if t.gameStage != GameStages.PreFlop.value or t.gameStage == GameStages.PreFlop.value and \
+                        max_player_pot < 2 * t.bigBlind and \
+                        not t.other_player_has_initiative:
             if self.finalBetLimit >= t.minBet:
                 self.decision = DecisionTypes.bet2
                 logger.info("Bet1 condition met")
 
             if self.finalBetLimit >= (t.minBet + t.bigBlind * float(p.selected_strategy['BetPlusInc'])) and (
                                 t.gameStage == GameStages.PreFlop.value or (
-                                t.gameStage == GameStages.Turn.value and t.totalPotValue > t.bigBlind * 3) or t.gameStage == GameStages.River.value):
+                                t.gameStage == GameStages.Turn.value and t.totalPotValue > t.bigBlind * 3) or t.gameStage == GameStages.River.value) and \
+                                not t.other_player_has_initiative:
                 self.decision = DecisionTypes.bet2
                 logger.info("Bet2 condition met")
 
             if (self.finalBetLimit >= float(t.totalPotValue) / 2) and (t.minBet < float(t.totalPotValue) / 2) and (
                         (t.gameStage == GameStages.Flop.value or
                          t.gameStage == GameStages.Turn.value) or
-                         t.gameStage == GameStages.River.value):
+                         t.gameStage == GameStages.River.value) and \
+                         not t.other_player_has_initiative:
                 logger.info("Bet3 condition met")
                 self.decision = DecisionTypes.bet3
 
-            if (t.allInCallButton == False and t.equity >= float(p.selected_strategy['betPotRiverEquity'])) and (
-                        t.minBet <= float(t.totalPotValue)) and t.gameStage == GameStages.River.value and (
-                        float(t.totalPotValue) < t.bigBlind * float(
-                        p.selected_strategy['betPotRiverEquityMaxBBM'])) and (
-                        (t.minBet + t.bigBlind * float(p.selected_strategy['BetPlusInc'])) < float(t.totalPotValue)):
+            if t.allInCallButton == False and t.equity >= float(p.selected_strategy['betPotRiverEquity']) and \
+                        t.gameStage == GameStages.River.value and \
+                        float(t.totalPotValue) < t.bigBlind * float(p.selected_strategy['betPotRiverEquityMaxBBM']) and \
+                        not t.other_player_has_initiative:
                 logger.info("Bet4 condition met")
                 self.decision = DecisionTypes.bet4
 
@@ -320,15 +323,14 @@ class Decision(DecisionBase):
 
     def bully(self,t,p,h,logger):
         if t.isHeadsUp:
-            try:
-                opponentFunds = min(t.PlayerFunds)
-            except:
-                opponentFunds = float(p.selected_strategy['initialFunds'])
+            for i in range(5):
+                if t.other_players[i]['status'] == 1:
+                    break
+            opponentFunds= t.other_players[i]['funds']
 
             if opponentFunds == '': opponentFunds = float(p.selected_strategy['initialFunds'])
 
-            self.bullyMode = opponentFunds < float(p.selected_strategy['initialFunds']) / float(
-                p.selected_strategy['bullyDivider'])
+            self.bullyMode = opponentFunds > float(p.selected_strategy['bullyDivider'])
 
             if (t.equity >= float(p.selected_strategy['minBullyEquity'])) and (
                         t.equity <= float(p.selected_strategy['maxBullyEquity'])) and self.bullyMode:
@@ -339,6 +341,14 @@ class Decision(DecisionBase):
                 self.bullyDecision = False
 
     def admin(self,t,p,h,logger):
+        if int(p.selected_strategy['minimum_bet_size'])==2 and self.decision==DecisionTypes.bet1: self.decision=DecisionTypes.bet2
+        if int(p.selected_strategy['minimum_bet_size']) == 3 and self.decision == DecisionTypes.bet1: self.decision = DecisionTypes.bet3
+        if int(p.selected_strategy['minimum_bet_size']) == 3 and self.decision == DecisionTypes.bet2: self.decision = DecisionTypes.bet3
+        if int(p.selected_strategy['minimum_bet_size']) == 4 and self.decision == DecisionTypes.bet1: self.decision = DecisionTypes.bet4
+        if int(p.selected_strategy['minimum_bet_size']) == 4 and self.decision == DecisionTypes.bet2: self.decision = DecisionTypes.bet4
+        if int(p.selected_strategy['minimum_bet_size']) == 4 and self.decision == DecisionTypes.bet3: self.decision = DecisionTypes.bet4
+
+
         if t.checkButton == False and t.minCall == 0.0:
             self.decision = DecisionTypes.fold  # for cases where call button cannnot be read, not even after deriving from Bet Button
             self.ErrCallButton = True
@@ -354,7 +364,6 @@ class Decision(DecisionBase):
         if t.allInCallButton and self.decision != DecisionTypes.fold:
             self.decision = DecisionTypes.call
 
-        h.lastRoundGameID = h.GameID
         h.lastSecondRoundAdjustment = self.secondRoundAdjustment
 
         if self.decision == DecisionTypes.check or self.decision == DecisionTypes.check_deception: h.myLastBet = 0
@@ -383,14 +392,14 @@ class Decision(DecisionBase):
             self.check_deception(t,p,logger)
 
             if t.allInCallButton == False and t.equity >= float(p.selected_strategy['secondRiverBetPotMinEquity']) and t.gameStage == GameStages.River.value and h.histGameStage == GameStages.River.value:
-                self.decision = DecisionTypes.bet3
+                self.decision = DecisionTypes.bet4
 
-            self.bully(t,p,h,logger)
+            #self.bully(t,p,h,logger)
 
         self.admin(t,p,h,logger)
         self.bluff(t, p, h, logger)
 
-
+        self.decision = DecisionTypes.call
         self.decision = self.decision.value
 
 

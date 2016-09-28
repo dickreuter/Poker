@@ -80,6 +80,7 @@ class StrategyHandler(object):
         if not 'range_utg3' in self.selected_strategy: self.selected_strategy['range_utg3'] = 0.2
         if not 'range_utg4' in self.selected_strategy: self.selected_strategy['range_utg4'] = 0.2
         if not 'range_utg5' in self.selected_strategy: self.selected_strategy['range_utg5'] = 0.2
+        if not 'range_multiple_players' in self.selected_strategy: self.selected_strategy['range_multiple_players'] = 0.2
         if not 'minimum_bet_size' in self.selected_strategy: self.selected_strategy['minimum_bet_size'] = 3
 
 

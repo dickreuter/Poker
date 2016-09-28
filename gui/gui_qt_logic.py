@@ -66,6 +66,7 @@ class UIActionAndSignals(QObject):
         QObject.__init__(self)
         self.strategy_items_with_multipliers = {
             "minimum_bet_size": 1,
+            "range_multiple_players": 100,
             "range_utg0": 100,
             "range_utg1": 100,
             "range_utg2": 100,
@@ -562,7 +563,7 @@ class BarPlotter(FigureCanvas):
         self.axes.legend((self.p0[0], self.p1[0], self.p2[0], self.p3[0], self.p4[0], self.p5[0], self.p6[0]),
                          ('Bluff/Decept.', 'BetPot', 'BetHfPot', 'Bet/Bet+', 'Call', 'Check', 'Fold'), labelspacing=0.03,
                          prop={'size': 12})
-        maxh = float(self.p.selected_strategy['bigBlind']) * 10
+        maxh = float(self.p.selected_strategy['bigBlind']) * 20
         i = 0
         for rect0, rect1, rect2, rect3, rect4, rect5, rect6 in zip(self.p0.patches, self.p1.patches,
                                                                    self.p2.patches,

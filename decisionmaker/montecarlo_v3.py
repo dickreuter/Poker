@@ -419,28 +419,29 @@ def run_montecarlo_wrapper(logger,p,ui_action_and_signals,config,ui,t):
 
     elif t.gameStage == "Flop":
 
-
         if t.isHeadsUp:
             for i in range (5):
-                if t.other_players[str(i)]['status']==1:
+                if t.other_players[i]['status']==1:
                     break
             opponent_call_probability=float(p.selected_strategy['range_utg'+str(i)])
         else:
-            opponent_call_probability=float(p.selected_strategy['CoveredPlayersCallLikelihoodFlop'])
+            opponent_call_probability=float(p.selected_strategy['range_multiple_players'])
 
         t.assumedPlayers = t.other_active_players - int(round(t.playersAhead * (1 - opponent_call_probability))) + 1
 
 
 
 
+
     else:
+
         if t.isHeadsUp:
             for i in range (5):
-                if t.other_players[str(i)]['status']==1:
+                if t.other_players[i]['status']==1:
                     break
             opponent_call_probability=float(p.selected_strategy['range_utg'+str(i)])
         else:
-            opponent_call_probability=float(p.selected_strategy['CoveredPlayersCallLikelihoodFlop'])
+            opponent_call_probability=float(p.selected_strategy['range_multiple_players'])
 
         t.assumedPlayers = t.other_active_players + 1
 
@@ -466,7 +467,7 @@ def run_montecarlo_wrapper(logger,p,ui_action_and_signals,config,ui,t):
     t.montecarlo_timeout = float(config['montecarlo_timeout'])
     timeout = t.mt_tm + t.montecarlo_timeout
     m = MonteCarlo()
-    logger.debug("Oppoenent call range: " + str(opponent_call_probability))
+    logger.debug("Opponent call range: " + str(opponent_call_probability))
     logger.debug("maxRuns: " + str(maxRuns))
     logger.debug("Player amount: " + str(t.assumedPlayers))
     m.run_montecarlo(logger,t.PlayerCardList, t.cardsOnTable, int(t.assumedPlayers), ui, maxRuns=maxRuns, timeout=timeout, opponent_call_probability=opponent_call_probability)

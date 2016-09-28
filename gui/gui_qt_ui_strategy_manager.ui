@@ -1130,7 +1130,7 @@
          <item>
           <widget class="QLabel" name="label_178">
            <property name="text">
-            <string>Ranges for other players in postflop montecarlo</string>
+            <string>Probability that players ahead will call (influence on montecarlo)</string>
            </property>
           </widget>
          </item>
@@ -1140,7 +1140,7 @@
             <bool>false</bool>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For the calculation of the equity after the flop, the other players are given ranges. Here you can adjust the top% of preflop equity cards that the player is assumed to hold. 100% means he can hold any cards. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This has only an influence on the montecarlo simulation at the flop if there are 2 or more other players in the game and we are not the last one to act. For example If a player acted behind us and there's one ahead of us, if the probability is less than 50% in this switch, the monte carlo will only assume 2 players.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="minimum">
             <number>10</number>
@@ -2087,7 +2087,7 @@
          <item>
           <widget class="QLabel" name="label_393">
            <property name="text">
-            <string>Bet Pot River Equity Max Big blind multiplier</string>
+            <string>Maximum amount to bet pot (as multiple of big blind)</string>
            </property>
           </widget>
          </item>
@@ -2100,7 +2100,7 @@
             <number>1</number>
            </property>
            <property name="maximum">
-            <number>5</number>
+            <number>50</number>
            </property>
            <property name="pageStep">
             <number>1</number>
@@ -2738,7 +2738,7 @@
           <item>
            <widget class="QSlider" name="minimum_bet_size">
             <property name="enabled">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
             <property name="mouseTracking">
              <bool>false</bool>
@@ -2773,6 +2773,98 @@
         </item>
        </layout>
       </widget>
+      <widget class="QLabel" name="label_74">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>170</y>
+         <width>341</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Postflop Headsup ranges for other players in heads up</string>
+       </property>
+      </widget>
+      <widget class="QWidget" name="horizontalLayoutWidget_16">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>540</y>
+         <width>391</width>
+         <height>50</height>
+        </rect>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_22">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_71">
+          <item>
+           <widget class="QLabel" name="label_83">
+            <property name="text">
+             <string>Assumed range for other players if more than 1 other player</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSlider" name="range_multiple_players">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="mouseTracking">
+             <bool>false</bool>
+            </property>
+            <property name="toolTip">
+             <string>For the calculation of the equity after the flop, the other players are given ranges. Here you can adjust the top% of preflop equity cards that the player is assumed to hold. 100% means he can hold any cards. </string>
+            </property>
+            <property name="minimum">
+             <number>10</number>
+            </property>
+            <property name="maximum">
+             <number>100</number>
+            </property>
+            <property name="pageStep">
+             <number>1</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="tickPosition">
+             <enum>QSlider::TicksAbove</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QLCDNumber" name="lcdNumber_126"/>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QLabel" name="label_104">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>520</y>
+         <width>341</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>Postflop multiple players assumed range</string>
+       </property>
+      </widget>
       <zorder>BetPlusInc</zorder>
       <zorder>horizontalLayoutWidget_3</zorder>
       <zorder>horizontalLayoutWidget_4</zorder>
@@ -2787,6 +2879,9 @@
       <zorder>horizontalLayoutWidget_14</zorder>
       <zorder>verticalSpacer</zorder>
       <zorder>horizontalLayoutWidget_15</zorder>
+      <zorder>label_74</zorder>
+      <zorder>horizontalLayoutWidget_16</zorder>
+      <zorder>label_104</zorder>
      </widget>
      <widget class="QWidget" name="ManualOverrides">
       <attribute name="title">
@@ -2803,6 +2898,9 @@
               <layout class="QHBoxLayout" name="horizontalLayout_30">
                <item>
                 <widget class="QSlider" name="verticalSlider_49">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
                  <property name="orientation">
                   <enum>Qt::Vertical</enum>
                  </property>
@@ -2810,6 +2908,9 @@
                </item>
                <item>
                 <widget class="QSlider" name="verticalSlider_50">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
                  <property name="orientation">
                   <enum>Qt::Vertical</enum>
                  </property>
@@ -2841,6 +2942,9 @@
                </item>
                <item>
                 <widget class="QSlider" name="verticalSlider_51">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
                  <property name="orientation">
                   <enum>Qt::Vertical</enum>
                  </property>
@@ -2848,6 +2952,9 @@
                </item>
                <item>
                 <widget class="QSlider" name="verticalSlider_52">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
                  <property name="orientation">
                   <enum>Qt::Vertical</enum>
                  </property>
@@ -2891,6 +2998,9 @@
           <layout class="QHBoxLayout" name="horizontalLayout_24">
            <item>
             <widget class="QSlider" name="verticalSlider_25">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
@@ -2898,6 +3008,9 @@
            </item>
            <item>
             <widget class="QSlider" name="verticalSlider_26">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
@@ -2929,6 +3042,9 @@
            </item>
            <item>
             <widget class="QSlider" name="verticalSlider_27">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
@@ -2936,6 +3052,9 @@
            </item>
            <item>
             <widget class="QSlider" name="verticalSlider_28">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
@@ -2981,6 +3100,9 @@
           <layout class="QHBoxLayout" name="horizontalLayout_28">
            <item>
             <widget class="QSlider" name="verticalSlider_41">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
@@ -2988,6 +3110,9 @@
            </item>
            <item>
             <widget class="QSlider" name="verticalSlider_42">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
@@ -3019,6 +3144,9 @@
            </item>
            <item>
             <widget class="QSlider" name="verticalSlider_43">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
@@ -3026,6 +3154,9 @@
            </item>
            <item>
             <widget class="QSlider" name="verticalSlider_44">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
@@ -3071,6 +3202,9 @@
           <layout class="QHBoxLayout" name="horizontalLayout_26">
            <item>
             <widget class="QSlider" name="verticalSlider_33">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
@@ -3078,6 +3212,9 @@
            </item>
            <item>
             <widget class="QSlider" name="verticalSlider_34">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
@@ -3109,6 +3246,9 @@
            </item>
            <item>
             <widget class="QSlider" name="verticalSlider_35">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
@@ -3116,6 +3256,9 @@
            </item>
            <item>
             <widget class="QSlider" name="verticalSlider_36">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
@@ -3161,6 +3304,9 @@
           <layout class="QHBoxLayout" name="horizontalLayout_27">
            <item>
             <widget class="QSlider" name="verticalSlider_37">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
@@ -3168,6 +3314,9 @@
            </item>
            <item>
             <widget class="QSlider" name="verticalSlider_38">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
@@ -3199,6 +3348,9 @@
            </item>
            <item>
             <widget class="QSlider" name="verticalSlider_39">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
@@ -3206,6 +3358,9 @@
            </item>
            <item>
             <widget class="QSlider" name="verticalSlider_40">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
@@ -3282,6 +3437,9 @@
           <layout class="QHBoxLayout" name="horizontalLayout">
            <item>
             <widget class="QSlider" name="verticalSlider_2">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
@@ -3289,6 +3447,9 @@
            </item>
            <item>
             <widget class="QSlider" name="verticalSlider">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
@@ -3320,6 +3481,9 @@
            </item>
            <item>
             <widget class="QSlider" name="verticalSlider_3">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
@@ -3327,6 +3491,9 @@
            </item>
            <item>
             <widget class="QSlider" name="verticalSlider_4">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
@@ -4678,6 +4845,22 @@
     <hint type="destinationlabel">
      <x>287</x>
      <y>680</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>range_multiple_players</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_126</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>208</x>
+     <y>706</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>378</x>
+     <y>697</y>
     </hint>
    </hints>
   </connection>

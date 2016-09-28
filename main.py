@@ -15,7 +15,7 @@ import inspect
 from captcha.captcha_manager import solve_captcha
 from vbox_manager import VirtualBoxController
 
-version=1.6
+version=1.63
 IP=''
 
 class History(object):
@@ -39,6 +39,7 @@ class History(object):
         self.histMinBet = 0
         self.histPlayerPots = 0
         self.first_raiser=np.nan
+        self.previous_decision=0
 
 class Table(object):
     # General tools that are used to operate the pokerbot and are valid for all tables
@@ -206,13 +207,13 @@ class Table(object):
         except:
             self.logger.warning("Coulnd't safe debugging png file for ocr")
 
-        basewidth = 200
+        basewidth = 300
         wpercent = (basewidth / float(img_orig.size[0]))
         hsize = int((float(img_orig.size[1]) * float(wpercent)))
         img_resized = img_orig.resize((basewidth, hsize), Image.ANTIALIAS)
 
         img_min = img_resized.filter(ImageFilter.MinFilter)
-        #img_med = img_resized.filter(ImageFilter.MedianFilter)
+        img_med = img_resized.filter(ImageFilter.MedianFilter)
         img_mod = img_resized.filter(ImageFilter.ModeFilter).filter(ImageFilter.SHARPEN)
 
         lst = []
@@ -550,15 +551,19 @@ class TableScreenBased(Table):
             return False
 
     def init_get_other_players_info(self):
-        self.other_players=dict()
+        other_player=dict()
+        other_player['utg_position'] = ''
+        other_player['name'] = ''
+        other_player['status'] = ''
+        other_player['funds'] = ''
+        other_player['pot'] = ''
+        self.other_players = []
         for i in range (5):
-            self.other_players[str(i)]=dict()
-            self.other_players[str(i)]['abs_position']=i
-            self.other_players[str(i)]['utg_position'] = ''
-            self.other_players[str(i)]['name'] = ''
-            self.other_players[str(i)]['status'] = ''
-            self.other_players[str(i)]['funds'] = ''
-            self.other_players[str(i)]['pot'] = ''
+            op=copy(other_player)
+            op['abs_position']=i
+            self.other_players.append(op)
+
+
         return True
 
     def get_other_player_names(self):
@@ -577,7 +582,7 @@ class TableScreenBased(Table):
         #         recognizedText = (pytesseract.image_to_string(pil_image, None, False, "-psm 6"))
         #         recognizedText = re.sub(r'[\W+]', '', recognizedText)
         #         self.logger.debug("Player name: "+recognizedText)
-        #         self.other_players[str(i)]['name'] = recognizedText
+        #         self.other_players[i]['name'] = recognizedText
         #     except Exception as e:
         #         self.logger.debug("Pyteseract error in player name recognition: " + str(e))
         return True
@@ -601,7 +606,7 @@ class TableScreenBased(Table):
             self.gui_signals.signal_progressbar_increase.emit(1)
             pot_area_image = self.crop_image(self.entireScreenPIL, self.tlc[0]-20 + fd[0], self.tlc[1] + fd[1]-20,self.tlc[0] + fd[2]+20, self.tlc[1] + fd[3]+20)
             img = cv2.cvtColor(np.array(pot_area_image), cv2.COLOR_BGR2RGB)
-            count, points, bestfit = self.find_template_on_screen(self.smallDollarSign1, img, 0.02)
+            count, points, bestfit = self.find_template_on_screen(self.smallDollarSign1, img, 0.2)
             has_small_dollarsign=count>0
             if has_small_dollarsign:
                 pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1],self.tlc[0] + fd[2], self.tlc[1] + fd[3])
@@ -613,10 +618,10 @@ class TableScreenBased(Table):
                     value=''
                 value=float(value) if value!='' else ''
                 self.logger.debug("FINAL POT after regex: "+str(value))
-                self.other_players[str(n)]['pot'] = value
+                self.other_players[n]['pot'] = value
         return True
 
-    def get_other_player_status(self,p):
+    def get_other_player_status(self,p,h):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
         self.gui_signals.signal_status.emit("Get other playsrs' status")
 
@@ -629,18 +634,18 @@ class TableScreenBased(Table):
             self.logger.debug("Player status: " + str(i)+": "+str(count))
             if count>0:
                 self.covered_players+=1
-                self.other_players[str(i)]['status'] = 1
+                self.other_players[i]['status'] = 1
             else:
-                self.other_players[str(i)]['status'] = 0
+                self.other_players[i]['status'] = 0
 
-            self.other_players[str(i)]['utg_position'] = (self.other_players[str(i)]['abs_position']-self.dealer_position+4) %6
+            self.other_players[i]['utg_position'] = (self.other_players[i]['abs_position']-self.dealer_position+4) %6
 
 
-        self.other_active_players=sum([v['status']  for _,v in self.other_players.items()])
+        self.other_active_players=sum([v['status']  for v in self.other_players])
         if self.gameStage=="PreFlop":
-            self.playersBehind=sum([v['status']  for _,v in self.other_players.items() if v['abs_position']>=self.dealer_position+3-1])
+            self.playersBehind=sum([v['status']  for v in self.other_players if v['abs_position']>=self.dealer_position+3-1])
         else:
-            self.playersBehind = sum([v['status'] for _, v in self.other_players.items() if v['abs_position'] >= self.dealer_position+1-1])
+            self.playersBehind = sum([v['status'] for v in self.other_players if v['abs_position'] >= self.dealer_position+1-1])
         self.playersAhead = self.other_active_players-self.playersBehind
         self.isHeadsUp=True if self.other_active_players<2 else False
         self.logger.debug("Other players in the game: "+str(self.other_active_players))
@@ -653,22 +658,22 @@ class TableScreenBased(Table):
         self.first_caller = np.nan
         for n in range(5):
             i=(self.dealer_position+n+3-2)%5 #less mysself as 0 is now first other player to my left and no longer myself
-            self.logger.debug("Go through pots to find raiser abs:: "+str(i)+": "+str(self.other_players[str(i)]['pot']))
-            if self.other_players[str(i)]['pot']!='': # check if not empty (otherwise can't convert string)
-                if self.other_players[str(i)]['pot'] > float(p.selected_strategy['bigBlind']):
+            self.logger.debug("Go through pots to find raiser abs:: "+str(i)+": "+str(self.other_players[i]['pot']))
+            if self.other_players[i]['pot']!='': # check if not empty (otherwise can't convert string)
+                if self.other_players[i]['pot'] > float(p.selected_strategy['bigBlind']):
                     if np.isnan(self.first_raiser):
                         self.first_raiser=int(i)
-                        self.first_raiser_pot = self.other_players[str(i)]['pot']
+                        self.first_raiser_pot = self.other_players[i]['pot']
                     else:
-                        if self.other_players[str(i)]['pot']>self.first_raiser_pot:
+                        if self.other_players[i]['pot']>self.first_raiser_pot:
                             self.second_raiser = int(i)
 
-        self.logger.info("First raiser abs: " + str(self.first_raiser))
+        self.logger.debug("First raiser abs: " + str(self.first_raiser))
         self.first_raiser_utg=(self.first_raiser - self.dealer_position+4) % 6
         self.logger.info("First raiser utg+" + str(self.first_raiser_utg))
         self.highest_raiser = np.nanmax([self.first_raiser, self.second_raiser])
 
-        self.logger.info("Second raiser abs: " + str(self.second_raiser))
+        self.logger.debug("Second raiser abs: " + str(self.second_raiser))
         self.logger.info("Highest raiser abs: " + str(self.highest_raiser))
 
         first_possible_caller=int(self.big_blind_position_abs_op+1 if np.isnan(self.highest_raiser) else self.highest_raiser+1)
@@ -676,18 +681,26 @@ class TableScreenBased(Table):
 
         # get first caller after raise in preflop
         for n in list(range(first_possible_caller,5)): # n is absolute position of other player, 0 is player to my left
-            self.logger.debug("Go through pots to find caller abs: " + str(n) + ": " + str(self.other_players[str(n)]['pot']))
-            if self.other_players[str(n)]['pot'] != '':  # check if not empty (otherwise can't convert string)
-                if (self.other_players[str(n)]['pot'] == float(p.selected_strategy['bigBlind']) and not n==self.big_blind_position_abs_op) or \
-                self.other_players[str(n)]['pot'] > float(p.selected_strategy['bigBlind']):
+            self.logger.debug("Go through pots to find caller abs: " + str(n) + ": " + str(self.other_players[n]['pot']))
+            if self.other_players[n]['pot'] != '':  # check if not empty (otherwise can't convert string)
+                if (self.other_players[n]['pot'] == float(p.selected_strategy['bigBlind']) and not n==self.big_blind_position_abs_op) or \
+                self.other_players[n]['pot'] > float(p.selected_strategy['bigBlind']):
                     self.first_caller = int(n)
                     break
 
 
 
-        self.logger.info("First caller abs: " + str(self.first_caller))
+        self.logger.debug("First caller abs: " + str(self.first_caller))
         self.first_caller_utg=(self.first_caller - self.dealer_position +4) % 6
         self.logger.info("First caller utg+" + str(self.first_caller_utg))
+
+        if (h.previous_decision=="Call" or h.previous_decision=="Call2") and str(h.lastRoundGameID) == str(h.GameID):
+            self.other_player_has_initiative=True
+        else:
+            self.other_player_has_initiative = False
+
+
+        logger.debug("Other player has initiative: "+str(self.other_player_has_initiative))
 
         return True
 
@@ -978,7 +991,7 @@ class ThreadManager(threading.Thread):
                             t.get_other_player_names() and \
                             t.get_other_player_funds() and \
                             t.get_other_player_pots() and \
-                            t.get_other_player_status(p) and \
+                            t.get_other_player_status(p,h) and \
                             t.get_total_pot_value(h) and \
                             t.check_for_checkbutton() and \
                             t.check_for_call() and \
@@ -1033,6 +1046,8 @@ class ThreadManager(threading.Thread):
                     h.first_raiser=t.first_raiser
                     h.first_caller=t.first_caller
                     h.previous_decision=d.decision
+                    h.lastRoundGameID = h.GameID
+                    logger.info("======================= THE END=======================")
 
 # ==== MAIN PROGRAM =====
 if __name__ == '__main__':
@@ -1046,6 +1061,9 @@ if __name__ == '__main__':
     def my_exception_hook(exctype, value, traceback):
         # Print the error and traceback
         print(exctype, value, traceback)
+        logger.error(str(exctype))
+        logger.error(str(value))
+        logger.error(str(traceback))
         # Call the normal Exception hook after
         sys._excepthook(exctype, value, traceback)
         sys.exit(1)

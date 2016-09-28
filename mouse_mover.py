@@ -126,7 +126,6 @@ class MouseMoverTableBased(MouseMover):
         if decision == 'Check Deception': decision = 'Check'
         if decision == 'Call Deception': decision = 'Call'
 
-        logger.info("Moving Mouse: "+str(decision))
         tlx = int(topleftcorner[0])
         tly = int(topleftcorner[1])
 

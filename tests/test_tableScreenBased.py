@@ -16,11 +16,11 @@ class TestTableScreenBased(TestCase):
         self.assertEqual(np.isnan(t.first_raiser), True)
         self.assertEqual(np.isnan(t.first_caller), True)
 
-        self.assertEqual(t.other_players['0']['utg_position'], 1)
-        self.assertEqual(t.other_players['1']['utg_position'], 2)
-        self.assertEqual(t.other_players['2']['utg_position'], 3)
-        self.assertEqual(t.other_players['3']['utg_position'], 4)
-        self.assertEqual(t.other_players['4']['utg_position'], 5)
+        self.assertEqual(t.other_players[0]['utg_position'], 1)
+        self.assertEqual(t.other_players[1]['utg_position'], 2)
+        self.assertEqual(t.other_players[2]['utg_position'], 3)
+        self.assertEqual(t.other_players[3]['utg_position'], 4)
+        self.assertEqual(t.other_players[4]['utg_position'], 5)
 
     def test_other_players2(self):
         t, p, gui_signals, h, logger=init_table('tests/751235173_PreFlop_0.png')
@@ -30,11 +30,11 @@ class TestTableScreenBased(TestCase):
         self.assertEqual(t.first_raiser, 3)
         self.assertEqual(np.isnan(t.first_caller), True)
 
-        self.assertEqual(t.other_players['0']['utg_position'], 0)
-        self.assertEqual(t.other_players['1']['utg_position'], 1)
-        self.assertEqual(t.other_players['2']['utg_position'], 2)
-        self.assertEqual(t.other_players['3']['utg_position'], 3)
-        self.assertEqual(t.other_players['4']['utg_position'], 4)
+        self.assertEqual(t.other_players[0]['utg_position'], 0)
+        self.assertEqual(t.other_players[1]['utg_position'], 1)
+        self.assertEqual(t.other_players[2]['utg_position'], 2)
+        self.assertEqual(t.other_players[3]['utg_position'], 3)
+        self.assertEqual(t.other_players[4]['utg_position'], 4)
 
 
     def test_other_players3(self):
@@ -47,11 +47,38 @@ class TestTableScreenBased(TestCase):
         self.assertEqual(t.playersBehind, 2)
         self.assertEqual(t.playersAhead, 3)
 
-        self.assertEqual(t.other_players['0']['utg_position'], 3)
-        self.assertEqual(t.other_players['1']['utg_position'], 4)
-        self.assertEqual(t.other_players['2']['utg_position'], 5)
-        self.assertEqual(t.other_players['3']['utg_position'], 0)
-        self.assertEqual(t.other_players['4']['utg_position'], 1)
+        self.assertEqual(t.other_players[0]['utg_position'], 3)
+        self.assertEqual(t.other_players[1]['utg_position'], 4)
+        self.assertEqual(t.other_players[2]['utg_position'], 5)
+        self.assertEqual(t.other_players[3]['utg_position'], 0)
+        self.assertEqual(t.other_players[4]['utg_position'], 1)
+
+
+    def test_other_players4(self):
+        t, p, gui_signals, h, logger=init_table('tests/467381034_PreFlop_0.png')
+
+        self.assertEqual(t.position_utg_plus, 2)
+        self.assertEqual(t.dealer_position, 1)
+        self.assertEqual(t.first_raiser_utg, 1)
+        self.assertEqual(np.isnan(t.first_caller_utg), True)
+        self.assertEqual(t.playersBehind, 1)
+        self.assertEqual(t.playersAhead, 3)
+        self.assertEqual(t.other_players[0]['pot'], '')
+        self.assertEqual(t.other_players[1]['pot'], 0.02)
+        self.assertEqual(t.other_players[2]['pot'], 0.04)
+        self.assertEqual(t.other_players[3]['pot'], '')
+        self.assertEqual(t.other_players[4]['pot'], 0.12)
+
+    def test_other_players5(self):
+        t, p, gui_signals, h, logger = init_table('tests/496504338_PreFlop_0.png')
+        self.assertEqual(t.other_players[0]['pot'], 0.04)
+        self.assertEqual(t.other_players[1]['pot'], 0.08)
+        self.assertEqual(t.other_players[2]['pot'], '')
+        self.assertEqual(t.other_players[3]['pot'], '')
+        self.assertEqual(t.other_players[4]['pot'], '')
+
+
+
 
 
     def test_flop(self):
