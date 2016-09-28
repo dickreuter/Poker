@@ -398,8 +398,6 @@ class Decision(DecisionBase):
 
         self.admin(t,p,h,logger)
         self.bluff(t, p, h, logger)
-
-        self.decision = DecisionTypes.call
         self.decision = self.decision.value
 
 
