@@ -12,6 +12,7 @@ import datetime
 import sys
 import subprocess
 import requests
+import threading
 
 class UpdateChecker():
     def __init__(self):
@@ -73,7 +74,14 @@ class StrategyHandler(object):
         return l
 
     def check_defaults(self):
+        if not 'max_abs_fundchange' in self.selected_strategy: self.selected_strategy['max_abs_fundchange'] = 4
+        if not 'RiverCheckDeceptionMinEquity' in self.selected_strategy: self.selected_strategy['RiverCheckDeceptionMinEquity'] = .1
+        if not 'TurnCheckDeceptionMinEquity' in self.selected_strategy: self.selected_strategy['TurnCheckDeceptionMinEquity'] = .1
+        if not 'pre_flop_equity_reduction_by_position' in self.selected_strategy: self.selected_strategy['pre_flop_equity_reduction_by_position'] = 0.01
+        if not 'pre_flop_equity_increase_if_bet' in self.selected_strategy: self.selected_strategy['pre_flop_equity_increase_if_bet'] = 0.20
+        if not 'pre_flop_equity_increase_if_call' in self.selected_strategy: self.selected_strategy['pre_flop_equity_increase_if_call'] = 0.10
         if not 'preflop_override' in self.selected_strategy: self.selected_strategy['preflop_override'] = 0
+        if not 'gather_player_names' in self.selected_strategy: self.selected_strategy['gather_player_names'] = 0
         if not 'range_utg0' in self.selected_strategy: self.selected_strategy['range_utg0'] = 0.2
         if not 'range_utg1' in self.selected_strategy: self.selected_strategy['range_utg1'] = 0.2
         if not 'range_utg2' in self.selected_strategy: self.selected_strategy['range_utg2'] = 0.2
@@ -83,13 +91,16 @@ class StrategyHandler(object):
         if not 'range_multiple_players' in self.selected_strategy: self.selected_strategy['range_multiple_players'] = 0.2
         if not 'minimum_bet_size' in self.selected_strategy: self.selected_strategy['minimum_bet_size'] = 3
 
-
     def read_strategy(self,strategy_override=''):
         config = ConfigObj("config.ini")
         last_strategy = (config['last_strategy'])
         self.current_strategy = last_strategy if strategy_override == '' else strategy_override
-        cursor=self.mongodb.strategies.find({'Strategy': self.current_strategy})
-        self.selected_strategy=cursor.next()
+        try:
+            cursor=self.mongodb.strategies.find({'Strategy': self.current_strategy})
+            self.selected_strategy=cursor.next()
+        except:
+            cursor = self.mongodb.strategies.find({'Strategy': "Default"})
+            self.selected_strategy = cursor.next()
         self.check_defaults()
         return self.selected_strategy
 
@@ -128,6 +139,11 @@ class GameLogger(object):
         self.mongoclient = MongoClient('mongodb://guest:donald@52.201.173.151:27017/POKER')
         self.mongodb = self.mongoclient.POKER
 
+    def clean_database(self):
+        if os.environ['COMPUTERNAME']=='NICOLAS-ASUS' or os.environ['COMPUTERNAME']=='Home-PC-ND':
+            #self.mongodb.rounds.remove({})
+            self.mongodb.collusion.remove({})
+
     def isIterable(self, x):
         # use str instead of basestring if Python3
         if isinstance(x, Iterable) and not isinstance(x, str):
@@ -152,7 +168,6 @@ class GameLogger(object):
             if len(" ".join(str(ele) for ele in self.isIterable(val)))<20:
                 dDict[key] = " ".join(str(ele) for ele in self.isIterable(val))
 
-        pDict['logging_timestamp']=datetime.datetime.utcnow()
         pDict['computername']=os.environ['COMPUTERNAME']
 
         Dh = pd.DataFrame(hDict, index=[0])
@@ -163,10 +178,11 @@ class GameLogger(object):
         self.FinalDataFrame = pd.concat([Dd, Dt, Dh, Dp], axis=1)
         rec=self.FinalDataFrame.to_dict('records')[0]
         rec['other_players']=t.other_players
+        rec['logging_timestamp'] = datetime.datetime.utcnow()
         del rec['_id']
         result = self.mongodb.rounds.insert_one(rec)
 
-    def mark_last_game(self, t, h):
+    def mark_last_game(self, t, h, p):
         # updates the last game after it becomes know if it was won or lost
         outcome = "na"
         if t.myFundsChange > 0:
@@ -206,13 +222,48 @@ class GameLogger(object):
             summary_dict['software_version'] = t.version
             summary_dict['ip'] = t.ip
 
-
-            result = self.mongodb.games.insert_one(summary_dict)
+            if abs(t.myFundsChange)<=float(p.selected_strategy['max_abs_fundchange']):
+                t_write_db = threading.Thread(name='write_mongo', target=self.mongodb.games.insert_one, args=[summary_dict])
+                t_write_db.daemon = True
+                t_write_db.start()
+                #result = self.mongodb.games.insert_one(summary_dict)
 
     def get_total_funds_change(self):
         FCPG = np.sum(self.LogDataFileSummary['FinalFundsChange']) / np.size(
             self.LogDataFileSummary['FinalFundsChange'])
         return FCPG
+
+    def upload_collusion_data(self,gamenumber,mycards,p,gamestage):
+        package={}
+        package['gamenumber']=gamenumber
+        package['cards']=mycards
+        package['computername']=os.environ['COMPUTERNAME']
+        package['strategy']=p.current_strategy
+        package['timestamp']=datetime.datetime.utcnow()
+        package['gamestage'] = gamestage
+        t_write_db = threading.Thread(name='write_collusion', target=self.mongodb.collusion.insert_one, args=[package])
+        t_write_db.daemon = True
+        t_write_db.start()
+
+    def get_collusion_cards(self,gamenumber,gamestage):
+        gamenumber_part=gamenumber[-7:]
+        computername=os.environ['COMPUTERNAME']
+        cursor = self.mongodb.collusion.find({"gamenumber" : {"$regex": gamenumber_part}, "computername":{"$ne":computername}})
+        record={}
+        player_dropped_out=False
+
+        try:
+            for document in cursor:
+                record[document['gamestage']]=document['cards']
+
+            if gamestage in record:
+                collusion_cards = record[gamestage]
+            else:
+                player_dropped_out=True
+                collusion_cards = record['PreFlop']
+        except:
+            collusion_cards=''
+        return collusion_cards,player_dropped_out
 
     def get_neural_training_data(self, p_name, p_value, game_stage, decision):
         cursor=self.mongodb.games.aggregate([
@@ -413,7 +464,7 @@ class GameLogger(object):
         return y
 
     def get_played_strategy_list(self):
-        l=list(self.mongodb.games.distinct("Template"))[::-1]
+        l=list(self.mongodb.games.distinct("Template"))
         l.append('.*')
         return l
 
@@ -498,10 +549,11 @@ class GameLogger(object):
         bigBlind = 0.04
         maxValue = 2
         maxEquity = 1
+        max_X =1
 
         def check_if_below(equity, min_call, final_funds_change):
             x = np.array([float(equity)])
-            d = Curvefitting(x, smallBlind, bigBlind, maxValue, minEquity, maxEquity, pw, pl=False)
+            d = Curvefitting(x, smallBlind, bigBlind, maxValue, minEquity, maxEquity, max_X, pw, pl=False)
             return (np.array([float(min_call)]) < d.y) * final_funds_change
 
         for pw in np.linspace(1, 5, 5):

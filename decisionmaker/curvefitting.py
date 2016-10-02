@@ -32,7 +32,7 @@ class Curvefitting_scipy():
         return ((x + adj1) ** self.pw) * adj2
 
 class Curvefitting(object):
-    def __init__(self, x, smallBlind, bigBlind, maxValue, minEquity, maxEquity, pw, pl=False):
+    def __init__(self, x, smallBlind, bigBlind, maxValue, minEquity, maxEquity, max_X, pw, pl=False):
         def fcn2min(params, x, data):
             pw = params['pw'].value
             adj1 = params['adj1'].value
@@ -52,7 +52,7 @@ class Curvefitting(object):
             pylab.plot(x, y, 'r')
             pylab.show()
 
-        xf = [minEquity, 1]
+        xf = [minEquity, max_X]
         yf = [bigBlind, maxValue]
         self.x = x
 
@@ -82,9 +82,10 @@ if __name__ == '__main__':
     minEquity = 0.75
     maxEquity = 0.9
     pw = 16
+    max_X=1
 
     xf = np.linspace(0, 1, 50)
-    d=Curvefitting(xf, smallBlind, bigBlind, maxValue, minEquity, maxEquity, pw, pl=False)
+    d=Curvefitting(xf, smallBlind, bigBlind, maxValue, minEquity, maxEquity, max_X, pw, pl=False)
 
 
 

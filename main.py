@@ -8,14 +8,14 @@ import cv2  # opencv 3.0
 import pytesseract
 import re
 from PIL import Image, ImageGrab, ImageDraw, ImageFilter
-from decisionmaker.decisionmaker3 import *
-from decisionmaker.montecarlo_v3 import *
+from decisionmaker.decisionmaker import *
+from decisionmaker.montecarlo_python import *
 from mouse_mover import *
 import inspect
 from captcha.captcha_manager import solve_captcha
 from vbox_manager import VirtualBoxController
 
-version=1.64
+version=1.69
 IP=''
 
 class History(object):
@@ -40,6 +40,8 @@ class History(object):
         self.histPlayerPots = 0
         self.first_raiser=np.nan
         self.previous_decision=0
+        self.last_round_bluff=False
+        self.uploader={}
 
 class Table(object):
     # General tools that are used to operate the pokerbot and are valid for all tables
@@ -267,7 +269,6 @@ class Table(object):
             return ''
 
     def call_genetic_algorithm(self):
-
         self.gui_signals.signal_progressbar_increase.emit(5)
         self.gui_signals.signal_status.emit("Updating charts and work in background")
         n = L.get_game_count(p.current_strategy)
@@ -509,6 +510,8 @@ class TableScreenBased(Table):
         else:
             h.round_number=0
 
+        self.max_X = 1 if self.gameStage != 'PreFlop' else 0.86
+
         return True
 
     def get_my_cards(self,h):
@@ -566,37 +569,39 @@ class TableScreenBased(Table):
 
         return True
 
-    def get_other_player_names(self):
-        # func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
-        # self.gui_signals.signal_status.emit("Get player names")
-        #
-        # for i, fd in enumerate(func_dict):
-        #     self.gui_signals.signal_progressbar_increase.emit(2)
-        #     pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1],
-        #                             self.tlc[0] + fd[2], self.tlc[1] + fd[3])
-        #     basewidth = 500
-        #     wpercent = (basewidth / float(pil_image.size[0]))
-        #     hsize = int((float(pil_image.size[1]) * float(wpercent)))
-        #     pil_image = pil_image.resize((basewidth, hsize), Image.ANTIALIAS)
-        #     try:
-        #         recognizedText = (pytesseract.image_to_string(pil_image, None, False, "-psm 6"))
-        #         recognizedText = re.sub(r'[\W+]', '', recognizedText)
-        #         self.logger.debug("Player name: "+recognizedText)
-        #         self.other_players[i]['name'] = recognizedText
-        #     except Exception as e:
-        #         self.logger.debug("Pyteseract error in player name recognition: " + str(e))
+    def get_other_player_names(self,p):
+        if p.selected_strategy['gather_player_names']==1:
+            func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+            self.gui_signals.signal_status.emit("Get player names")
+
+            for i, fd in enumerate(func_dict):
+                self.gui_signals.signal_progressbar_increase.emit(2)
+                pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1],
+                                        self.tlc[0] + fd[2], self.tlc[1] + fd[3])
+                basewidth = 500
+                wpercent = (basewidth / float(pil_image.size[0]))
+                hsize = int((float(pil_image.size[1]) * float(wpercent)))
+                pil_image = pil_image.resize((basewidth, hsize), Image.ANTIALIAS)
+                try:
+                    recognizedText = (pytesseract.image_to_string(pil_image, None, False, "-psm 6"))
+                    recognizedText = re.sub(r'[\W+]', '', recognizedText)
+                    self.logger.debug("Player name: "+recognizedText)
+                    self.other_players[i]['name'] = recognizedText
+                except Exception as e:
+                    self.logger.debug("Pyteseract error in player name recognition: " + str(e))
         return True
 
-    def get_other_player_funds(self):
-        # func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
-        # self.gui_signals.signal_status.emit("Get player funds")
-        # for i, fd in enumerate(func_dict, start=0):
-        #     self.gui_signals.signal_progressbar_increase.emit(1)
-        #     pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1],self.tlc[0] + fd[2], self.tlc[1] + fd[3])
-        #     #pil_image.show()
-        #     value=self.get_ocr_float(pil_image,str(inspect.stack()[0][3]))
-        #     value = float(value) if value != '' else ''
-        #     self.other_players[str(i)]['funds'] = value
+    def get_other_player_funds(self,p):
+        if p.selected_strategy['gather_player_names'] == 1:
+            func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+            self.gui_signals.signal_status.emit("Get player funds")
+            for i, fd in enumerate(func_dict, start=0):
+                self.gui_signals.signal_progressbar_increase.emit(1)
+                pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1],self.tlc[0] + fd[2], self.tlc[1] + fd[3])
+                #pil_image.show()
+                value=self.get_ocr_float(pil_image,str(inspect.stack()[0][3]))
+                value = float(value) if value != '' else ''
+                self.other_players[i]['funds'] = value
         return True
 
     def get_other_player_pots(self):
@@ -700,7 +705,7 @@ class TableScreenBased(Table):
             self.other_player_has_initiative = False
 
 
-        logger.debug("Other player has initiative: "+str(self.other_player_has_initiative))
+        self.logger.debug("Other player has initiative: "+str(self.other_player_has_initiative))
 
         return True
 
@@ -855,7 +860,7 @@ class TableScreenBased(Table):
         self.logger.info("Final bet value: " + str(self.currentBetValue))
         return True
 
-    def get_lost_everything(self,h,t):
+    def get_lost_everything(self,h,t,p):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
@@ -864,7 +869,7 @@ class TableScreenBased(Table):
         if count > 0:
             h.lastGameID = str(h.GameID)
             self.myFundsChange = float(0) - float(str(h.myFundsHistory[-1]).strip('[]'))
-            L.mark_last_game(t, h)
+            L.mark_last_game(t, h, p)
             self.gui_signals.signal_status.emit("Everything is lost. Last game has been marked.")
             self.gui_signals.signal_progressbar_reset.emit()
             #user_input = input("Press Enter for exit ")
@@ -872,15 +877,16 @@ class TableScreenBased(Table):
         else:
             return True
 
-    def get_new_hand(self, mouse, h,p):
+    def get_new_hand(self, mouse, h, p):
         self.gui_signals.signal_progressbar_increase.emit(5)
+        self.get_game_number_on_screen()
         if h.previousCards != self.mycards:
             self.time_new_cards_recognised=datetime.datetime.utcnow()
             h.lastGameID = str(h.GameID)
             h.GameID = int(round(np.random.uniform(0, 999999999), 0))
             cards = ' '.join(self.mycards)
             self.gui_signals.signal_status.emit("New hand: " + str(cards))
-            L.mark_last_game(self, h)
+            L.mark_last_game(self, h, p)
 
             t_algo = threading.Thread(name='Algo', target=self.call_genetic_algorithm)
             t_algo.daemon = True
@@ -893,10 +899,19 @@ class TableScreenBased(Table):
             h.myFundsHistory.append(str(self.myFunds))
             h.previousCards = self.mycards
             h.lastSecondRoundAdjustment = 0
+            h.last_round_bluff = False  # reset the bluffing marker
+            h.round_number = 0
+
             mouse.move_mouse_away_from_buttons(logger)
-            h.round_number=0
 
             self.take_screenshot(False,p)
+        return True
+
+    def upload_collusion_wrapper(self,p,h):
+        if not (h.GameID,self.gameStage) in h.uploader:
+            h.uploader[(h.GameID,self.gameStage)]=True
+            L.upload_collusion_data(self.game_number_on_screen, self.mycards, p, self.gameStage)
+            logging.debug("Updated db cards")
         return True
 
     def get_game_number_on_screen(self):
@@ -939,7 +954,7 @@ class ThreadManager(threading.Thread):
         gui_signals.signal_lcd_number_update.emit('assumed_players', int(t.assumedPlayers))
         gui_signals.signal_lcd_number_update.emit('calllimit', d.finalCallLimit)
         gui_signals.signal_lcd_number_update.emit('betlimit', d.finalBetLimit)
-        #gui_signals.signal_lcd_number_update.emit('zero_ev', round(d.maxCallEV, 2))
+        #gui_signals.signa.l_lcd_number_update.emit('zero_ev', round(d.maxCallEV, 2))
 
         gui_signals.signal_pie_chart_update.emit(t.winnerCardTypeList)
         gui_signals.signal_curve_chart_update1.emit(h.histEquity, h.histMinCall, h.histMinBet, t.equity,
@@ -950,7 +965,7 @@ class ThreadManager(threading.Thread):
         gui_signals.signal_curve_chart_update2.emit(t.power1, t.power2, t.minEquityCall, t.minEquityBet,
                                                               t.smallBlind, t.bigBlind,
                                                               t.maxValue,
-                                                              t.maxEquityCall, t.maxEquityBet)
+                                                              t.maxEquityCall, t.max_X, t.maxEquityBet)
 
     def run(self):
             h = History()
@@ -979,17 +994,18 @@ class ThreadManager(threading.Thread):
                     ready = t.take_screenshot(True,p) and \
                             t.get_top_left_corner(p) and \
                             t.check_for_captcha(mouse) and \
-                            t.get_lost_everything(h,t) and \
+                            t.get_lost_everything(h,t,p) and \
                             t.check_for_imback(mouse) and \
                             t.get_my_funds(h) and \
                             t.get_my_cards(h) and \
                             t.get_new_hand(mouse,h,p) and \
-                            t.check_for_button() and \
                             t.get_table_cards(h) and \
+                            t.upload_collusion_wrapper(p,h) and \
+                            t.check_for_button() and \
                             t.get_dealer_position() and \
                             t.init_get_other_players_info() and \
-                            t.get_other_player_names() and \
-                            t.get_other_player_funds() and \
+                            t.get_other_player_names(p) and \
+                            t.get_other_player_funds(p) and \
                             t.get_other_player_pots() and \
                             t.get_other_player_status(p,h) and \
                             t.get_total_pot_value(h) and \
@@ -998,12 +1014,11 @@ class ThreadManager(threading.Thread):
                             t.check_for_betbutton() and \
                             t.check_for_allincall() and \
                             t.get_current_call_value(p) and \
-                            t.get_current_bet_value(p) and \
-                            t.get_game_number_on_screen()
+                            t.get_current_bet_value(p)
 
                 if not p.pause:
                     config = ConfigObj("config.ini")
-                    run_montecarlo_wrapper(logger,p,gui_signals,config,ui,t)
+                    run_montecarlo_wrapper(logger,p,gui_signals,config,ui,t,L)
                     d = Decision(t, h, p, logger, L)
                     d.make_decision(t, h, p, logger, L)
                     if p.exit_thread: sys.exit()
@@ -1029,12 +1044,15 @@ class ThreadManager(threading.Thread):
 
                     filename=str(h.GameID)+"_"+str(t.gameStage)+"_"+str(h.round_number)+".png"
                     logger.debug("Saving screenshot: "+filename)
-                    pil_image = t.crop_image(t.entireScreenPIL, t.tlc[0],t.tlc[1],t.tlc[0] + 1000, t.tlc[1] + 900)
+                    pil_image = t.crop_image(t.entireScreenPIL, t.tlc[0],t.tlc[1],t.tlc[0] + 950, t.tlc[1] + 650)
                     pil_image.save("log/screenshots/"+filename)
 
                     gui_signals.signal_status.emit("Logging data")
 
-                    L.write_log_file(p, h, t, d)
+                    t_log_db = threading.Thread(name='t_log_db', target=L.write_log_file,args=[p, h, t, d])
+                    t_log_db.daemon = True
+                    t_log_db.start()
+                    #L.write_log_file(p, h, t, d)
 
                     h.previousPot = t.totalPotValue
                     h.histGameStage = t.gameStage
@@ -1047,6 +1065,7 @@ class ThreadManager(threading.Thread):
                     h.first_caller=t.first_caller
                     h.previous_decision=d.decision
                     h.lastRoundGameID = h.GameID
+                    h.last_round_bluff = False if t.currentBluff==0 else True
                     logger.info("======================= THE END=======================")
 
 # ==== MAIN PROGRAM =====
@@ -1086,13 +1105,16 @@ if __name__ == '__main__':
     p.read_strategy()
 
     L = GameLogger()
+    L.clean_database()
 
     p.exit_thread=False
     p.pause=True
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
+
     ui = Ui_Pokerbot()
     ui.setupUi(MainWindow)
+    MainWindow.setWindowIcon(QtGui.QIcon('icon.ico'))
 
     gui_signals = UIActionAndSignals(ui, p, L, logger) # global variable
 

@@ -26,6 +26,20 @@
    <string>Strategy editor</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
+    <widget class="QLabel" name="label_4">
+     <property name="font">
+      <font>
+       <pointsize>20</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Strategy editor</string>
+     </property>
+    </widget>
+   </item>
    <item row="2" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
@@ -85,20 +99,6 @@
      </item>
     </layout>
    </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="label_4">
-     <property name="font">
-      <font>
-       <pointsize>20</pointsize>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>Strategy editor</string>
-     </property>
-    </widget>
-   </item>
    <item row="3" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="enabled">
@@ -115,9 +115,6 @@
        <string>General</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_3">
-       <item row="0" column="1">
-        <widget class="QLCDNumber" name="lcdNumber_57"/>
-       </item>
        <item row="0" column="0">
         <layout class="QVBoxLayout" name="verticalLayout_27">
          <item>
@@ -160,6 +157,9 @@
          </item>
         </layout>
        </item>
+       <item row="0" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_57"/>
+       </item>
        <item row="1" column="0">
         <layout class="QVBoxLayout" name="verticalLayout_6">
          <item>
@@ -196,8 +196,8 @@
          </item>
         </layout>
        </item>
-       <item row="2" column="1">
-        <widget class="QLCDNumber" name="lcdNumber_55"/>
+       <item row="1" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_58"/>
        </item>
        <item row="2" column="0">
         <layout class="QVBoxLayout" name="verticalLayout_33">
@@ -235,44 +235,8 @@
          </item>
         </layout>
        </item>
-       <item row="1" column="1">
-        <widget class="QLCDNumber" name="lcdNumber_58"/>
-       </item>
-       <item row="4" column="0">
-        <layout class="QVBoxLayout" name="verticalLayout_432">
-         <item>
-          <widget class="QLabel" name="label_449">
-           <property name="text">
-            <string>Minimum loss to initiate Genetic Algorithm</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSlider" name="minimumLossForIteration">
-           <property name="mouseTracking">
-            <bool>false</bool>
-           </property>
-           <property name="minimum">
-            <number>0</number>
-           </property>
-           <property name="maximum">
-            <number>100</number>
-           </property>
-           <property name="singleStep">
-            <number>1</number>
-           </property>
-           <property name="pageStep">
-            <number>10</number>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="tickPosition">
-            <enum>QSlider::TicksAbove</enum>
-           </property>
-          </widget>
-         </item>
-        </layout>
+       <item row="2" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_55"/>
        </item>
        <item row="3" column="0">
         <layout class="QVBoxLayout" name="verticalLayout_34">
@@ -316,15 +280,51 @@
        <item row="3" column="1">
         <widget class="QLCDNumber" name="lcdNumber_59"/>
        </item>
+       <item row="4" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_432">
+         <item>
+          <widget class="QLabel" name="label_449">
+           <property name="text">
+            <string>Minimum loss to initiate Genetic Algorithm</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="minimumLossForIteration">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="minimum">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="singleStep">
+            <number>1</number>
+           </property>
+           <property name="pageStep">
+            <number>10</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
        <item row="4" column="1">
         <widget class="QLCDNumber" name="lcdNumber_109"/>
        </item>
-       <item row="5" column="0" rowspan="2">
+       <item row="5" column="0">
         <layout class="QVBoxLayout" name="verticalLayout_435">
          <item>
           <widget class="QLabel" name="label_452">
            <property name="text">
-            <string>Considering the last # of games and initiating the algorithm ever # of rounds</string>
+            <string>Considering the last # of games for genetic algorithm</string>
            </property>
           </widget>
          </item>
@@ -359,6 +359,20 @@
            </property>
           </widget>
          </item>
+        </layout>
+       </item>
+       <item row="5" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_112"/>
+       </item>
+       <item row="6" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_436">
+         <item>
+          <widget class="QLabel" name="label_453">
+           <property name="text">
+            <string>Initiate self improvement ever x hands</string>
+           </property>
+          </widget>
+         </item>
          <item>
           <widget class="QSlider" name="strategyIterationGames">
            <property name="mouseTracking">
@@ -389,11 +403,26 @@
          </item>
         </layout>
        </item>
-       <item row="5" column="1">
-        <widget class="QLCDNumber" name="lcdNumber_112"/>
-       </item>
        <item row="6" column="1">
         <widget class="QLCDNumber" name="lcdNumber_113"/>
+       </item>
+       <item row="7" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_38">
+         <item>
+          <widget class="QLabel" name="label_44">
+           <property name="text">
+            <string>Database settings:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="gather_player_names">
+           <property name="text">
+            <string>Gather player names and stack sizes</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
       </layout>
      </widget>
@@ -403,196 +432,6 @@
       </attribute>
       <layout class="QGridLayout" name="gridLayout_2">
        <item row="8" column="0">
-        <layout class="QVBoxLayout" name="verticalLayout_11">
-         <item>
-          <widget class="QLabel" name="label_17">
-           <property name="text">
-            <string>Curvature</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSlider" name="PreFlopBetPower">
-           <property name="mouseTracking">
-            <bool>false</bool>
-           </property>
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For each stage you can select:&lt;/p&gt;&lt;p&gt;What is the minimum required equity (probability of winning as determined by the simulation) to make a bet, if the bet value is 2*big blind. It is the starting point of the curve that you can see on the right.&lt;/p&gt;&lt;p&gt;How should curve be shaped that determines whether the bot should fold or call. The higher the equity the higher it will call. The higher the curvature (as can be seen in the graph on the right), the more conservative it will be on the lower ranges of the accepted equities. If the curvature is low (minimum is 2), then it almost becomes a straight line.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="minimum">
-            <number>1</number>
-           </property>
-           <property name="maximum">
-            <number>30</number>
-           </property>
-           <property name="singleStep">
-            <number>5</number>
-           </property>
-           <property name="pageStep">
-            <number>10</number>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="tickPosition">
-            <enum>QSlider::TicksAbove</enum>
-           </property>
-           <property name="tickInterval">
-            <number>5</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="12" column="2">
-        <layout class="QVBoxLayout" name="verticalLayout_434">
-         <item>
-          <widget class="QLabel" name="label_451">
-           <property name="text">
-            <string>Second Round adjustment curvature increase (all stages)</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSlider" name="secondRoundAdjustmentPowerIncrease">
-           <property name="mouseTracking">
-            <bool>false</bool>
-           </property>
-           <property name="toolTip">
-            <string comment=" ">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the bot has called or made a bet and then one of the following players raises, another round is played. This is called the 'second round'. It is sometimes a sign that one of the opponents has good cards, that's why it's possible to make an adjustment and increase the curvature of the betting and calling limit, so the bot becomes more conservative.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="minimum">
-            <number>0</number>
-           </property>
-           <property name="maximum">
-            <number>10</number>
-           </property>
-           <property name="pageStep">
-            <number>1</number>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="tickPosition">
-            <enum>QSlider::TicksAbove</enum>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="12" column="3">
-        <widget class="QLCDNumber" name="lcdNumber_111"/>
-       </item>
-       <item row="7" column="0">
-        <layout class="QVBoxLayout" name="verticalLayout_10">
-         <item>
-          <widget class="QLabel" name="label_16">
-           <property name="text">
-            <string>Minimum required equity</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSlider" name="PreFlopMinBetEquity">
-           <property name="mouseTracking">
-            <bool>false</bool>
-           </property>
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For each stage you can select:&lt;/p&gt;&lt;p&gt;What is the minimum required equity (probability of winning as determined by the simulation) to make a bet, if the bet value is 2*big blind. It is the starting point of the curve that you can see on the right.&lt;/p&gt;&lt;p&gt;How should curve be shaped that determines whether the bot should fold or call. The higher the equity the higher it will call. The higher the curvature (as can be seen in the graph on the right), the more conservative it will be on the lower ranges of the accepted equities. If the curvature is low (minimum is 2), then it almost becomes a straight line.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="minimum">
-            <number>1</number>
-           </property>
-           <property name="maximum">
-            <number>100</number>
-           </property>
-           <property name="singleStep">
-            <number>1</number>
-           </property>
-           <property name="pageStep">
-            <number>5</number>
-           </property>
-           <property name="value">
-            <number>50</number>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="tickPosition">
-            <enum>QSlider::TicksAbove</enum>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="5" column="1">
-        <widget class="QLCDNumber" name="lcdNumber_2"/>
-       </item>
-       <item row="6" column="0">
-        <widget class="QLabel" name="label_6">
-         <property name="font">
-          <font>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>Betting</string>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="0">
-        <layout class="QVBoxLayout" name="verticalLayout_9">
-         <item>
-          <widget class="QLabel" name="label_15">
-           <property name="text">
-            <string>Curvature</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSlider" name="PreFlopCallPower">
-           <property name="mouseTracking">
-            <bool>false</bool>
-           </property>
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For each stage you can select:&lt;/p&gt;&lt;p&gt;What is the minimum required equity (probability of winning as determined by the simulation) that is required to call the big blind. It is the starting point of the curve that you can see on the right.&lt;/p&gt;&lt;p&gt;How should curve be shaped that determines whether the bot should fold or call. The higher the equity the higher it will call. The higher the curvature (as can be seen in the graph on the right), the more conservative it will be on the lower ranges of the accepted equities. If the curvature is low (minimum is 2), then it almost becomes a straight line.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="minimum">
-            <number>2</number>
-           </property>
-           <property name="maximum">
-            <number>30</number>
-           </property>
-           <property name="singleStep">
-            <number>5</number>
-           </property>
-           <property name="pageStep">
-            <number>10</number>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="tickPosition">
-            <enum>QSlider::TicksAbove</enum>
-           </property>
-           <property name="tickInterval">
-            <number>5</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="7" column="1">
-        <widget class="QLCDNumber" name="lcdNumber_3"/>
-       </item>
-       <item row="4" column="1">
-        <widget class="QLCDNumber" name="lcdNumber"/>
-       </item>
-       <item row="8" column="1">
-        <widget class="QLCDNumber" name="lcdNumber_4"/>
-       </item>
-       <item row="9" column="0">
         <layout class="QVBoxLayout" name="verticalLayout_381">
          <item>
           <widget class="QLabel" name="label_394">
@@ -634,154 +473,182 @@
          </item>
         </layout>
        </item>
-       <item row="9" column="1">
-        <widget class="QLCDNumber" name="lcdNumber_63"/>
+       <item row="9" column="3">
+        <layout class="QVBoxLayout" name="verticalLayout_35">
+         <item>
+          <widget class="QLabel" name="label_40">
+           <property name="text">
+            <string>Other player call results in increased required equity</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="pre_flop_equity_increase_if_call">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If somebody calls before it's the bot's turn to play, the minimum required equity is increased by this amound.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="minimum">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <number>25</number>
+           </property>
+           <property name="pageStep">
+            <number>1</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
-       <item row="11" column="3">
+       <item row="7" column="3">
+        <layout class="QVBoxLayout" name="verticalLayout_37">
+         <item>
+          <widget class="QLabel" name="label_42">
+           <property name="text">
+            <string>Positional factor for equity adjustment</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="pre_flop_equity_reduction_by_position">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The required equity chosen in the slide is for UTG. With each position that the bot is further away from UTG the required equity to call and bet is reduced by this amount&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="minimum">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <number>5</number>
+           </property>
+           <property name="pageStep">
+            <number>1</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="8" column="3">
+        <layout class="QVBoxLayout" name="verticalLayout_36">
+         <item>
+          <widget class="QLabel" name="label_41">
+           <property name="text">
+            <string>Other players bet results in increase required equity</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="pre_flop_equity_increase_if_bet">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If somebody raises before it's the bot's turn to play, the minimum required equity is increased by this amound.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="minimum">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <number>25</number>
+           </property>
+           <property name="pageStep">
+            <number>1</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="0" column="3">
+        <widget class="QPushButton" name="pushButton_update1">
+         <property name="text">
+          <string>Update Graph</string>
+         </property>
+        </widget>
+       </item>
+       <item row="12" column="4">
         <widget class="QLCDNumber" name="lcdNumber_18"/>
        </item>
-       <item row="12" column="1">
-        <widget class="QLCDNumber" name="lcdNumber_16"/>
-       </item>
-       <item row="12" column="0">
-        <layout class="QVBoxLayout" name="verticalLayout_28">
+       <item row="4" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_9">
          <item>
-          <widget class="QLabel" name="label_33">
+          <widget class="QLabel" name="label_15">
            <property name="text">
-            <string>Second round adjustment in equity for preflop</string>
+            <string>Curvature</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QSlider" name="secondRoundAdjustmentPreFlop">
+          <widget class="QSlider" name="PreFlopCallPower">
            <property name="mouseTracking">
             <bool>false</bool>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the bot has called or made a bet and then one of the following players raises, another round is played. This is called the 'second round'. It is sometimes a sign that one of the opponents has good cards, that's why it's possible to make an adjustment and increase the minimum amount of equity that is required to call or bet, so the bot becomes more conservative.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For each stage you can select:&lt;/p&gt;&lt;p&gt;What is the minimum required equity (probability of winning as determined by the simulation) that is required to call the big blind. It is the starting point of the curve that you can see on the right.&lt;/p&gt;&lt;p&gt;How should curve be shaped that determines whether the bot should fold or call. The higher the equity the higher it will call. The higher the curvature (as can be seen in the graph on the right), the more conservative it will be on the lower ranges of the accepted equities. If the curvature is low (minimum is 2), then it almost becomes a straight line.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="minimum">
-            <number>0</number>
+            <number>1</number>
            </property>
            <property name="maximum">
-            <number>20</number>
+            <number>30</number>
            </property>
            <property name="singleStep">
-            <number>1</number>
-           </property>
-           <property name="pageStep">
             <number>5</number>
            </property>
-           <property name="value">
-            <number>20</number>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="tickPosition">
-            <enum>QSlider::TicksAbove</enum>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="11" column="2">
-        <layout class="QVBoxLayout" name="verticalLayout_31">
-         <item>
-          <widget class="QLabel" name="label_36">
-           <property name="text">
-            <string>Maximum pot adjustment</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSlider" name="maxPotAdjustmentPreFlop">
-           <property name="mouseTracking">
-            <bool>false</bool>
-           </property>
-           <property name="toolTip">
-            <string>If the pot becomes extremely high, the adjustment can be limited.</string>
-           </property>
-           <property name="minimum">
-            <number>1</number>
-           </property>
-           <property name="maximum">
+           <property name="pageStep">
             <number>10</number>
            </property>
-           <property name="pageStep">
-            <number>1</number>
-           </property>
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
            </property>
            <property name="tickPosition">
             <enum>QSlider::TicksAbove</enum>
            </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="10" column="3">
-        <widget class="QLCDNumber" name="lcdNumber_17"/>
-       </item>
-       <item row="10" column="1">
-        <widget class="QLCDNumber" name="lcdNumber_9"/>
-       </item>
-       <item row="10" column="2">
-        <layout class="QVBoxLayout" name="verticalLayout_30">
-         <item>
-          <widget class="QLabel" name="label_35">
-           <property name="text">
-            <string>Pot adjustment</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSlider" name="potAdjustmentPreFlop">
-           <property name="mouseTracking">
-            <bool>false</bool>
-           </property>
-           <property name="toolTip">
-            <string>If the pot gets bigger, the bot becomes more agressive. This slider can adjust how more agressive it should become. </string>
-           </property>
-           <property name="minimum">
-            <number>0</number>
-           </property>
-           <property name="maximum">
+           <property name="tickInterval">
             <number>5</number>
            </property>
-           <property name="pageStep">
-            <number>1</number>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="tickPosition">
-            <enum>QSlider::TicksAbove</enum>
-           </property>
           </widget>
          </item>
         </layout>
        </item>
-       <item row="11" column="1">
-        <widget class="QLCDNumber" name="lcdNumber_15"/>
-       </item>
-       <item row="11" column="0">
-        <layout class="QVBoxLayout" name="verticalLayout_13">
+       <item row="6" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_10">
          <item>
-          <widget class="QLabel" name="label_19">
+          <widget class="QLabel" name="label_16">
            <property name="text">
-            <string>Minimum equity required to potentially bluff</string>
+            <string>Minimum required equity</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QSlider" name="slider_FlopBluffMinEquity">
+          <widget class="QSlider" name="PreFlopMinBetEquity">
            <property name="mouseTracking">
             <bool>false</bool>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The bot has the ability to bluff (pressing the bet button even though the required equity is not met). This is currently done under the following circumstances:&lt;/p&gt;&lt;p&gt;1. Nobody has bet, so there must be a check button&lt;/p&gt;&lt;p&gt;2. In the last stage there was a check button as well (so nobody bet)&lt;/p&gt;&lt;p&gt;3. The minimum equity is met as selected in this slider (this will be lower than the minimum required equity selected at the top)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For each stage you can select:&lt;/p&gt;&lt;p&gt;What is the minimum required equity (probability of winning as determined by the simulation) to make a bet, if the bet value is 2*big blind. It is the starting point of the curve that you can see on the right.&lt;/p&gt;&lt;p&gt;How should curve be shaped that determines whether the bot should fold or call. The higher the equity the higher it will call. The higher the curvature (as can be seen in the graph on the right), the more conservative it will be on the lower ranges of the accepted equities. If the curvature is low (minimum is 2), then it almost becomes a straight line.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="minimum">
             <number>1</number>
@@ -808,7 +675,20 @@
          </item>
         </layout>
        </item>
-       <item row="4" column="0">
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_3">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Calling</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
         <layout class="QVBoxLayout" name="verticalLayout_8">
          <item>
           <widget class="QLabel" name="label_237">
@@ -850,26 +730,21 @@
          </item>
         </layout>
        </item>
-       <item row="1" column="2">
-        <widget class="QPushButton" name="pushButton_update1">
+       <item row="1" column="0">
+        <widget class="QCheckBox" name="preflop_override">
          <property name="text">
-          <string>Update Graph</string>
+          <string>Override with Pokersnowie table</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="2" rowspan="8" colspan="2">
-        <layout class="QVBoxLayout" name="verticalLayout_preflop">
-         <item>
-          <widget class="QWidget" name="widget_4" native="true">
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
+       <item row="3" column="1">
+        <widget class="QLCDNumber" name="lcdNumber"/>
        </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="label_3">
+       <item row="4" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_2"/>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_6">
          <property name="font">
           <font>
            <weight>75</weight>
@@ -877,82 +752,44 @@
           </font>
          </property>
          <property name="text">
-          <string>Calling</string>
+          <string>Betting</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="0">
-        <widget class="QCheckBox" name="preflop_override">
-         <property name="text">
-          <string>Override with Pokersnowie table</string>
-         </property>
-        </widget>
+       <item row="8" column="4">
+        <widget class="QLCDNumber" name="lcdNumber_20"/>
        </item>
-       <item row="10" column="0">
-        <layout class="QVBoxLayout" name="verticalLayout_12">
-         <item>
-          <widget class="QLabel" name="label_18">
-           <property name="text">
-            <string>Call Likelyhood of other players</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSlider" name="CoveredPlayersCallLikelihoodPreFlop">
-           <property name="mouseTracking">
-            <bool>false</bool>
-           </property>
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="minimum">
-            <number>1</number>
-           </property>
-           <property name="maximum">
-            <number>100</number>
-           </property>
-           <property name="pageStep">
-            <number>5</number>
-           </property>
-           <property name="value">
-            <number>3</number>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="tickPosition">
-            <enum>QSlider::TicksAbove</enum>
-           </property>
-          </widget>
-         </item>
-        </layout>
+       <item row="6" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_3"/>
        </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="tab_2">
-      <attribute name="title">
-       <string>Flop</string>
-      </attribute>
-      <layout class="QGridLayout" name="gridLayout_4">
-       <item row="3" column="0">
-        <layout class="QVBoxLayout" name="verticalLayout_184">
+       <item row="7" column="4">
+        <widget class="QLCDNumber" name="lcdNumber_21"/>
+       </item>
+       <item row="9" column="4">
+        <widget class="QLCDNumber" name="lcdNumber_19"/>
+       </item>
+       <item row="7" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_4"/>
+       </item>
+       <item row="7" column="0">
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
          <item>
-          <widget class="QLabel" name="label_180">
+          <widget class="QLabel" name="label_17">
            <property name="text">
             <string>Curvature</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QSlider" name="FlopCallPower">
+          <widget class="QSlider" name="PreFlopBetPower">
            <property name="mouseTracking">
             <bool>false</bool>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For each stage you can select:&lt;/p&gt;&lt;p&gt;What is the minimum required equity (probability of winning as determined by the simulation) that is required to call the big blind. It is the starting point of the curve that you can see on the right.&lt;/p&gt;&lt;p&gt;How should curve be shaped that determines whether the bot should fold or call. The higher the equity the higher it will call. The higher the curvature (as can be seen in the graph on the right), the more conservative it will be on the lower ranges of the accepted equities. If the curvature is low (minimum is 2), then it almost becomes a straight line.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For each stage you can select:&lt;/p&gt;&lt;p&gt;What is the minimum required equity (probability of winning as determined by the simulation) to make a bet, if the bet value is 2*big blind. It is the starting point of the curve that you can see on the right.&lt;/p&gt;&lt;p&gt;How should curve be shaped that determines whether the bot should fold or call. The higher the equity the higher it will call. The higher the curvature (as can be seen in the graph on the right), the more conservative it will be on the lower ranges of the accepted equities. If the curvature is low (minimum is 2), then it almost becomes a straight line.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="minimum">
-            <number>2</number>
+            <number>1</number>
            </property>
            <property name="maximum">
             <number>30</number>
@@ -976,8 +813,190 @@
          </item>
         </layout>
        </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="label_184">
+       <item row="8" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_63"/>
+       </item>
+       <item row="11" column="3">
+        <layout class="QVBoxLayout" name="verticalLayout_30">
+         <item>
+          <widget class="QLabel" name="label_35">
+           <property name="text">
+            <string>Pot adjustment</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="potAdjustmentPreFlop">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>If the pot gets bigger, the bot becomes more agressive. This slider can adjust how more agressive it should become. </string>
+           </property>
+           <property name="minimum">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <number>5</number>
+           </property>
+           <property name="pageStep">
+            <number>1</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="3" rowspan="6" colspan="2">
+        <layout class="QVBoxLayout" name="verticalLayout_preflop">
+         <item>
+          <widget class="QWidget" name="widget_4" native="true"/>
+         </item>
+        </layout>
+       </item>
+       <item row="11" column="4">
+        <widget class="QLCDNumber" name="lcdNumber_17"/>
+       </item>
+       <item row="12" column="3">
+        <layout class="QVBoxLayout" name="verticalLayout_31">
+         <item>
+          <widget class="QLabel" name="label_36">
+           <property name="text">
+            <string>Maximum pot adjustment</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="maxPotAdjustmentPreFlop">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the pot becomes extremely high, the adjustment can be limited by the amount the minimum reuqired equity should be reduced.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>10</number>
+           </property>
+           <property name="pageStep">
+            <number>1</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="12" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_434">
+         <item>
+          <widget class="QLabel" name="label_451">
+           <property name="text">
+            <string>Second Round adjustment curvature increase (all stages)</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="secondRoundAdjustmentPowerIncrease">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string comment=" ">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the bot has called or made a bet and then one of the following players raises, another round is played. This is called the 'second round'. It is sometimes a sign that one of the opponents has good cards, that's why it's possible to make an adjustment and increase the curvature of the betting and calling limit, so the bot becomes more conservative.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="minimum">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <number>10</number>
+           </property>
+           <property name="pageStep">
+            <number>1</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="12" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_111"/>
+       </item>
+       <item row="11" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_16"/>
+       </item>
+       <item row="11" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_13">
+         <item>
+          <widget class="QLabel" name="label_33">
+           <property name="text">
+            <string>Second round adjustment in equity for preflop</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="secondRoundAdjustmentPreFlop">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the bot has called or made a bet and then one of the following players raises, another round is played. This is called the 'second round'. It is sometimes a sign that one of the opponents has good cards, that's why it's possible to make an adjustment and increase the minimum amount of equity that is required to call or bet, so the bot becomes more conservative.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="minimum">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <number>20</number>
+           </property>
+           <property name="singleStep">
+            <number>1</number>
+           </property>
+           <property name="pageStep">
+            <number>5</number>
+           </property>
+           <property name="value">
+            <number>20</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab_2">
+      <attribute name="title">
+       <string>Flop</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_4">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_175">
          <property name="font">
           <font>
            <weight>75</weight>
@@ -985,7 +1004,14 @@
           </font>
          </property>
          <property name="text">
-          <string>Betting</string>
+          <string>Calling</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QPushButton" name="pushButton_update2">
+         <property name="text">
+          <string>Update Graph</string>
          </property>
         </widget>
        </item>
@@ -1031,14 +1057,68 @@
          </item>
         </layout>
        </item>
-       <item row="1" column="2" rowspan="7" colspan="2">
-        <layout class="QVBoxLayout" name="verticalLayout_flop">
+       <item row="2" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_34"/>
+       </item>
+       <item row="3" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_184">
          <item>
-          <widget class="QWidget" name="widget_3" native="true"/>
+          <widget class="QLabel" name="label_180">
+           <property name="text">
+            <string>Curvature</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="FlopCallPower">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For each stage you can select:&lt;/p&gt;&lt;p&gt;What is the minimum required equity (probability of winning as determined by the simulation) that is required to call the big blind. It is the starting point of the curve that you can see on the right.&lt;/p&gt;&lt;p&gt;How should curve be shaped that determines whether the bot should fold or call. The higher the equity the higher it will call. The higher the curvature (as can be seen in the graph on the right), the more conservative it will be on the lower ranges of the accepted equities. If the curvature is low (minimum is 2), then it almost becomes a straight line.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>30</number>
+           </property>
+           <property name="singleStep">
+            <number>5</number>
+           </property>
+           <property name="pageStep">
+            <number>10</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+           <property name="tickInterval">
+            <number>5</number>
+           </property>
+          </widget>
          </item>
         </layout>
        </item>
-       <item row="6" column="0">
+       <item row="3" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_29"/>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_184">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Betting</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
         <layout class="QVBoxLayout" name="verticalLayout_186">
          <item>
           <widget class="QLabel" name="label_182">
@@ -1080,10 +1160,10 @@
          </item>
         </layout>
        </item>
-       <item row="3" column="1">
-        <widget class="QLCDNumber" name="lcdNumber_29"/>
+       <item row="5" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_36"/>
        </item>
-       <item row="7" column="0">
+       <item row="6" column="0">
         <layout class="QVBoxLayout" name="verticalLayout_179">
          <item>
           <widget class="QLabel" name="label_176">
@@ -1101,7 +1181,7 @@
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For each stage you can select:&lt;/p&gt;&lt;p&gt;What is the minimum required equity (probability of winning as determined by the simulation) to make a bet, if the bet value is 2*big blind. It is the starting point of the curve that you can see on the right.&lt;/p&gt;&lt;p&gt;How should curve be shaped that determines whether the bot should fold or call. The higher the equity the higher it will call. The higher the curvature (as can be seen in the graph on the right), the more conservative it will be on the lower ranges of the accepted equities. If the curvature is low (minimum is 2), then it almost becomes a straight line.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="minimum">
-            <number>2</number>
+            <number>1</number>
            </property>
            <property name="maximum">
             <number>30</number>
@@ -1125,12 +1205,141 @@
          </item>
         </layout>
        </item>
-       <item row="9" column="0">
+       <item row="6" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_28"/>
+       </item>
+       <item row="7" column="2">
+        <layout class="QVBoxLayout" name="verticalLayout_188">
+         <item>
+          <widget class="QLabel" name="label_185">
+           <property name="text">
+            <string>Pot adjustment (flop turn river)</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="potAdjustment">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When there'a s lot of money in the pot already, you can use pot adjustment so that less equity is required to call or raise. The below forumla is used to calculate how much teh equity should be adjusted. For example if the pot value is $1 and the big blind 0.04, then the minimum required equity is reduced by 10%.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Courier New'; font-size:9pt; color:#000000; background-color:#ffffff;&quot;&gt;Adjust = -(totalPotValue / bigBlind / &lt;/span&gt;&lt;span style=&quot; font-family:'Courier New'; font-size:9pt; color:#0000ff;&quot;&gt;250 &lt;/span&gt;&lt;span style=&quot; font-family:'Courier New'; font-size:9pt; color:#000000;&quot;&gt;* potadjustment)&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="minimum">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <number>5</number>
+           </property>
+           <property name="pageStep">
+            <number>1</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="7" column="3">
+        <widget class="QLCDNumber" name="lcdNumber_32"/>
+       </item>
+       <item row="8" column="2">
+        <layout class="QVBoxLayout" name="verticalLayout_185">
+         <item>
+          <widget class="QLabel" name="label_181">
+           <property name="text">
+            <string>Maximum pot adjustment (flop turn river)</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="maxPotAdjustment">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;You can set an upper limit by home many percent the equity should be reduced by the pot adjustment.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>10</number>
+           </property>
+           <property name="pageStep">
+            <number>1</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="8" column="3">
+        <widget class="QLCDNumber" name="lcdNumber_31"/>
+       </item>
+       <item row="9" column="2">
+        <layout class="QVBoxLayout" name="verticalLayout_181">
+         <item>
+          <widget class="QLabel" name="label_177">
+           <property name="text">
+            <string>Second round adjustment in minimum equty post Flop</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="secondRoundAdjustment">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;You can adjust by home much the minimum required equity should be increased in the 'second round', meaning if in the same game stage the bot is asked to act a second time. As this often indicates strehgth of the opponent, you can increase the required equity for the bot to call or raise with this slider.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="minimum">
+            <number>0</number>
+           </property>
+           <property name="maximum">
+            <number>20</number>
+           </property>
+           <property name="singleStep">
+            <number>1</number>
+           </property>
+           <property name="pageStep">
+            <number>5</number>
+           </property>
+           <property name="value">
+            <number>20</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="9" column="3">
+        <widget class="QLCDNumber" name="lcdNumber_35"/>
+       </item>
+       <item row="10" column="2">
         <layout class="QVBoxLayout" name="verticalLayout_182">
          <item>
           <widget class="QLabel" name="label_178">
            <property name="text">
             <string>Probability that players ahead will call (influence on montecarlo)</string>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
@@ -1164,26 +1373,20 @@
          </item>
         </layout>
        </item>
-       <item row="9" column="3">
-        <widget class="QLCDNumber" name="lcdNumber_32"/>
-       </item>
-       <item row="7" column="1">
-        <widget class="QLCDNumber" name="lcdNumber_28"/>
-       </item>
-       <item row="9" column="1">
+       <item row="10" column="3">
         <widget class="QLCDNumber" name="lcdNumber_30"/>
        </item>
-       <item row="9" column="2">
-        <layout class="QVBoxLayout" name="verticalLayout_188">
+       <item row="10" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_187">
          <item>
-          <widget class="QLabel" name="label_185">
+          <widget class="QLabel" name="label_183">
            <property name="text">
-            <string>Pot adjustment</string>
+            <string>Bluff if equity is above  this value and check button</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QSlider" name="potAdjustment">
+          <widget class="QSlider" name="FlopBluffMinEquity">
            <property name="mouseTracking">
             <bool>false</bool>
            </property>
@@ -1191,105 +1394,7 @@
             <number>0</number>
            </property>
            <property name="maximum">
-            <number>5</number>
-           </property>
-           <property name="pageStep">
-            <number>1</number>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="tickPosition">
-            <enum>QSlider::TicksAbove</enum>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="6" column="1">
-        <widget class="QLCDNumber" name="lcdNumber_36"/>
-       </item>
-       <item row="0" column="2">
-        <widget class="QPushButton" name="pushButton_update2">
-         <property name="text">
-          <string>Update Graph</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0" rowspan="2">
-        <widget class="QLabel" name="label_175">
-         <property name="font">
-          <font>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>Calling</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QLCDNumber" name="lcdNumber_34"/>
-       </item>
-       <item row="10" column="1">
-        <widget class="QLCDNumber" name="lcdNumber_33"/>
-       </item>
-       <item row="10" column="2">
-        <layout class="QVBoxLayout" name="verticalLayout_185">
-         <item>
-          <widget class="QLabel" name="label_181">
-           <property name="text">
-            <string>Maximum pot adjustment</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSlider" name="maxPotAdjustment">
-           <property name="mouseTracking">
-            <bool>false</bool>
-           </property>
-           <property name="minimum">
-            <number>1</number>
-           </property>
-           <property name="maximum">
-            <number>10</number>
-           </property>
-           <property name="pageStep">
-            <number>1</number>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="tickPosition">
-            <enum>QSlider::TicksAbove</enum>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="10" column="3">
-        <widget class="QLCDNumber" name="lcdNumber_31"/>
-       </item>
-       <item row="12" column="0">
-        <layout class="QVBoxLayout" name="verticalLayout_181">
-         <item>
-          <widget class="QLabel" name="label_177">
-           <property name="text">
-            <string>Second round adjustment in minimum equty Flop, Turn, River</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSlider" name="secondRoundAdjustment">
-           <property name="mouseTracking">
-            <bool>false</bool>
-           </property>
-           <property name="minimum">
-            <number>0</number>
-           </property>
-           <property name="maximum">
-            <number>20</number>
+            <number>100</number>
            </property>
            <property name="singleStep">
             <number>1</number>
@@ -1298,7 +1403,7 @@
             <number>5</number>
            </property>
            <property name="value">
-            <number>20</number>
+            <number>50</number>
            </property>
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
@@ -1310,10 +1415,10 @@
          </item>
         </layout>
        </item>
-       <item row="12" column="1">
-        <widget class="QLCDNumber" name="lcdNumber_35"/>
+       <item row="10" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_33"/>
        </item>
-       <item row="12" column="2">
+       <item row="9" column="0">
         <layout class="QVBoxLayout" name="verticalLayout_433">
          <item>
           <widget class="QLabel" name="label_450">
@@ -1349,47 +1454,22 @@
          </item>
         </layout>
        </item>
-       <item row="12" column="3">
+       <item row="9" column="1">
         <widget class="QLCDNumber" name="lcdNumber_110"/>
        </item>
-       <item row="10" column="0">
-        <layout class="QVBoxLayout" name="verticalLayout_187">
+       <item row="1" column="2" rowspan="6" colspan="2">
+        <layout class="QVBoxLayout" name="verticalLayout_flop">
          <item>
-          <widget class="QLabel" name="label_183">
-           <property name="text">
-            <string>Bluff if equity is below this value</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSlider" name="FlopBluffMinEquity">
-           <property name="mouseTracking">
-            <bool>false</bool>
-           </property>
-           <property name="minimum">
-            <number>0</number>
-           </property>
-           <property name="maximum">
-            <number>100</number>
-           </property>
-           <property name="singleStep">
-            <number>1</number>
-           </property>
-           <property name="pageStep">
-            <number>5</number>
-           </property>
-           <property name="value">
-            <number>50</number>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="tickPosition">
-            <enum>QSlider::TicksAbove</enum>
-           </property>
-          </widget>
+          <widget class="QWidget" name="widget_3" native="true"/>
          </item>
         </layout>
+       </item>
+       <item row="8" column="0">
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>Bluffing</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>
@@ -1398,21 +1478,8 @@
        <string>Turn</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_5">
-       <item row="5" column="1">
-        <widget class="QLCDNumber" name="lcdNumber_45"/>
-       </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="label_235">
-         <property name="font">
-          <font>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>Betting</string>
-         </property>
-        </widget>
+       <item row="5" column="3">
+        <widget class="QLCDNumber" name="lcdNumber_42"/>
        </item>
        <item row="6" column="0">
         <layout class="QVBoxLayout" name="verticalLayout_109">
@@ -1432,7 +1499,7 @@
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For each stage you can select:&lt;/p&gt;&lt;p&gt;What is the minimum required equity (probability of winning as determined by the simulation) to make a bet, if the bet value is 2*big blind. It is the starting point of the curve that you can see on the right.&lt;/p&gt;&lt;p&gt;How should curve be shaped that determines whether the bot should fold or call. The higher the equity the higher it will call. The higher the curvature (as can be seen in the graph on the right), the more conservative it will be on the lower ranges of the accepted equities. If the curvature is low (minimum is 2), then it almost becomes a straight line.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="minimum">
-            <number>2</number>
+            <number>1</number>
            </property>
            <property name="maximum">
             <number>30</number>
@@ -1453,34 +1520,37 @@
          </item>
         </layout>
        </item>
-       <item row="8" column="0">
-        <layout class="QVBoxLayout" name="verticalLayout_116">
+       <item row="6" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_37"/>
+       </item>
+       <item row="3" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_114">
          <item>
-          <widget class="QLabel" name="label_113">
+          <widget class="QLabel" name="label_111">
            <property name="text">
-            <string>Minimum equity required to potentially bluff</string>
+            <string>Curvature</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QSlider" name="TurnBluffMinEquity">
+          <widget class="QSlider" name="TurnCallPower">
            <property name="mouseTracking">
             <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For each stage you can select:&lt;/p&gt;&lt;p&gt;What is the minimum required equity (probability of winning as determined by the simulation) that is required to call the big blind. It is the starting point of the curve that you can see on the right.&lt;/p&gt;&lt;p&gt;How should curve be shaped that determines whether the bot should fold or call. The higher the equity the higher it will call. The higher the curvature (as can be seen in the graph on the right), the more conservative it will be on the lower ranges of the accepted equities. If the curvature is low (minimum is 2), then it almost becomes a straight line.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="minimum">
             <number>1</number>
            </property>
            <property name="maximum">
-            <number>100</number>
+            <number>30</number>
            </property>
            <property name="singleStep">
-            <number>1</number>
-           </property>
-           <property name="pageStep">
             <number>5</number>
            </property>
-           <property name="value">
-            <number>50</number>
+           <property name="pageStep">
+            <number>10</number>
            </property>
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
@@ -1488,12 +1558,12 @@
            <property name="tickPosition">
             <enum>QSlider::TicksAbove</enum>
            </property>
+           <property name="tickInterval">
+            <number>5</number>
+           </property>
           </widget>
          </item>
         </layout>
-       </item>
-       <item row="8" column="1">
-        <widget class="QLCDNumber" name="lcdNumber_42"/>
        </item>
        <item row="0" column="2">
         <widget class="QPushButton" name="pushButton_update3">
@@ -1514,13 +1584,6 @@
           <string>Calling</string>
          </property>
         </widget>
-       </item>
-       <item row="1" column="2" rowspan="6" colspan="2">
-        <layout class="QVBoxLayout" name="verticalLayout_turn">
-         <item>
-          <widget class="QWidget" name="widget_2" native="true"/>
-         </item>
-        </layout>
        </item>
        <item row="2" column="0">
         <layout class="QVBoxLayout" name="verticalLayout_112">
@@ -1564,95 +1627,31 @@
          </item>
         </layout>
        </item>
-       <item row="7" column="2">
-        <layout class="QVBoxLayout" name="verticalLayout_118">
+       <item row="2" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_43"/>
+       </item>
+       <item row="1" column="2" rowspan="3" colspan="2">
+        <layout class="QVBoxLayout" name="verticalLayout_turn">
          <item>
-          <widget class="QLabel" name="label_115">
-           <property name="text">
-            <string>Pot adjustment</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSlider" name="slider_small_blind_51">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="mouseTracking">
-            <bool>false</bool>
-           </property>
-           <property name="minimum">
-            <number>0</number>
-           </property>
-           <property name="maximum">
-            <number>5</number>
-           </property>
-           <property name="pageStep">
-            <number>1</number>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="tickPosition">
-            <enum>QSlider::TicksAbove</enum>
-           </property>
-          </widget>
+          <widget class="QWidget" name="widget_2" native="true"/>
          </item>
         </layout>
        </item>
        <item row="3" column="1">
         <widget class="QLCDNumber" name="lcdNumber_38"/>
        </item>
-       <item row="6" column="1">
-        <widget class="QLCDNumber" name="lcdNumber_37"/>
-       </item>
-       <item row="2" column="1">
-        <widget class="QLCDNumber" name="lcdNumber_43"/>
-       </item>
-       <item row="7" column="3">
-        <widget class="QLCDNumber" name="lcdNumber_41"/>
-       </item>
-       <item row="3" column="0">
-        <layout class="QVBoxLayout" name="verticalLayout_114">
-         <item>
-          <widget class="QLabel" name="label_111">
-           <property name="text">
-            <string>Curvature</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSlider" name="TurnCallPower">
-           <property name="mouseTracking">
-            <bool>false</bool>
-           </property>
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For each stage you can select:&lt;/p&gt;&lt;p&gt;What is the minimum required equity (probability of winning as determined by the simulation) that is required to call the big blind. It is the starting point of the curve that you can see on the right.&lt;/p&gt;&lt;p&gt;How should curve be shaped that determines whether the bot should fold or call. The higher the equity the higher it will call. The higher the curvature (as can be seen in the graph on the right), the more conservative it will be on the lower ranges of the accepted equities. If the curvature is low (minimum is 2), then it almost becomes a straight line.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="minimum">
-            <number>2</number>
-           </property>
-           <property name="maximum">
-            <number>30</number>
-           </property>
-           <property name="singleStep">
-            <number>5</number>
-           </property>
-           <property name="pageStep">
-            <number>10</number>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="tickPosition">
-            <enum>QSlider::TicksAbove</enum>
-           </property>
-           <property name="tickInterval">
-            <number>5</number>
-           </property>
-          </widget>
-         </item>
-        </layout>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_235">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Betting</string>
+         </property>
+        </widget>
        </item>
        <item row="5" column="0">
         <layout class="QVBoxLayout" name="verticalLayout_117">
@@ -1696,31 +1695,40 @@
          </item>
         </layout>
        </item>
-       <item row="8" column="2">
-        <layout class="QVBoxLayout" name="verticalLayout_115">
+       <item row="5" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_45"/>
+       </item>
+       <item row="5" column="2">
+        <layout class="QVBoxLayout" name="verticalLayout_116">
          <item>
-          <widget class="QLabel" name="label_112">
+          <widget class="QLabel" name="label_113">
            <property name="text">
-            <string>Maximum pot adjustment</string>
+            <string>Minimum equity required to potentially bluff</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QSlider" name="slider_small_blind_50">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
+          <widget class="QSlider" name="TurnBluffMinEquity">
            <property name="mouseTracking">
             <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the equity is above this threshold the bot will bluff if the following additional conditions are met:&lt;br/&gt;- There has to be a check button&lt;br/&gt;- There was no bluffing in the previous gamestage&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="minimum">
             <number>1</number>
            </property>
            <property name="maximum">
-            <number>10</number>
+            <number>100</number>
+           </property>
+           <property name="singleStep">
+            <number>1</number>
            </property>
            <property name="pageStep">
-            <number>1</number>
+            <number>5</number>
+           </property>
+           <property name="value">
+            <number>50</number>
            </property>
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
@@ -1732,8 +1740,53 @@
          </item>
         </layout>
        </item>
-       <item row="8" column="3">
-        <widget class="QLCDNumber" name="lcdNumber_40"/>
+       <item row="6" column="2">
+        <layout class="QVBoxLayout" name="verticalLayout_11">
+         <item>
+          <widget class="QLabel" name="label_115">
+           <property name="text">
+            <string>Check deception if equity above threshold and previous decision was call</string>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="TurnCheckDeceptionMinEquity">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the equity is very high, you may not want to be aggresssive at the flop stage already. That's why you may simply want to check or call, instead of making a big bet. For example if you suddenly have a 90% equity, you can set the limit here above which amount of equity you want to do a 'check deception' at the turn.&lt;/p&gt;&lt;p&gt;For the flop the additional condition that the previous decision was call needs to be met (i.e. the opponent has betting initiative).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="minimum">
+            <number>10</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="singleStep">
+            <number>1</number>
+           </property>
+           <property name="pageStep">
+            <number>5</number>
+           </property>
+           <property name="value">
+            <number>100</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="6" column="3">
+        <widget class="QLCDNumber" name="lcdNumber_44"/>
        </item>
       </layout>
      </widget>
@@ -1776,7 +1829,7 @@
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For each stage you can select:&lt;/p&gt;&lt;p&gt;What is the minimum required equity (probability of winning as determined by the simulation) to make a bet, if the bet value is 2*big blind. It is the starting point of the curve that you can see on the right.&lt;/p&gt;&lt;p&gt;How should curve be shaped that determines whether the bot should fold or call. The higher the equity the higher it will call. The higher the curvature (as can be seen in the graph on the right), the more conservative it will be on the lower ranges of the accepted equities. If the curvature is low (minimum is 2), then it almost becomes a straight line.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="minimum">
-            <number>2</number>
+            <number>1</number>
            </property>
            <property name="maximum">
             <number>30</number>
@@ -1803,55 +1856,6 @@
        <item row="6" column="1">
         <widget class="QLCDNumber" name="lcdNumber_46"/>
        </item>
-       <item row="7" column="0">
-        <layout class="QVBoxLayout" name="verticalLayout_133">
-         <item>
-          <widget class="QLabel" name="label_128">
-           <property name="text">
-            <string>Second Round Minimum equity to bet full pot</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSlider" name="secondRiverBetPotMinEquity">
-           <property name="mouseTracking">
-            <bool>false</bool>
-           </property>
-           <property name="minimum">
-            <number>1</number>
-           </property>
-           <property name="maximum">
-            <number>100</number>
-           </property>
-           <property name="pageStep">
-            <number>5</number>
-           </property>
-           <property name="value">
-            <number>3</number>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="tickPosition">
-            <enum>QSlider::TicksAbove</enum>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="7" column="1">
-        <widget class="QLCDNumber" name="lcdNumber_48"/>
-       </item>
-       <item row="7" column="3">
-        <widget class="QLCDNumber" name="lcdNumber_50"/>
-       </item>
-       <item row="0" column="2">
-        <widget class="QPushButton" name="pushButton_update4">
-         <property name="text">
-          <string>Update Graph</string>
-         </property>
-        </widget>
-       </item>
        <item row="3" column="0">
         <layout class="QVBoxLayout" name="verticalLayout_134">
          <item>
@@ -1870,7 +1874,7 @@
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For each stage you can select:&lt;/p&gt;&lt;p&gt;What is the minimum required equity (probability of winning as determined by the simulation) that is required to call the big blind. It is the starting point of the curve that you can see on the right.&lt;/p&gt;&lt;p&gt;How should curve be shaped that determines whether the bot should fold or call. The higher the equity the higher it will call. The higher the curvature (as can be seen in the graph on the right), the more conservative it will be on the lower ranges of the accepted equities. If the curvature is low (minimum is 2), then it almost becomes a straight line.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="minimum">
-            <number>2</number>
+            <number>1</number>
            </property>
            <property name="maximum">
             <number>30</number>
@@ -1891,152 +1895,6 @@
             <number>5</number>
            </property>
           </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="7" column="2">
-        <layout class="QVBoxLayout" name="verticalLayout_138">
-         <item>
-          <widget class="QLabel" name="label_133">
-           <property name="text">
-            <string>Pot adjustment</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSlider" name="slider_small_blind_57">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="mouseTracking">
-            <bool>false</bool>
-           </property>
-           <property name="minimum">
-            <number>0</number>
-           </property>
-           <property name="maximum">
-            <number>5</number>
-           </property>
-           <property name="pageStep">
-            <number>1</number>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="tickPosition">
-            <enum>QSlider::TicksAbove</enum>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="5" column="1">
-        <widget class="QLCDNumber" name="lcdNumber_54"/>
-       </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="label_236">
-         <property name="font">
-          <font>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string>Betting</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QLCDNumber" name="lcdNumber_52"/>
-       </item>
-       <item row="8" column="1">
-        <widget class="QLCDNumber" name="lcdNumber_51"/>
-       </item>
-       <item row="8" column="2">
-        <layout class="QVBoxLayout" name="verticalLayout_135">
-         <item>
-          <widget class="QLabel" name="label_130">
-           <property name="text">
-            <string>Maximum pot adjustment</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSlider" name="slider_small_blind_56">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="mouseTracking">
-            <bool>false</bool>
-           </property>
-           <property name="minimum">
-            <number>1</number>
-           </property>
-           <property name="maximum">
-            <number>10</number>
-           </property>
-           <property name="pageStep">
-            <number>1</number>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="tickPosition">
-            <enum>QSlider::TicksAbove</enum>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="8" column="3">
-        <widget class="QLCDNumber" name="lcdNumber_49"/>
-       </item>
-       <item row="5" column="0">
-        <layout class="QVBoxLayout" name="verticalLayout_137">
-         <item>
-          <widget class="QLabel" name="label_132">
-           <property name="text">
-            <string>Minimum required equity</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSlider" name="RiverMinBetEquity">
-           <property name="mouseTracking">
-            <bool>false</bool>
-           </property>
-           <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For each stage you can select:&lt;/p&gt;&lt;p&gt;What is the minimum required equity (probability of winning as determined by the simulation) to make a bet, if the bet value is 2*big blind. It is the starting point of the curve that you can see on the right.&lt;/p&gt;&lt;p&gt;How should curve be shaped that determines whether the bot should fold or call. The higher the equity the higher it will call. The higher the curvature (as can be seen in the graph on the right), the more conservative it will be on the lower ranges of the accepted equities. If the curvature is low (minimum is 2), then it almost becomes a straight line.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="minimum">
-            <number>1</number>
-           </property>
-           <property name="maximum">
-            <number>100</number>
-           </property>
-           <property name="singleStep">
-            <number>1</number>
-           </property>
-           <property name="pageStep">
-            <number>5</number>
-           </property>
-           <property name="value">
-            <number>50</number>
-           </property>
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="tickPosition">
-            <enum>QSlider::TicksAbove</enum>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="1" column="2" rowspan="6" colspan="2">
-        <layout class="QVBoxLayout" name="verticalLayout_river">
-         <item>
-          <widget class="QWidget" name="widget" native="true"/>
          </item>
         </layout>
        </item>
@@ -2082,7 +1940,124 @@
          </item>
         </layout>
        </item>
-       <item row="9" column="2">
+       <item row="0" column="2">
+        <widget class="QPushButton" name="pushButton_update4">
+         <property name="text">
+          <string>Update Graph</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_52"/>
+       </item>
+       <item row="5" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_54"/>
+       </item>
+       <item row="1" column="2" rowspan="6" colspan="3">
+        <layout class="QVBoxLayout" name="verticalLayout_river">
+         <item>
+          <widget class="QWidget" name="widget" native="true"/>
+         </item>
+        </layout>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_236">
+         <property name="font">
+          <font>
+           <weight>75</weight>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>Betting</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_137">
+         <item>
+          <widget class="QLabel" name="label_132">
+           <property name="text">
+            <string>Minimum required equity</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="RiverMinBetEquity">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For each stage you can select:&lt;/p&gt;&lt;p&gt;What is the minimum required equity (probability of winning as determined by the simulation) to make a bet, if the bet value is 2*big blind. It is the starting point of the curve that you can see on the right.&lt;/p&gt;&lt;p&gt;How should curve be shaped that determines whether the bot should fold or call. The higher the equity the higher it will call. The higher the curvature (as can be seen in the graph on the right), the more conservative it will be on the lower ranges of the accepted equities. If the curvature is low (minimum is 2), then it almost becomes a straight line.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="singleStep">
+            <number>1</number>
+           </property>
+           <property name="pageStep">
+            <number>5</number>
+           </property>
+           <property name="value">
+            <number>50</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="8" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_48"/>
+       </item>
+       <item row="8" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_133">
+         <item>
+          <widget class="QLabel" name="label_128">
+           <property name="text">
+            <string>Second Round Minimum equity to bet full pot</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="secondRiverBetPotMinEquity">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the bot needs to act a second time in the river, you can set the minimum required equity to bet pot (instead of half pot).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="pageStep">
+            <number>5</number>
+           </property>
+           <property name="value">
+            <number>3</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="9" column="0">
         <layout class="QVBoxLayout" name="verticalLayout_380">
          <item>
           <widget class="QLabel" name="label_393">
@@ -2095,6 +2070,9 @@
           <widget class="QSlider" name="betPotRiverEquityMaxBBM">
            <property name="mouseTracking">
             <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;You can set a maximum pot size where the bot will still bet pot (instead of half pot) to avoid very large bets. If the amount is exceeded the bot will bet only half pot instead.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="minimum">
             <number>1</number>
@@ -2115,7 +2093,7 @@
          </item>
         </layout>
        </item>
-       <item row="9" column="0">
+       <item row="7" column="0">
         <layout class="QVBoxLayout" name="verticalLayout_131">
          <item>
           <widget class="QLabel" name="label_126">
@@ -2154,25 +2132,25 @@
          </item>
         </layout>
        </item>
-       <item row="9" column="3">
-        <widget class="QLCDNumber" name="lcdNumber_60"/>
-       </item>
-       <item row="9" column="1">
-        <widget class="QLCDNumber" name="lcdNumber_53"/>
-       </item>
-       <item row="8" column="0">
+       <item row="9" column="2">
         <layout class="QVBoxLayout" name="verticalLayout_136">
          <item>
           <widget class="QLabel" name="label_131">
            <property name="text">
-            <string>Minimum equity required to potentially bluff</string>
+            <string>Check deception if equity above threshold and previous decision was call</string>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QSlider" name="RiverBluffMinEquity">
+          <widget class="QSlider" name="RiverCheckDeceptionMinEquity">
            <property name="mouseTracking">
             <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the equity is very high, you may not want to be aggresssive at the flop stage already. That's why you may simply want to check or call, instead of making a big bet. For example if you suddenly have a 90% equity, you can set the limit here above which amount of equity you want to do a 'check deception' at the turn.&lt;/p&gt;&lt;p&gt;For the flop and riverthe additional condition that the previous decision was call needs to be met (i.e. the opponent has betting initiative).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="minimum">
             <number>1</number>
@@ -2199,6 +2177,60 @@
          </item>
         </layout>
        </item>
+       <item row="9" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_60"/>
+       </item>
+       <item row="9" column="3">
+        <widget class="QLCDNumber" name="lcdNumber_51"/>
+       </item>
+       <item row="7" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_53"/>
+       </item>
+       <item row="8" column="2">
+        <layout class="QVBoxLayout" name="verticalLayout_138">
+         <item>
+          <widget class="QLabel" name="label_133">
+           <property name="text">
+            <string>Minimum equity required to potentially bluff</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="RiverBluffMinEquity">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the equity is above this threshold the bot will bluff if the following additional conditions are met:&lt;br/&gt;- There has to be a check button&lt;br/&gt;- There was no bluffing in the previous gamestage&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>100</number>
+           </property>
+           <property name="singleStep">
+            <number>1</number>
+           </property>
+           <property name="pageStep">
+            <number>5</number>
+           </property>
+           <property name="value">
+            <number>50</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="8" column="3">
+        <widget class="QLCDNumber" name="lcdNumber_65"/>
+       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="tab_5">
@@ -2219,6 +2251,48 @@
           <widget class="QComboBox" name="pokerSite">
            <property name="toolTip">
             <string>Currently Partypoker (PP) and Pokerstars (PS) are supported</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="3" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_61"/>
+       </item>
+       <item row="3" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_32">
+         <item>
+          <widget class="QLabel" name="label_37">
+           <property name="text">
+            <string>Maximum amount to call or bet at 100% equity in cents (corresponds to initial funds). This is to limit the amount for ll in calls.</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSlider" name="initialFunds">
+           <property name="mouseTracking">
+            <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>When equity is 100% then this is the maximum amount whre the bot will call. In the graph it corresponds to the upper right corner where equity is 100%. I suggest you put slightly more than your initial funds. The parameter is also used as a verification in case your funds are not read correctly and the funds change to the previous game is higher than that value, it will not consider the game for the statistics.</string>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>5000</number>
+           </property>
+           <property name="singleStep">
+            <number>10</number>
+           </property>
+           <property name="pageStep">
+            <number>100</number>
+           </property>
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="tickPosition">
+            <enum>QSlider::TicksAbove</enum>
            </property>
           </widget>
          </item>
@@ -2296,19 +2370,25 @@
        <item row="2" column="1">
         <widget class="QLCDNumber" name="lcdNumber_114"/>
        </item>
-       <item row="3" column="0">
-        <layout class="QVBoxLayout" name="verticalLayout_32">
+       <item row="4" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout_12">
          <item>
-          <widget class="QLabel" name="label_37">
+          <widget class="QLabel" name="label_43">
            <property name="text">
-            <string>Initial fundsBlind (cents)</string>
+            <string>Don't log changes in my pot if the exceed this threshold (to avoid confusing the chart if the funds are not read correctly for a round)</string>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QSlider" name="initialFunds">
+          <widget class="QSlider" name="max_abs_fundchange">
            <property name="mouseTracking">
             <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string>When equity is 100% then this is the maximum amount whre the bot will call. In the graph it corresponds to the upper right corner where equity is 100%. I suggest you put slightly more than your initial funds. The parameter is also used as a verification in case your funds are not read correctly and the funds change to the previous game is higher than that value, it will not consider the game for the statistics.</string>
            </property>
            <property name="minimum">
             <number>1</number>
@@ -2322,6 +2402,9 @@
            <property name="pageStep">
             <number>100</number>
            </property>
+           <property name="value">
+            <number>500</number>
+           </property>
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
            </property>
@@ -2332,8 +2415,8 @@
          </item>
         </layout>
        </item>
-       <item row="3" column="1">
-        <widget class="QLCDNumber" name="lcdNumber_61"/>
+       <item row="4" column="1">
+        <widget class="QLCDNumber" name="lcdNumber_66"/>
        </item>
       </layout>
      </widget>
@@ -2865,23 +2948,6 @@
         <string>Postflop multiple players assumed range</string>
        </property>
       </widget>
-      <zorder>BetPlusInc</zorder>
-      <zorder>horizontalLayoutWidget_3</zorder>
-      <zorder>horizontalLayoutWidget_4</zorder>
-      <zorder>horizontalLayoutWidget_8</zorder>
-      <zorder>horizontalLayoutWidget_10</zorder>
-      <zorder>BetPlusInc_7</zorder>
-      <zorder></zorder>
-      <zorder>horizontalLayoutWidget_12</zorder>
-      <zorder>horizontalLayoutWidget_13</zorder>
-      <zorder></zorder>
-      <zorder></zorder>
-      <zorder>horizontalLayoutWidget_14</zorder>
-      <zorder>verticalSpacer</zorder>
-      <zorder>horizontalLayoutWidget_15</zorder>
-      <zorder>label_74</zorder>
-      <zorder>horizontalLayoutWidget_16</zorder>
-      <zorder>label_104</zorder>
      </widget>
      <widget class="QWidget" name="ManualOverrides">
       <attribute name="title">
@@ -3548,15 +3614,8 @@
         </widget>
        </item>
       </layout>
-      <zorder>verticalLayoutWidget</zorder>
-      <zorder>verticalLayoutWidget_3</zorder>
-      <zorder>verticalLayoutWidget_5</zorder>
-      <zorder>verticalLayoutWidget_6</zorder>
-      <zorder>verticalLayoutWidget_7</zorder>
-      <zorder>verticalLayoutWidget_8</zorder>
       <zorder>label_72</zorder>
       <zorder>label_73</zorder>
-      <zorder>checkBox_8</zorder>
       <zorder>checkBox</zorder>
       <zorder>label_80</zorder>
       <zorder>label_75</zorder>
@@ -3569,722 +3628,18 @@
  <resources/>
  <connections>
   <connection>
-   <sender>potAdjustment</sender>
+   <sender>pre_flop_equity_increase_if_call</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_32</receiver>
+   <receiver>lcdNumber_19</receiver>
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>628</x>
-     <y>612</y>
+     <x>484</x>
+     <y>592</y>
     </hint>
     <hint type="destinationlabel">
-     <x>699</x>
-     <y>611</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>PreFlopBetPower</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_4</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>240</x>
-     <y>508</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>346</x>
-     <y>509</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>TurnMinBetEquity</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_45</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>231</x>
-     <y>514</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>356</x>
-     <y>515</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>PreFlopMinBetEquity</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_3</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>239</x>
-     <y>454</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>346</x>
-     <y>455</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>FlopBetPower</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_28</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>190</x>
-     <y>556</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>383</x>
-     <y>555</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>CoveredPlayersCallLikelihoodPreFlop</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_9</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>236</x>
-     <y>616</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>346</x>
-     <y>617</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>CoveredPlayersCallLikelihoodFlop</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_30</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>289</x>
-     <y>612</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>383</x>
-     <y>611</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>bullyDivider</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_58</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>348</x>
-     <y>303</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>699</x>
-     <y>304</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>considerLastGames</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_112</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>493</x>
-     <y>666</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>699</x>
-     <y>641</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>PreFlopCallPower</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_2</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>238</x>
-     <y>348</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>346</x>
-     <y>349</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>strategyIterationGames</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_113</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>439</x>
-     <y>698</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>699</x>
-     <y>725</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>RiverCallPower</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_47</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>285</x>
-     <y>351</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>356</x>
-     <y>352</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>minimumLossForIteration</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_109</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>496</x>
-     <y>556</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>699</x>
-     <y>557</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>betPotRiverEquity</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_53</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>248</x>
-     <y>724</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>356</x>
-     <y>725</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>TurnBluffMinEquity</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_42</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>266</x>
-     <y>724</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>356</x>
-     <y>725</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>FlopBluffMinEquity</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_33</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>240</x>
-     <y>668</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>360</x>
-     <y>627</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>slider_small_blind_57</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_50</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>541</x>
-     <y>575</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>658</x>
-     <y>569</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>bigBlind</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_114</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>418</x>
-     <y>577</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>699</x>
-     <y>578</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>RiverMinBetEquity</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_54</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>266</x>
-     <y>475</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>356</x>
-     <y>476</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>slider_small_blind_56</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_49</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>628</x>
-     <y>662</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>650</x>
-     <y>632</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>slider_FlopBluffMinEquity</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_15</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>275</x>
-     <y>670</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>346</x>
-     <y>671</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>maxPotAdjustmentPreFlop</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_18</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>628</x>
-     <y>670</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>699</x>
-     <y>671</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>PreFlopMinCallEquity</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>275</x>
-     <y>294</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>346</x>
-     <y>295</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>RiverMinCallEquity</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_52</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>285</x>
-     <y>288</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>356</x>
-     <y>289</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>TurnMinCallEquity</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_43</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>268</x>
-     <y>304</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>356</x>
-     <y>305</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>PreFlopMaxBetEquity</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_63</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>275</x>
-     <y>562</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>346</x>
-     <y>563</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>initialFunds</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_61</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>503</x>
-     <y>724</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>699</x>
-     <y>725</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>secondRoundAdjustmentPowerIncrease</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_111</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>628</x>
-     <y>724</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>658</x>
-     <y>681</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>secondRoundAdjustmentPreFlop</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_16</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>275</x>
-     <y>724</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>346</x>
-     <y>725</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>maxBullyEquity</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_59</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>260</x>
-     <y>472</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>699</x>
-     <y>473</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>minBullyEquity</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_55</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>313</x>
-     <y>387</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>699</x>
-     <y>388</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>secondRiverBetPotMinEquity</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_48</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>285</x>
-     <y>600</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>356</x>
-     <y>601</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>slider_small_blind_51</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_41</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>628</x>
-     <y>654</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>699</x>
-     <y>655</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>smallBlind</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_62</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>463</x>
-     <y>430</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>699</x>
-     <y>431</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>maxPotAdjustment</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_31</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>628</x>
-     <y>668</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>699</x>
-     <y>667</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>RiverBetPower</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_46</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>285</x>
-     <y>537</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>356</x>
-     <y>538</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>slider_small_blind_50</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_40</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>628</x>
-     <y>724</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>699</x>
-     <y>725</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>alwaysCallEquity</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_57</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>228</x>
-     <y>219</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>699</x>
-     <y>220</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>potAdjustmentPreFlop</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_17</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>628</x>
-     <y>616</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>699</x>
-     <y>617</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>TurnCallPower</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_38</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>285</x>
-     <y>374</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>356</x>
-     <y>375</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>FlopMinCallEquity</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_34</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>298</x>
-     <y>276</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>383</x>
-     <y>275</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>FlopCallPower</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_29</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>291</x>
-     <y>332</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>383</x>
-     <y>331</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>FlopMinBetEquity</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_36</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>263</x>
-     <y>500</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>383</x>
-     <y>499</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>TurnBetPower</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_37</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>255</x>
-     <y>584</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>356</x>
-     <y>585</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>secondRoundAdjustment</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_35</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>255</x>
-     <y>724</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>383</x>
-     <y>725</y>
+     <x>681</x>
+     <y>582</y>
     </hint>
    </hints>
   </connection>
@@ -4295,11 +3650,11 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>628</x>
+     <x>282</x>
      <y>724</y>
     </hint>
     <hint type="destinationlabel">
-     <x>659</x>
+     <x>313</x>
      <y>683</y>
     </hint>
    </hints>
@@ -4311,76 +3666,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>628</x>
-     <y>724</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>699</x>
-     <y>725</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>RiverBluffMinEquity</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_51</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>285</x>
-     <y>662</y>
+     <x>246</x>
+     <y>657</y>
     </hint>
     <hint type="destinationlabel">
      <x>356</x>
-     <y>663</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>range_utg0</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_64</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>182</x>
-     <y>354</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>377</x>
-     <y>350</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>range_utg3</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_103</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>255</x>
-     <y>517</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>396</x>
-     <y>510</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>range_utg2</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_68</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>186</x>
-     <y>463</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>377</x>
-     <y>462</y>
+     <y>658</y>
     </hint>
    </hints>
   </connection>
@@ -4401,6 +3692,294 @@
    </hints>
   </connection>
   <connection>
+   <sender>RiverCheckDeceptionMinEquity</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_51</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>622</x>
+     <y>724</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>693</x>
+     <y>725</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>FlopMinCallEquity</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_34</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>265</x>
+     <y>274</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>324</x>
+     <y>275</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>FlopCallPower</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_29</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>265</x>
+     <y>328</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>344</x>
+     <y>329</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>range_utg2</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_68</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>186</x>
+     <y>463</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>377</x>
+     <y>462</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_40</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_144</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>576</x>
+     <y>607</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>646</x>
+     <y>612</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>alwaysCallEquity</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_57</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>228</x>
+     <y>209</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>699</x>
+     <y>210</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_25</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_131</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>35</x>
+     <y>451</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>127</x>
+     <y>518</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_12</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>67</x>
+     <y>272</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>135</x>
+     <y>267</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>FlopMinBetEquity</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_36</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>263</x>
+     <y>438</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>344</x>
+     <y>438</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>smallBlind</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_62</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>463</x>
+     <y>371</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>699</x>
+     <y>372</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>potAdjustmentPreFlop</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_17</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>628</x>
+     <y>661</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>699</x>
+     <y>657</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>RiverBetPower</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_46</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>282</x>
+     <y>534</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>353</x>
+     <y>535</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>range_utg0</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_64</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>182</x>
+     <y>354</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>377</x>
+     <y>350</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_44</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_148</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>575</x>
+     <y>421</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>650</x>
+     <y>440</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>maxPotAdjustment</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_31</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>609</x>
+     <y>602</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>699</x>
+     <y>602</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>TurnCallPower</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_38</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>285</x>
+     <y>444</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>356</x>
+     <y>375</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_41</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_147</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>381</x>
+     <y>465</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>457</x>
+     <y>508</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>range_utg3</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_103</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>255</x>
+     <y>517</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>396</x>
+     <y>510</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
    <sender>range_utg4</sender>
    <signal>valueChanged(int)</signal>
    <receiver>lcdNumber_104</receiver>
@@ -4413,6 +3992,22 @@
     <hint type="destinationlabel">
      <x>381</x>
      <y>561</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_42</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_146</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>410</x>
+     <y>433</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>484</x>
+     <y>443</y>
     </hint>
    </hints>
   </connection>
@@ -4449,54 +4044,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>minimum_bet_size</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_106</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>250</x>
-     <y>174</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>387</x>
-     <y>179</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>verticalSlider_44</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_148</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>575</x>
-     <y>421</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>650</x>
-     <y>440</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>verticalSlider_41</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_147</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>381</x>
-     <y>465</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>457</x>
-     <y>508</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>verticalSlider_38</sender>
    <signal>valueChanged(int)</signal>
    <receiver>lcdNumber_142</receiver>
@@ -4509,22 +4056,6 @@
     <hint type="destinationlabel">
      <x>471</x>
      <y>615</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>verticalSlider_42</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_146</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>410</x>
-     <y>433</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>484</x>
-     <y>443</y>
     </hint>
    </hints>
   </connection>
@@ -4561,98 +4092,546 @@
    </hints>
   </connection>
   <connection>
-   <sender>verticalSlider_51</sender>
+   <sender>TurnBetPower</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_157</receiver>
+   <receiver>lcdNumber_37</receiver>
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>548</x>
-     <y>297</y>
+     <x>255</x>
+     <y>724</y>
     </hint>
     <hint type="destinationlabel">
-     <x>632</x>
-     <y>343</y>
+     <x>356</x>
+     <y>702</y>
     </hint>
    </hints>
   </connection>
   <connection>
-   <sender>verticalSlider_40</sender>
+   <sender>minimum_bet_size</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_144</receiver>
+   <receiver>lcdNumber_106</receiver>
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>576</x>
-     <y>607</y>
+     <x>250</x>
+     <y>174</y>
     </hint>
     <hint type="destinationlabel">
-     <x>646</x>
-     <y>612</y>
+     <x>387</x>
+     <y>179</y>
     </hint>
    </hints>
   </connection>
   <connection>
-   <sender>verticalSlider_52</sender>
+   <sender>PreFlopMinBetEquity</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_156</receiver>
+   <receiver>lcdNumber_3</receiver>
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>575</x>
+     <x>251</x>
+     <y>434</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>346</x>
+     <y>435</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>PreFlopBetPower</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_4</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>295</x>
+     <y>481</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>333</x>
+     <y>503</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>RiverMinCallEquity</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_52</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>282</x>
+     <y>287</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>353</x>
+     <y>288</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>maxBullyEquity</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_59</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>260</x>
+     <y>430</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>699</x>
+     <y>431</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>minBullyEquity</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_55</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>313</x>
+     <y>356</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>699</x>
+     <y>357</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>PreFlopCallPower</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_2</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>250</x>
+     <y>336</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>346</x>
+     <y>310</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>secondRoundAdjustmentPreFlop</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_16</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>264</x>
+     <y>669</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>353</x>
+     <y>646</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>secondRiverBetPotMinEquity</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_48</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>282</x>
+     <y>657</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>353</x>
+     <y>658</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>PreFlopMinCallEquity</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>262</x>
+     <y>284</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>346</x>
      <y>258</y>
     </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>potAdjustment</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_32</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>609</x>
+     <y>547</y>
+    </hint>
     <hint type="destinationlabel">
-     <x>626</x>
-     <y>264</y>
+     <x>699</x>
+     <y>548</y>
     </hint>
    </hints>
   </connection>
   <connection>
-   <sender>verticalSlider_25</sender>
+   <sender>bullyDivider</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_131</receiver>
+   <receiver>lcdNumber_58</receiver>
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>35</x>
-     <y>451</y>
+     <x>348</x>
+     <y>282</y>
     </hint>
     <hint type="destinationlabel">
-     <x>127</x>
-     <y>518</y>
+     <x>699</x>
+     <y>283</y>
     </hint>
    </hints>
   </connection>
   <connection>
-   <sender>verticalSlider_49</sender>
+   <sender>betPotRiverEquity</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_155</receiver>
+   <receiver>lcdNumber_53</receiver>
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>386</x>
-     <y>314</y>
+     <x>248</x>
+     <y>595</y>
     </hint>
     <hint type="destinationlabel">
-     <x>458</x>
-     <y>342</y>
+     <x>353</x>
+     <y>596</y>
     </hint>
    </hints>
   </connection>
   <connection>
-   <sender>verticalSlider</sender>
+   <sender>TurnBluffMinEquity</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_12</receiver>
+   <receiver>lcdNumber_42</receiver>
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>67</x>
-     <y>272</y>
+     <x>609</x>
+     <y>631</y>
     </hint>
     <hint type="destinationlabel">
-     <x>135</x>
-     <y>267</y>
+     <x>699</x>
+     <y>608</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>bigBlind</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_114</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>418</x>
+     <y>488</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>699</x>
+     <y>489</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>TurnMinCallEquity</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_43</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>268</x>
+     <y>351</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>356</x>
+     <y>305</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>CoveredPlayersCallLikelihoodFlop</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_30</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>628</x>
+     <y>724</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>687</x>
+     <y>723</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>TurnMinBetEquity</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_45</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>231</x>
+     <y>631</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>356</x>
+     <y>608</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>strategyIterationGames</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_113</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>439</x>
+     <y>624</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>699</x>
+     <y>651</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>FlopBetPower</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_28</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>190</x>
+     <y>493</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>344</x>
+     <y>493</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>considerLastGames</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_112</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>493</x>
+     <y>552</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>699</x>
+     <y>578</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>minimumLossForIteration</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_109</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>496</x>
+     <y>503</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>699</x>
+     <y>504</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>RiverCallPower</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_47</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>282</x>
+     <y>349</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>353</x>
+     <y>350</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>FlopBluffMinEquity</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_33</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>240</x>
+     <y>724</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>321</x>
+     <y>683</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>RiverMinBetEquity</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_54</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>266</x>
+     <y>472</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>353</x>
+     <y>473</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>maxPotAdjustmentPreFlop</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_18</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>628</x>
+     <y>717</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>699</x>
+     <y>713</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>PreFlopMaxBetEquity</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_63</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>262</x>
+     <y>550</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>353</x>
+     <y>551</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>initialFunds</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_61</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>503</x>
+     <y>606</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>699</x>
+     <y>607</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>secondRoundAdjustmentPowerIncrease</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_111</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>282</x>
+     <y>724</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>325</x>
+     <y>693</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_34</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_138</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>61</x>
+     <y>612</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>143</x>
+     <y>626</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_26</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_130</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>62</x>
+     <y>419</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>140</x>
+     <y>446</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>range_multiple_players</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_126</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>208</x>
+     <y>706</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>378</x>
+     <y>697</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pre_flop_equity_increase_if_bet</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_20</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>591</x>
+     <y>545</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>652</x>
+     <y>526</y>
     </hint>
    </hints>
   </connection>
@@ -4689,22 +4668,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>verticalSlider_50</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_154</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>410</x>
-     <y>273</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>465</x>
-     <y>263</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>verticalSlider_3</sender>
    <signal>valueChanged(int)</signal>
    <receiver>lcdNumber_13</receiver>
@@ -4717,22 +4680,6 @@
     <hint type="destinationlabel">
      <x>294</x>
      <y>332</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>verticalSlider_34</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_138</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>61</x>
-     <y>612</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>143</x>
-     <y>626</y>
     </hint>
    </hints>
   </connection>
@@ -4753,54 +4700,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>verticalSlider_26</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_130</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>62</x>
-     <y>419</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>140</x>
-     <y>446</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>verticalSlider_33</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_139</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>40</x>
-     <y>648</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>136</x>
-     <y>684</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>verticalSlider_28</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_132</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>233</x>
-     <y>432</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>298</x>
-     <y>436</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>verticalSlider_27</sender>
    <signal>valueChanged(int)</signal>
    <receiver>lcdNumber_133</receiver>
@@ -4813,22 +4712,6 @@
     <hint type="destinationlabel">
      <x>300</x>
      <y>514</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>verticalSlider_36</sender>
-   <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_140</receiver>
-   <slot>display(int)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>238</x>
-     <y>594</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>306</x>
-     <y>617</y>
     </hint>
    </hints>
   </connection>
@@ -4849,18 +4732,386 @@
    </hints>
   </connection>
   <connection>
-   <sender>range_multiple_players</sender>
+   <sender>verticalSlider_28</sender>
    <signal>valueChanged(int)</signal>
-   <receiver>lcdNumber_126</receiver>
+   <receiver>lcdNumber_132</receiver>
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>208</x>
+     <x>233</x>
+     <y>432</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>298</x>
+     <y>436</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pre_flop_equity_reduction_by_position</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_21</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>553</x>
+     <y>490</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>655</x>
+     <y>463</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_36</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_140</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>238</x>
+     <y>594</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>306</x>
+     <y>617</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_33</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_139</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>40</x>
+     <y>648</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>136</x>
+     <y>684</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_49</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_155</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>386</x>
+     <y>314</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>458</x>
+     <y>342</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_51</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_157</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>548</x>
+     <y>297</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>632</x>
+     <y>343</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_52</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_156</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>575</x>
+     <y>258</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>626</x>
+     <y>264</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>verticalSlider_50</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_154</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>410</x>
+     <y>273</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>465</x>
+     <y>263</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>secondRoundAdjustment</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_35</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>618</x>
+     <y>657</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>687</x>
+     <y>658</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>preflop_override</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>PreFlopMinCallEquity</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>115</x>
+     <y>184</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>202</x>
+     <y>278</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>preflop_override</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>PreFlopCallPower</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>143</x>
+     <y>181</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>158</x>
+     <y>337</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>preflop_override</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>PreFlopMinBetEquity</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>85</x>
+     <y>183</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>118</x>
+     <y>435</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>preflop_override</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>PreFlopBetPower</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>73</x>
+     <y>178</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>220</x>
+     <y>481</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>preflop_override</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>PreFlopMaxBetEquity</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>49</x>
+     <y>181</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>155</x>
+     <y>548</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>preflop_override</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>secondRoundAdjustmentPreFlop</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>54</x>
+     <y>180</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>118</x>
+     <y>656</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>preflop_override</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>secondRoundAdjustmentPowerIncrease</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>243</x>
+     <y>182</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>181</x>
+     <y>707</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>preflop_override</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>pre_flop_equity_reduction_by_position</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>269</x>
+     <y>181</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>485</x>
+     <y>498</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>preflop_override</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>pre_flop_equity_increase_if_bet</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>234</x>
+     <y>177</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>495</x>
+     <y>551</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>preflop_override</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>pre_flop_equity_increase_if_call</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>296</x>
+     <y>188</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>464</x>
+     <y>596</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>preflop_override</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>potAdjustmentPreFlop</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>283</x>
+     <y>176</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>555</x>
+     <y>655</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>preflop_override</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>maxPotAdjustmentPreFlop</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>217</x>
+     <y>179</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>505</x>
+     <y>710</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>TurnCheckDeceptionMinEquity</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_44</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>517</x>
      <y>706</y>
     </hint>
     <hint type="destinationlabel">
-     <x>378</x>
-     <y>697</y>
+     <x>691</x>
+     <y>699</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>RiverBluffMinEquity</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_65</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>541</x>
+     <y>656</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>674</x>
+     <y>636</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>max_abs_fundchange</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_66</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>364</x>
+     <y>707</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>673</x>
+     <y>687</y>
     </hint>
    </hints>
   </connection>

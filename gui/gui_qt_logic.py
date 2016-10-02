@@ -15,7 +15,7 @@ from vbox_manager import VirtualBoxController
 from PyQt5.QtWidgets import QMessageBox
 
 
-from decisionmaker.genetic_algorithm1 import *
+from decisionmaker.genetic_algorithm import *
 from decisionmaker.curvefitting import *
 import os
 
@@ -56,7 +56,7 @@ class UIActionAndSignals(QObject):
     signal_funds_chart_update = QtCore.pyqtSignal(object)
     signal_pie_chart_update = QtCore.pyqtSignal(dict)
     signal_curve_chart_update1 = QtCore.pyqtSignal(float, float, float, float, float, float, str, str)
-    signal_curve_chart_update2 = QtCore.pyqtSignal(float, float, float, float, float, float, float, float, float)
+    signal_curve_chart_update2 = QtCore.pyqtSignal(float, float, float, float, float, float, float, float, float, float)
     signal_lcd_number_update = QtCore.pyqtSignal(str, float)
     signal_update_selected_strategy = QtCore.pyqtSignal(str)
 
@@ -65,6 +65,12 @@ class UIActionAndSignals(QObject):
     def __init__(self, ui_main_window, p, l, logger):
         QObject.__init__(self)
         self.strategy_items_with_multipliers = {
+            "max_abs_fundchange":100,
+            "RiverCheckDeceptionMinEquity":100,
+            "TurnCheckDeceptionMinEquity":100,
+            "pre_flop_equity_reduction_by_position": 100,
+            "pre_flop_equity_increase_if_bet": 100,
+            "pre_flop_equity_increase_if_call": 100,
             "minimum_bet_size": 1,
             "range_multiple_players": 100,
             "range_utg0": 100,
@@ -77,13 +83,13 @@ class UIActionAndSignals(QObject):
             "secondRiverBetPotMinEquity": 100,
             "FlopBetPower": 1,
             "betPotRiverEquityMaxBBM": 1,
-            "CoveredPlayersCallLikelihoodPreFlop": 100,
             "TurnMinBetEquity": 100,
             "PreFlopBetPower": 1,
             "potAdjustmentPreFlop": 1,
             "RiverCallPower": 1,
             "minBullyEquity": 100,
             "PreFlopMinBetEquity": 100,
+            "PreFlopMinCallEquity": 100,
             "BetPlusInc": 1,
             "FlopMinCallEquity": 100,
             "secondRoundAdjustmentPreFlop": 100,
@@ -375,12 +381,14 @@ class UIActionAndSignals(QObject):
         max_equity = float(
             p.selected_strategy['PreFlopMaxBetEquity']) if game_stage == 'PreFlop' and call_or_bet == 'Bet' else 1
         power = float(p.selected_strategy[game_stage + call_or_bet + 'Power'])
+        max_X = .86 if game_stage=="Preflop" else 1
 
         self.gui_scatterplot.drawfigure(p_name, game_stage, decision, l,
                                         float(p.selected_strategy['smallBlind']),
                                         float(p.selected_strategy['bigBlind']),
                                         max_value,
                                         min_equity,
+                                        max_X,
                                         max_equity,
                                         power)
 
@@ -412,6 +420,7 @@ class UIActionAndSignals(QObject):
         self.ui_editor.pokerSite.setCurrentIndex(idx)
 
         self.ui_editor.preflop_override.setChecked(self.p.selected_strategy['preflop_override'])
+        self.ui_editor.gather_player_names.setChecked(self.p.selected_strategy['gather_player_names'])
 
         self.update_strategy_editor_graphs(strategy_name)
 
@@ -427,6 +436,7 @@ class UIActionAndSignals(QObject):
                                                 float(strategy_dict['bigBlind']),
                                                 float(strategy_dict['initialFunds']),
                                                 1,
+                                                0.85,
                                                 float(strategy_dict['PreFlopMaxBetEquity']))
 
             self.curveplot_flop.update_lines(float(strategy_dict['FlopCallPower']),
@@ -436,6 +446,7 @@ class UIActionAndSignals(QObject):
                                                 float(strategy_dict['smallBlind']),
                                                 float(strategy_dict['bigBlind']),
                                                 float(strategy_dict['initialFunds']),
+                                                1,
                                                 1,
                                                 1)
 
@@ -447,6 +458,7 @@ class UIActionAndSignals(QObject):
                                                 float(strategy_dict['bigBlind']),
                                                float(strategy_dict['initialFunds']),
                                                 1,
+                                                1,
                                                 1)
 
             self.curveplot_river.update_lines(float(strategy_dict['RiverCallPower']),
@@ -456,6 +468,7 @@ class UIActionAndSignals(QObject):
                                                 float(strategy_dict['smallBlind']),
                                                 float(strategy_dict['bigBlind']),
                                                 float(strategy_dict['initialFunds']),
+                                                1,
                                                 1,
                                                 1)
         except:
@@ -470,6 +483,8 @@ class UIActionAndSignals(QObject):
         self.strategy_dict['pokerSite'] = self.ui_editor.pokerSite.currentText()
         self.strategy_dict['computername'] = os.environ['COMPUTERNAME']
         self.strategy_dict['preflop_override']=int(self.ui_editor.preflop_override.isChecked())
+        self.strategy_dict['gather_player_names'] = int(self.ui_editor.gather_player_names.isChecked())
+
         return self.strategy_dict
 
     def save_strategy(self, name, update):
@@ -479,10 +494,10 @@ class UIActionAndSignals(QObject):
                 self.p.update_strategy(strategy_dict)
             else:
                 self.p.save_strategy(strategy_dict)
-                self.ui_editor.Strategy.addItem(name)
+                self.ui_editor.Strategy.insertItem(0, name)
                 idx = len(self.p.get_playable_strategy_list())
-                self.ui_editor.Strategy.setCurrentIndex(idx - 1)
-                self.ui.comboBox_current_strategy.addItem(name)
+                self.ui_editor.Strategy.setCurrentIndex(0)
+                self.ui.comboBox_current_strategy.insertItem(0, name)
             msg=QMessageBox()
             msg.setIcon(QMessageBox.Information)
             msg.setText("Saved")
@@ -742,12 +757,12 @@ class CurvePlot(FigureCanvas):
 
         self.draw()
 
-    def update_lines(self, power1, power2, minEquityCall, minEquityBet, smallBlind, bigBlind, maxValue, maxEquityCall,
+    def update_lines(self, power1, power2, minEquityCall, minEquityBet, smallBlind, bigBlind, maxValue, maxEquityCall, max_X,
                      maxEquityBet):
         x2 = np.linspace(0, 1, 100)
 
-        d1 = Curvefitting(x2, smallBlind, bigBlind * 2, maxValue, minEquityCall, maxEquityCall, power1)
-        d2 = Curvefitting(x2, smallBlind, bigBlind, maxValue, minEquityBet, maxEquityBet, power2)
+        d1 = Curvefitting(x2, smallBlind, bigBlind * 2, maxValue, minEquityCall, maxEquityCall, max_X, power1)
+        d2 = Curvefitting(x2, smallBlind, bigBlind, maxValue, minEquityBet, maxEquityBet, max_X, power2)
         x = np.arange(0, 1, 0.01)
         try:
             self.line1.remove()
@@ -791,7 +806,7 @@ class ScatterPlot(FigureCanvas):
         super(ScatterPlot, self).__init__(self.fig)
         self.ui.horizontalLayout_4.insertWidget(1, self)
 
-    def drawfigure(self, p_name, game_stage, decision, l, smallBlind, bigBlind, maxValue, minEquityBet, maxEquityBet,
+    def drawfigure(self, p_name, game_stage, decision, l, smallBlind, bigBlind, maxValue, minEquityBet, max_X, maxEquityBet,
                    power):
         wins, losses = l.get_scatterplot_data('Template', p_name, game_stage, decision)
         self.fig.clf()
@@ -820,7 +835,7 @@ class ScatterPlot(FigureCanvas):
                          ('Wins', 'Losses'), loc=2)
 
         x2 = np.linspace(0, 1, 100)
-        d2 = Curvefitting(x2, smallBlind, bigBlind, maxValue, minEquityBet, maxEquityBet, power)
+        d2 = Curvefitting(x2, smallBlind, bigBlind, maxValue, minEquityBet, maxEquityBet, max_X, power)
         self.line3, = self.axes.plot(np.arange(0, 1, 0.01), d2.y[-100:],
                                      'r-')  # Returns a tuple of line objects, thus the comma
 

@@ -4,7 +4,7 @@ class debug_logger(object):
     def start_logger(self,name):
         logger = logging.getLogger(name)
         logger.setLevel(logging.DEBUG)
-        fh = logging.handlers.RotatingFileHandler('log/pokerprogram.log', maxBytes=1000000, backupCount=5)
+        fh = logging.handlers.RotatingFileHandler('log/pokerprogram.log', maxBytes=1000000, backupCount=10)
         fh.setLevel(logging.DEBUG)
         fh2 = logging.handlers.RotatingFileHandler('log/pokerprogram_info_only.log', maxBytes=1000000, backupCount=5)
         fh2.setLevel(logging.INFO)
