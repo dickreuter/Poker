@@ -5,6 +5,7 @@ import numpy as np
 import pymouse
 from vbox_manager import VirtualBoxController
 from configobj import ConfigObj
+import win32api
 
 
 class MouseMover(VirtualBoxController):
@@ -19,7 +20,7 @@ class MouseMover(VirtualBoxController):
             self.mouse_move_vbox(x, y)
             self.mouse_click_vbox(x, y)
         else:
-            self.mouse.move(x, y)
+            win32api.SetCursorPos((x, y))
             self.mouse.click(x, y)
 
         time.sleep(np.random.uniform(0.2, 0.3, 1)[0])
@@ -49,13 +50,14 @@ class MouseMover(VirtualBoxController):
                 self.mouse_move_vbox(x, y)
                 time.sleep(np.random.uniform(0.01 * speed, 0.03 * speed, 1)[0])
             else:
-                self.mouse.move(x, y)
+                win32api.SetCursorPos((x, y))
                 time.sleep(np.random.uniform(0.01 * speed, 0.03 * speed, 1)[0])
 
         if self.vbox_mode:
             self.mouse_move_vbox(x2, y2)
         else:
-            self.mouse.move(x2, y2)
+            #self.mouse.move(x2, y2)
+            win32api.SetCursorPos((x2, y2))
 
 
 
@@ -66,7 +68,7 @@ class MouseMover(VirtualBoxController):
         if self.vbox_mode:
             self.mouse_move_vbox(x2 + xrand, y2 + yrand)
         else:
-            self.mouse.move(x2 + xrand, y2 + yrand)
+            win32api.SetCursorPos((x2 + xrand, y2 + yrand))
 
         time.sleep(np.random.uniform(0.1, 0.2, 1)[0])
 

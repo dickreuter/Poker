@@ -1,8 +1,7 @@
-import cv2  # opencv 3.0
-import pytesseract
-from PIL import Image, ImageGrab, ImageDraw, ImageFilter
+import cv2
+from PIL import Image
 import numpy as np
-from main import Table
+import cv2
 
 class Setup():
     def __init__(self,topleftcorner_file,screenshot_file,output_file):
@@ -72,6 +71,37 @@ class Setup():
         return cropped_example
 
 if __name__=='__main__':
-    s=Setup()
+    screenshot_file = "fixes/pokersnowie/screenshot.png"
+    output_file = 'log/table_setup_output.png'
+    top_left_corner_file="pics/SN/topleft.png"
+    coordinates_file='coordinates.txt'
+    table = 'SN'
+
+    s = Setup(topleftcorner_file=top_left_corner_file,
+              screenshot_file=screenshot_file,
+              output_file=output_file)
+
+    with open(coordinates_file, 'r') as inf:
+        c = eval(inf.read())
+        coo = c['screen_scraping']
+
+    img = cv2.imread(output_file, 0)
+
+    for key, item in coo.items():
+        try:
+            for c in item[table]:
+                try:
+                    print(c)
+                    cv2.rectangle(img, (c[0], c[1]), (c[2], c[3]), 200)
+                except:
+                    pass
+        except:
+            pass
+        try:
+            cv2.rectangle(img, (int(item[table]['x1']), int(item[table]['y1'])), (int(item[table]['x2']), int(item[table]['y2'])), 200)
+        except Exception as e:
+            pass
 
 
+    cv2.imshow('img', img)
+    cv2.waitKey()

@@ -12,13 +12,13 @@ import winsound
 
 
 class MonteCarlo(object):
-    def get_two_short_notation(self,input_cards):
+    def get_two_short_notation(self, input_cards):
         card1 = input_cards[0][0]
         card2 = input_cards[1][0]
         suited_str = 's' if input_cards[0][1] == input_cards[1][1] else 'o'
-        return card1+card2+suited_str,card2+card1+suited_str
+        return card1 + card2 + suited_str, card2 + card1 + suited_str
 
-    def get_opponent_allowed_cards_list(self,opponent_call_probability,logger):
+    def get_opponent_allowed_cards_list(self, opponent_call_probability, logger):
         self.preflop_equities = {
             "23o": 0.354,
             "24o": 0.36233333333333334,
@@ -192,11 +192,11 @@ class MonteCarlo(object):
         }
         peflop_equity_list = sorted(self.preflop_equities.items(), key=operator.itemgetter(1))
 
-        counts=len(peflop_equity_list)
-        take_top=int(counts*opponent_call_probability)
+        counts = len(peflop_equity_list)
+        take_top = int(counts * opponent_call_probability)
         allowed = set(list(peflop_equity_list)[-take_top:])
-        allowed_cards=[i[0] for i in allowed]
-        #logger.debug("Allowed range: "+str(allowed_cards))
+        allowed_cards = [i[0] for i in allowed]
+        # logger.debug("Allowed range: "+str(allowed_cards))
         return allowed_cards
 
     def eval_best_hand(self, hands):  # evaluate which hand is best
@@ -309,7 +309,8 @@ class MonteCarlo(object):
         [Deck.append(x + y) for x in values for y in suites]
         return Deck
 
-    def distribute_cards_to_players(self, deck, player_amount, player_card_list, table_card_list, opponent_allowed_cards):
+    def distribute_cards_to_players(self, deck, player_amount, player_card_list, table_card_list,
+                                    opponent_allowed_cards):
         Players = []
         CardsOnTable = []
         knownPlayers = 0  # for potential collusion if more than one bot is running on the same table
@@ -325,25 +326,24 @@ class MonteCarlo(object):
         for c in table_card_list:
             CardsOnTable.append(deck.pop(deck.index(c)))  # remove cards that are on the table from the deck
 
-        n=0
+        n = 0
         while True:
             plr = []
 
-            random_card1=np.random.random_integers(0, len(deck) - 1)
+            random_card1 = np.random.random_integers(0, len(deck) - 1)
             plr.append(deck.pop(random_card1))
-            random_card2=np.random.random_integers(0, len(deck) - 1)
+            random_card2 = np.random.random_integers(0, len(deck) - 1)
             plr.append(deck.pop(random_card2))
 
             # check for ranges
-            crd1,crd2=self.get_two_short_notation(plr)
-            if not(crd1 in opponent_allowed_cards or crd2 in opponent_allowed_cards):
+            crd1, crd2 = self.get_two_short_notation(plr)
+            if not (crd1 in opponent_allowed_cards or crd2 in opponent_allowed_cards):
                 deck.append(plr[0])
                 deck.append(plr[1])
             else:
                 Players.append(plr)
-                n+=1
-            if n==player_amount - knownPlayers or knownPlayers>=2: break
-
+                n += 1
+            if n == player_amount - knownPlayers or knownPlayers >= 2: break
 
         return Players, deck
 
@@ -353,15 +353,15 @@ class MonteCarlo(object):
             table_card_list.append(Deck.pop(np.random.random_integers(0, len(Deck) - 1)))
         return table_card_list
 
-    def run_montecarlo(self, logger,original_player_card_list, original_table_card_list, player_amount, ui, maxRuns,
-                       timeout,ghost_cards,opponent_call_probability=1):
-        opponent_allowed_cards=self.get_opponent_allowed_cards_list(opponent_call_probability,logger)
+    def run_montecarlo(self, logger, original_player_card_list, original_table_card_list, player_amount, ui, maxRuns,
+                       timeout, ghost_cards, opponent_call_probability=1):
+        opponent_allowed_cards = self.get_opponent_allowed_cards_list(opponent_call_probability, logger)
 
         winnerCardTypeList = []
         wins = 0
         runs = 0
         OriginalDeck = self.create_card_deck()
-        if ghost_cards!='':
+        if ghost_cards != '':
             OriginalDeck.pop(OriginalDeck.index(ghost_cards[0]))
             OriginalDeck.pop(OriginalDeck.index(ghost_cards[1]))
 
@@ -370,7 +370,8 @@ class MonteCarlo(object):
             Deck = copy(OriginalDeck)
             PlayerCardList = original_player_card_list[:]
             TableCardsList = original_table_card_list[:]
-            Players, Deck = self.distribute_cards_to_players(Deck, player_amount, PlayerCardList, TableCardsList,opponent_allowed_cards)
+            Players, Deck = self.distribute_cards_to_players(Deck, player_amount, PlayerCardList, TableCardsList,
+                                                             opponent_allowed_cards)
             Deck5Cards = self.distribute_cards_to_table(Deck, TableCardsList)
             PlayerFinalCardsWithTableCards = []
             for o in range(0, player_amount):
@@ -398,11 +399,10 @@ class MonteCarlo(object):
                     #     gui.progress["value"] = int(round(m * 100 / maxRuns))
                     #     gui.var2.set("Equity: " + str(self.equity * 100) + "%")
                     #     gui.statusbar.set("Running Monte Carlo: " + str(m) + "/" + str(maxRuns))
-                    if m>999 and time.time() > timeout:
+                    if m > 999 and time.time() > timeout:
                         break
             except:
                 pass
-
 
         self.equity = wins / runs
         self.winnerCardTypeList = Counter(winnerCardTypeList)
@@ -414,41 +414,41 @@ class MonteCarlo(object):
 
         return self.equity, self.winTypesDict
 
-def run_montecarlo_wrapper(logger,p,ui_action_and_signals,config,ui,t,L):
+
+def run_montecarlo_wrapper(logger, p, ui_action_and_signals, config, ui, t, L):
     # Prepare for montecarlo simulation to evaluate equity (probability of winning with given cards)
 
     if t.gameStage == "PreFlop":
         t.assumedPlayers = 2
-        opponent_call_probability=1
+        opponent_call_probability = 1
 
     elif t.gameStage == "Flop":
 
         if t.isHeadsUp:
-            for i in range (5):
-                if t.other_players[i]['status']==1:
+            for i in range(5):
+                if t.other_players[i]['status'] == 1:
                     break
-            n=t.other_players[i]['utg_position']
+            n = t.other_players[i]['utg_position']
             logger.info("Opponent utg position: " + str(n))
-            opponent_call_probability=float(p.selected_strategy['range_utg'+str(n)])
+            opponent_call_probability = float(p.selected_strategy['range_utg' + str(n)])
         else:
-            opponent_call_probability=float(p.selected_strategy['range_multiple_players'])
+            opponent_call_probability = float(p.selected_strategy['range_multiple_players'])
 
         t.assumedPlayers = t.other_active_players - int(round(t.playersAhead * (1 - opponent_call_probability))) + 1
 
     else:
 
         if t.isHeadsUp:
-            for i in range (5):
-                if t.other_players[i]['status']==1:
+            for i in range(5):
+                if t.other_players[i]['status'] == 1:
                     break
             n = t.other_players[i]['utg_position']
-            logger.info("Opponent utg position: "+str(n))
-            opponent_call_probability=float(p.selected_strategy['range_utg'+str(n)])
+            logger.info("Opponent utg position: " + str(n))
+            opponent_call_probability = float(p.selected_strategy['range_utg' + str(n)])
         else:
-            opponent_call_probability=float(p.selected_strategy['range_multiple_players'])
+            opponent_call_probability = float(p.selected_strategy['range_multiple_players'])
 
         t.assumedPlayers = t.other_active_players + 1
-
 
     t.assumedPlayers = min(max(t.assumedPlayers, 2), 4)
 
@@ -456,24 +456,23 @@ def run_montecarlo_wrapper(logger,p,ui_action_and_signals,config,ui,t,L):
     t.PlayerCardList.append(t.mycards)
     t.PlayerCardList_and_others = copy(t.PlayerCardList)
 
-    collude=True if os.environ['COMPUTERNAME']=="Home-PC-ND" or os.environ['COMPUTERNAME']=='NICOLAS-ASUS' else False
-    ghost_cards=''
+    ghost_cards = ''
 
-    if collude:
-        collusion_cards, collusion_player_dropped_out = L.get_collusion_cards(t.game_number_on_screen,t.gameStage)
-        if collusion_cards!='':
+    if p.selected_strategy['collusion'] == 1:
+        collusion_cards, collusion_player_dropped_out = L.get_collusion_cards(t.game_number_on_screen, t.gameStage)
+        if collusion_cards != '':
             winsound.Beep(1000, 100)
             if not collusion_player_dropped_out:
                 t.PlayerCardList_and_others.append(collusion_cards)
-                print ("COLLUSION FOUND")
+                print("COLLUSION FOUND")
             elif collusion_player_dropped_out:
                 print("COLLUSION FOUND, but player dropped out")
-                ghost_cards=collusion_cards
+                ghost_cards = collusion_cards
         else:
             print("NO COLLUSION FOUND")
 
     if t.gameStage == "PreFlop":
-        maxRuns=1000
+        maxRuns = 1000
     else:
         maxRuns = 7500
 
@@ -485,16 +484,21 @@ def run_montecarlo_wrapper(logger,p,ui_action_and_signals,config,ui,t,L):
     logger.debug("Opponent call range: " + str(opponent_call_probability))
     logger.debug("maxRuns: " + str(maxRuns))
     logger.debug("Player amount: " + str(t.assumedPlayers))
-    m.run_montecarlo(logger,t.PlayerCardList_and_others, t.cardsOnTable, int(t.assumedPlayers), ui, maxRuns=maxRuns, ghost_cards=ghost_cards,timeout=timeout, opponent_call_probability=opponent_call_probability)
+    m.run_montecarlo(logger, t.PlayerCardList_and_others, t.cardsOnTable, int(t.assumedPlayers), ui, maxRuns=maxRuns,
+                     ghost_cards=ghost_cards, timeout=timeout, opponent_call_probability=opponent_call_probability)
     ui_action_and_signals.signal_status.emit("Monte Carlo completed successfully")
     logger.debug("Monte Carlo completed successfully with runs: " + str(m.runs))
 
     if t.gameStage == "PreFlop":
-        crd1,crd2=m.get_two_short_notation(t.mycards)
-        if crd1 in m.preflop_equities: m.equity=m.preflop_equities[crd1]
-        elif crd2 in m.preflop_equities: m.equity=m.preflop_equities[crd2]
-        elif crd1[0:2] in m.preflop_equities: m.equity=m.preflop_equities[crd1[0:2]]
-        else: logger.warning("Preflop not found in table: " + str(crd1))
+        crd1, crd2 = m.get_two_short_notation(t.mycards)
+        if crd1 in m.preflop_equities:
+            m.equity = m.preflop_equities[crd1]
+        elif crd2 in m.preflop_equities:
+            m.equity = m.preflop_equities[crd2]
+        elif crd1[0:2] in m.preflop_equities:
+            m.equity = m.preflop_equities[crd1[0:2]]
+        else:
+            logger.warning("Preflop not found in table: " + str(crd1))
 
     t.equity = np.round(m.equity, 3)
     t.winnerCardTypeList = m.winnerCardTypeList
@@ -505,16 +509,18 @@ def run_montecarlo_wrapper(logger,p,ui_action_and_signals,config,ui,t,L):
 if __name__ == '__main__':
     Simulation = MonteCarlo()
     import logging
+
     logger = logging.getLogger('Montecarlo main')
     my_cards = [['2D', 'AD']]
     cards_on_table = ['3S', 'AH', '8D']
     players = 2
-    secs=3
-    start_time=time.time()
-    timeout=start_time+secs
-    ghost_cards=''
-    Simulation.run_montecarlo(logging, my_cards, cards_on_table, player_amount=players, ui=None, maxRuns=15000, ghost_cards=ghost_cards,timeout=timeout,opponent_call_probability=0.3)
+    secs = 3
+    start_time = time.time()
+    timeout = start_time + secs
+    ghost_cards = ''
+    Simulation.run_montecarlo(logging, my_cards, cards_on_table, player_amount=players, ui=None, maxRuns=15000,
+                              ghost_cards=ghost_cards, timeout=timeout, opponent_call_probability=0.3)
     print("--- %s seconds ---" % (time.time() - start_time))
-    print ("Runs: "+str(Simulation.runs))
+    print("Runs: " + str(Simulation.runs))
     equity = Simulation.equity  # considering draws as wins
     print("Equity: " + str(equity))

@@ -15,7 +15,7 @@ import inspect
 from captcha.captcha_manager import solve_captcha
 from vbox_manager import VirtualBoxController
 
-version=1.69
+version=1.787
 IP=''
 
 class History(object):
@@ -55,23 +55,35 @@ class Table(object):
 
     def load_templates(self):
         self.cardImages = dict()
+        self.cardImages_sn_board = dict()
         self.img = dict()
         p = StrategyHandler()
         p.read_strategy()
         self.tbl=p.selected_strategy['pokerSite']
         values = "23456789TJQKA"
         suites = "CDHS"
+        if self.tbl=='SN': suites=suites.lower()
+
         for x in values:
             for y in suites:
                 name = "pics/" + self.tbl[0:2] + "/" + x + y + ".png"
-                if os.path.exists(name) == True:
-                    self.img[x + y] = Image.open(name)
-                    self.cardImages[x + y] = cv2.cvtColor(np.array(self.img[x + y]), cv2.COLOR_BGR2RGB)
-                    # (thresh, self.cardImages[x + y]) =
+                name_sn_board="pics/SN/board/" + x + y + ".png"
+                if os.path.exists(name):
+                    self.img[x + y.upper()] = Image.open(name)
+                    if self.tbl=='SN':
+                        self.img[x + y.upper()]=self.crop_image(self.img[x + y.upper()], 5,5,20,45)
+
+                    self.cardImages[x + y] = cv2.cvtColor(np.array(self.img[x + y.upper()]), cv2.COLOR_BGR2RGB)
+
+                    if self.tbl == 'SN':
+                        self.img[x + y.upper()] = Image.open(name_sn_board)
+                        self.cardImages_sn_board[x + y.upper()] = cv2.cvtColor(np.array(self.img[x + y.upper()]), cv2.COLOR_BGR2RGB)
+
+                # (thresh, self.cardImages[x + y]) =
                     # cv2.threshold(self.cardImages[x + y], 128, 255,
                     # cv2.THRESH_BINARY | cv2.THRESH_OTSU)
                 else:
-                    self.logger.critical("Card Temlate File not found: " + str(x) + str(y) + ".png")
+                    self.logger.critical("Card template File not found: " + str(x) + str(y) + ".png")
 
         name = "pics/" + self.tbl[0:2] + "/button.png"
         template = Image.open(name)
@@ -398,6 +410,7 @@ class TableScreenBased(Table):
         return True
 
     def check_for_imback(self, mouse):
+        if self.tbl=='SN': return True
         mouse.move_mouse_away_from_buttons(logger)
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
@@ -476,8 +489,9 @@ class TableScreenBased(Table):
 
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
 
+        card_images=self.cardimages if self.tbl!='SN' else self.cardImages_sn_board
 
-        for key, value in self.cardImages.items():
+        for key, value in card_images.items():
             template = value
             method = eval('cv2.TM_SQDIFF_NORMED')
             res = cv2.matchTemplate(img, template, method)
@@ -505,13 +519,37 @@ class TableScreenBased(Table):
         self.logger.info("Cards on table: " + str(self.cardsOnTable))
         self.logger.info("---")
 
-        if h.histGameStage == self.gameStage and h.lastRoundGameID == h.GameID:
-            h.round_number+=1
-        else:
-            h.round_number=0
-
         self.max_X = 1 if self.gameStage != 'PreFlop' else 0.86
 
+        return True
+
+    def check_fast_fold(self, h,p):
+        if p.selected_strategy['preflop_override'] and self.gameStage=="PreFlop":
+            m = MonteCarlo()
+            crd1, crd2 = m.get_two_short_notation(self.mycards)
+            crd1 = crd1.upper()
+            crd2 = crd2.upper()
+            sheet_name = str(self.position_utg_plus + 1)
+            if sheet_name=='6': return True
+            sheet = h.preflop_sheet[sheet_name]
+            sheet['Hand'] = sheet['Hand'].apply(lambda x: str(x).upper())
+            handlist = set(sheet['Hand'].tolist())
+
+            found_card = ''
+
+            if crd1 in handlist:
+                found_card = crd1
+            elif crd2 in handlist:
+                found_card = crd2
+            elif crd1[0:2] in handlist:
+                found_card = crd1[0:2]
+
+            if found_card == '':
+                mouse = MouseMoverTableBased(logger, p.selected_strategy['pokerSite'], 0,0)
+                mouse_target = "Fold"
+                mouse.mouse_action(mouse_target, self.tlc, self.logger)
+                logger.info("-------- FAST FOLD -------")
+                return False
         return True
 
     def get_my_cards(self,h):
@@ -530,8 +568,10 @@ class TableScreenBased(Table):
                     self.mycards.append(key)
                 dic[key] = min_val
 
-                ##dic = sorted(dic.items(), key=operator.itemgetter(1))
-                #self.logger.debug(str(dic))
+                if debugging:
+                    pass
+                    dic = sorted(dic.items(), key=operator.itemgetter(1))
+                    self.logger.debug(str(dic))
 
         self.gui_signals.signal_progressbar_increase.emit(5)
         self.mycards = []
@@ -550,7 +590,7 @@ class TableScreenBased(Table):
             return True
         else:
             self.logger.debug("Did not find two player cards: " + str(self.mycards))
-            # go_through_each_card(img,True)
+            go_through_each_card(img,True)
             return False
 
     def init_get_other_players_info(self):
@@ -611,7 +651,7 @@ class TableScreenBased(Table):
             self.gui_signals.signal_progressbar_increase.emit(1)
             pot_area_image = self.crop_image(self.entireScreenPIL, self.tlc[0]-20 + fd[0], self.tlc[1] + fd[1]-20,self.tlc[0] + fd[2]+20, self.tlc[1] + fd[3]+20)
             img = cv2.cvtColor(np.array(pot_area_image), cv2.COLOR_BGR2RGB)
-            count, points, bestfit = self.find_template_on_screen(self.smallDollarSign1, img, 0.2)
+            count, points, bestfit = self.find_template_on_screen(self.smallDollarSign1, img, 0.3)
             has_small_dollarsign=count>0
             if has_small_dollarsign:
                 pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1],self.tlc[0] + fd[2], self.tlc[1] + fd[3])
@@ -625,6 +665,21 @@ class TableScreenBased(Table):
                 self.logger.debug("FINAL POT after regex: "+str(value))
                 self.other_players[n]['pot'] = value
         return True
+
+    def get_bot_pot(self):
+        fd = self.coo[inspect.stack()[0][3]][self.tbl]
+        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1], self.tlc[0] + fd[2],
+                                    self.tlc[1] + fd[3])
+        value = self.get_ocr_float(pil_image, str(inspect.stack()[0][3]), force_method=1)
+        try:
+            value = float(re.findall(r'\d{1}\.\d{1,2}', str(value))[0])
+        except:
+            self.logger.warning("bot pot regex problem: " + str(value))
+            self.logger.warning("Assuming bot pot is 2*bigblind")
+            value = float(p.selected_strategy['bigBlind'])*2
+        self.bot_pot=value
+        return value
+
 
     def get_other_player_status(self,p,h):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
@@ -661,11 +716,17 @@ class TableScreenBased(Table):
         self.first_raiser=np.nan
         self.second_raiser=np.nan
         self.first_caller = np.nan
+
+        if h.round_number==0:
+            reference_pot=float(p.selected_strategy['bigBlind'])
+        else:
+            reference_pot = self.get_bot_pot()
+
         for n in range(5):
             i=(self.dealer_position+n+3-2)%5 #less mysself as 0 is now first other player to my left and no longer myself
             self.logger.debug("Go through pots to find raiser abs:: "+str(i)+": "+str(self.other_players[i]['pot']))
             if self.other_players[i]['pot']!='': # check if not empty (otherwise can't convert string)
-                if self.other_players[i]['pot'] > float(p.selected_strategy['bigBlind']):
+                if self.other_players[i]['pot'] > reference_pot: # reference pot is bb for first round and ourselves for rest
                     if np.isnan(self.first_raiser):
                         self.first_raiser=int(i)
                         self.first_raiser_pot = self.other_players[i]['pot']
@@ -679,6 +740,7 @@ class TableScreenBased(Table):
         self.highest_raiser = np.nanmax([self.first_raiser, self.second_raiser])
 
         self.logger.debug("Second raiser abs: " + str(self.second_raiser))
+        self.second_raiser_utg = (self.second_raiser - self.dealer_position + 4) % 6
         self.logger.info("Highest raiser abs: " + str(self.highest_raiser))
 
         first_possible_caller=int(self.big_blind_position_abs_op+1 if np.isnan(self.highest_raiser) else self.highest_raiser+1)
@@ -699,14 +761,21 @@ class TableScreenBased(Table):
         self.first_caller_utg=(self.first_caller - self.dealer_position +4) % 6
         self.logger.info("First caller utg+" + str(self.first_caller_utg))
 
-        if (h.previous_decision=="Call" or h.previous_decision=="Call2") and str(h.lastRoundGameID) == str(h.GameID):
+        if ((h.previous_decision=="Call" or h.previous_decision=="Call2") and str(h.lastRoundGameID) == str(h.GameID)) and  \
+               not (self.checkButton==True and self.playersAhead==0):
             self.other_player_has_initiative=True
         else:
             self.other_player_has_initiative = False
 
+        self.logger.info("Other player has initiative: "+str(self.other_player_has_initiative))
 
-        self.logger.debug("Other player has initiative: "+str(self.other_player_has_initiative))
+        return True
 
+    def get_round_number(self,h):
+        if h.histGameStage == self.gameStage and h.lastRoundGameID == h.GameID:
+            h.round_number+=1
+        else:
+            h.round_number=0
         return True
 
     def get_dealer_position(self):
@@ -718,7 +787,12 @@ class TableScreenBased(Table):
 
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
         count, points, bestfit = self.find_template_on_screen(self.dealer, img, 0.01)
-        point=points[0]
+        try:
+            point=points[0]
+        except:
+            self.logger.debug("No dealer found")
+            return False
+
 
         self.position_utg_plus = ''
         for n, fd in enumerate(func_dict, start=0):
@@ -760,7 +834,7 @@ class TableScreenBased(Table):
         self.logger.info("Final Total Pot Value: " + str(self.totalPotValue))
         return True
 
-    def get_my_funds(self,h):
+    def get_my_funds(self,h,p):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
         self.gui_signals.signal_progressbar_increase.emit(5)
         self.logger.debug("Get my funds")
@@ -861,6 +935,7 @@ class TableScreenBased(Table):
         return True
 
     def get_lost_everything(self,h,t,p):
+        if self.tbl=='SN': return True
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
@@ -881,6 +956,7 @@ class TableScreenBased(Table):
         self.gui_signals.signal_progressbar_increase.emit(5)
         self.get_game_number_on_screen()
         if h.previousCards != self.mycards:
+            self.logger.info("+++========================== NEW HAND ==========================+++")
             self.time_new_cards_recognised=datetime.datetime.utcnow()
             h.lastGameID = str(h.GameID)
             h.GameID = int(round(np.random.uniform(0, 999999999), 0))
@@ -911,7 +987,6 @@ class TableScreenBased(Table):
         if not (h.GameID,self.gameStage) in h.uploader:
             h.uploader[(h.GameID,self.gameStage)]=True
             L.upload_collusion_data(self.game_number_on_screen, self.mycards, p, self.gameStage)
-            logging.debug("Updated db cards")
         return True
 
     def get_game_number_on_screen(self):
@@ -984,6 +1059,10 @@ class ThreadManager(threading.Thread):
                 elif p.selected_strategy['pokerSite'] == "PP":
                     t = TableScreenBased(gui_signals,logger)
                     mouse = MouseMoverTableBased(logger,p.selected_strategy['pokerSite'])
+                elif p.selected_strategy['pokerSite'] == "SN":
+                    t = TableScreenBased(gui_signals,logger)
+                    mouse = MouseMoverTableBased(logger,p.selected_strategy['pokerSite'])
+
                 elif p.selected_strategy['pokerSite'] == "F1":
                     # t = TableF1()
                     logger.critical("Pokerbot tournament not yet supported")
@@ -996,20 +1075,22 @@ class ThreadManager(threading.Thread):
                             t.check_for_captcha(mouse) and \
                             t.get_lost_everything(h,t,p) and \
                             t.check_for_imback(mouse) and \
-                            t.get_my_funds(h) and \
+                            t.get_my_funds(h,p) and \
                             t.get_my_cards(h) and \
                             t.get_new_hand(mouse,h,p) and \
                             t.get_table_cards(h) and \
                             t.upload_collusion_wrapper(p,h) and \
-                            t.check_for_button() and \
                             t.get_dealer_position() and \
+                            t.check_fast_fold(h,p) and \
+                            t.check_for_button() and \
+                            t.get_round_number(h) and \
                             t.init_get_other_players_info() and \
                             t.get_other_player_names(p) and \
                             t.get_other_player_funds(p) and \
                             t.get_other_player_pots() and \
-                            t.get_other_player_status(p,h) and \
                             t.get_total_pot_value(h) and \
                             t.check_for_checkbutton() and \
+                            t.get_other_player_status(p, h) and \
                             t.check_for_call() and \
                             t.check_for_betbutton() and \
                             t.check_for_allincall() and \
@@ -1066,7 +1147,7 @@ class ThreadManager(threading.Thread):
                     h.previous_decision=d.decision
                     h.lastRoundGameID = h.GameID
                     h.last_round_bluff = False if t.currentBluff==0 else True
-                    logger.info("======================= THE END=======================")
+                    logger.info("=========== round end ===========")
 
 # ==== MAIN PROGRAM =====
 if __name__ == '__main__':

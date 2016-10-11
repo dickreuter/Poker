@@ -2,9 +2,9 @@ import cv2
 import numpy as np
 from matplotlib import pyplot as plt
 
-img = cv2.imread('log/screenshots/original.png',0)
+img = cv2.imread('fixes/pokersnowie/screenshot.png',0)
 img2 = img.copy()
-template = cv2.imread('log/screenshots/gimp_crop.png',0)
+template = cv2.imread('pics/sn/3d.png',0)
 w, h = template.shape[::-1]
 
 # All the 6 methods for comparison in a list
@@ -26,12 +26,14 @@ for meth in methods:
          top_left = max_loc
      bottom_right = (top_left[0] + w, top_left[1] + h)
 
-     cv2.rectangle(img,top_left, bottom_right, 255, 2)
+     cv2.rectangle(img,top_left, bottom_right, 125, 5)
+     print (min_val)
 
      plt.subplot(121),plt.imshow(res,cmap = 'gray')
      plt.title('Matching Result'), plt.xticks([]), plt.yticks([])
      plt.subplot(122),plt.imshow(img,cmap = 'gray')
      plt.title('Detected Point'), plt.xticks([]), plt.yticks([])
      plt.suptitle(meth)
+
 
      plt.show()

@@ -74,6 +74,19 @@ class StrategyHandler(object):
         return l
 
     def check_defaults(self):
+        if not 'FlopBluffMaxEquity' in self.selected_strategy: self.selected_strategy['FlopBluffMaxEquity'] = 100
+        if not 'TurnBluffMaxEquity' in self.selected_strategy: self.selected_strategy['TurnBluffMaxEquity'] = 100
+        if not 'RiverBluffMaxEquity' in self.selected_strategy: self.selected_strategy['RiverBluffMaxEquity'] = 100
+        if not 'flop_betting_condidion_1' in self.selected_strategy: self.selected_strategy['flop_betting_condidion_1'] = 1
+        if not 'turn_betting_condidion_1' in self.selected_strategy: self.selected_strategy['turn_betting_condidion_1'] = 1
+        if not 'river_betting_condidion_1' in self.selected_strategy: self.selected_strategy['river_betting_condidion_1'] = 1
+        if not 'flop_bluffing_condidion_1' in self.selected_strategy: self.selected_strategy['flop_bluffing_condidion_1'] = 1
+        if not 'turn_bluffing_condidion_1' in self.selected_strategy: self.selected_strategy['turn_bluffing_condidion_1'] = 0
+        if not 'turn_bluffing_condidion_2' in self.selected_strategy: self.selected_strategy['turn_bluffing_condidion_2'] = 1
+        if not 'river_bluffing_condidion_1' in self.selected_strategy: self.selected_strategy['river_bluffing_condidion_1'] = 0
+        if not 'river_bluffing_condidion_2' in self.selected_strategy: self.selected_strategy['river_bluffing_condidion_2'] = 1
+        if not 'collusion' in self.selected_strategy: self.selected_strategy['collusion'] = 1
+
         if not 'max_abs_fundchange' in self.selected_strategy: self.selected_strategy['max_abs_fundchange'] = 4
         if not 'RiverCheckDeceptionMinEquity' in self.selected_strategy: self.selected_strategy['RiverCheckDeceptionMinEquity'] = .1
         if not 'TurnCheckDeceptionMinEquity' in self.selected_strategy: self.selected_strategy['TurnCheckDeceptionMinEquity'] = .1
@@ -227,11 +240,6 @@ class GameLogger(object):
                 t_write_db.daemon = True
                 t_write_db.start()
                 #result = self.mongodb.games.insert_one(summary_dict)
-
-    def get_total_funds_change(self):
-        FCPG = np.sum(self.LogDataFileSummary['FinalFundsChange']) / np.size(
-            self.LogDataFileSummary['FinalFundsChange'])
-        return FCPG
 
     def upload_collusion_data(self,gamenumber,mycards,p,gamestage):
         package={}

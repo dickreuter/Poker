@@ -46,4 +46,59 @@ class TestDecision(TestCase):
         p.selected_strategy['pre_flop_equity_reduction_by_position'] = 0.02
 
         d.__init__(t, h, p, logger, l)
-        self.assertEqual(d.preflop_adjustment, 0.07)
+        self.assertEqual(d.preflop_adjustment, 0.1)
+
+
+    def test_preflop_round2(self):
+        t, p, gui_signals, h,logger = init_table('tests/378278828_PreFlop_1.png',round_number=1)
+        p = StrategyHandler()
+        p.read_strategy('Strategy100')
+        l = MagicMock()
+        t.totalPotValue=0.5
+        t.equity=0.5
+        t.checkButton=False
+        d=Decision(t, h, p, logger, l)
+        t.isHeadsUp=True
+        t.gameStage="PreFlop"
+
+        d.__init__(t, h, p, logger, l)
+        d.preflop_override(t,logger,h,p)
+
+        self.assertEqual(d.preflop_sheet_name, '42R3')
+
+    def test_preflop_round2_2(self):
+        t, p, gui_signals, h,logger = init_table('tests/107232845_PreFlop_1.png',round_number=1)
+        p = StrategyHandler()
+        p.read_strategy('Strategy100')
+        l = MagicMock()
+        t.totalPotValue=0.5
+        t.equity=0.5
+        t.checkButton=False
+        d=Decision(t, h, p, logger, l)
+        t.isHeadsUp=True
+        t.gameStage="PreFlop"
+
+        d.__init__(t, h, p, logger, l)
+        d.preflop_override(t,logger,h,p)
+
+        self.assertEqual(d.preflop_sheet_name, '22R5')
+
+
+    def test_preflop_round2_3(self):
+        t, p, gui_signals, h, logger = init_table('tests/897376414_PreFlop_1.png', round_number=1)
+        p = StrategyHandler()
+        p.read_strategy('Strategy100')
+        l = MagicMock()
+        t.totalPotValue = 0.5
+        t.equity = 0.5
+        t.checkButton = False
+        d = Decision(t, h, p, logger, l)
+        t.isHeadsUp = True
+        t.gameStage = "PreFlop"
+
+        d.__init__(t, h, p, logger, l)
+        d.preflop_override(t, logger, h, p)
+
+        self.assertEqual(d.preflop_sheet_name, '12R3')
+
+

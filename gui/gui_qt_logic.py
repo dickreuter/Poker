@@ -65,7 +65,10 @@ class UIActionAndSignals(QObject):
     def __init__(self, ui_main_window, p, l, logger):
         QObject.__init__(self)
         self.strategy_items_with_multipliers = {
-            "max_abs_fundchange":100,
+            "FlopBluffMaxEquity": 100,
+            "TurnBluffMaxEquity": 100,
+            "RiverBluffMaxEquity": 100,
+            "max_abs_fundchange": 100,
             "RiverCheckDeceptionMinEquity":100,
             "TurnCheckDeceptionMinEquity":100,
             "pre_flop_equity_reduction_by_position": 100,
@@ -124,7 +127,7 @@ class UIActionAndSignals(QObject):
             "maxPotAdjustment": 100
         }
         self.p = p
-        self.pokersite_types=['PP', 'PS', 'PS2']
+        self.pokersite_types=['PP', 'PS', 'PS2','SN']
 
         self.ui = ui_main_window
         self.progressbar_value = 0
@@ -409,9 +412,10 @@ class UIActionAndSignals(QObject):
 
         self.ui_editor.pushButton_save_current_strategy.setEnabled(False)
         try:
-            if self.p.selected_strategy['computername'] == os.environ[
-                'COMPUTERNAME']: self.ui_editor.pushButton_save_current_strategy.setEnabled(True)
-        except:
+            if self.p.selected_strategy['computername'] == os.environ['COMPUTERNAME'] or \
+                            os.environ['COMPUTERNAME'] == 'NICOLAS-ASUS' or os.environ['COMPUTERNAME'] == 'Home-PC-ND':
+                self.ui_editor.pushButton_save_current_strategy.setEnabled(True)
+        except Exception as e:
             pass
 
         selection = self.p.selected_strategy['pokerSite']
@@ -421,6 +425,16 @@ class UIActionAndSignals(QObject):
 
         self.ui_editor.preflop_override.setChecked(self.p.selected_strategy['preflop_override'])
         self.ui_editor.gather_player_names.setChecked(self.p.selected_strategy['gather_player_names'])
+
+        self.ui_editor.collusion.setChecked(self.p.selected_strategy['collusion'])
+        self.ui_editor.flop_betting_condidion_1.setChecked(self.p.selected_strategy['flop_betting_condidion_1'])
+        self.ui_editor.turn_betting_condidion_1.setChecked(self.p.selected_strategy['turn_betting_condidion_1'])
+        self.ui_editor.river_betting_condidion_1.setChecked(self.p.selected_strategy['river_betting_condidion_1'])
+        self.ui_editor.flop_bluffing_condidion_1.setChecked(self.p.selected_strategy['flop_bluffing_condidion_1'])
+        self.ui_editor.turn_bluffing_condidion_1.setChecked(self.p.selected_strategy['turn_bluffing_condidion_1'])
+        self.ui_editor.turn_bluffing_condidion_2.setChecked(self.p.selected_strategy['turn_bluffing_condidion_2'])
+        self.ui_editor.river_bluffing_condidion_1.setChecked(self.p.selected_strategy['river_bluffing_condidion_1'])
+        self.ui_editor.river_bluffing_condidion_2.setChecked(self.p.selected_strategy['river_bluffing_condidion_2'])
 
         self.update_strategy_editor_graphs(strategy_name)
 
@@ -484,6 +498,16 @@ class UIActionAndSignals(QObject):
         self.strategy_dict['computername'] = os.environ['COMPUTERNAME']
         self.strategy_dict['preflop_override']=int(self.ui_editor.preflop_override.isChecked())
         self.strategy_dict['gather_player_names'] = int(self.ui_editor.gather_player_names.isChecked())
+
+        self.strategy_dict['collusion'] = int(self.ui_editor.collusion.isChecked())
+        self.strategy_dict['flop_betting_condidion_1'] = int(self.ui_editor.flop_betting_condidion_1.isChecked())
+        self.strategy_dict['turn_betting_condidion_1'] = int(self.ui_editor.turn_betting_condidion_1.isChecked())
+        self.strategy_dict['river_betting_condidion_1'] = int(self.ui_editor.river_betting_condidion_1.isChecked())
+        self.strategy_dict['flop_bluffing_condidion_1'] = int(self.ui_editor.flop_bluffing_condidion_1.isChecked())
+        self.strategy_dict['turn_bluffing_condidion_1'] = int(self.ui_editor.turn_bluffing_condidion_1.isChecked())
+        self.strategy_dict['turn_bluffing_condidion_2'] = int(self.ui_editor.turn_bluffing_condidion_2.isChecked())
+        self.strategy_dict['river_bluffing_condidion_1'] = int(self.ui_editor.river_bluffing_condidion_1.isChecked())
+        self.strategy_dict['river_bluffing_condidion_2'] = int(self.ui_editor.river_bluffing_condidion_2.isChecked())
 
         return self.strategy_dict
 
@@ -775,6 +799,13 @@ class CurvePlot(FigureCanvas):
         self.axes.legend((self.line1, self.line2), ('Maximum call limit', 'Maximum bet limit'), loc=2)
 
         self.axes.set_ylim(0, max(1, maxValue))
+
+        stage = 'Flop'
+        xmin = 0.2#float(self.p.selected_strategy[stage+'BluffMinEquity'])
+        xmax = 0.3 #float(self.p.selected_strategy[stage+'BluffMaxEquity'])
+        #self.axes.axvline(x=xmin, ymin=0, ymax=1, linewidth=1, color='g')
+        #self.axes.axvline(x=xmax, ymin=0, ymax=1, linewidth=1, color='g')
+
         self.draw()
 
 class FundsChangePlot(FigureCanvas):

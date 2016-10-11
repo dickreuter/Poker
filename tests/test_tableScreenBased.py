@@ -77,9 +77,13 @@ class TestTableScreenBased(TestCase):
         self.assertEqual(t.other_players[3]['pot'], '')
         self.assertEqual(t.other_players[4]['pot'], '')
 
-
-
-
+    def test_other_players6(self):
+        t, p, gui_signals, h, logger = init_table('tests/499121363_PreFlop_4.png')
+        self.assertEqual(t.other_players[0]['pot'], '')
+        self.assertEqual(t.other_players[1]['pot'], '')
+        self.assertEqual(t.other_players[2]['pot'], 0.28)
+        self.assertEqual(t.other_players[3]['pot'], 0.02)
+        self.assertEqual(t.other_players[4]['pot'], 0.04)
 
     def test_flop(self):
         t, p, gui_signals, h, logger=init_table('tests/307380116_Flop_0.png')
@@ -91,3 +95,46 @@ class TestTableScreenBased(TestCase):
         self.assertEqual(t.playersAhead, 1)
         self.assertEqual(t.isHeadsUp,True)
 
+    def test_preflop_recognition(self):
+        t, p, gui_signals, h, logger = init_table('tests/308189727_PreFlop_0.png')
+        self.assertEqual(t.other_players[0]['pot'], 0.02)
+        self.assertEqual(t.other_players[1]['pot'], 0.04)
+        self.assertEqual(t.other_players[2]['pot'], 0.12)
+        self.assertEqual(t.other_players[3]['pot'], '')
+        self.assertEqual(t.other_players[4]['pot'], '')
+
+    def test_second_round_table(self):
+        t, p, gui_signals, h, logger = init_table('tests/107232845_PreFlop_1.png',round_number=1)
+        self.assertEqual(t.position_utg_plus, 1)
+        self.assertEqual(t.dealer_position, 2)
+        self.assertEqual(t.first_raiser, 2)
+        self.assertEqual(np.isnan(t.second_raiser), True)
+        self.assertEqual(np.isnan(t.first_caller), True)
+        self.assertEqual(t.bot_pot, 0.09)
+
+    def test_second_round_table2(self):
+        t, p, gui_signals, h, logger = init_table('tests/378278828_PreFlop_1.png',round_number=1)
+        self.assertEqual(t.position_utg_plus, 3)
+        self.assertEqual(t.dealer_position, 0)
+        self.assertEqual(t.first_raiser, 4)
+        self.assertEqual(np.isnan(t.second_raiser), True)
+        self.assertEqual(np.isnan(t.first_caller), True)
+        self.assertEqual(t.bot_pot, 0.22)
+
+
+    def test_call_raise(self):
+        t, p, gui_signals, h, logger = init_table('tests/43457283_PreFlop_0.png')
+        self.assertEqual(t.other_players[0]['pot'], '')
+        self.assertEqual(t.other_players[1]['pot'], 0.04)
+        self.assertEqual(t.other_players[2]['pot'], 0.16)
+        self.assertEqual(t.other_players[3]['pot'], '')
+        self.assertEqual(t.other_players[4]['pot'], 0.02)
+
+
+    def test_call_raise_2(self):
+        t, p, gui_signals, h, logger = init_table('tests/897376414_PreFlop_1.png')
+        self.assertEqual(t.other_players[0]['pot'], '')
+        self.assertEqual(t.other_players[1]['pot'], 0.3)
+        self.assertEqual(t.other_players[2]['pot'], '')
+        self.assertEqual(t.other_players[3]['pot'], 0.02)
+        self.assertEqual(t.other_players[4]['pot'], 0.04)
