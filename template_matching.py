@@ -1,15 +1,24 @@
 import cv2
 import numpy as np
+from PIL import Image,ImageGrab
 from matplotlib import pyplot as plt
 
-img = cv2.imread('fixes/pokersnowie/screenshot.png',0)
-img2 = img.copy()
-template = cv2.imread('pics/sn/3d.png',0)
-w, h = template.shape[::-1]
+#img = cv2.imread('screenshot.png',0)
+img = cv2.cvtColor(np.array(Image.open('screenshot.png')), cv2.COLOR_BGR2RGB) # works with 0.02
+#img = cv2.cvtColor(np.array(ImageGrab.grab()), cv2.COLOR_BGR2RGB)
+#img = cv2.imread('new_screenshot.png',0)
+#img = cv2.cvtColor(np.array(Image.open('file1.png')), cv2.COLOR_BGR2RGB)
+img2=img.copy()
+
+#template = cv2.imread('pics/sn/3d.png',0)
+#template = cv2.imread('new_3d.png',0)
+#template = cv2.imread('pics/sn/3d.png',0)
+template = cv2.cvtColor(np.array(Image.open('pics/SN/Qs.png')), cv2.COLOR_BGR2RGB)
+#template = cv2.cvtColor(np.array(Image.open('3d.png')), cv2.COLOR_BGR2RGB)
+#template = cv2.cvtColor(np.array(Image.open('pics/sn/3d.png')), cv2.COLOR_BGR2RGB)
 
 # All the 6 methods for comparison in a list
-methods = ['cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR',
-         'cv2.TM_CCORR_NORMED', 'cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
+methods = ['cv2.TM_SQDIFF_NORMED']
 
 for meth in methods:
      img = img2.copy()
@@ -24,9 +33,7 @@ for meth in methods:
          top_left = min_loc
      else:
          top_left = max_loc
-     bottom_right = (top_left[0] + w, top_left[1] + h)
 
-     cv2.rectangle(img,top_left, bottom_right, 125, 5)
      print (min_val)
 
      plt.subplot(121),plt.imshow(res,cmap = 'gray')

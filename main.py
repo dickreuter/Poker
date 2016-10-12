@@ -70,10 +70,10 @@ class Table(object):
                 name_sn_board="pics/SN/board/" + x + y + ".png"
                 if os.path.exists(name):
                     self.img[x + y.upper()] = Image.open(name)
-                    if self.tbl=='SN':
-                        self.img[x + y.upper()]=self.crop_image(self.img[x + y.upper()], 5,5,20,45)
+                    # if self.tbl=='SN':
+                    #     self.img[x + y.upper()]=self.crop_image(self.img[x + y.upper()], 5,5,20,45)
 
-                    self.cardImages[x + y] = cv2.cvtColor(np.array(self.img[x + y.upper()]), cv2.COLOR_BGR2RGB)
+                    self.cardImages[x + y.upper()] = cv2.cvtColor(np.array(self.img[x + y.upper()]), cv2.COLOR_BGR2RGB)
 
                     if self.tbl == 'SN':
                         self.img[x + y.upper()] = Image.open(name_sn_board)
@@ -559,6 +559,8 @@ class TableScreenBased(Table):
             for key, value in self.cardImages.items():
                 template = value
                 method = eval('cv2.TM_SQDIFF_NORMED')
+                if key=='3D':
+                    1==1
 
                 res = cv2.matchTemplate(img, template, method)
 
