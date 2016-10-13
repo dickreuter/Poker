@@ -15,7 +15,7 @@ import inspect
 from captcha.captcha_manager import solve_captcha
 from vbox_manager import VirtualBoxController
 
-version=1.787
+version=1.8
 IP=''
 
 class History(object):
@@ -524,6 +524,7 @@ class TableScreenBased(Table):
         return True
 
     def check_fast_fold(self, h,p):
+        return False
         if p.selected_strategy['preflop_override'] and self.gameStage=="PreFlop":
             m = MonteCarlo()
             crd1, crd2 = m.get_two_short_notation(self.mycards)
@@ -785,10 +786,10 @@ class TableScreenBased(Table):
         self.gui_signals.signal_progressbar_increase.emit(5)
         self.gui_signals.signal_status.emit("Analyse dealer position")
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + 0, self.tlc[1] + 0,
-                                    self.tlc[0] +800, self.tlc[1] + 500)
+                                    self.tlc[0] +950, self.tlc[1] + 700)
 
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
-        count, points, bestfit = self.find_template_on_screen(self.dealer, img, 0.01)
+        count, points, bestfit = self.find_template_on_screen(self.dealer, img, 0.05)
         try:
             point=points[0]
         except:

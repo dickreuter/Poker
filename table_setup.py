@@ -71,7 +71,7 @@ class Setup():
         return cropped_example
 
 if __name__=='__main__':
-    screenshot_file = "fixes/pokersnowie/screenshot.png"
+    screenshot_file = "screenshot.png"
     output_file = 'log/table_setup_output.png'
     top_left_corner_file="pics/SN/topleft.png"
     coordinates_file='coordinates.txt'
