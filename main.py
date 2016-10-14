@@ -524,7 +524,7 @@ class TableScreenBased(Table):
         return True
 
     def check_fast_fold(self, h,p):
-        return False
+        return True
         if p.selected_strategy['preflop_override'] and self.gameStage=="PreFlop":
             m = MonteCarlo()
             crd1, crd2 = m.get_two_short_notation(self.mycards)

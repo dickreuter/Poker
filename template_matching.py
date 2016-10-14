@@ -4,7 +4,7 @@ from PIL import Image,ImageGrab
 from matplotlib import pyplot as plt
 
 #img = cv2.imread('screenshot.png',0)
-img = cv2.cvtColor(np.array(Image.open('screenshot.png')), cv2.COLOR_BGR2RGB) # works with 0.02
+img = cv2.cvtColor(np.array(Image.open('tests/screenshot.6.png')), cv2.COLOR_BGR2RGB) # works with 0.02
 #img = cv2.cvtColor(np.array(ImageGrab.grab()), cv2.COLOR_BGR2RGB)
 #img = cv2.imread('new_screenshot.png',0)
 #img = cv2.cvtColor(np.array(Image.open('file1.png')), cv2.COLOR_BGR2RGB)
@@ -13,7 +13,7 @@ img2=img.copy()
 #template = cv2.imread('pics/sn/3d.png',0)
 #template = cv2.imread('new_3d.png',0)
 #template = cv2.imread('pics/sn/3d.png',0)
-template = cv2.cvtColor(np.array(Image.open('pics/SN/Qs.png')), cv2.COLOR_BGR2RGB)
+template = cv2.cvtColor(np.array(Image.open('pics/SN/button.png')), cv2.COLOR_BGR2RGB)
 #template = cv2.cvtColor(np.array(Image.open('3d.png')), cv2.COLOR_BGR2RGB)
 #template = cv2.cvtColor(np.array(Image.open('pics/sn/3d.png')), cv2.COLOR_BGR2RGB)
 
