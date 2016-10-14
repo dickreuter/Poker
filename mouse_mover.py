@@ -104,9 +104,11 @@ class MouseMoverTableBased(MouseMover):
         time.sleep(np.random.uniform(0.5, 1.2, 1)[0])
         (x1, y1) = self.mouse.position()
 
-
-        self.logger.debug("Moving mouse away: "+str(x1)+","+str(y1)+","+str(x2)+","+str(y2))
-        self.mouse_mover(x1, y1, x2, y2)
+        try:
+            self.logger.debug("Moving mouse away: "+str(x1)+","+str(y1)+","+str(x2)+","+str(y2))
+            self.mouse_mover(x1, y1, x2, y2)
+        except Exception as e:
+            logger.warning("Moving mouse away failed")
 
     def enter_captcha(self, captchaString, topleftcorner):
         logger.warning("Entering Captcha: " + str(captchaString))
