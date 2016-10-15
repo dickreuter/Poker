@@ -37,15 +37,17 @@ class Evaluation(object):
         shuffled = alldecks[np.arange(alldecks.shape[0])[:, None], idx]
 
         card_amount_at_river = 7
-        player_id = 2
-        cards_combined = np.append(np.tile(mycards, reps=(iterations, 1)), shuffled, axis=1)[:,
-                         player_id * card_amount_at_river - card_amount_at_river:card_amount_at_river * player_id]
-        cards = np.ceil(cards_combined / 4)
-        suits = cards_combined % 4 + 1
-        self.decks = np.dstack((cards, suits))
 
-        self.cards = self.decks[:, :, 0]
-        self.suits = self.decks[:, :, 1]
+        plr1_crds=mycards
+        plr2_crds=shuffled[:,7:9]
+        plr3_crds = shuffled[:, 9:11]
+        plr4_crds = shuffled[:, 11:13]
+
+        self.player_amount=2
+
+        cards_combined1 = np.append(np.tile(plr1_crds, resp=(iterations,1)), shuffled, axis=1)[:,0:card_amount_at_river]
+        cards_combined1 = np.append(np.tile(plr1_crds, resp=(iterations, 1)), shuffled, axis=1)[:,
+                          0:card_amount_at_river]
 
     def run_evaluation(self, card1, card2, iterations):
         self.start = time.time()
@@ -288,3 +290,4 @@ class Evaluation(object):
 
 E = Evaluation()
 E.run_evaluation(card1=22, card2=1, iterations=100000, )
+

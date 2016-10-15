@@ -503,7 +503,7 @@ class TableScreenBased(Table):
 
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
 
-        card_images=self.cardimages if self.tbl!='SN' else self.cardImages_sn_board
+        card_images=self.cardImages if self.tbl!='SN' else self.cardImages_sn_board
 
         for key, value in card_images.items():
             template = value
