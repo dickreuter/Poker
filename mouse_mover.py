@@ -5,7 +5,6 @@ import numpy as np
 import pymouse
 from vbox_manager import VirtualBoxController
 from configobj import ConfigObj
-import win32api
 
 
 class MouseMover(VirtualBoxController):
@@ -20,7 +19,8 @@ class MouseMover(VirtualBoxController):
             self.mouse_move_vbox(x, y)
             self.mouse_click_vbox(x, y)
         else:
-            win32api.SetCursorPos((x, y))
+            #win32api.SetCursorPos((x, y))
+            self.mouse.move(x, y)
             self.mouse.click(x, y)
 
         time.sleep(np.random.uniform(0.2, 0.3, 1)[0])
@@ -50,14 +50,14 @@ class MouseMover(VirtualBoxController):
                 self.mouse_move_vbox(x, y)
                 time.sleep(np.random.uniform(0.01 * speed, 0.03 * speed, 1)[0])
             else:
-                win32api.SetCursorPos((x, y))
+                self.mouse.move(x, y)
                 time.sleep(np.random.uniform(0.01 * speed, 0.03 * speed, 1)[0])
 
         if self.vbox_mode:
             self.mouse_move_vbox(x2, y2)
         else:
-            #self.mouse.move(x2, y2)
-            win32api.SetCursorPos((x2, y2))
+            self.mouse.move(x2, y2)
+            #win32api.SetCursorPos((x2, y2))
 
 
 
@@ -68,11 +68,12 @@ class MouseMover(VirtualBoxController):
         if self.vbox_mode:
             self.mouse_move_vbox(x2 + xrand, y2 + yrand)
         else:
-            win32api.SetCursorPos((x2 + xrand, y2 + yrand))
+            self.mouse.move(x2 + xrand, y2 + yrand)
 
         time.sleep(np.random.uniform(0.1, 0.2, 1)[0])
 
         self.click(x2 + xrand, y2 + yrand)
+        self.logger.debug("Clicked: {0} {1}".format(x2 + xrand, y2 + yrand))
 
         time.sleep(np.random.uniform(0.1, 0.5, 1)[0])
 
@@ -97,21 +98,23 @@ class MouseMoverTableBased(MouseMover):
 
         self.coo=coo[pokersite[0:2]]
 
-    def move_mouse_away_from_buttons(self,logger):
+    def move_mouse_away_from_buttons(self):
         x2 = int(np.round(np.random.uniform(1700, 2000, 1), 0)[0])
         y2 = int(np.round(np.random.uniform(10, 200, 1), 0)[0])
 
         time.sleep(np.random.uniform(0.5, 1.2, 1)[0])
         (x1, y1) = self.mouse.position()
+        x1 = 10 if x1 > 2000 else x1
+        y1 = 10 if y1 >1000 else y1
 
         try:
             self.logger.debug("Moving mouse away: "+str(x1)+","+str(y1)+","+str(x2)+","+str(y2))
             self.mouse_mover(x1, y1, x2, y2)
         except Exception as e:
-            logger.warning("Moving mouse away failed")
+            self.logger.warning("Moving mouse away failed")
 
     def enter_captcha(self, captchaString, topleftcorner):
-        logger.warning("Entering Captcha: " + str(captchaString))
+        self.logger.warning("Entering Captcha: " + str(captchaString))
         buttonToleranceX = 30
         buttonToleranceY = 0
         tlx = topleftcorner[0]
@@ -124,28 +127,28 @@ class MouseMoverTableBased(MouseMover):
         try:
             write_characters_to_virtualbox(captchaString, "win")
         except:
-            logger.info("Captcha Error")
+            self.logger.info("Captcha Error")
 
-    def mouse_action(self, decision, topleftcorner, logger):
+    def mouse_action(self, decision, topleftcorner):
         if decision == 'Check Deception': decision = 'Check'
         if decision == 'Call Deception': decision = 'Call'
 
         tlx = int(topleftcorner[0])
         tly = int(topleftcorner[1])
 
-        logger.info("Mouse moving to: "+decision)
+        self.logger.info("Mouse moving to: "+decision)
         for action in self.coo[decision]:
             for i in range (int(action[0])):
                 time.sleep(np.random.uniform(0, action[1], 1)[0])
-                logger.debug("Mouse action:"+str(action))
+                self.logger.debug("Mouse action:"+str(action))
                 (x1, y1) = self.mouse.position()
                 self.mouse_mover(x1, y1, action[2]+ tlx, action[3]+ tly)
                 self.mouse_clicker(action[2]+ tlx, action[3]+ tly,action[4], action[5])
 
-        self.move_mouse_away_from_buttons(logger)
+        self.move_mouse_away_from_buttons()
 
 if __name__=="__main__":
     logger = logging.getLogger()
     m=MouseMoverTableBased('PP',5,5)
     topleftcorner=[22,22]
-    m.mouse_action(logger, "BetPlus", topleftcorner, )
+    m.mouse_action(logger, "BetPlus", topleftcorner)

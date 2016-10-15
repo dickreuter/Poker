@@ -93,6 +93,12 @@ class Table(object):
         template = Image.open(name)
         self.topLeftCorner = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
+        name = "pics/" + self.tbl[0:2] + "/topleft2.png"
+        try:
+            template = Image.open(name)
+            self.topLeftCorner2 = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
+        except: pass
+
         name = "pics/" + self.tbl[0:2] + "/coveredcard.png"
         template = Image.open(name)
         self.coveredCardHolder = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
@@ -161,7 +167,8 @@ class Table(object):
                 self.entireScreenPIL = vb.get_screenshot_vbox()
                 self.logger.info("Screenshot taken from virtual machine")
             except:
-                self.logger.warning("No virtual machine found")
+                self.logger.warning("No virtual machine found. Press SETUP to re initialize the VM controller")
+                #gui_signals.signal_open_setup.emit(p,L)
                 self.entireScreenPIL = ImageGrab.grab()
 
 
@@ -317,6 +324,13 @@ class TableScreenBased(Table):
         self.current_strategy = p.current_strategy # needed for mongo manager
         img = cv2.cvtColor(np.array(self.entireScreenPIL), cv2.COLOR_BGR2RGB)
         count, points, bestfit = self.find_template_on_screen(self.topLeftCorner, img, 0.01)
+        try:
+            count2, points2, bestfit2 = self.find_template_on_screen(self.topLeftCorner2, img, 0.01)
+            if count2==1:
+                count=1
+                points=points2
+        except: pass
+
         if count == 1:
             self.tlc = points[0]
             self.logger.debug("Top left corner found")
@@ -411,7 +425,7 @@ class TableScreenBased(Table):
 
     def check_for_imback(self, mouse):
         if self.tbl=='SN': return True
-        mouse.move_mouse_away_from_buttons(logger)
+        mouse.move_mouse_away_from_buttons()
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
@@ -420,7 +434,7 @@ class TableScreenBased(Table):
         count, points, bestfit = self.find_template_on_screen(self.ImBack, img, func_dict['tolerance'])
         if count > 0:
             self.gui_signals.signal_status.emit("I am back found")
-            mouse.mouse_action("Imback", self.tlc, logger)
+            mouse.mouse_action("Imback", self.tlc)
             return False
         else:
             return True
@@ -524,7 +538,6 @@ class TableScreenBased(Table):
         return True
 
     def check_fast_fold(self, h,p):
-        return True
         if p.selected_strategy['preflop_override'] and self.gameStage=="PreFlop":
             m = MonteCarlo()
             crd1, crd2 = m.get_two_short_notation(self.mycards)
@@ -548,7 +561,7 @@ class TableScreenBased(Table):
             if found_card == '':
                 mouse = MouseMoverTableBased(logger, p.selected_strategy['pokerSite'], 0,0)
                 mouse_target = "Fold"
-                mouse.mouse_action(mouse_target, self.tlc, self.logger)
+                mouse.mouse_action(mouse_target, self.tlc)
                 logger.info("-------- FAST FOLD -------")
                 return False
         return True
@@ -573,8 +586,8 @@ class TableScreenBased(Table):
 
                 if debugging:
                     pass
-                    dic = sorted(dic.items(), key=operator.itemgetter(1))
-                    self.logger.debug(str(dic))
+                    # dic = sorted(dic.items(), key=operator.itemgetter(1))
+                    # self.logger.debug(str(dic))
 
         self.gui_signals.signal_progressbar_increase.emit(5)
         self.mycards = []
@@ -981,7 +994,7 @@ class TableScreenBased(Table):
             h.last_round_bluff = False  # reset the bluffing marker
             h.round_number = 0
 
-            mouse.move_mouse_away_from_buttons(logger)
+            mouse.move_mouse_away_from_buttons()
 
             self.take_screenshot(False,p)
         return True
@@ -1121,7 +1134,7 @@ class ThreadManager(threading.Thread):
                     mouse_target=d.decision
                     if mouse_target=='Call' and t.allInCallButton:
                         mouse_target='Call2'
-                    mouse.mouse_action(mouse_target, t.tlc, logger)
+                    mouse.mouse_action(mouse_target, t.tlc)
 
                     t.time_action_completed = datetime.datetime.utcnow()
 

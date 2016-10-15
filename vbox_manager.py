@@ -8,9 +8,11 @@ class VirtualBoxController():
     def __init__(self):
         try:
             self.vbox = virtualbox.VirtualBox()
+            list=self.get_vbox_list()
             config = ConfigObj("config.ini")
             self.control_name = config['control']
             self.start_vm()
+
         except Exception as e:
             print (e)
 

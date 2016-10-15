@@ -61,6 +61,7 @@ class UIActionAndSignals(QObject):
     signal_update_selected_strategy = QtCore.pyqtSignal(str)
 
     signal_update_strategy_sliders = QtCore.pyqtSignal(str)
+    signal_open_setup = QtCore.pyqtSignal(object,object)
 
     def __init__(self, ui_main_window, p, l, logger):
         QObject.__init__(self)
@@ -153,6 +154,7 @@ class UIActionAndSignals(QObject):
         self.signal_curve_chart_update1.connect(self.gui_curve.update_plots)
         self.signal_curve_chart_update2.connect(self.gui_curve.update_lines)
         self.signal_pie_chart_update.connect(self.gui_pie.drawfigure)
+        self.signal_open_setup.connect(lambda: self.open_setup(p,l))
 
         ui_main_window.button_genetic_algorithm.clicked.connect(lambda: self.open_genetic_algorithm(p, l))
         ui_main_window.button_log_analyser.clicked.connect(lambda: self.open_strategy_analyser(p, l))
