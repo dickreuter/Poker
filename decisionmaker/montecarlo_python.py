@@ -9,6 +9,7 @@ from copy import copy
 import operator
 import os
 import winsound
+from numba import jit
 
 
 class MonteCarlo(object):
@@ -302,6 +303,7 @@ class MonteCarlo(object):
 
         return score, card_ranks, hand_type
 
+    @jit
     def create_card_deck(self):
         values = "23456789TJQKA"
         suites = "CDHS"

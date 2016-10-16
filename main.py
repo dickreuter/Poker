@@ -1068,24 +1068,25 @@ class ThreadManager(threading.Thread):
                         time.sleep(1)
                         if p.exit_thread == True: sys.exit()
 
-                p.read_strategy()
-                if p.selected_strategy['pokerSite'][0:2] == "PS":
-                    t = TableScreenBased(gui_signals,logger)
-                    mouse = MouseMoverTableBased(logger,p.selected_strategy['pokerSite'])
-                elif p.selected_strategy['pokerSite'] == "PP":
-                    t = TableScreenBased(gui_signals,logger)
-                    mouse = MouseMoverTableBased(logger,p.selected_strategy['pokerSite'])
-                elif p.selected_strategy['pokerSite'] == "SN":
-                    t = TableScreenBased(gui_signals,logger)
-                    mouse = MouseMoverTableBased(logger,p.selected_strategy['pokerSite'])
-
-                elif p.selected_strategy['pokerSite'] == "F1":
-                    # t = TableF1()
-                    logger.critical("Pokerbot tournament not yet supported")
-                    exit()
-
                 ready = False
                 while (not ready):
+                    p.read_strategy()
+                    if p.selected_strategy['pokerSite'][0:2] == "PS":
+                        t = TableScreenBased(gui_signals,logger)
+                        mouse = MouseMoverTableBased(logger,p.selected_strategy['pokerSite'])
+                    elif p.selected_strategy['pokerSite'] == "PP":
+                        t = TableScreenBased(gui_signals,logger)
+                        mouse = MouseMoverTableBased(logger,p.selected_strategy['pokerSite'])
+                    elif p.selected_strategy['pokerSite'] == "SN":
+                        t = TableScreenBased(gui_signals,logger)
+                        mouse = MouseMoverTableBased(logger,p.selected_strategy['pokerSite'])
+
+                    elif p.selected_strategy['pokerSite'] == "F1":
+                        # t = TableF1()
+                        logger.critical("Pokerbot tournament not yet supported")
+                        exit()
+
+
                     ready = t.take_screenshot(True,p) and \
                             t.get_top_left_corner(p) and \
                             t.check_for_captcha(mouse) and \

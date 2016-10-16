@@ -21,7 +21,7 @@ class Evaluation(object):
         self.fourofakind_multiplier = 1000000000000
         self.straighflush_multiplier = 10000000000000
 
-    def distribute_cards(self, card1, card2, iterations):
+    def distribute_cards(self, card1, card2, tablecards, iterations):
         self.iterations = iterations
         deck = np.arange(0, 12 * 4)
         card1_idx = np.argwhere(deck == card1)
@@ -45,13 +45,21 @@ class Evaluation(object):
 
         self.player_amount=2
 
-        cards_combined1 = np.append(np.tile(plr1_crds, resp=(iterations,1)), shuffled, axis=1)[:,0:card_amount_at_river]
-        cards_combined1 = np.append(np.tile(plr1_crds, resp=(iterations, 1)), shuffled, axis=1)[:,
-                          0:card_amount_at_river]
+        cards_combined1 = np.append(np.tile(plr1_crds, reps=(iterations,1)), shuffled, axis=1)[:,0:card_amount_at_river]
+        cards_combined2 = np.append(plr2_crds, shuffled, axis=1)[:,0:card_amount_at_river]
+        if self.player_amount>2: cards_combined3 = np.append(plr3_crds, shuffled, axis=1)[:, 0:card_amount_at_river]
+        if self.player_amount > 3: cards_combined4 = np.append(plr4_crds, shuffled, axis=1)[:, 0:card_amount_at_river]
+        cards_combined= np.stack((cards_combined1, cards_combined2),axis=-1) # stack over last axis (=axis 3)
+        cards=np.ceil(cards_combined/4)
+        suits=cards_combined % 4 * 1
+        self.decks=np.stack((cards,suits),axis=2) #[iterations, 7, card or suits, player_index]
+        self.cards=self.decks[:,:,0,:] #[iterations, 7, player_index]
+        self.suits=self.decks[:,:,1,:] #[iterations, 7, player_index]
 
-    def run_evaluation(self, card1, card2, iterations):
+
+    def run_evaluation(self, card1, card2, tablecards, iterations):
         self.start = time.time()
-        self.distribute_cards(card1, card2, iterations)
+        self.distribute_cards(card1, card2, tablecards, iterations)
         self.get_counts()
         self.get_kickers()
         self.get_multiplecards()
@@ -289,5 +297,5 @@ class Evaluation(object):
 
 
 E = Evaluation()
-E.run_evaluation(card1=22, card2=1, iterations=100000, )
+E.run_evaluation(card1=22, card2=1, tablecards=[], iterations=3, )
 
