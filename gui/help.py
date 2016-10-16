@@ -12,17 +12,10 @@ class Ui_help_form(object):
     def setupUi(self, help_form):
         help_form.setObjectName("help_form")
         help_form.resize(240, 320)
-        self.gridLayout = QtWidgets.QGridLayout(help_form)
-        self.gridLayout.setObjectName("gridLayout")
-        self.label_3 = QtWidgets.QLabel(help_form)
-        self.label_3.setObjectName("label_3")
-        self.gridLayout.addWidget(self.label_3, 0, 0, 1, 1)
-        self.plainTextEdit = QtWidgets.QPlainTextEdit(help_form)
-        self.plainTextEdit.setObjectName("plainTextEdit")
-        self.gridLayout.addWidget(self.plainTextEdit, 1, 0, 1, 1)
-        self.pushButton_send = QtWidgets.QPushButton(help_form)
-        self.pushButton_send.setObjectName("pushButton_send")
-        self.gridLayout.addWidget(self.pushButton_send, 2, 0, 1, 1)
+        self.textBrowser = QtWidgets.QTextBrowser(help_form)
+        self.textBrowser.setEnabled(False)
+        self.textBrowser.setGeometry(QtCore.QRect(10, 30, 211, 251))
+        self.textBrowser.setObjectName("textBrowser")
 
         self.retranslateUi(help_form)
         QtCore.QMetaObject.connectSlotsByName(help_form)
@@ -30,8 +23,11 @@ class Ui_help_form(object):
     def retranslateUi(self, help_form):
         _translate = QtCore.QCoreApplication.translate
         help_form.setWindowTitle(_translate("help_form", "Form"))
-        self.label_3.setText(_translate("help_form", "Describe your problem or suggestion"))
-        self.pushButton_send.setText(_translate("help_form", "Send"))
+        self.textBrowser.setHtml(_translate("help_form", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">Please contact me on google hangout under dickreuter@gmail.com if you want to contribute to the project.</p></body></html>"))
 
 
 if __name__ == "__main__":
