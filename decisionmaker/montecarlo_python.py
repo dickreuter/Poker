@@ -348,6 +348,7 @@ class MonteCarlo(object):
 
         return Players, deck
 
+
     def distribute_cards_to_table(self, Deck, table_card_list):
         remaningRandoms = 5 - len(table_card_list)
         for n in range(0, remaningRandoms):

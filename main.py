@@ -55,7 +55,6 @@ class Table(object):
 
     def load_templates(self):
         self.cardImages = dict()
-        self.cardImages_sn_board = dict()
         self.img = dict()
         p = StrategyHandler()
         p.read_strategy()
@@ -67,7 +66,6 @@ class Table(object):
         for x in values:
             for y in suites:
                 name = "pics/" + self.tbl[0:2] + "/" + x + y + ".png"
-                name_sn_board="pics/SN/board/" + x + y + ".png"
                 if os.path.exists(name):
                     self.img[x + y.upper()] = Image.open(name)
                     # if self.tbl=='SN':
@@ -75,9 +73,6 @@ class Table(object):
 
                     self.cardImages[x + y.upper()] = cv2.cvtColor(np.array(self.img[x + y.upper()]), cv2.COLOR_BGR2RGB)
 
-                    if self.tbl == 'SN':
-                        self.img[x + y.upper()] = Image.open(name_sn_board)
-                        self.cardImages_sn_board[x + y.upper()] = cv2.cvtColor(np.array(self.img[x + y.upper()]), cv2.COLOR_BGR2RGB)
 
                 # (thresh, self.cardImages[x + y]) =
                     # cv2.threshold(self.cardImages[x + y], 128, 255,
@@ -503,7 +498,7 @@ class TableScreenBased(Table):
 
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
 
-        card_images=self.cardImages if self.tbl!='SN' else self.cardImages_sn_board
+        card_images=self.cardImages
 
         for key, value in card_images.items():
             template = value

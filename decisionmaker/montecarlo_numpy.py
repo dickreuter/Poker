@@ -55,6 +55,7 @@ class Evaluation(object):
         self.decks=np.stack((cards,suits),axis=2) #[iterations, 7, card or suits, player_index]
         self.cards=self.decks[:,:,0,:] #[iterations, 7, player_index]
         self.suits=self.decks[:,:,1,:] #[iterations, 7, player_index]
+        self.cards_sorted=np.sort(self.cards, axis=1)[:, ::-1, :]
 
 
     def run_evaluation(self, card1, card2, tablecards, iterations):
@@ -83,8 +84,8 @@ class Evaluation(object):
         self.suits = self.decks[:, :, 1]
 
     def get_counts(self):
-        self.counts = (self.cards[:, :, None] == np.arange(12, 0, -1)).sum(1)  # occurrences of each cards
-        self.highestCard = self.cards[:, 0]
+        self.counts = (np.arange(12, 0, -1) == self.cards[:, :, :,None]).sum(1)  # occurrences of each cards
+        self.highestCard = self.cards_sorted[:,0,:] # iterations, cards_sorted, player
 
     def get_highcard(self):
         self.highcard = np.all(np.column_stack((self.pair_amount == 0, self.threeofakind.T == False,
@@ -95,20 +96,21 @@ class Evaluation(object):
     def get_kickers(self):
         cards12to1 = np.arange(12, 0, -1) * -1
 
-        self.pair1 = (np.sort((self.counts == 2) * cards12to1, axis=1) * -1)[:, 0]
-        self.pair2 = (np.sort((self.counts == 2) * cards12to1, axis=1) * -1)[:, 1]
-        self.pair3 = (np.sort((self.counts == 2) * cards12to1, axis=1) * -1)[:, 2]
+        # [iteration, player]
+        self.pair1 = np.sort((self.counts==2) *cards12to1*-1,axis=2)[:,:,::-1][:,:,0]
+        self.pair2 = np.sort((self.counts==2) *cards12to1*-1,axis=2)[:,:,::-1][:,:,1]
+        self.pair3 = np.sort((self.counts==2) *cards12to1*-1,axis=2)[:,:,::-1][:,:,2]
 
-        self.three1 = (np.sort((self.counts == 3) * cards12to1, axis=1) * -1)[:, 0]
-        self.three2 = (np.sort((self.counts == 3) * cards12to1, axis=1) * -1)[:, 1]
+        self.three1 = np.sort((self.counts==3) *cards12to1*-1,axis=2)[:,:,::-1][:,:,0]
+        self.three2 = np.sort((self.counts==3) *cards12to1*-1,axis=2)[:,:,::-1][:,:,1]
 
-        self.four1 = (np.sort((self.counts == 4) * cards12to1, axis=1) * -1)[:, 0]
+        self.four1 = np.sort((self.counts==4) *cards12to1*-1,axis=2)[:,:,::-1][:,:,0]
 
-        self.single1 = (np.sort((self.counts == 1) * cards12to1, axis=1) * -1)[:, 0]
-        self.single2 = (np.sort((self.counts == 1) * cards12to1, axis=1) * -1)[:, 1]
-        self.single3 = (np.sort((self.counts == 1) * cards12to1, axis=1) * -1)[:, 2]
-        self.single4 = (np.sort((self.counts == 1) * cards12to1, axis=1) * -1)[:, 3]
-        self.single5 = (np.sort((self.counts == 1) * cards12to1, axis=1) * -1)[:, 4]
+        self.single1 = np.sort((self.counts==1) *cards12to1*-1,axis=2)[:,:,::-1][:,:,0]
+        self.single2 = np.sort((self.counts==1) *cards12to1*-1,axis=2)[:,:,::-1][:,:,1]
+        self.single3 = np.sort((self.counts==1) *cards12to1*-1,axis=2)[:,:,::-1][:,:,2]
+        self.single4 = np.sort((self.counts==1) *cards12to1*-1,axis=2)[:,:,::-1][:,:,3]
+        self.single5 = np.sort((self.counts==1) *cards12to1*-1,axis=2)[:,:,::-1][:,:,4]
 
     def get_multiplecards(self):
         self.pair_amount = (self.counts[:, :, None] == 2).sum(1)
