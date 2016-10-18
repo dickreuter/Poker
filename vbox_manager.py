@@ -11,6 +11,10 @@ class VirtualBoxController():
             list=self.get_vbox_list()
             config = ConfigObj("config.ini")
             self.control_name = config['control']
+            if self.control_name not in list:
+                self.control_name = 'Direct mouse control'
+                config['control'] = 'Direct mouse control'
+                config.write()
             self.start_vm()
 
         except Exception as e:
