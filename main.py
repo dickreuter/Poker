@@ -15,7 +15,7 @@ import inspect
 from captcha.captcha_manager import solve_captcha
 from vbox_manager import VirtualBoxController
 
-version=1.82
+version=1.83
 IP=''
 
 class History(object):
