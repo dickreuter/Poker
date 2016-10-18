@@ -73,7 +73,7 @@ class Setup():
 if __name__=='__main__':
     screenshot_file = "tests/screenshot.12.png"
     output_file = 'log/table_setup_output.png'
-    top_left_corner_file="pics/SN/topleftLA.png"
+    top_left_corner_file="pics/SN/topleft3.png"
     coordinates_file='coordinates.txt'
     table = 'SN'
 
