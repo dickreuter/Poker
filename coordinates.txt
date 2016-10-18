@@ -87,6 +87,7 @@
                                             #call "x1": 11, "y1": 87, "x2": 68, "y2": 109,
                                             #Raise "x1": 11, "y1": 115, "x2": 68, "y2": 136,
                                             #betsize "x1": 62, "y1": 0, "x2": 338, "y2": 19,
+                                            # for betsize it should look for the green marked betsize and use that
                                        },
 
 
