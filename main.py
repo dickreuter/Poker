@@ -114,11 +114,6 @@ class Table(object):
         template = Image.open(name)
         self.smallDollarSign1 = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        if self.tbl[0:2] == "PP":
-            name = "pics/" + self.tbl[0:2] + "/smalldollarsign2.png"
-            template = Image.open(name)
-            self.smallDollarSign2 = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
-
         name = "pics/" + self.tbl[0:2] + "/allincallbutton.png"
         template = Image.open(name)
         self.allInCallButton = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
@@ -520,7 +515,7 @@ class TableScreenBased(Table):
             self.gameStage = "River"
 
         if self.gameStage == '':
-            self.logger.critical("Table cards not recognised correctly")
+            self.logger.critical("Table cards not recognised correctly: "+str(len(self.cardsOnTable)))
             exit()
 
         self.logger.info("---")
