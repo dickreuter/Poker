@@ -4,7 +4,7 @@ import numpy as np
 import cv2
 
 class Setup():
-    def __init__(self,topleftcorner_file,screenshot_file,output_file):
+    def __init__(self, topleftcorner_file: object, screenshot_file: object, output_file: object) -> object:
         self.topLeftCorner = cv2.cvtColor(np.array(Image.open(topleftcorner_file)), cv2.COLOR_BGR2RGB)
         #screenshot = cv2.cvtColor(np.array(Image.open(screenshot_file)), cv2.COLOR_BGR2RGB)
         screenshot = cv2.imread(screenshot_file)
@@ -71,9 +71,9 @@ class Setup():
         return cropped_example
 
 if __name__=='__main__':
-    screenshot_file = "tests/screenshot.5.png"
+    screenshot_file = "tests/screenshot.12.png"
     output_file = 'log/table_setup_output.png'
-    top_left_corner_file="pics/SN/topleft.png"
+    top_left_corner_file="pics/SN/topleftLA.png"
     coordinates_file='coordinates.txt'
     table = 'SN'
 
