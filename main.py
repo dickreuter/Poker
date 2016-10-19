@@ -15,7 +15,7 @@ import inspect
 from captcha.captcha_manager import solve_captcha
 from vbox_manager import VirtualBoxController
 
-version=1.84
+version=1.85
 IP=''
 
 class History(object):
@@ -1048,7 +1048,9 @@ class TableScreenBased(Table):
 
                 self.fold_advice = float(self.get_ocr_float(fold_image, str(inspect.stack()[0][3])))
                 self.call_advice = float(self.get_ocr_float(call_image, str(inspect.stack()[0][3])))
-                self.raise_advice = float(self.get_ocr_float(raise_image, str(inspect.stack()[0][3])))
+                try:
+                    self.raise_advice = float(self.get_ocr_float(raise_image, str(inspect.stack()[0][3])))
+                except: self.raise_advice=np.nan
                 #self.betzise_advice = float(self.get_ocr_float(betsize_image, str(inspect.stack()[0][3])))
 
                 logger.info("Fold Advice: {0}".format(self.fold_advice))
@@ -1056,7 +1058,7 @@ class TableScreenBased(Table):
                 logger.info("Raise Advice: {0}".format(self.raise_advice))
                 #logger.info("Betsize Advice: {0}".format(self.betzise_advice))
             else:
-                logger.debug("Could not identify snowie advice window. minValue: {0}".format(minvalue))
+                logger.warning("Could not identify snowie advice window. minValue: {0}".format(minvalue))
 
         return True
 
@@ -1183,10 +1185,10 @@ class ThreadManager(threading.Thread):
 
                     gui_signals.signal_status.emit("Logging data")
 
-                    t_log_db = threading.Thread(name='t_log_db', target=L.write_log_file,args=[p, h, t, d])
-                    t_log_db.daemon = True
-                    t_log_db.start()
-                    #L.write_log_file(p, h, t, d)
+                    #t_log_db = threading.Thread(name='t_log_db', target=L.write_log_file,args=[p, h, t, d])
+                    #t_log_db.daemon = True
+                    #t_log_db.start()
+                    L.write_log_file(p, h, t, d)
 
                     h.previousPot = t.totalPotValue
                     h.histGameStage = t.gameStage
