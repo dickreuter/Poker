@@ -88,11 +88,18 @@ class Table(object):
         template = Image.open(name)
         self.topLeftCorner = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + self.tbl[0:2] + "/topleft2.png"
-        try:
+        if self.tbl[0:2]=='SN':
+            name = "pics/" + self.tbl[0:2] + "/topleft2.png"
             template = Image.open(name)
             self.topLeftCorner2 = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
-        except: pass
+
+            name = "pics/" + self.tbl[0:2] + "/topleft3.png"
+            template = Image.open(name)
+            self.topLeftCorner_snowieadvice1 = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
+
+            name = "pics/" + self.tbl[0:2] + "/topleftLA.png"
+            template = Image.open(name)
+            self.topLeftCorner_snowieadvice2 = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
         name = "pics/" + self.tbl[0:2] + "/coveredcard.png"
         template = Image.open(name)
@@ -155,7 +162,7 @@ class Table(object):
             try:
                 vb = VirtualBoxController()
                 self.entireScreenPIL = vb.get_screenshot_vbox()
-                self.logger.info("Screenshot taken from virtual machine")
+                self.logger.debug("Screenshot taken from virtual machine")
             except:
                 self.logger.warning("No virtual machine found. Press SETUP to re initialize the VM controller")
                 #gui_signals.signal_open_setup.emit(p,L)
@@ -192,7 +199,7 @@ class Table(object):
         # plt.subplot(122),plt.imshow(img,cmap = 'jet')
         # plt.imshow(img, cmap = 'gray', interpolation = 'bicubic')
         # plt.show()
-        return count, points, bestFit
+        return count, points, bestFit, min_val
 
     def get_ocr_float(self, img_orig, name, force_method=0):
         def fix_number(t):
@@ -313,9 +320,9 @@ class TableScreenBased(Table):
     def get_top_left_corner(self,p):
         self.current_strategy = p.current_strategy # needed for mongo manager
         img = cv2.cvtColor(np.array(self.entireScreenPIL), cv2.COLOR_BGR2RGB)
-        count, points, bestfit = self.find_template_on_screen(self.topLeftCorner, img, 0.01)
+        count, points, bestfit, _ = self.find_template_on_screen(self.topLeftCorner, img, 0.01)
         try:
-            count2, points2, bestfit2 = self.find_template_on_screen(self.topLeftCorner2, img, 0.01)
+            count2, points2, bestfit2, _ = self.find_template_on_screen(self.topLeftCorner2, img, 0.01)
             if count2==1:
                 count=1
                 points=points2
@@ -342,7 +349,7 @@ class TableScreenBased(Table):
         cards = ' '.join(self.mycards)
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1]+func_dict['y1'],self.tlc[0]+func_dict['x2'], self.tlc[1] + func_dict['y2'])
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
-        count, points, bestfit = self.find_template_on_screen(self.button, img, func_dict['tolerance'])
+        count, points, bestfit,_ = self.find_template_on_screen(self.button, img, func_dict['tolerance'])
 
         if count > 0:
             self.gui_signals.signal_status.emit("Buttons found, cards: " + str(cards))
@@ -361,7 +368,7 @@ class TableScreenBased(Table):
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
-        count, points, bestfit = self.find_template_on_screen(self.check, img, func_dict['tolerance'])
+        count, points, bestfit,_ = self.find_template_on_screen(self.check, img, func_dict['tolerance'])
 
         if count > 0:
             self.checkButton = True
@@ -421,7 +428,7 @@ class TableScreenBased(Table):
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
         # Convert RGB to BGR
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
-        count, points, bestfit = self.find_template_on_screen(self.ImBack, img, func_dict['tolerance'])
+        count, points, bestfit,_ = self.find_template_on_screen(self.ImBack, img, func_dict['tolerance'])
         if count > 0:
             self.gui_signals.signal_status.emit("I am back found")
             mouse.mouse_action("Imback", self.tlc)
@@ -436,7 +443,7 @@ class TableScreenBased(Table):
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
-        count, points, bestfit = self.find_template_on_screen(self.call, img, func_dict['tolerance'])
+        count, points, bestfit,_ = self.find_template_on_screen(self.call, img, func_dict['tolerance'])
         if count > 0:
             self.callButton = True
             self.logger.debug("Call button found")
@@ -453,7 +460,7 @@ class TableScreenBased(Table):
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
-        count, points, bestfit = self.find_template_on_screen(self.betbutton, img, func_dict['tolerance'])
+        count, points, bestfit,_ = self.find_template_on_screen(self.betbutton, img, func_dict['tolerance'])
         if count > 0:
             self.bet_button_found = True
             self.logger.debug("Bet button found")
@@ -469,7 +476,7 @@ class TableScreenBased(Table):
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
         # Convert RGB to BGR
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
-        count, points, bestfit = self.find_template_on_screen(self.allInCallButton, img, 0.01)
+        count, points, bestfit,_ = self.find_template_on_screen(self.allInCallButton, img, 0.01)
         if count > 0:
             self.allInCallButton = True
             self.logger.debug("All in call button found")
@@ -657,7 +664,7 @@ class TableScreenBased(Table):
             self.gui_signals.signal_progressbar_increase.emit(1)
             pot_area_image = self.crop_image(self.entireScreenPIL, self.tlc[0]-20 + fd[0], self.tlc[1] + fd[1]-20,self.tlc[0] + fd[2]+20, self.tlc[1] + fd[3]+20)
             img = cv2.cvtColor(np.array(pot_area_image), cv2.COLOR_BGR2RGB)
-            count, points, bestfit = self.find_template_on_screen(self.smallDollarSign1, img, 0.3)
+            count, points, bestfit,_ = self.find_template_on_screen(self.smallDollarSign1, img, 0.3)
             has_small_dollarsign=count>0
             if has_small_dollarsign:
                 pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1],self.tlc[0] + fd[2], self.tlc[1] + fd[3])
@@ -696,7 +703,7 @@ class TableScreenBased(Table):
             self.gui_signals.signal_progressbar_increase.emit(1)
             pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1],self.tlc[0] + fd[2], self.tlc[1] + fd[3])
             img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
-            count, points, bestfit = self.find_template_on_screen(self.coveredCardHolder, img, 0.01)
+            count, points, bestfit,_ = self.find_template_on_screen(self.coveredCardHolder, img, 0.01)
             self.logger.debug("Player status: " + str(i)+": "+str(count))
             if count>0:
                 self.covered_players+=1
@@ -792,7 +799,7 @@ class TableScreenBased(Table):
                                     self.tlc[0] +950, self.tlc[1] + 700)
 
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
-        count, points, bestfit = self.find_template_on_screen(self.dealer, img, 0.05)
+        count, points, bestfit,_ = self.find_template_on_screen(self.dealer, img, 0.05)
         try:
             point=points[0]
         except:
@@ -869,11 +876,11 @@ class TableScreenBased(Table):
             self.myFundsError = True
             self.myFunds = float(h.myFundsHistory[-1])
             self.logger.info("myFunds not regognised!")
-            self.gui_signals.signal_status.emit("!!Funds NOT recognised!!")
-            self.logger.warning("!!Funds NOT recognised!!")
+            self.gui_signals.signal_status.emit("Funds NOT recognised")
+            self.logger.warning("Funds NOT recognised. See pics/FundsError.png to see why.")
             self.entireScreenPIL.save("pics/FundsError.png")
             time.sleep(0.5)
-        self.logger.info("Funds: " + str(self.myFunds))
+        self.logger.debug("Funds: " + str(self.myFunds))
         return True
 
     def get_current_call_value(self,p):
@@ -946,7 +953,7 @@ class TableScreenBased(Table):
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
-        count, points, bestfit = self.find_template_on_screen(self.lostEverything, img, 0.001)
+        count, points, bestfit,_ = self.find_template_on_screen(self.lostEverything, img, 0.001)
         if count > 0:
             h.lastGameID = str(h.GameID)
             self.myFundsChange = float(0) - float(str(h.myFundsHistory[-1]).strip('[]'))
@@ -1015,6 +1022,45 @@ class TableScreenBased(Table):
             self.logger.info("Failed to get game number from screen")
 
         return True
+
+    def get_snowie_advice(self,p,h):
+        if self.tbl == 'SN':
+            func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+            img = cv2.cvtColor(np.array(self.entireScreenPIL), cv2.COLOR_BGR2RGB)
+            count1, points1, bestfit, minvalue = self.find_template_on_screen(self.topLeftCorner_snowieadvice1, img, 0.07)
+            #count2, points2, _ = self.find_template_on_screen(self.topLeftCorner_snowieadvice2, img, 0.07)
+
+            if count1 == 1:
+                tlc_adv1 = points1[0]
+                #tlc_adv2 = points2[0]
+
+                fd=func_dict['fold']
+                fold_image = self.crop_image(self.entireScreenPIL, tlc_adv1[0] + fd['x1'], tlc_adv1[1] + fd['y1'],
+                                            tlc_adv1[0] + fd['x2'], tlc_adv1[1] + fd['y2'])
+                fd=func_dict['call']
+                call_image = self.crop_image(self.entireScreenPIL, tlc_adv1[0] + fd['x1'], tlc_adv1[1] + fd['y1'],
+                                            tlc_adv1[0] + fd['x2'], tlc_adv1[1] + fd['y2'])
+                fd=func_dict['raise']
+                raise_image = self.crop_image(self.entireScreenPIL, tlc_adv1[0] + fd['x1'], tlc_adv1[1] + fd['y1'],
+                                            tlc_adv1[0] + fd['x2'], tlc_adv1[1] + fd['y2'])
+                # fd=func_dict['betsize']
+                # betsize_image = self.crop_image(self.entireScreenPIL, tlc_adv2[0] + fd['x1'], tlc_adv2[1] + fd['y1'],
+                #                             tlc_adv2[0] + fd['x2'], tlc_adv2[1] + fd['y2'])
+
+                self.fold_advice = float(self.get_ocr_float(fold_image, str(inspect.stack()[0][3])))
+                self.call_advice = float(self.get_ocr_float(call_image, str(inspect.stack()[0][3])))
+                self.raise_advice = float(self.get_ocr_float(raise_image, str(inspect.stack()[0][3])))
+                #self.betzise_advice = float(self.get_ocr_float(betsize_image, str(inspect.stack()[0][3])))
+
+                logger.info("Fold Advice: {0}".format(self.fold_advice))
+                logger.info("Call Advice: {0}".format(self.call_advice))
+                logger.info("Raise Advice: {0}".format(self.raise_advice))
+                #logger.info("Betsize Advice: {0}".format(self.betzise_advice))
+            else:
+                logger.debug("Could not identify snowie advice window. minValue: {0}".format(minvalue))
+
+        return True
+
 
 class ThreadManager(threading.Thread):
     def __init__(self, threadID, name, counter):
@@ -1102,7 +1148,8 @@ class ThreadManager(threading.Thread):
                             t.check_for_betbutton() and \
                             t.check_for_allincall() and \
                             t.get_current_call_value(p) and \
-                            t.get_current_bet_value(p)
+                            t.get_current_bet_value(p) and \
+                            t.get_snowie_advice(p,h)
 
                 if not p.pause:
                     config = ConfigObj("config.ini")
