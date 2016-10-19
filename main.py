@@ -1133,6 +1133,7 @@ class ThreadManager(threading.Thread):
                             t.get_table_cards(h) and \
                             t.upload_collusion_wrapper(p,h) and \
                             t.get_dealer_position() and \
+                            t.get_snowie_advice(p, h) and \
                             t.check_fast_fold(h,p) and \
                             t.check_for_button() and \
                             t.get_round_number(h) and \
@@ -1147,8 +1148,7 @@ class ThreadManager(threading.Thread):
                             t.check_for_betbutton() and \
                             t.check_for_allincall() and \
                             t.get_current_call_value(p) and \
-                            t.get_current_bet_value(p) and \
-                            t.get_snowie_advice(p,h)
+                            t.get_current_bet_value(p)
 
                 if not p.pause:
                     config = ConfigObj("config.ini")
