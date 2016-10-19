@@ -203,7 +203,7 @@ class Table(object):
 
     def get_ocr_float(self, img_orig, name, force_method=0):
         def fix_number(t):
-            t = t.replace("I", "1").replace("O", "0").replace("o", "0")\
+            t = t.replace("I", "1").replace("Â°lo","").replace("O", "0").replace("o", "0")\
                 .replace("-", ".").replace("D", "0").replace("I","1").replace("_",".").replace("-", ".")
             t = re.sub("[^0123456789\.]", "", t)
             try:
