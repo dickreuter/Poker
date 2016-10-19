@@ -703,7 +703,7 @@ class TableScreenBased(Table):
             self.gui_signals.signal_progressbar_increase.emit(1)
             pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1],self.tlc[0] + fd[2], self.tlc[1] + fd[3])
             img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
-            count, points, bestfit,_ = self.find_template_on_screen(self.coveredCardHolder, img, 0.01)
+            count, points, bestfit,minvalue = self.find_template_on_screen(self.coveredCardHolder, img, 0.01)
             self.logger.debug("Player status: " + str(i)+": "+str(count))
             if count>0:
                 self.covered_players+=1
