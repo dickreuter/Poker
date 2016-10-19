@@ -921,7 +921,6 @@ class TableScreenBased(Table):
             self.currentCallValue = self.currentBetValue
             self.currentBetValue=9999999
 
-
         if self.currentBetValue == '':
             self.logger.warning("No bet value")
             self.currentBetValue = 9999999.0
