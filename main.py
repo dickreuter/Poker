@@ -15,7 +15,7 @@ import inspect
 from captcha.captcha_manager import solve_captcha
 from vbox_manager import VirtualBoxController
 
-version=1.85
+version=1.86
 IP=''
 
 class History(object):
@@ -316,6 +316,65 @@ class Table(object):
     def find_item_location_in_crop(self,x1,y1,x2,y2,template,screentho):
         pass
 
+    def get_raisers_and_callers(self, p, reference_pot, relative_to_bot=0):
+        first_raiser=np.nan
+        second_raiser=np.nan
+        first_caller = np.nan
+
+        for n in range(5-relative_to_bot): # n is absolute position of other player, 0 is player after bot
+            i=(self.dealer_position+n+3-2)%5 # less myself as 0 is now first other player to my left and no longer myself
+            self.logger.debug("Go through pots to find raiser abs: "+str(i)+": "+str(self.other_players[i]['pot']))
+            if self.other_players[i]['pot']!='': # check if not empty (otherwise can't convert string)
+                if self.other_players[i]['pot'] > reference_pot: # reference pot is bb for first round and ourselves for rest
+                    if np.isnan(first_raiser):
+                        first_raiser=int(i)
+                        first_raiser_pot = self.other_players[i]['pot']
+                    else:
+                        if self.other_players[i]['pot']>first_raiser_pot:
+                            second_raiser = int(i)
+
+        self.logger.debug("First raiser abs: " + str(first_raiser))
+        first_raiser_utg=(first_raiser - self.dealer_position+4) % 6
+        self.logger.info("First raiser utg+" + str(first_raiser_utg))
+        highest_raiser = np.nanmax([first_raiser, second_raiser])
+
+        self.logger.debug("Second raiser abs: " + str(second_raiser))
+        second_raiser_utg = (second_raiser - self.dealer_position + 4) % 6
+        self.logger.info("Highest raiser abs: " + str(highest_raiser))
+
+        first_possible_caller=int(self.big_blind_position_abs_op+1 if np.isnan(highest_raiser) else highest_raiser+1)
+        self.logger.debug("First possible potential caller is: "+str(first_possible_caller))
+
+        # get first caller after raise in preflop
+        for n in range(first_possible_caller,5-relative_to_bot): # n is absolute position of other player, 0 is player after bot
+            self.logger.debug("Go through pots to find caller abs: " + str(n) + ": " + str(self.other_players[n]['pot']))
+            if self.other_players[n]['pot'] != '':  # check if not empty (otherwise can't convert string)
+                if (self.other_players[n]['pot'] == float(p.selected_strategy['bigBlind']) and not n==self.big_blind_position_abs_op) or \
+                self.other_players[n]['pot'] > float(p.selected_strategy['bigBlind']):
+                    first_caller = int(n)
+                    break
+
+        self.logger.debug("First caller abs: " + str(first_caller))
+        first_caller_utg=(first_caller - self.dealer_position +4) % 6
+        self.logger.info("First caller utg+" + str(first_caller_utg))
+
+        return first_raiser, second_raiser, first_caller, first_raiser_utg, second_raiser_utg, first_caller_utg
+
+    def get_reverse_sheet(self, position):
+        sheet_name=''
+        sheet_name+=self.other_players[position]['utg_position']
+        pass
+
+    def get_range_from_prefloop_sheet(self,sheet_name,action):
+        pass
+
+    def get_utg_from_abs_pos(self, abs_pos, dealer_pos):
+        utg_pos = (abs_pos - dealer_pos + 4) % 6
+        return utg_pos
+
+    def get_abs_from_utg_pos(self, utg_pos, dealer_pos):
+        pass
+
 class TableScreenBased(Table):
     def get_top_left_corner(self,p):
         self.current_strategy = p.current_strategy # needed for mongo manager
@@ -606,6 +665,16 @@ class TableScreenBased(Table):
             go_through_each_card(img,True)
             return False
 
+    def init_opponent_preflop_profiler(self,h):
+        other_player=dict()
+        other_player['calls'] = ''
+        other_player['bets'] = ''
+        h.other_players_preflop_profile = []
+        for i in range (5):
+            op=copy(other_player)
+            op['abs_position']=i
+            h.other_players_preflop_profile.append(op)
+
     def init_get_other_players_info(self):
         other_player=dict()
         other_player['utg_position'] = ''
@@ -693,7 +762,6 @@ class TableScreenBased(Table):
         self.bot_pot=value
         return value
 
-
     def get_other_player_status(self,p,h):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
         self.gui_signals.signal_status.emit("Get other playsrs' status")
@@ -711,7 +779,7 @@ class TableScreenBased(Table):
             else:
                 self.other_players[i]['status'] = 0
 
-            self.other_players[i]['utg_position'] = (self.other_players[i]['abs_position']-self.dealer_position+4) %6
+            self.other_players[i]['utg_position'] = self.get_utg_from_abs_pos(self.other_players[i]['abs_position'], self.dealer_position)
 
 
         self.other_active_players=sum([v['status']  for v in self.other_players])
@@ -725,54 +793,25 @@ class TableScreenBased(Table):
         self.logger.debug("Players behind: " + str(self.playersBehind))
         self.logger.debug("Players ahead: " + str(self.playersAhead))
 
-        # get first raiser in (tested for preflop)
-        self.first_raiser=np.nan
-        self.second_raiser=np.nan
-        self.first_caller = np.nan
+
+
 
         if h.round_number==0:
             reference_pot=float(p.selected_strategy['bigBlind'])
         else:
             reference_pot = self.get_bot_pot()
 
-        for n in range(5):
-            i=(self.dealer_position+n+3-2)%5 #less mysself as 0 is now first other player to my left and no longer myself
-            self.logger.debug("Go through pots to find raiser abs:: "+str(i)+": "+str(self.other_players[i]['pot']))
-            if self.other_players[i]['pot']!='': # check if not empty (otherwise can't convert string)
-                if self.other_players[i]['pot'] > reference_pot: # reference pot is bb for first round and ourselves for rest
-                    if np.isnan(self.first_raiser):
-                        self.first_raiser=int(i)
-                        self.first_raiser_pot = self.other_players[i]['pot']
-                    else:
-                        if self.other_players[i]['pot']>self.first_raiser_pot:
-                            self.second_raiser = int(i)
-
-        self.logger.debug("First raiser abs: " + str(self.first_raiser))
-        self.first_raiser_utg=(self.first_raiser - self.dealer_position+4) % 6
-        self.logger.info("First raiser utg+" + str(self.first_raiser_utg))
-        self.highest_raiser = np.nanmax([self.first_raiser, self.second_raiser])
-
-        self.logger.debug("Second raiser abs: " + str(self.second_raiser))
-        self.second_raiser_utg = (self.second_raiser - self.dealer_position + 4) % 6
-        self.logger.info("Highest raiser abs: " + str(self.highest_raiser))
-
-        first_possible_caller=int(self.big_blind_position_abs_op+1 if np.isnan(self.highest_raiser) else self.highest_raiser+1)
-        self.logger.debug("First possible potential caller is: "+str(first_possible_caller))
-
-        # get first caller after raise in preflop
-        for n in list(range(first_possible_caller,5)): # n is absolute position of other player, 0 is player to my left
-            self.logger.debug("Go through pots to find caller abs: " + str(n) + ": " + str(self.other_players[n]['pot']))
-            if self.other_players[n]['pot'] != '':  # check if not empty (otherwise can't convert string)
-                if (self.other_players[n]['pot'] == float(p.selected_strategy['bigBlind']) and not n==self.big_blind_position_abs_op) or \
-                self.other_players[n]['pot'] > float(p.selected_strategy['bigBlind']):
-                    self.first_caller = int(n)
-                    break
+        # get first raiser in (tested for preflop)
+        self.first_raiser, \
+        self.second_raiser, \
+        self.first_caller, \
+        self.first_raiser_utg, \
+        self.second_raiser_utg, \
+        self.first_caller_utg = \
+            self.get_raisers_and_callers(p, reference_pot)
 
 
 
-        self.logger.debug("First caller abs: " + str(self.first_caller))
-        self.first_caller_utg=(self.first_caller - self.dealer_position +4) % 6
-        self.logger.info("First caller utg+" + str(self.first_caller_utg))
 
         if ((h.previous_decision=="Call" or h.previous_decision=="Call2") and str(h.lastRoundGameID) == str(h.GameID)) and  \
                not (self.checkButton==True and self.playersAhead==0):
@@ -781,6 +820,16 @@ class TableScreenBased(Table):
             self.other_player_has_initiative = False
 
         self.logger.info("Other player has initiative: "+str(self.other_player_has_initiative))
+
+
+        if not np.isnan(self.first_raiser):
+            h.other_players_preflop_profile[self.first_raiser]['bet']=1
+
+        if not np.isnan(self.second_raiser):
+            h.other_players_preflop_profile[self.second_raiser]['bet']=1
+
+        if not np.isnan(self.first_caller):
+            h.other_players_preflop_profile[self.first_caller]['call'] = 1
 
         return True
 
@@ -819,7 +868,7 @@ class TableScreenBased(Table):
             self.dealer_position = 3
             self.logger.error('Could not determine dealer position. Assuming UTG')
         else:
-            self.logger.info('Dealer position (0 is myself and 1 is to my left): '+str(self.dealer_position))
+            self.logger.info('Dealer position (0 is myself and 1 is next player): '+str(self.dealer_position))
 
         self.big_blind_position_abs_all = (self.dealer_position+2)%6 #0 is myself, 1 is player to my left
         self.big_blind_position_abs_op=self.big_blind_position_abs_all-1
@@ -990,6 +1039,8 @@ class TableScreenBased(Table):
             h.last_round_bluff = False  # reset the bluffing marker
             h.round_number = 0
 
+            self.init_opponent_preflop_profiler(h)
+
             mouse.move_mouse_away_from_buttons()
 
             self.take_screenshot(False,p)
@@ -1061,7 +1112,6 @@ class TableScreenBased(Table):
                 logger.warning("Could not identify snowie advice window. minValue: {0}".format(minvalue))
 
         return True
-
 
 class ThreadManager(threading.Thread):
     def __init__(self, threadID, name, counter):

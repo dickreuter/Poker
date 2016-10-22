@@ -10,12 +10,12 @@ sys.path.insert(0,parentdir)
 import main
 
 
-def init_table(file,round_number=0):
+def init_table(file,round_number=0, strategy='Pokemon4'):
     LOG_FILENAME = 'testing.log'
     logger = logging.getLogger('tester')
     gui_signals = MagicMock()
     p = StrategyHandler()
-    p.read_strategy()
+    p.read_strategy(strategy_override=strategy)
     h = main.History()
     h.preflop_sheet = pd.read_excel('https://www.dropbox.com/s/j7o2fje3u6vsu75/preflop.xlsx?dl=1', sheetname=None)
     t = main.TableScreenBased(gui_signals, logger)
@@ -26,6 +26,7 @@ def init_table(file,round_number=0):
     t.get_my_cards(h)
     t.get_table_cards(h)
     t.get_round_number(h)
+    t.init_opponent_preflop_profiler(h)
     h.round_number=round_number
     t.init_get_other_players_info()
     t.get_other_player_names(p)

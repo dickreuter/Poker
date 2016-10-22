@@ -138,3 +138,11 @@ class TestTableScreenBased(TestCase):
         self.assertEqual(t.other_players[2]['pot'], '')
         self.assertEqual(t.other_players[3]['pot'], 0.02)
         self.assertEqual(t.other_players[4]['pot'], 0.04)
+
+
+    def test_second_round_snowie_1(self):
+        t, p, gui_signals, h, logger = init_table('tests/Q9o.png', round_number=0, strategy='snowie1')
+        self.assertEqual(t.position_utg_plus, 5)
+        self.assertEqual(t.dealer_position, 4)
+        self.assertEqual(np.isnan(t.second_raiser), True)
+        self.assertEqual(t.first_caller_utg,2)

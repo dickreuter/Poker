@@ -276,29 +276,26 @@ class GameLogger(object):
     def get_neural_training_data(self, p_name, p_value, game_stage, decision):
         cursor=self.mongodb.games.aggregate([
             {"$unwind": "$rounds"},
-            {"$match": {p_name: {"$regex": p_value},
-              "rounds.round_values.gameStage": game_stage,
-              "rounds.round_values.decision": decision},
-            },
-            {"$project": {
-                "game_stage": "$rounds.round_values.gameStage",
-                "ID": "$GameID",
-                "final_outcome": "$FinalOutcome",
-                "equity": "$rounds.round_values.equity",
-                "total_pot": "$rounds.round_values.totalPotValue",
-                "player_funds": "$rounds.round_values.PlayerFunds",
-                "final_funds_change": "$FinalFundsChange",
-                "min_call": "$rounds.round_values.minCall",
-                "min_bet": "$rounds.round_values.minBet",
-                "final_stage": "$FinalStage",
-                "_id": 0
-            }},
-            {"$sort": {"Loss": 1}},
+            {"$match": {"Template": {"$regex": "snowie1"},
+                        "software_version": {"$gte": 1.85}
+                        }},
+            {"$project":
+                {
+                    "advice_fold": "$rounds.round_values.fold_advice",
+                    "advice_call": "$rounds.round_values.call_advice",
+                    "advice_raise": "$rounds.round_values.raise_advice",
+
+                    "equity": "$rounds.round_values.equity",
+                    "total_pot": "$rounds.round_values.totalPotValue",
+                    "min_call": "$rounds.round_values.minCall",
+                    "min_bet": "$rounds.round_values.minBet",
+
+                    "_id": 0}}
         ])
 
-        df = pd.DataFrame(list(cursor))
+        result = [d for d in cursor]
 
-        return df
+        return result
 
     def get_stacked_bar_data(self, p_name, p_value, chartType):
 
