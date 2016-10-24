@@ -1,17 +1,17 @@
-from PyQt5.QtCore import *
 import matplotlib
+from PyQt5.QtCore import *
+
 matplotlib.use('Qt5Agg')
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas)
 from matplotlib.figure import Figure
 from weakref import proxy
-from gui.gui_qt_ui import Ui_Pokerbot
 from gui.gui_qt_ui_genetic_algorithm import *
 from gui.gui_qt_ui_strategy_manager import *
 from gui.GUI_QT_ui_analyser import *
 from gui.setup import *
 from gui.help import *
-from vbox_manager import VirtualBoxController
+from tools.vbox_manager import VirtualBoxController
 from PyQt5.QtWidgets import QMessageBox
 
 
@@ -21,7 +21,7 @@ import os
 
 class PandasModel(QtCore.QAbstractTableModel):
     """
-    Class to populate a table view with a pandas dataframe
+    Class to populate a table_analysers view with a pandas dataframe
     """
 
     def __init__(self, data, parent=None):
@@ -64,6 +64,9 @@ class UIActionAndSignals(QObject):
     signal_open_setup = QtCore.pyqtSignal(object,object)
 
     def __init__(self, ui_main_window):
+        from tools.debug_logger import debug_logger
+        self.logger = debug_logger().start_logger('gui')
+
         l = GameLogger()
         l.clean_database()
 
@@ -141,7 +144,6 @@ class UIActionAndSignals(QObject):
 
         self.ui = ui_main_window
         self.progressbar_value = 0
-        self.logger = debug_logger().start_logger('gui')
 
         # Main Window matplotlip widgets
         self.gui_funds = FundsPlotter(ui_main_window, p)
@@ -828,7 +830,8 @@ class FundsChangePlot(FigureCanvas):
         self.ui_analyser.vLayout_fundschange.insertWidget(1, self)
 
     def drawfigure(self):
-        L = GameLogger()
+        LogFilename = 'log'
+        L = GameLogger(LogFilename)
         p_name = str(self.ui_analyser.combobox_strategy.currentText())
         data = L.get_fundschange_chart(p_name)
         self.fig.clf()

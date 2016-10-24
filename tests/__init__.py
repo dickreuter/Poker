@@ -1,10 +1,15 @@
-from mongo_manager import GameLogger
-import pandas as pd
-from unittest.mock import MagicMock
-from mongo_manager import StrategyHandler
+import inspect
 import logging
+import os
+import sys
+from unittest.mock import MagicMock
+
+import pandas as pd
 from PIL import Image
-import os,sys,inspect
+
+from tools.mongo_manager import GameLogger
+from tools.mongo_manager import StrategyHandler
+
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0,parentdir)
@@ -20,7 +25,7 @@ def init_table(file,round_number=0, strategy='Pokemon4'):
     h = main.History()
     h.preflop_sheet = pd.read_excel('https://www.dropbox.com/s/j7o2fje3u6vsu75/preflop.xlsx?dl=1', sheetname=None)
     game_logger = GameLogger()
-    t = main.TableScreenBased(p,gui_signals,game_logger)
+    t = main.TableScreenBased(p,gui_signals,game_logger,0.0)
     t.entireScreenPIL = Image.open(file)
     t.get_top_left_corner(p)
     t.get_dealer_position()

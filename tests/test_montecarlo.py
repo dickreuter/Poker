@@ -116,7 +116,7 @@ class TestMonteCarlo(unittest.TestCase):
             1)
 
         Simulation.player_final_cards = [['9S', '7H', 'KS', 'KH', 'AH', 'AS', 'AC'],
-                                         ['8D', '2H', 'KS', 'KH', 'AH', 'AS', 'AC']]  # Full house on table that is draw
+                                         ['8D', '2H', 'KS', 'KH', 'AH', 'AS', 'AC']]  # Full house on table_analysers that is draw
         print(Simulation.eval_best_hand(Simulation.player_final_cards)[1])
         print("\r")
         self.assertEqual(

@@ -192,7 +192,7 @@ class Decision(DecisionBase):
                     logger.warning("Using backup round 2 sheetname R1R2 because sheet was not found: " + round2_sheetname)
                     sheet_name = 'R1R2'
             if not np.isnan(t.second_raiser_utg):
-                logger.warning("Using second raiser backup table R1R2")
+                logger.warning("Using second raiser backup table_analysers R1R2")
                 sheet_name = 'R1R2'
             if h.round_number==2:
                 sheet_name='R1R2R1A2'
@@ -226,8 +226,8 @@ class Decision(DecisionBase):
             elif crd1[0:2] in handlist:
                 found_card=crd1[0:2]
 
-            logger.debug("Looking in table for: " + crd1+", "+ crd2+", "+ crd1[0:2])
-            logger.debug("Found in table: "+found_card)
+            logger.debug("Looking in table_analysers for: " + crd1+", "+ crd2+", "+ crd1[0:2])
+            logger.debug("Found in table_analysers: "+found_card)
 
             if found_card!='':
                 call_probability=sheet[sheet['Hand']==found_card]['Call'].iloc[0]
@@ -239,24 +239,24 @@ class Decision(DecisionBase):
 
                 if rnd < call_probability:
                     self.decision = DecisionTypes.call
-                    logger.info('Preflop calling activated from table')
+                    logger.info('Preflop calling activated from table_analysers')
 
                 elif rnd >= call_probability and rnd <= bet_probability+call_probability:
                     if sheet_name in ['1','2','3','4']:
                         self.decision = DecisionTypes.bet3
-                        logger.info('Preflop betting 3 activated from table')
+                        logger.info('Preflop betting 3 activated from table_analysers')
                     else:
                         self.decision = DecisionTypes.bet4
-                        logger.info('Preflop betting 4 activated from table')
+                        logger.info('Preflop betting 4 activated from table_analysers')
                         # 1, 2, 3, 4 = half pot
                         # 5 = pot and the
                         # rest POT
                 else:
                     self.decision = DecisionTypes.fold
-                    logger.info('Preflop folding from table')
+                    logger.info('Preflop folding from table_analysers')
             else:
                 self.decision = DecisionTypes.fold
-                logger.info('Preflop folding, hands not found in table')
+                logger.info('Preflop folding, hands not found in table_analysers')
 
             t.currentBluff=0
             try:

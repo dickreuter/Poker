@@ -1,13 +1,14 @@
 '''
 Assesses the log file and checks how the parameters in strategies.xml need to be adjusted to optimize playing
 '''
-from debug_logger import *
-from mongo_manager import *
+from tools import debug_logger
+from tools.debug_logger import *
+from tools.mongo_manager import *
 
 
 class GeneticAlgorithm(object):
-    def __init__(self, write_update, logger, L):
-        self.logger = logger
+    def __init__(self, write_update, L):
+        self.logger = debug_logger().start_logger('genetic_algorithm')
         self.output = ''
         p = StrategyHandler()
         p.read_strategy()

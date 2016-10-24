@@ -2,14 +2,15 @@ __author__ = 'Nicolas Dickreuter'
 '''
 Runs a Montecarlo simulation to calculate the probability of winning with a certain pokerhand and a given amount of players
 '''
+import operator
 import time
-import numpy as np
+import winsound
 from collections import Counter
 from copy import copy
-import operator
-import os
-import winsound
-from numba import jit
+
+import numpy as np
+
+from tools.debug_logger import debug_logger
 
 
 class MonteCarlo(object):
@@ -314,7 +315,7 @@ class MonteCarlo(object):
                                     opponent_allowed_cards):
         Players = []
         CardsOnTable = []
-        knownPlayers = 0  # for potential collusion if more than one bot is running on the same table
+        knownPlayers = 0  # for potential collusion if more than one bot is running on the same table_analysers
 
         for player_cards in player_card_list:
             first_player = []
@@ -325,7 +326,7 @@ class MonteCarlo(object):
             knownPlayers += 1  # my own cards are known
 
         for c in table_card_list:
-            CardsOnTable.append(deck.pop(deck.index(c)))  # remove cards that are on the table from the deck
+            CardsOnTable.append(deck.pop(deck.index(c)))  # remove cards that are on the table_analysers from the deck
 
         n = 0
         while True:
@@ -347,7 +348,6 @@ class MonteCarlo(object):
             if n == player_amount - knownPlayers or knownPlayers >= 2: break
 
         return Players, deck
-
 
     def distribute_cards_to_table(self, Deck, table_card_list):
         remaningRandoms = 5 - len(table_card_list)
@@ -417,8 +417,10 @@ class MonteCarlo(object):
         return self.equity, self.winTypesDict
 
 
-def run_montecarlo_wrapper(logger, p, ui_action_and_signals, config, ui, t, L):
+def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L):
     # Prepare for montecarlo simulation to evaluate equity (probability of winning with given cards)
+
+    logger = debug_logger().start_logger('montecarlo')
 
     if t.gameStage == "PreFlop":
         t.assumedPlayers = 2
@@ -500,7 +502,7 @@ def run_montecarlo_wrapper(logger, p, ui_action_and_signals, config, ui, t, L):
         elif crd1[0:2] in m.preflop_equities:
             m.equity = m.preflop_equities[crd1[0:2]]
         else:
-            logger.warning("Preflop not found in table: " + str(crd1))
+            logger.warning("Preflop not found in table_analysers: " + str(crd1))
 
     t.equity = np.round(m.equity, 3)
     t.winnerCardTypeList = m.winnerCardTypeList

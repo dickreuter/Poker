@@ -1,15 +1,18 @@
-from captcha.key_press_vbox import *
 import logging
 import random
+
 import numpy as np
-import pymouse
-from vbox_manager import VirtualBoxController
 from configobj import ConfigObj
-from debug_logger import debug_logger
+
+import pymouse
+from captcha.key_press_vbox import *
+from tools.debug_logger import debug_logger
+from tools.vbox_manager import VirtualBoxController
 
 
 class MouseMover(VirtualBoxController):
     def __init__(self, vbox_mode):
+        self.logger = debug_logger().start_logger('mouse_mover')
         if vbox_mode:
             super().__init__()
         self.mouse=pymouse.PyMouse()
@@ -152,4 +155,4 @@ if __name__=="__main__":
     logger = logging.getLogger()
     m=MouseMoverTableBased('PP',5,5)
     topleftcorner=[22,22]
-    m.mouse_action(logger, "BetPlus", topleftcorner)
+    m.mouse_action(logger, topleftcorner)

@@ -43,7 +43,7 @@ class DecisionBase(object):
 
 
 class Collusion(object):
-    # If more than one pokerbot plays on the same table, the players can collude. This is not yet fully implemented
+    # If more than one pokerbot plays on the same table_analysers, the players can collude. This is not yet fully implemented
     # The gained advantage is expected to be limited unless a corresponding strategy is trained independently
     def __init__(self):
         pass

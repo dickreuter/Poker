@@ -1,9 +1,11 @@
 from unittest import TestCase
-from . import init_table
+from unittest.mock import MagicMock
+
 from decisionmaker.decisionmaker import Decision
 from decisionmaker.decisionmaker import DecisionTypes
-from unittest.mock import MagicMock
-from mongo_manager import StrategyHandler
+from tools.mongo_manager import StrategyHandler
+from . import init_table
+
 
 class TestDecision(TestCase):
     def test_bluff(self):
