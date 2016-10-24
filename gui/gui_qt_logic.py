@@ -63,7 +63,16 @@ class UIActionAndSignals(QObject):
     signal_update_strategy_sliders = QtCore.pyqtSignal(str)
     signal_open_setup = QtCore.pyqtSignal(object,object)
 
-    def __init__(self, ui_main_window, p, l, logger):
+    def __init__(self, ui_main_window):
+        l = GameLogger()
+        l.clean_database()
+
+        p = StrategyHandler()
+        p.read_strategy()
+
+        self.pause_thread=True
+        self.exit_thread=False
+
         QObject.__init__(self)
         self.strategy_items_with_multipliers = {
             "FlopBluffMaxEquity": 100,
@@ -132,7 +141,7 @@ class UIActionAndSignals(QObject):
 
         self.ui = ui_main_window
         self.progressbar_value = 0
-        self.logger = logger
+        self.logger = debug_logger().start_logger('gui')
 
         # Main Window matplotlip widgets
         self.gui_funds = FundsPlotter(ui_main_window, p)
@@ -188,12 +197,12 @@ class UIActionAndSignals(QObject):
     def pause(self, ui, p):
         ui.button_resume.setEnabled(True)
         ui.button_pause.setEnabled(False)
-        p.pause = True
+        self.pause_thread = True
 
     def resume(self, ui, p):
         ui.button_resume.setEnabled(False)
         ui.button_pause.setEnabled(True)
-        p.pause = False
+        self.pause_thread = False
 
     def increase_progressbar(self, value):
         self.progressbar_value += value
@@ -819,8 +828,7 @@ class FundsChangePlot(FigureCanvas):
         self.ui_analyser.vLayout_fundschange.insertWidget(1, self)
 
     def drawfigure(self):
-        LogFilename = 'log'
-        L = GameLogger(LogFilename)
+        L = GameLogger()
         p_name = str(self.ui_analyser.combobox_strategy.currentText())
         data = L.get_fundschange_chart(p_name)
         self.fig.clf()

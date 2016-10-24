@@ -5,6 +5,7 @@ import numpy as np
 import pymouse
 from vbox_manager import VirtualBoxController
 from configobj import ConfigObj
+from debug_logger import debug_logger
 
 
 class MouseMover(VirtualBoxController):
@@ -78,9 +79,9 @@ class MouseMover(VirtualBoxController):
         time.sleep(np.random.uniform(0.1, 0.5, 1)[0])
 
 class MouseMoverTableBased(MouseMover):
-    def __init__(self, logger,pokersite,betplus_inc=1,bet_bluff_inc=1):
+    def __init__(self, pokersite,betplus_inc=1,bet_bluff_inc=1):
         config = ConfigObj("config.ini")
-        self.logger=logger
+        self.logger = debug_logger().start_logger('mouse')
 
         try:
             mouse_control = config['control']
