@@ -23,7 +23,7 @@ def init_table(file,round_number=0, strategy='Pokemon4'):
     p = StrategyHandler()
     p.read_strategy(strategy_override=strategy)
     h = main.History()
-    h.preflop_sheet = pd.read_excel('https://www.dropbox.com/s/j7o2fje3u6vsu75/preflop.xlsx?dl=1', sheetname=None)
+    h.preflop_sheet = pd.read_excel('decisionmaker/preflop.xlsx', sheetname=None)
     game_logger = GameLogger()
     t = main.TableScreenBased(p,gui_signals,game_logger,0.0)
     t.entireScreenPIL = Image.open(file)

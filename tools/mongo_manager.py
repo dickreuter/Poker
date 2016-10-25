@@ -59,7 +59,7 @@ class UpdateChecker():
     def get_preflop_sheet_url(self):
         cursor=self.mongodb.internal.find()
         c=cursor.next()
-        self.preflop_url=c['preflop_url']
+        self.preflop_url='decisionmaker/preflop.xlsx'
         return self.preflop_url
 
 
