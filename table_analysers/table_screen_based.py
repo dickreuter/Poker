@@ -4,12 +4,11 @@ import re
 import sys
 import threading
 import time
-from copy import copy
-
 import cv2  # opencv 3.0
 import numpy as np
 import pytesseract
 from PIL import Image, ImageFilter
+from copy import copy
 
 from decisionmaker.montecarlo_python import MonteCarlo
 from tools.mouse_mover import MouseMoverTableBased
@@ -272,8 +271,6 @@ class TableScreenBased(Table):
             for key, value in self.cardImages.items():
                 template = value
                 method = eval('cv2.TM_SQDIFF_NORMED')
-                if key == '3D':
-                    1 == 1
 
                 res = cv2.matchTemplate(img, template, method)
 
