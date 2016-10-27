@@ -21,11 +21,13 @@ class TestReverseTables(TestCase):
 
         if t.gameStage == 'PreFlop':
             preflop_state = CurrentHandPreflopState()
-            preflop_state.update_values(t, d.decision, h)
-
+            bot_preflop_decision='Call'
+            t.bot_pot=0.04
+            t.first_raiser=1
+            t.second_raiser=2
+            t.first_caller=3
+            t.bigBlind=0.04
+            preflop_state.update_values(t, bot_preflop_decision, h)
 
         for abs_pos in range(6):
-            sheet_name=preflop_state.calculate_reverse_table(abs_pos, t.dealer_position, t, p, h)
-
-
-
+            sheet_name=preflop_state.get_reverse_sheetname(abs_pos, t, p, h)

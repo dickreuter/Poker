@@ -290,12 +290,12 @@ class Table(object):
     def find_item_location_in_crop(self, x1, y1, x2, y2, template, screentho):
         pass
 
-    def get_raisers_and_callers(self, p, reference_pot, relative_to_bot=0):
+    def get_raisers_and_callers(self, p, reference_pot):
         first_raiser = np.nan
         second_raiser = np.nan
         first_caller = np.nan
 
-        for n in range(5 - relative_to_bot):  # n is absolute position of other player, 0 is player after bot
+        for n in range(5):  # n is absolute position of other player, 0 is player after bot
             i = (
                     self.dealer_position + n + 3 - 2) % 5  # less myself as 0 is now first other player to my left and no longer myself
             self.logger.debug(
@@ -324,8 +324,7 @@ class Table(object):
         self.logger.debug("First possible potential caller is: " + str(first_possible_caller))
 
         # get first caller after raise in preflop
-        for n in range(first_possible_caller,
-                       5 - relative_to_bot):  # n is absolute position of other player, 0 is player after bot
+        for n in range(first_possible_caller,5):  # n is absolute position of other player, 0 is player after bot
             self.logger.debug(
                 "Go through pots to find caller abs: " + str(n) + ": " + str(self.other_players[n]['pot']))
             if self.other_players[n]['pot'] != '':  # check if not empty (otherwise can't convert string)
