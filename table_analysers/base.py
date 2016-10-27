@@ -22,7 +22,7 @@ class Table(object):
         self.ip = ''
         self.load_templates(p)
         self.load_coordinates()
-        self.logger = debug_logger().start_logger('table_analysers')
+        self.logger = debug_logger().start_logger('table')
         self.gui_signals = gui_signals
         self.game_logger = game_logger
 

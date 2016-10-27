@@ -12,7 +12,7 @@ from tools.vbox_manager import VirtualBoxController
 
 class MouseMover(VirtualBoxController):
     def __init__(self, vbox_mode):
-        self.logger = debug_logger().start_logger('mouse_mover')
+        self.logger = debug_logger().start_logger('mouse')
         if vbox_mode:
             super().__init__()
         self.mouse=pymouse.PyMouse()
