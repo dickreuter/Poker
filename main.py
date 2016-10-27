@@ -99,7 +99,7 @@ class ThreadManager(threading.Thread):
                         t.get_other_player_pots() and \
                         t.get_total_pot_value(h) and \
                         t.check_for_checkbutton() and \
-                        t.get_other_player_status(p, h, preflop_state) and \
+                        t.get_other_player_status(p, h) and \
                         t.check_for_call() and \
                         t.check_for_betbutton() and \
                         t.check_for_allincall() and \
@@ -157,7 +157,7 @@ class ThreadManager(threading.Thread):
                 h.previous_decision = d.decision
                 h.lastRoundGameID = h.GameID
                 h.last_round_bluff = False if t.currentBluff == 0 else True
-                if t.game_logger=='PreFlop':
+                if t.gameStage=='PreFlop':
                     preflop_state.update_values(t,d.decision,h)
                 self.logger.info("=========== round end ===========")
 

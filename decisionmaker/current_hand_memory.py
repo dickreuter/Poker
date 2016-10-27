@@ -43,19 +43,19 @@ class CurrentHandPreflopState:
         if not np.isnan(t.first_caller):
             self.other_players[t.first_caller]['decision'] = 'call'
 
-def calculate_reverse_table(preflop_state, abs_pos, dealer_pos, t, p, h):
-    utg_position=t.get_utg_from_abs_pos(abs_pos, dealer_pos)
-    if h.round_number==0: reference_pot=t.bigBlind
+    def calculate_reverse_table(self, abs_pos, dealer_pos, t, p, h):
+        utg_position=t.get_utg_from_abs_pos(abs_pos, dealer_pos)
+        if h.round_number==0: reference_pot=t.bigBlind
 
-    i=abs_pos-3
-    first_raiser, \
-    second_raiser, \
-    first_caller, \
-    first_raiser_utg, \
-    second_raiser_utg, \
-    first_caller_utg = \
-        t.get_raisers_and_callers(p, reference_pot, relative_to_bot=i)
+        i=abs_pos-3
+        first_raiser, \
+        second_raiser, \
+        first_caller, \
+        first_raiser_utg, \
+        second_raiser_utg, \
+        first_caller_utg = \
+            t.get_raisers_and_callers(p, reference_pot, relative_to_bot=i)
 
-    sheet_name = str(utg_position + 1)
+        sheet_name = str(utg_position + 1)
 
-    return sheet_name
+        return sheet_name

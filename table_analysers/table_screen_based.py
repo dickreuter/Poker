@@ -395,7 +395,7 @@ class TableScreenBased(Table):
         self.bot_pot = value
         return value
 
-    def get_other_player_status(self, p, h, preflop_state):
+    def get_other_player_status(self, p, h):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
         self.gui_signals.signal_status.emit("Get other playsrs' status")
 
