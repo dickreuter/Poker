@@ -13,34 +13,9 @@ from gui.gui_qt_ui import Ui_Pokerbot
 from gui.gui_qt_logic import UIActionAndSignals
 from tools.mongo_manager import StrategyHandler,UpdateChecker,GameLogger
 from table_analysers.table_screen_based import TableScreenBased
+from decisionmaker.current_hand_memory import History, CurrentHandPreflopState
 
 version = 1.91
-
-
-class History(object):
-    def __init__(self):
-        # keeps values of the last round
-        self.previousPot = 0
-        self.previousCards = []
-        self.myLastBet = 0
-        self.histGameStage = ""
-        self.myFundsHistory = [2.0]
-        self.losses = 0
-        self.wins = 0
-        self.totalGames = 0
-        self.GameID = int(np.round(np.random.uniform(0, 999999999), 0))  # first game ID
-        self.lastRoundGameID = 0
-        self.lastSecondRoundAdjustment = 0
-        self.lastGameID = "0"
-        self.histDecision = 0
-        self.histEquity = 0
-        self.histMinCall = 0
-        self.histMinBet = 0
-        self.histPlayerPots = 0
-        self.first_raiser = np.nan
-        self.previous_decision = 0
-        self.last_round_bluff = False
-        self.uploader = {}
 
 
 class ThreadManager(threading.Thread):
@@ -89,6 +64,8 @@ class ThreadManager(threading.Thread):
         p = StrategyHandler()
         p.read_strategy()
 
+        preflop_state=CurrentHandPreflopState()
+
         while True:
             if self.gui_signals.pause_thread:
                 while self.gui_signals.pause_thread == True:
@@ -122,7 +99,7 @@ class ThreadManager(threading.Thread):
                         t.get_other_player_pots() and \
                         t.get_total_pot_value(h) and \
                         t.check_for_checkbutton() and \
-                        t.get_other_player_status(p, h) and \
+                        t.get_other_player_status(p, h, preflop_state) and \
                         t.check_for_call() and \
                         t.check_for_betbutton() and \
                         t.check_for_allincall() and \
@@ -180,8 +157,9 @@ class ThreadManager(threading.Thread):
                 h.previous_decision = d.decision
                 h.lastRoundGameID = h.GameID
                 h.last_round_bluff = False if t.currentBluff == 0 else True
+                if t.game_logger=='PreFlop':
+                    preflop_state.update_values(t,d.decision,h)
                 self.logger.info("=========== round end ===========")
-
 
 # ==== MAIN PROGRAM =====
 if __name__ == '__main__':

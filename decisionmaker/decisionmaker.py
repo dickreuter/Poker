@@ -175,29 +175,7 @@ class Decision(DecisionBase):
             crd1=crd1.upper()
             crd2=crd2.upper()
 
-            first_raiser_string='R' if not np.isnan(t.first_raiser_utg) else ''
-            first_raiser_number = str(t.first_raiser_utg+1) if first_raiser_string != '' else ''
-
-            first_caller_string = 'C' if not np.isnan(t.first_caller_utg) else ''
-            first_caller_number = str(t.first_caller_utg+1) if first_caller_string != '' else ''
-
-            sheet_name = str(t.position_utg_plus + 1) + str(first_raiser_string) + str(first_raiser_number)+ str(first_caller_string)+ str(first_caller_number)
-            if h.round_number == 1:
-                round2_sheetname = str(t.position_utg_plus + 1) + "2" + str(first_raiser_string) + str(
-                first_raiser_number) + str(first_caller_string) + str(first_caller_number)
-                logger.info("Round 2 sheetname: " + round2_sheetname)
-                if round2_sheetname in h.preflop_sheet:
-                    sheet_name=round2_sheetname
-                else:
-                    logger.warning("Using backup round 2 sheetname R1R2 because sheet was not found: " + round2_sheetname)
-                    sheet_name = 'R1R2'
-            if not np.isnan(t.second_raiser_utg):
-                logger.warning("Using second raiser backup table_analysers R1R2")
-                sheet_name = 'R1R2'
-            if h.round_number==2:
-                sheet_name='R1R2R1A2'
-
-            self.preflop_sheet_name = sheet_name
+            sheet_name=t.derive_preflop_sheet_name(t,h, t.first_raiser_utg, t.first_caller_utg, t.second_raiser_utg)
 
             logger.info("Sheet name: "+sheet_name)
             excel_file = h.preflop_sheet

@@ -302,7 +302,7 @@ class Table(object):
                 "Go through pots to find raiser abs: " + str(i) + ": " + str(self.other_players[i]['pot']))
             if self.other_players[i]['pot'] != '':  # check if not empty (otherwise can't convert string)
                 if self.other_players[i][
-                    'pot'] > reference_pot:  # reference pot is bb for first round and ourselves for rest
+                    'pot'] > reference_pot:  # reference pot is bb for first round and bot for second round
                     if np.isnan(first_raiser):
                         first_raiser = int(i)
                         first_raiser_pot = self.other_players[i]['pot']
@@ -354,4 +354,32 @@ class Table(object):
         return utg_pos
 
     def get_abs_from_utg_pos(self, utg_pos, dealer_pos):
-        pass
+        abs_pos = (utg_pos + dealer_pos - 4) % 6
+        return abs_pos
+
+    def derive_preflop_sheet_name(self, t, h, first_raiser_utg, first_caller_utg, second_raiser_utg):
+        first_raiser_string = 'R' if not np.isnan(first_raiser_utg) else ''
+        first_raiser_number = str(first_raiser_utg + 1) if first_raiser_string != '' else ''
+
+        first_caller_string = 'C' if not np.isnan(first_caller_utg) else ''
+        first_caller_number = str(first_caller_utg + 1) if first_caller_string != '' else ''
+
+        sheet_name = str(t.position_utg_plus + 1) + str(first_raiser_string) + str(first_raiser_number) + str(
+            first_caller_string) + str(first_caller_number)
+        if h.round_number == 1:
+            round2_sheetname = str(t.position_utg_plus + 1) + "2" + str(first_raiser_string) + str(
+                first_raiser_number) + str(first_caller_string) + str(first_caller_number)
+            self.logger.info("Round 2 sheetname: " + round2_sheetname)
+            if round2_sheetname in h.preflop_sheet:
+                sheet_name = round2_sheetname
+            else:
+                self.logger.warning("Using backup round 2 sheetname R1R2 because sheet was not found: " + round2_sheetname)
+                sheet_name = 'R1R2'
+        if not np.isnan(second_raiser_utg):
+            self.logger.warning("Using second raiser backup table_analysers R1R2")
+            sheet_name = 'R1R2'
+        if h.round_number == 2:
+            sheet_name = 'R1R2R1A2'
+
+        self.preflop_sheet_name = sheet_name
+        return self.preflop_sheet_name

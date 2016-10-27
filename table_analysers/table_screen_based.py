@@ -305,16 +305,6 @@ class TableScreenBased(Table):
             go_through_each_card(img, True)
             return False
 
-    def init_opponent_preflop_profiler(self, h):
-        other_player = dict()
-        other_player['calls'] = ''
-        other_player['bets'] = ''
-        h.other_players_preflop_profile = []
-        for i in range(5):
-            op = copy(other_player)
-            op['abs_position'] = i
-            h.other_players_preflop_profile.append(op)
-
     def init_get_other_players_info(self):
         other_player = dict()
         other_player['utg_position'] = ''
@@ -322,6 +312,7 @@ class TableScreenBased(Table):
         other_player['status'] = ''
         other_player['funds'] = ''
         other_player['pot'] = ''
+        other_player['decision'] = ''
         self.other_players = []
         for i in range(5):
             op = copy(other_player)
@@ -404,7 +395,7 @@ class TableScreenBased(Table):
         self.bot_pot = value
         return value
 
-    def get_other_player_status(self, p, h):
+    def get_other_player_status(self, p, h, preflop_state):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
         self.gui_signals.signal_status.emit("Get other playsrs' status")
 
@@ -460,15 +451,6 @@ class TableScreenBased(Table):
             self.other_player_has_initiative = False
 
         self.logger.info("Other player has initiative: " + str(self.other_player_has_initiative))
-
-        if not np.isnan(self.first_raiser):
-            h.other_players_preflop_profile[self.first_raiser]['bet'] = 1
-
-        if not np.isnan(self.second_raiser):
-            h.other_players_preflop_profile[self.second_raiser]['bet'] = 1
-
-        if not np.isnan(self.first_caller):
-            h.other_players_preflop_profile[self.first_caller]['call'] = 1
 
         return True
 
@@ -675,8 +657,6 @@ class TableScreenBased(Table):
             h.lastSecondRoundAdjustment = 0
             h.last_round_bluff = False  # reset the bluffing marker
             h.round_number = 0
-
-            self.init_opponent_preflop_profiler(h)
 
             mouse.move_mouse_away_from_buttons()
 
