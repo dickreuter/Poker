@@ -499,8 +499,8 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
                     logger.debug("Ranges from reverse table: "+str(ranges))
 
                     # the last player's range will be relevant
-                    # if t.isHeadsUp==True:
-                    #     opponent_range = ranges
+                    if t.isHeadsUp==True:
+                        opponent_range = ranges
 
         except Exception as e:
             logger.error("Opponent reverse table failed: " + str(e))
