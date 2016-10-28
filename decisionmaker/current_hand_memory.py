@@ -100,6 +100,6 @@ class CurrentHandPreflopState:
         else:
             ranges = ranges_call + ranges_raise
 
-            ranges = [str(x).upper() for x in ranges]
+        ranges = [str(x).upper() for x in ranges]
 
         return set(ranges)
