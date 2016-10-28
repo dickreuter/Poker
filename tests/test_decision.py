@@ -54,7 +54,7 @@ class TestDecision(TestCase):
     def test_preflop_round2(self):
         t, p, gui_signals, h,logger = init_table('tests/screenshots/378278828_PreFlop_1.png',round_number=1)
         p = StrategyHandler()
-        p.read_strategy('Strategy100')
+        p.read_strategy('Pokemon4')
         l = MagicMock()
         t.totalPotValue=0.5
         t.equity=0.5
@@ -66,12 +66,12 @@ class TestDecision(TestCase):
         d.__init__(t, h, p, logger, l)
         d.preflop_override(t,logger,h,p)
 
-        self.assertEqual(d.preflop_sheet_name, '42R3')
+        self.assertEqual(t.preflop_sheet_name, '42R3')
 
     def test_preflop_round2_2(self):
         t, p, gui_signals, h,logger = init_table('tests/screenshots/107232845_PreFlop_1.png',round_number=1)
         p = StrategyHandler()
-        p.read_strategy('Strategy100')
+        p.read_strategy('Pokemon4')
         l = MagicMock()
         t.totalPotValue=0.5
         t.equity=0.5
@@ -83,13 +83,13 @@ class TestDecision(TestCase):
         d.__init__(t, h, p, logger, l)
         d.preflop_override(t,logger,h,p)
 
-        self.assertEqual(d.preflop_sheet_name, '22R5')
+        self.assertEqual(t.preflop_sheet_name, '22R5')
 
 
     def test_preflop_round2_3(self):
         t, p, gui_signals, h, logger = init_table('tests/screenshots/897376414_PreFlop_1.png', round_number=1)
         p = StrategyHandler()
-        p.read_strategy('Strategy100')
+        p.read_strategy('Pokemon4')
         l = MagicMock()
         t.totalPotValue = 0.5
         t.equity = 0.5
@@ -101,6 +101,6 @@ class TestDecision(TestCase):
         d.__init__(t, h, p, logger, l)
         d.preflop_override(t, logger, h, p)
 
-        self.assertEqual(d.preflop_sheet_name, '12R3')
+        self.assertEqual(t.preflop_sheet_name, '12R3')
 
 
