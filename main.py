@@ -157,8 +157,8 @@ class ThreadManager(threading.Thread):
                 h.previous_decision = d.decision
                 h.lastRoundGameID = h.GameID
                 h.last_round_bluff = False if t.currentBluff == 0 else True
-                if t.gameStage=='PreFlop':
-                    preflop_state.update_values(t,d.decision,h)
+                #if t.gameStage=='PreFlop':
+                    #preflop_state.update_values(t,d.decision,h)
                 self.logger.info("=========== round end ===========")
 
 # ==== MAIN PROGRAM =====
