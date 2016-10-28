@@ -632,11 +632,12 @@ class TableScreenBased(Table):
         else:
             return True
 
-    def get_new_hand(self, mouse, h, p):
+    def get_new_hand(self, mouse, h, p, preflop_state):
         self.gui_signals.signal_progressbar_increase.emit(5)
         self.get_game_number_on_screen()
         if h.previousCards != self.mycards:
             self.logger.info("+++========================== NEW HAND ==========================+++")
+            preflop_state.reset()
             self.time_new_cards_recognised = datetime.datetime.utcnow()
             h.lastGameID = str(h.GameID)
             h.GameID = int(round(np.random.uniform(0, 999999999), 0))

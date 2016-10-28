@@ -85,7 +85,7 @@ class ThreadManager(threading.Thread):
                         t.check_for_imback(mouse) and \
                         t.get_my_funds(h, p) and \
                         t.get_my_cards(h) and \
-                        t.get_new_hand(mouse, h, p) and \
+                        t.get_new_hand(mouse, h, p, preflop_state) and \
                         t.get_table_cards(h) and \
                         t.upload_collusion_wrapper(p, h) and \
                         t.get_dealer_position() and \
@@ -108,7 +108,7 @@ class ThreadManager(threading.Thread):
 
             if not self.gui_signals.pause_thread:
                 config = ConfigObj("config.ini")
-                run_montecarlo_wrapper(p, self.gui_signals, config, ui, t, self.game_logger)
+                run_montecarlo_wrapper(p, self.gui_signals, config, ui, t, self.game_logger, preflop_state)
                 d = Decision(t, h, p, self.logger, self.game_logger)
                 d.make_decision(t, h, p, self.logger, self.game_logger)
                 if self.gui_signals.exit_thread: sys.exit()
@@ -157,8 +157,8 @@ class ThreadManager(threading.Thread):
                 h.previous_decision = d.decision
                 h.lastRoundGameID = h.GameID
                 h.last_round_bluff = False if t.currentBluff == 0 else True
-                #if t.gameStage=='PreFlop':
-                    #preflop_state.update_values(t,d.decision,h)
+                if t.gameStage=='PreFlop':
+                    preflop_state.update_values(t,d.decision,h)
                 self.logger.info("=========== round end ===========")
 
 # ==== MAIN PROGRAM =====

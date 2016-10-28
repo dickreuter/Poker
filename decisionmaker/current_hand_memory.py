@@ -2,6 +2,7 @@ import numpy as np
 from copy import copy, deepcopy
 from tools.debug_logger import debug_logger
 
+
 class History:
     def __init__(self):
         # keeps values of the last round
@@ -27,49 +28,55 @@ class History:
         self.last_round_bluff = False
         self.uploader = {}
 
+
 class CurrentHandPreflopState:
     def __init__(self):
         self.other_player = None
         self.logger = debug_logger().start_logger('preflop_memory')
+        self.bot_preflop_decision = ''
+        self.preflop_caller_positions = []
+        self.preflop_raiser_positions = []
 
-    def update_values(self,t,decision_str,h):
-        self.other_players=deepcopy(t.other_players)
-        self.bot_decision=decision_str
-        self.bot_position=t.position_utg_plus
-        self.rounds=h.round_number
-        self.bot_pot=t.bot_pot
+    def reset(self):
+        self.__init__()
+
+    def update_values(self, t, decision_str, h):
+        self.other_players = deepcopy(t.other_players)
+
+        self.bot_preflop_position_utg = t.position_utg_plus
+        self.bot_preflop_decision = decision_str
+
+        self.rounds = h.round_number
         if not np.isnan(t.first_raiser):
-            self.other_players[t.first_raiser]['decision'] = 'bet'
+            self.preflop_raiser_positions.append(t.first_raiser)
         if not np.isnan(t.second_raiser):
-            self.other_players[t.second_raiser]['decision'] = 'bet'
+            self.preflop_raiser_positions.append(t.second_raiser)
         if not np.isnan(t.first_caller):
-            self.other_players[t.first_caller]['decision'] = 'call'
-        self.first_caller_utg=t.first_caller_utg
+            self.preflop_caller_positions.append(t.first_caller)
+        self.first_caller_utg = t.first_caller_utg
 
-        self.first_raiser=t.first_raiser
-        self.second_raiser=t.second_raiser
-        self.first_caller=t.first_caller
-        self.first_raiser_utg=t.first_raiser_utg
-        self.second_raiser_utg=t.second_raiser_utg
-        self.first_caller_utg=t.first_caller_utg
+        self.logger.debug("Preflop state has been updated")
 
-    def get_reverse_sheetname(self, abs_pos, t, p, h):
+    def get_reverse_sheetname(self, abs_pos, t):
+        # if the player is situated after the bot, consider the bot's decision in the reverse table
+        utg_position = t.get_utg_from_abs_pos(abs_pos, t.dealer_position)
+        if utg_position > self.bot_preflop_position_utg:
+            if self.bot_preflop_decision == 'Call' or self.bot_preflop_decision == 'Call2':
+                self.preflop_caller_positions.append(t.position_utg_plus + 1)
+            if self.bot_preflop_decision == 'Bet' \
+                    or self.bot_preflop_decision == 'BetPlus' \
+                    or self.bot_preflop_decision == 'Bet half pot' \
+                    or self.bot_preflop_decision == 'Bet pot' \
+                    or self.bot_preflop_decision == 'Bet Bluff':
+                self.preflop_raiser_positions.append(t.position_utg_plus + 1)
 
-        first_raiser_str=''
-        second_raiser_str=''
-        first_caller_str=''
+        sheet_name = str(utg_position + 1)
 
-        utg_position=t.get_utg_from_abs_pos(abs_pos, t.dealer_position)
+        sheet_name += ''.join(['R' + str(x) for x in sorted(self.preflop_raiser_positions)])
+        sheet_name += ''.join(['C' + str(x) for x in sorted(self.preflop_caller_positions)])
 
-        if not np.isnan(self.first_raiser_utg) and self.first_raiser_utg<utg_position:
-            first_raiser_str='R'+str(self.first_raiser_utg+1)
-        if not np.isnan(self.second_raiser_utg) and self.second_raiser_utg<utg_position:
-            second_raiser_str='R'+str(self.second_raiser_utg+1)
-        if not np.isnan(self.first_caller_utg) and self.first_caller_utg<utg_position:
-            first_caller_str='C'+str(self.first_caller_utg+1)
-
-        if h.round_number==0: reference_pot=t.bigBlind
-        sheet_name = str(utg_position + 1) + str(first_raiser_str) + str(second_raiser_str) + str(first_caller_str)
-        self.logger.info('Reverse Sheetname: '+sheet_name)
-
+        self.logger.info('Reverse sheetname: ' + sheet_name)
         return sheet_name
+
+    def get_rangecards_from_sheetname(self,opponent_decision,tablename):
+        return None

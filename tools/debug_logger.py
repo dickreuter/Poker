@@ -16,7 +16,7 @@ class debug_logger(object):
             fh.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
             fh2.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
             er.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
-            ch.setFormatter(logging.Formatter('%(levelname)s - %(message)s'))
+            ch.setFormatter(logging.Formatter('%(name)s - %(levelname)s - %(message)s'))
             logger.addHandler(fh)
             logger.addHandler(fh2)
             logger.addHandler(ch)
