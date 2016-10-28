@@ -92,12 +92,14 @@ class CurrentHandPreflopState:
             self.logger.warning('Reverse sheetname not found: ' + sheet_name + '. Using backup sheet 1')
             sheet_name = '1'
 
-        ranges_call = set(h.preflop_sheet[sheet_name][h.preflop_sheet[sheet_name]['Call'] > 0.5]['Hand'].tolist())
-        ranges_raise = set(h.preflop_sheet[sheet_name][h.preflop_sheet[sheet_name]['Raise'] > 0.5]['Hand'].tolist())
+        ranges_call = h.preflop_sheet[sheet_name][h.preflop_sheet[sheet_name]['Call'] > 0.5]['Hand'].tolist()
+        ranges_raise = h.preflop_sheet[sheet_name][h.preflop_sheet[sheet_name]['Raise'] > 0.5]['Hand'].tolist()
 
         if abs_pos == t.first_raiser or abs_pos == t.second_raiser:
-            ranges = ranges_call | ranges_raise
+            ranges = ranges_call + ranges_raise
         else:
-            ranges = ranges_call | ranges_raise
+            ranges = ranges_call + ranges_raise
 
-        return ranges
+            ranges = [str(x).upper() for x in ranges]
+
+        return set(ranges)

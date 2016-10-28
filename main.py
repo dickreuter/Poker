@@ -59,6 +59,7 @@ class ThreadManager(threading.Thread):
         preflop_url = u.get_preflop_sheet_url()
         h.preflop_sheet = pd.read_excel(preflop_url, sheetname=None)
 
+
         self.game_logger.clean_database()
 
         p = StrategyHandler()
