@@ -76,8 +76,8 @@ class CurrentHandPreflopState:
 
         sheet_name = str(utg_position + 1)
 
-        sheet_name += ''.join(['C' + str(x) for x in sorted(preflop_caller_positions)])
         sheet_name += ''.join(['R' + str(x) for x in sorted(preflop_raiser_positions)])
+        sheet_name += ''.join(['C' + str(x) for x in sorted(preflop_caller_positions)])
 
         self.logger.info('Reverse sheetname: ' + sheet_name)
         return sheet_name
