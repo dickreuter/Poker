@@ -14,13 +14,16 @@ from tools.debug_logger import debug_logger
 
 
 class MonteCarlo(object):
+    def __init__(self):
+        pass
+
     def get_two_short_notation(self, input_cards):
         card1 = input_cards[0][0]
         card2 = input_cards[1][0]
         suited_str = 's' if input_cards[0][1] == input_cards[1][1] else 'o'
         return card1 + card2 + suited_str, card2 + card1 + suited_str
 
-    def get_opponent_allowed_cards_list(self, opponent_call_probability, logger):
+    def get_opponent_allowed_cards_list(self, opponent_ranges):
         self.preflop_equities = {
             "23o": 0.354,
             "24o": 0.36233333333333334,
@@ -195,11 +198,11 @@ class MonteCarlo(object):
         peflop_equity_list = sorted(self.preflop_equities.items(), key=operator.itemgetter(1))
 
         counts = len(peflop_equity_list)
-        take_top = int(counts * opponent_call_probability)
+        take_top = int(counts * opponent_ranges)
         allowed = set(list(peflop_equity_list)[-take_top:])
         allowed_cards = [i[0] for i in allowed]
         # logger.debug("Allowed range: "+str(allowed_cards))
-        return allowed_cards
+        return set(allowed_cards)
 
     def eval_best_hand(self, hands):  # evaluate which hand is best
         scores = [(i, self.calc_score(hand)) for i, hand in enumerate(hands)]
@@ -357,7 +360,13 @@ class MonteCarlo(object):
 
     def run_montecarlo(self, logger, original_player_card_list, original_table_card_list, player_amount, ui, maxRuns,
                        timeout, ghost_cards, opponent_range=1):
-        opponent_allowed_cards = self.get_opponent_allowed_cards_list(opponent_range, logger)
+
+        if type(opponent_range) == float or type(opponent_range) == int:
+            opponent_allowed_cards = self.get_opponent_allowed_cards_list(opponent_range)
+            logger.info('Preflop reverse tables for ranges: NO')
+        elif type(opponent_range == set):
+            logger.info('Preflop reverse tables for ranges: YES')
+            opponent_allowed_cards = opponent_range
 
         winnerCardTypeList = []
         wins = 0
@@ -480,15 +489,6 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
     else:
         maxRuns = 7500
 
-    ui_action_and_signals.signal_status.emit("Running Monte Carlo: " + str(maxRuns))
-    logger.debug("Running Monte Carlo")
-    t.montecarlo_timeout = float(config['montecarlo_timeout'])
-    timeout = t.mt_tm + t.montecarlo_timeout
-    m = MonteCarlo()
-    logger.debug("Opponent call range: " + str(opponent_range))
-    logger.debug("maxRuns: " + str(maxRuns))
-    logger.debug("Player amount: " + str(t.assumedPlayers))
-
     if t.gameStage != 'PreFlop':
         try:
             for abs_pos in range(5):
@@ -497,8 +497,21 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
                     ranges = preflop_state.get_rangecards_from_sheetname(abs_pos, sheet_name, t, h)
                     logger.debug(str(ranges))
 
+                    # the last player's range will be relevant
+                    if t.isHeadsUp==True:
+                        opponent_range = ranges
+
         except Exception as e:
             logger.error("Opponent reverse table failed: " + str(e))
+
+    ui_action_and_signals.signal_status.emit("Running Monte Carlo: " + str(maxRuns))
+    logger.debug("Running Monte Carlo")
+    t.montecarlo_timeout = float(config['montecarlo_timeout'])
+    timeout = t.mt_tm + t.montecarlo_timeout
+    m = MonteCarlo()
+    logger.debug("Opponent range for montecarlo: " + str(opponent_range))
+    logger.debug("maxRuns: " + str(maxRuns))
+    logger.debug("Player amount: " + str(t.assumedPlayers))
 
     m.run_montecarlo(logger, t.PlayerCardList_and_others, t.cardsOnTable, int(t.assumedPlayers), ui, maxRuns=maxRuns,
                      ghost_cards=ghost_cards, timeout=timeout, opponent_range=opponent_range)
