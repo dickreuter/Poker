@@ -60,20 +60,23 @@ class CurrentHandPreflopState:
     def get_reverse_sheetname(self, abs_pos, t):
         # if the player is situated after the bot, consider the bot's decision in the reverse table
         utg_position = t.get_utg_from_abs_pos(abs_pos, t.dealer_position)
+        preflop_raiser_positions=copy(self.preflop_raiser_positions)
+        preflop_caller_positions=copy(self.preflop_caller_positions)
+
         if utg_position > self.bot_preflop_position_utg:
             if self.bot_preflop_decision == 'Call' or self.bot_preflop_decision == 'Call2':
-                self.preflop_caller_positions.append(t.position_utg_plus + 1)
+                preflop_caller_positions.append(t.position_utg_plus + 1)
             if self.bot_preflop_decision == 'Bet' \
                     or self.bot_preflop_decision == 'BetPlus' \
                     or self.bot_preflop_decision == 'Bet half pot' \
                     or self.bot_preflop_decision == 'Bet pot' \
                     or self.bot_preflop_decision == 'Bet Bluff':
-                self.preflop_raiser_positions.append(t.position_utg_plus + 1)
+                preflop_raiser_positions.append(t.position_utg_plus + 1)
 
         sheet_name = str(utg_position + 1)
 
-        sheet_name += ''.join(['R' + str(x) for x in sorted(self.preflop_raiser_positions)])
-        sheet_name += ''.join(['C' + str(x) for x in sorted(self.preflop_caller_positions)])
+        sheet_name += ''.join(['C' + str(x) for x in sorted(preflop_caller_positions)])
+        sheet_name += ''.join(['R' + str(x) for x in sorted(preflop_raiser_positions)])
 
         self.logger.info('Reverse sheetname: ' + sheet_name)
         return sheet_name
