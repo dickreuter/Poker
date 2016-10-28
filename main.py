@@ -15,7 +15,7 @@ from tools.mongo_manager import StrategyHandler,UpdateChecker,GameLogger
 from table_analysers.table_screen_based import TableScreenBased
 from decisionmaker.current_hand_memory import History, CurrentHandPreflopState
 
-version = 1.91
+version = 1.92
 
 
 class ThreadManager(threading.Thread):
@@ -80,6 +80,7 @@ class ThreadManager(threading.Thread):
 
                 ready = t.take_screenshot(True, p) and \
                         t.get_top_left_corner(p) and \
+                        t.get_bot_pot(p) and \
                         t.check_for_captcha(mouse) and \
                         t.get_lost_everything(h, t, p) and \
                         t.check_for_imback(mouse) and \

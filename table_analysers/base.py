@@ -104,7 +104,7 @@ class Table(object):
         template = Image.open(name)
         self.dealer = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + self.tbl[0:2] + "/betbutton.png"
+        name = "pics/" + self.tbl[0:2] + "/bet.png"
         template = Image.open(name)
         self.betbutton = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
