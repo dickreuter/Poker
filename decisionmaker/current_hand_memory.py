@@ -89,7 +89,7 @@ class CurrentHandPreflopState:
             column = 'Call'
 
         if sheet_name not in h.preflop_sheet:
-            self.logger.warning('Reverse sheetname not found: ' + sheet_name + ". Using backup sheet " + backup_sheet)
+            self.logger.warning('Reverse sheetname not found: ' + sheet_name + '. Using backup sheet 1')
             sheet_name = '1'
 
         ranges_call = set(h.preflop_sheet[sheet_name][h.preflop_sheet[sheet_name]['Call'] > 0.5]['Hand'].tolist())
