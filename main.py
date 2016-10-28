@@ -15,7 +15,7 @@ from tools.mongo_manager import StrategyHandler,UpdateChecker,GameLogger
 from table_analysers.table_screen_based import TableScreenBased
 from decisionmaker.current_hand_memory import History, CurrentHandPreflopState
 
-version = 1.92
+version = 1.921
 
 
 class ThreadManager(threading.Thread):
@@ -108,7 +108,7 @@ class ThreadManager(threading.Thread):
 
             if not self.gui_signals.pause_thread:
                 config = ConfigObj("config.ini")
-                run_montecarlo_wrapper(p, self.gui_signals, config, ui, t, self.game_logger, preflop_state)
+                run_montecarlo_wrapper(p, self.gui_signals, config, ui, t, self.game_logger, preflop_state, h)
                 d = Decision(t, h, p, self.logger, self.game_logger)
                 d.make_decision(t, h, p, self.logger, self.game_logger)
                 if self.gui_signals.exit_thread: sys.exit()

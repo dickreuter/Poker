@@ -88,6 +88,11 @@ class CurrentHandPreflopState:
         else:
             column = 'Call'
 
-        ranges = set(h.preflop_sheet[sheet_name][h.preflop_sheet[sheet_name][column]>0.5]['Hand'].tolist())
+        if sheet_name in h.preflop_sheet:
+            ranges = set(h.preflop_sheet[sheet_name][h.preflop_sheet[sheet_name][column]>0.5]['Hand'].tolist())
+        else:
+            backup_sheet = '6'
+            self.logger.warning('Reverse sheetname not found: ' + sheet_name+". Using backup sheet "+backup_sheet)
+            ranges = set(h.preflop_sheet[backup_sheet][h.preflop_sheet[backup_sheet][column] > 0.5]['Hand'].tolist())
 
         return ranges
