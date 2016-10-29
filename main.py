@@ -1,17 +1,18 @@
 import matplotlib
+
 matplotlib.use('Qt5Agg')
 import pytesseract
 import threading
 import datetime
 import sys
 from PIL import Image
-from PyQt5 import QtWidgets,QtGui
+from PyQt5 import QtWidgets, QtGui
 
 from decisionmaker.decisionmaker import *
 from tools.mouse_mover import *
 from gui.gui_qt_ui import Ui_Pokerbot
 from gui.gui_qt_logic import UIActionAndSignals
-from tools.mongo_manager import StrategyHandler,UpdateChecker,GameLogger
+from tools.mongo_manager import StrategyHandler, UpdateChecker, GameLogger
 from table_analysers.table_screen_based import TableScreenBased
 from decisionmaker.current_hand_memory import History, CurrentHandPreflopState
 
@@ -29,7 +30,7 @@ class ThreadManager(threading.Thread):
         self.game_logger = GameLogger()
 
     def update_most_gui_items(self, p, t, d, h, gui_signals):
-        gui_signals.signal_decision.emit(str(d.decision + " " + d.preflop_sheet_name))
+        gui_signals.signal_decision.emit(str(d.decision + " " + t.preflop_sheet_name))
         gui_signals.signal_status.emit(d.decision)
 
         gui_signals.signal_lcd_number_update.emit('equity', np.round(t.equity * 100, 2))
@@ -59,13 +60,12 @@ class ThreadManager(threading.Thread):
         preflop_url = u.get_preflop_sheet_url()
         h.preflop_sheet = pd.read_excel(preflop_url, sheetname=None)
 
-
         self.game_logger.clean_database()
 
         p = StrategyHandler()
         p.read_strategy()
 
-        preflop_state=CurrentHandPreflopState()
+        preflop_state = CurrentHandPreflopState()
 
         while True:
             if self.gui_signals.pause_thread:
@@ -158,9 +158,10 @@ class ThreadManager(threading.Thread):
                 h.previous_decision = d.decision
                 h.lastRoundGameID = h.GameID
                 h.last_round_bluff = False if t.currentBluff == 0 else True
-                if t.gameStage=='PreFlop':
-                    preflop_state.update_values(t,d.decision,h)
+                if t.gameStage == 'PreFlop':
+                    preflop_state.update_values(t, d.decision, h)
                 self.logger.info("=========== round end ===========")
+
 
 # ==== MAIN PROGRAM =====
 if __name__ == '__main__':
