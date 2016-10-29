@@ -332,13 +332,14 @@ class Table(object):
         first_caller_utg = self.get_utg_from_abs_pos(first_caller, self.dealer_position)
 
         # check for callers between bot and first raiser. If so, first raiser becomes second raiser and caller becomes first raiser
-        for n in range(first_raiser):
-            if self.other_players[n]['status'] == 1:
-                second_raiser = first_raiser
-                first_raiser = n
-                first_raiser_utg = self.get_utg_from_abs_pos(first_raiser, self.dealer_position)
-                second_raiser_utg = self.get_utg_from_abs_pos(second_raiser, self.dealer_position)
-                break
+        if not np.isnan(first_raiser):
+            for n in range(first_raiser):
+                if self.other_players[n]['status'] == 1:
+                    second_raiser = first_raiser
+                    first_raiser = n
+                    first_raiser_utg = self.get_utg_from_abs_pos(first_raiser, self.dealer_position)
+                    second_raiser_utg = self.get_utg_from_abs_pos(second_raiser, self.dealer_position)
+                    break
 
         self.logger.debug("First raiser abs: " + str(first_raiser))
         self.logger.info("First raiser utg+" + str(first_raiser_utg))

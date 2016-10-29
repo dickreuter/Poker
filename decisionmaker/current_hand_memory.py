@@ -79,8 +79,19 @@ class CurrentHandPreflopState:
         if utg_position in preflop_raiser_positions: preflop_raiser_positions.remove(utg_position)
         if utg_position in preflop_caller_positions: preflop_caller_positions.remove(utg_position)
 
-        sheet_name += ''.join(['R' + str(x+1) for x in sorted(preflop_raiser_positions)])
-        sheet_name += ''.join(['C' + str(x+1) for x in sorted(preflop_caller_positions)])
+        second_round = False
+        try:
+            second_round = True if utg_position < preflop_raiser_positions[0] else False
+        except:
+            pass
+
+        if second_round:
+            # second round reverse table'
+            self.logger.info('Using second round reverse table')
+            sheet_name = '12R4C5'
+        else:
+            sheet_name += ''.join(['R' + str(x + 1) for x in sorted(preflop_raiser_positions)])
+            sheet_name += ''.join(['C' + str(x + 1) for x in sorted(preflop_caller_positions)])
 
         self.logger.info('Reverse sheetname: ' + sheet_name)
         return sheet_name
