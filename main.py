@@ -30,7 +30,9 @@ class ThreadManager(threading.Thread):
         self.game_logger = GameLogger()
 
     def update_most_gui_items(self, p, t, d, h, gui_signals):
-        gui_signals.signal_decision.emit(str(d.decision + " " + t.preflop_sheet_name))
+        try: sheet_name=t.preflop_sheet_name
+        except: sheet_name=''
+        gui_signals.signal_decision.emit(str(d.decision + " " + sheet_name))
         gui_signals.signal_status.emit(d.decision)
 
         gui_signals.signal_lcd_number_update.emit('equity', np.round(t.equity * 100, 2))
