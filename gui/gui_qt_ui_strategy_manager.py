@@ -1785,7 +1785,7 @@ class Ui_editor_form(object):
         self.Strategy.setToolTip(_translate("editor_form", "Select a strategy you want to edit"))
         self.pushButton_save_current_strategy.setToolTip(_translate("editor_form", "You can only save strategies you have created yourself. Otherwise save it under a new name."))
         self.pushButton_save_current_strategy.setText(_translate("editor_form", "Save"))
-        self.preflop_override.setText(_translate("editor_form", "Override with Pokersnowie table_analysers"))
+        self.preflop_override.setText(_translate("editor_form", "Override with Pokersnowie table"))
         self.groupBox_28.setTitle(_translate("editor_form", "Calling and betting curves: maximum sizes depending on equity"))
         self.pushButton_update1.setText(_translate("editor_form", "Update Graph"))
         self.groupBox_29.setTitle(_translate("editor_form", "Calling"))

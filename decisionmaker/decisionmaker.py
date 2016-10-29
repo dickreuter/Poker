@@ -204,8 +204,8 @@ class Decision(DecisionBase):
             elif crd1[0:2] in handlist:
                 found_card=crd1[0:2]
 
-            logger.debug("Looking in table_analysers for: " + crd1+", "+ crd2+", "+ crd1[0:2])
-            logger.debug("Found in table_analysers: "+found_card)
+            logger.debug("Looking in preflop table for: " + crd1+", "+ crd2+", "+ crd1[0:2])
+            logger.debug("Found in preflop table: "+found_card)
 
             if found_card!='':
                 call_probability=sheet[sheet['Hand']==found_card]['Call'].iloc[0]
@@ -217,24 +217,24 @@ class Decision(DecisionBase):
 
                 if rnd < call_probability:
                     self.decision = DecisionTypes.call
-                    logger.info('Preflop calling activated from table_analysers')
+                    logger.info('Preflop calling activated from preflop table')
 
                 elif rnd >= call_probability and rnd <= bet_probability+call_probability:
                     if sheet_name in ['1','2','3','4']:
                         self.decision = DecisionTypes.bet3
-                        logger.info('Preflop betting 3 activated from table_analysers')
+                        logger.info('Preflop betting 3 activated from preflop table')
                     else:
                         self.decision = DecisionTypes.bet4
-                        logger.info('Preflop betting 4 activated from table_analysers')
+                        logger.info('Preflop betting 4 activated from preflop table')
                         # 1, 2, 3, 4 = half pot
                         # 5 = pot and the
                         # rest POT
                 else:
                     self.decision = DecisionTypes.fold
-                    logger.info('Preflop folding from table_analysers')
+                    logger.info('Preflop folding from preflop table')
             else:
                 self.decision = DecisionTypes.fold
-                logger.info('Preflop folding, hands not found in table_analysers')
+                logger.info('Preflop folding, hands not found in preflop table')
 
             t.currentBluff=0
             try:

@@ -375,7 +375,7 @@ class Table(object):
                 self.logger.warning("Using backup round 2 sheetname R1R2 because sheet was not found: " + round2_sheetname)
                 sheet_name = 'R1R2'
         if not np.isnan(second_raiser_utg):
-            self.logger.warning("Using second raiser backup table_analysers R1R2")
+            self.logger.warning("Using second raiser backup preflop_table R1R2")
             sheet_name = 'R1R2'
         if h.round_number == 2:
             sheet_name = 'R1R2R1A2'

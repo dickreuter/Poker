@@ -227,7 +227,7 @@ class TableScreenBased(Table):
 
         self.logger.info("---")
         self.logger.info("Gamestage: " + self.gameStage)
-        self.logger.info("Cards on table_analysers: " + str(self.cardsOnTable))
+        self.logger.info("Cards on table: " + str(self.cardsOnTable))
         self.logger.info("---")
 
         self.max_X = 1 if self.gameStage != 'PreFlop' else 0.86

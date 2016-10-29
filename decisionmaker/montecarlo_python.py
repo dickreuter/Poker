@@ -319,7 +319,7 @@ class MonteCarlo(object):
                                     opponent_allowed_cards):
         Players = []
         CardsOnTable = []
-        knownPlayers = 0  # for potential collusion if more than one bot is running on the same table_analysers
+        knownPlayers = 0  # for potential collusion if more than one bot is running on the same table
 
         for player_cards in player_card_list:
             first_player = []
@@ -330,7 +330,7 @@ class MonteCarlo(object):
             knownPlayers += 1  # my own cards are known
 
         for c in table_card_list:
-            CardsOnTable.append(deck.pop(deck.index(c)))  # remove cards that are on the table_analysers from the deck
+            CardsOnTable.append(deck.pop(deck.index(c)))  # remove cards that are on the table from the deck
 
         n = 0
         while True:
@@ -496,7 +496,7 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
                 if t.other_players[abs_pos]['status'] == 1:
                     sheet_name = preflop_state.get_reverse_sheetname(abs_pos, t)
                     ranges = preflop_state.get_rangecards_from_sheetname(abs_pos, sheet_name, t, h)
-                    logger.debug("Ranges from reverse table: "+str(ranges))
+                    #logger.debug("Ranges from reverse table: "+str(ranges))
 
                     # the last player's range will be relevant
                     if t.isHeadsUp==True:
@@ -528,7 +528,7 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
         elif crd1[0:2] in m.preflop_equities:
             m.equity = m.preflop_equities[crd1[0:2]]
         else:
-            logger.warning("Preflop not found in table_analysers: " + str(crd1))
+            logger.warning("Preflop equity not found in lookup table: " + str(crd1))
 
     t.equity = np.round(m.equity, 3)
     t.winnerCardTypeList = m.winnerCardTypeList
