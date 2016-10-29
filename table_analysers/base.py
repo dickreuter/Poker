@@ -310,21 +310,16 @@ class Table(object):
                         if self.other_players[i]['pot'] > first_raiser_pot:
                             second_raiser = int(i)
 
-        self.logger.debug("First raiser abs: " + str(first_raiser))
-        first_raiser_utg = (first_raiser - self.dealer_position + 4) % 6
-        self.logger.info("First raiser utg+" + str(first_raiser_utg))
+        first_raiser_utg = self.get_utg_from_abs_pos(first_raiser, self.dealer_position)
         highest_raiser = np.nanmax([first_raiser, second_raiser])
-
-        self.logger.debug("Second raiser abs: " + str(second_raiser))
-        second_raiser_utg = (second_raiser - self.dealer_position + 4) % 6
-        self.logger.info("Highest raiser abs: " + str(highest_raiser))
+        second_raiser_utg = self.get_utg_from_abs_pos(second_raiser, self.dealer_position)
 
         first_possible_caller = int(
             self.big_blind_position_abs_op + 1 if np.isnan(highest_raiser) else highest_raiser + 1)
         self.logger.debug("First possible potential caller is: " + str(first_possible_caller))
 
         # get first caller after raise in preflop
-        for n in range(first_possible_caller,5):  # n is absolute position of other player, 0 is player after bot
+        for n in range(first_possible_caller, 5):  # n is absolute position of other player, 0 is player after bot
             self.logger.debug(
                 "Go through pots to find caller abs: " + str(n) + ": " + str(self.other_players[n]['pot']))
             if self.other_players[n]['pot'] != '':  # check if not empty (otherwise can't convert string)
@@ -334,8 +329,22 @@ class Table(object):
                     first_caller = int(n)
                     break
 
+        first_caller_utg = self.get_utg_from_abs_pos(first_caller, self.dealer_position)
+
+        # check for callers between bot and first raiser. If so, first raiser becomes second raiser and caller becomes first raiser
+        for n in range(first_raiser):
+            if self.other_players[n]['status'] == 1:
+                second_raiser = first_raiser
+                first_raiser = n
+                first_raiser_utg = self.get_utg_from_abs_pos(first_raiser, self.dealer_position)
+                second_raiser_utg = self.get_utg_from_abs_pos(second_raiser, self.dealer_position)
+                break
+
+        self.logger.debug("First raiser abs: " + str(first_raiser))
+        self.logger.info("First raiser utg+" + str(first_raiser_utg))
+        self.logger.debug("Second raiser abs: " + str(second_raiser))
+        self.logger.info("Highest raiser abs: " + str(highest_raiser))
         self.logger.debug("First caller abs: " + str(first_caller))
-        first_caller_utg = (first_caller - self.dealer_position + 4) % 6
         self.logger.info("First caller utg+" + str(first_caller_utg))
 
         return first_raiser, second_raiser, first_caller, first_raiser_utg, second_raiser_utg, first_caller_utg
@@ -372,7 +381,8 @@ class Table(object):
             if round2_sheetname in h.preflop_sheet:
                 sheet_name = round2_sheetname
             else:
-                self.logger.warning("Using backup round 2 sheetname R1R2 because sheet was not found: " + round2_sheetname)
+                self.logger.warning(
+                    "Using backup round 2 sheetname R1R2 because sheet was not found: " + round2_sheetname)
                 sheet_name = 'R1R2'
         if not np.isnan(second_raiser_utg):
             self.logger.warning("Using second raiser backup preflop_table R1R2")

@@ -31,7 +31,7 @@ if __name__ == '__main__':
                     print("--- %s seconds ---" % (time.time() - start_time))
                     equity = Simulation.equity  # considering draws as wins
 
-                    suited_str='s' if suit1==suits[0] else 'o'
+                    suited_str='S' if suit1==suits[0] else 'O'
                     print (my_cards[0][0][0]+my_cards[0][1][0]+suited_str+": "+str(equity))
                     equity_dict[my_cards[0][0][0]+my_cards[0][1][0]+suited_str]=equity
 
