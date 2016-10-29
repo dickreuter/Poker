@@ -177,6 +177,7 @@ if __name__ == '__main__':
 
     def my_exception_hook(exctype, value, traceback):
         # Print the error and traceback
+        logger = debug_logger().start_logger('exception_hook')
         print(exctype, value, traceback)
         logger.error(str(exctype))
         logger.error(str(value))

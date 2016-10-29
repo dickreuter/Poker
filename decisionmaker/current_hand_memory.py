@@ -81,7 +81,12 @@ class CurrentHandPreflopState:
 
         second_round = False
         try:
-            second_round = True if utg_position < preflop_raiser_positions[0] else False
+            second_round = True if utg_position < preflop_raiser_positions[0] else second_round
+        except:
+            pass
+
+        try:
+            second_round = True if utg_position < preflop_raiser_positions[1] else second_round
         except:
             pass
 
