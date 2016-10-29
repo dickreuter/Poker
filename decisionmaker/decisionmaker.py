@@ -178,6 +178,7 @@ class Decision(DecisionBase):
             sheet_name=t.derive_preflop_sheet_name(t,h, t.first_raiser_utg, t.first_caller_utg, t.second_raiser_utg)
 
             logger.info("Sheet name: "+sheet_name)
+            logger.critical("Sheet name: " + sheet_name)
             excel_file = h.preflop_sheet
             info_sheet = excel_file['Info']
             sheet_version=info_sheet['Version'].iloc[0]

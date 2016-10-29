@@ -444,6 +444,7 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
                     break
             n = t.other_players[i]['utg_position']
             logger.info("Opponent utg position: " + str(n))
+            logger.critical("Opponent utg position: " + str(n)) #i just make a duplicate of log and save it in critical, which will be saved in test.log
             opponent_range = float(p.selected_strategy['range_utg' + str(n)])
         else:
             opponent_range = float(p.selected_strategy['range_multiple_players'])
@@ -458,6 +459,7 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
                     break
             n = t.other_players[i]['utg_position']
             logger.info("Opponent utg position: " + str(n))
+            logger.critical("Opponent utg position: " + str(n))
             opponent_range = float(p.selected_strategy['range_utg' + str(n)])
         else:
             opponent_range = float(p.selected_strategy['range_multiple_players'])

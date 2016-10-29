@@ -136,6 +136,7 @@ class ThreadManager(threading.Thread):
 
                 filename = str(h.GameID) + "_" + str(t.gameStage) + "_" + str(h.round_number) + ".png"
                 self.logger.debug("Saving screenshot: " + filename)
+                self.logger.critical("Saving screenshot: " + filename)
                 pil_image = t.crop_image(t.entireScreenPIL, t.tlc[0], t.tlc[1], t.tlc[0] + 950, t.tlc[1] + 650)
                 pil_image.save("log/screenshots/" + filename)
 
@@ -161,6 +162,7 @@ class ThreadManager(threading.Thread):
                 if t.gameStage=='PreFlop':
                     preflop_state.update_values(t,d.decision,h)
                 self.logger.info("=========== round end ===========")
+                self.logger.critical("=========== round end ===========")
 
 # ==== MAIN PROGRAM =====
 if __name__ == '__main__':
