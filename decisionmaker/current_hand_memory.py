@@ -83,6 +83,7 @@ class CurrentHandPreflopState:
         sheet_name += ''.join(['C' + str(x+1) for x in sorted(preflop_caller_positions)])
 
         self.logger.info('Reverse sheetname: ' + sheet_name)
+        self.logger.critical('Reverse sheetname: ' + sheet_name)
         return sheet_name
 
     def get_rangecards_from_sheetname(self, abs_pos, sheet_name, t, h):
@@ -96,7 +97,9 @@ class CurrentHandPreflopState:
             sheet_name = sheet_name[0]
             if sheet_name == '6': sheet_name = '5'
             self.logger.warning('Using backup reverse sheet: ' + sheet_name)
-
+            self.logger.warning('Reverse sheetname not found: ' + sheet_name + '. Using backup sheet 1')
+            self.logger.criticl('Reverse sheetname not found: ' + sheet_name + '. Using backup sheet 1')
+            sheet_name = '1'
         ranges_call = h.preflop_sheet[sheet_name][h.preflop_sheet[sheet_name]['Call'] > 0.5]['Hand'].tolist()
         ranges_raise = h.preflop_sheet[sheet_name][h.preflop_sheet[sheet_name]['Raise'] > 0.5]['Hand'].tolist()
 

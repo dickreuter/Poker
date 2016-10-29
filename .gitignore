@@ -11,3 +11,9 @@
 config.ini
 **/__pycache__
 *.pyc
+/log/screenshots/*
+screenshot_vbox.png
+sheet_not_found.png
+/log/*.png
+/log/pokerprogram.log.*
+/log/*.log

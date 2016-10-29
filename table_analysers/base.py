@@ -369,6 +369,7 @@ class Table(object):
             round2_sheetname = str(t.position_utg_plus + 1) + "2" + str(first_raiser_string) + str(
                 first_raiser_number) + str(first_caller_string) + str(first_caller_number)
             self.logger.info("Round 2 sheetname: " + round2_sheetname)
+            self.logger.critical("Round 2 sheetname: " + round2_sheetname)
             if round2_sheetname in h.preflop_sheet:
                 sheet_name = round2_sheetname
             else:
