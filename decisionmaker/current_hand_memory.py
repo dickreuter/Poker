@@ -76,8 +76,11 @@ class CurrentHandPreflopState:
 
         sheet_name = str(utg_position + 1)
 
-        sheet_name += ''.join(['R' + str(x) for x in sorted(preflop_raiser_positions)])
-        sheet_name += ''.join(['C' + str(x) for x in sorted(preflop_caller_positions)])
+        if utg_position in preflop_raiser_positions: preflop_raiser_positions.remove(utg_position)
+        if utg_position in preflop_caller_positions: preflop_caller_positions.remove(utg_position)
+
+        sheet_name += ''.join(['R' + str(x+1) for x in sorted(preflop_raiser_positions)])
+        sheet_name += ''.join(['C' + str(x+1) for x in sorted(preflop_raiser_positions)])
 
         self.logger.info('Reverse sheetname: ' + sheet_name)
         return sheet_name
@@ -89,8 +92,10 @@ class CurrentHandPreflopState:
             column = 'Call'
 
         if sheet_name not in h.preflop_sheet:
-            self.logger.warning('Reverse sheetname not found: ' + sheet_name + '. Using backup sheet 1')
-            sheet_name = '1'
+            self.logger.warning('Reverse sheetname not found: ' + sheet_name)
+            sheet_name = sheet_name[0]
+            if sheet_name == '6': sheet_name = '5'
+            self.logger.warning('Using backup reverse sheet: ' + sheet_name)
 
         ranges_call = h.preflop_sheet[sheet_name][h.preflop_sheet[sheet_name]['Call'] > 0.5]['Hand'].tolist()
         ranges_raise = h.preflop_sheet[sheet_name][h.preflop_sheet[sheet_name]['Raise'] > 0.5]['Hand'].tolist()
