@@ -478,12 +478,12 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
             winsound.Beep(1000, 100)
             if not collusion_player_dropped_out:
                 t.PlayerCardList_and_others.append(collusion_cards)
-                print("COLLUSION FOUND")
+                logger.info("Collusion found, player still in game.")
             elif collusion_player_dropped_out:
-                print("COLLUSION FOUND, but player dropped out")
+                logger.info("COllusion found, but player dropped out.")
                 ghost_cards = collusion_cards
         else:
-            print("NO COLLUSION FOUND")
+            logger.debug("No collusion found")
 
     if t.gameStage == "PreFlop":
         maxRuns = 1000
