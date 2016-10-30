@@ -614,7 +614,7 @@ class TableScreenBased(Table):
         self.logger.info("Final bet value: " + str(self.currentBetValue))
         return True
 
-    def get_lost_everything(self, h, t, p):
+    def get_lost_everything(self, h, t, p, gui_signals):
         if self.tbl == 'SN': return True
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
@@ -627,7 +627,17 @@ class TableScreenBased(Table):
             self.game_logger.mark_last_game(t, h, p)
             self.gui_signals.signal_status.emit("Everything is lost. Last game has been marked.")
             self.gui_signals.signal_progressbar_reset.emit()
+            self.logger.warning("Game over")
             # user_input = input("Press Enter for exit ")
+            gui_signals.signal_curve_chart_update1.emit(h.histEquity, h.histMinCall, h.histMinBet, t.equity,
+                                                        t.minCall, t.minBet,
+                                                        'bo',
+                                                        'ro')
+
+            gui_signals.signal_curve_chart_update2.emit(t.power1, t.power2, t.minEquityCall, t.minEquityBet,
+                                                        t.smallBlind, t.bigBlind,
+                                                        t.maxValue,
+                                                        t.maxEquityCall, t.max_X, t.maxEquityBet)
             sys.exit()
         else:
             return True

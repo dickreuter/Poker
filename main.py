@@ -84,7 +84,7 @@ class ThreadManager(threading.Thread):
                 ready = t.take_screenshot(True, p) and \
                         t.get_top_left_corner(p) and \
                         t.check_for_captcha(mouse) and \
-                        t.get_lost_everything(h, t, p) and \
+                        t.get_lost_everything(h, t, p, gui_signals) and \
                         t.check_for_imback(mouse) and \
                         t.get_my_funds(h, p) and \
                         t.get_my_cards(h) and \
