@@ -13,7 +13,7 @@ class GeneticAlgorithm(object):
         p = StrategyHandler()
         p.read_strategy()
         p_name = p.current_strategy
-        logger.debug("Strategy to analyse: "+p_name)
+        self.logger.debug("Strategy to analyse: "+p_name)
         self.load_log(p_name, L)
         self.improve_strategy(L, p)
         if (self.modified and write_update==True) or write_update=="Force":

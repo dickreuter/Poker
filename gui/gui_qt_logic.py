@@ -317,7 +317,7 @@ class UIActionAndSignals(QObject):
 
     def open_genetic_algorithm(self, p, l):
         self.ui.button_genetic_algorithm.setEnabled(False)
-        g = GeneticAlgorithm(False, self.logger, l)
+        g = GeneticAlgorithm(False, l)
         r = g.get_results()
 
         self.genetic_algorithm_dialog = QtWidgets.QDialog()
