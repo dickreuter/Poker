@@ -155,3 +155,18 @@ class TestDecision(TestCase):
         self.assertEqual(t.first_raiser_utg, 4)
         self.assertEqual(np.isnan(t.second_raiser_utg), True)
         self.assertEqual(t.preflop_sheet_name, '6R5')
+
+
+    def incorrect_preflop_table2(self):
+        t, p, gui_signals, h, logger = init_table('tests/screenshots/3Ts.png', strategy='Snowie3')
+        l = MagicMock()
+        t.totalPotValue = 0.5
+        t.equity = 0.5
+        t.checkButton = False
+        d = Decision(t, h, p, logger, l)
+        t.isHeadsUp = True
+        t.gameStage = "PreFlop"
+        d.__init__(t, h, p, logger, l)
+        d.preflop_override(t, logger, h, p)
+
+        self.assertEqual(t.preflop_sheet_name, '6R1C2')
