@@ -296,13 +296,10 @@ class Table(object):
         first_caller = np.nan
 
         for n in range(5):  # n is absolute position of other player, 0 is player after bot
-            i = (
-                    self.dealer_position + n + 3 - 2) % 5  # less myself as 0 is now first other player to my left and no longer myself
-            self.logger.debug(
-                "Go through pots to find raiser abs: " + str(i) + ": " + str(self.other_players[i]['pot']))
+            i = (self.dealer_position + n + 3 - 2) % 5  # less myself as 0 is now first other player to my left and no longer myself
+            self.logger.debug("Go through pots to find raiser abs: {0} {1}".format(i, self.other_players[i]['pot']))
             if self.other_players[i]['pot'] != '':  # check if not empty (otherwise can't convert string)
-                if self.other_players[i][
-                    'pot'] > reference_pot:  # reference pot is bb for first round and bot for second round
+                if self.other_players[i]['pot'] > reference_pot:  # reference pot is bb for first round and bot for second round
                     if np.isnan(first_raiser):
                         first_raiser = int(i)
                         first_raiser_pot = self.other_players[i]['pot']
@@ -332,8 +329,11 @@ class Table(object):
         first_caller_utg = self.get_utg_from_abs_pos(first_caller, self.dealer_position)
 
         # check for callers between bot and first raiser. If so, first raiser becomes second raiser and caller becomes first raiser
+        first_possible_caller=0
+        if self.position_utg_plus==3: first_possible_caller=1
+        if self.position_utg_plus == 4: first_possible_caller = 2
         if not np.isnan(first_raiser):
-            for n in range(first_raiser):
+            for n in range(first_possible_caller,first_raiser):
                 if self.other_players[n]['status'] == 1:
                     second_raiser = first_raiser
                     first_raiser = n
