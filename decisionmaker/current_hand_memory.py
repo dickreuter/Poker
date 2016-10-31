@@ -66,13 +66,13 @@ class CurrentHandPreflopState:
 
         if utg_position > self.bot_preflop_position_utg:
             if self.bot_preflop_decision == 'Call' or self.bot_preflop_decision == 'Call2':
-                preflop_caller_positions.append(t.position_utg_plus + 1)
+                preflop_caller_positions.append(t.position_utg_plus)
             if self.bot_preflop_decision == 'Bet' \
                     or self.bot_preflop_decision == 'BetPlus' \
                     or self.bot_preflop_decision == 'Bet half pot' \
                     or self.bot_preflop_decision == 'Bet pot' \
                     or self.bot_preflop_decision == 'Bet Bluff':
-                preflop_raiser_positions.append(t.position_utg_plus + 1)
+                preflop_raiser_positions.append(t.position_utg_plus)
 
         sheet_name = str(utg_position + 1)
 
