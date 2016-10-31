@@ -92,7 +92,7 @@ class TestReverseTables(TestCase):
             if t.other_players[abs_pos]['status'] == 1:
                 sheet_name = preflop_state.get_reverse_sheetname(abs_pos, t)
 
-        self.assertEqual('R1R2', sheet_name)
+        self.assertEqual('12R4C5', sheet_name)
 
     def test_reversetable_88(self):
         strategy = 'Snowie3'

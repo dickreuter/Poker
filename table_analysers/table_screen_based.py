@@ -365,7 +365,7 @@ class TableScreenBased(Table):
             pot_area_image = self.crop_image(self.entireScreenPIL, self.tlc[0] - 20 + fd[0], self.tlc[1] + fd[1] - 20,
                                              self.tlc[0] + fd[2] + 20, self.tlc[1] + fd[3] + 20)
             img = cv2.cvtColor(np.array(pot_area_image), cv2.COLOR_BGR2RGB)
-            count, points, bestfit, minvalue = self.find_template_on_screen(self.smallDollarSign1, img, 0.2)
+            count, points, bestfit, minvalue = self.find_template_on_screen(self.smallDollarSign1, img, 0.1)
             has_small_dollarsign = count > 0
             if has_small_dollarsign:
                 pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1],
