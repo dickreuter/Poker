@@ -103,7 +103,7 @@ class TestDecision(TestCase):
         # self.assertEqual(t.preflop_sheet_name, '12R3')
 
     def test_preflop_call_before_raise(self):
-        t, p, gui_signals, h, logger = init_table('tests/screenshots/1791526_PreFlop_0.png', round_number=0)
+        t, p, gui_signals, h, logger = init_table('tests/screenshots/1791526_PreFlop_0.png', round_number=1)
         p = StrategyHandler()
         p.read_strategy('Pokemon4')
         l = MagicMock()
@@ -170,3 +170,73 @@ class TestDecision(TestCase):
         d.preflop_override(t, logger, h, p)
 
         self.assertEqual(t.preflop_sheet_name, '6R1C2')
+
+    def second_round_with_raiser(self):
+        t, p, gui_signals, h, logger = init_table('tests/screenshots/QQ.png', strategy='Snowie3', round_number=1)
+        l = MagicMock()
+        t.totalPotValue = 0.5
+        t.equity = 0.5
+        t.checkButton = False
+        d = Decision(t, h, p, logger, l)
+        t.isHeadsUp = True
+        t.gameStage = "PreFlop"
+        d.__init__(t, h, p, logger, l)
+        d.preflop_override(t, logger, h, p)
+
+        self.assertEqual(t.preflop_sheet_name, '22R6')
+
+    def first_round_2R1(self):
+        t, p, gui_signals, h, logger = init_table('tests/screenshots/JJ.png', strategy='Snowie3', round_number=0)
+        l = MagicMock()
+        t.totalPotValue = 0.5
+        t.equity = 0.5
+        t.checkButton = False
+        d = Decision(t, h, p, logger, l)
+        t.isHeadsUp = True
+        t.gameStage = "PreFlop"
+        d.__init__(t, h, p, logger, l)
+        d.preflop_override(t, logger, h, p)
+
+        self.assertEqual(t.preflop_sheet_name, '2R1')
+
+    def first_round_4R1(self):
+        t, p, gui_signals, h, logger = init_table('tests/screenshots/AJ.png', strategy='Snowie3', round_number=0)
+        l = MagicMock()
+        t.totalPotValue = 0.5
+        t.equity = 0.5
+        t.checkButton = False
+        d = Decision(t, h, p, logger, l)
+        t.isHeadsUp = True
+        t.gameStage = "PreFlop"
+        d.__init__(t, h, p, logger, l)
+        d.preflop_override(t, logger, h, p)
+
+        self.assertEqual(t.preflop_sheet_name, '4R1')
+
+    def first_round_98h(self):
+        t, p, gui_signals, h, logger = init_table('tests/screenshots/98h.png', strategy='Snowie3', round_number=0)
+        l = MagicMock()
+        t.totalPotValue = 0.5
+        t.equity = 0.5
+        t.checkButton = False
+        d = Decision(t, h, p, logger, l)
+        t.isHeadsUp = True
+        t.gameStage = "PreFlop"
+        d.__init__(t, h, p, logger, l)
+        d.preflop_override(t, logger, h, p)
+
+        self.assertEqual(t.preflop_sheet_name, '4R3')
+
+    def first_round_67s(self):
+        t, p, gui_signals, h, logger = init_table('tests/screenshots/67s.png', strategy='Snowie3', round_number=0)
+        l = MagicMock()
+        t.totalPotValue = 0.5
+        t.equity = 0.5
+        t.checkButton = False
+        d = Decision(t, h, p, logger, l)
+        t.isHeadsUp = True
+        t.gameStage = "PreFlop"
+        d.__init__(t, h, p, logger, l)
+        d.preflop_override(t, logger, h, p)
+
+        self.assertEqual(t.preflop_sheet_name, '3R2')

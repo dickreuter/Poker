@@ -334,7 +334,10 @@ class Table(object):
         if self.position_utg_plus == 4: first_possible_caller = 2
         if not np.isnan(first_raiser):
             for n in range(first_possible_caller,first_raiser):
-                if self.other_players[n]['status'] == 1:
+                if self.other_players[n]['status'] == 1 and \
+                        not(self.other_players[n]['utg_position']==5 and p.selected_strategy['bigBlind']) and \
+                        not (self.other_players[n]['utg_position'] == 4 and p.selected_strategy['smallBlind']) and\
+                        not (self.other_players[n]['pot']==''):
                     second_raiser = first_raiser
                     first_raiser = n
                     first_raiser_utg = self.get_utg_from_abs_pos(first_raiser, self.dealer_position)
