@@ -13,6 +13,7 @@ from gui.setup import *
 from gui.help import *
 from tools.vbox_manager import VirtualBoxController
 from PyQt5.QtWidgets import QMessageBox
+from copy import deepcopy
 
 from decisionmaker.genetic_algorithm import *
 from decisionmaker.curvefitting import *
@@ -71,8 +72,9 @@ class UIActionAndSignals(QObject):
         l = GameLogger()
         l.clean_database()
 
-        p = StrategyHandler()
-        p.read_strategy()
+        self.p = StrategyHandler()
+        self.p.read_strategy()
+        p = self.p
 
         self.pause_thread = True
         self.exit_thread = False
@@ -140,7 +142,6 @@ class UIActionAndSignals(QObject):
             "RiverMinBetEquity": 100,
             "maxPotAdjustment": 100
         }
-        self.p = p
         self.pokersite_types = ['PP', 'PS2', 'SN']
 
         self.ui = ui_main_window
@@ -259,16 +260,17 @@ class UIActionAndSignals(QObject):
         self.update_strategy_analyser(l, p)
 
     def open_strategy_editor(self, p, l):
+        self.p_edited=deepcopy(p)
         self.signal_progressbar_reset.emit()
         self.stragegy_editor_form = QtWidgets.QWidget()
         self.ui_editor = Ui_editor_form()
         self.ui_editor.setupUi(self.stragegy_editor_form)
         self.stragegy_editor_form.show()
 
-        self.curveplot_preflop = CurvePlot(self.ui_editor, self.p, layout='verticalLayout_preflop')
-        self.curveplot_flop = CurvePlot(self.ui_editor, self.p, layout='verticalLayout_flop')
-        self.curveplot_turn = CurvePlot(self.ui_editor, self.p, layout='verticalLayout_turn')
-        self.curveplot_river = CurvePlot(self.ui_editor, self.p, layout='verticalLayout_river')
+        self.curveplot_preflop = CurvePlot(self.ui_editor, self.p_edited, layout='verticalLayout_preflop')
+        self.curveplot_flop = CurvePlot(self.ui_editor, self.p_edited, layout='verticalLayout_flop')
+        self.curveplot_turn = CurvePlot(self.ui_editor, self.p_edited, layout='verticalLayout_turn')
+        self.curveplot_river = CurvePlot(self.ui_editor, self.p_edited, layout='verticalLayout_river')
 
         # self.ui_editor.PreFlopMinCallEquity.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
         # self.ui_editor.PreFlopCallPower.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
@@ -289,17 +291,17 @@ class UIActionAndSignals(QObject):
         # self.ui_editor.RiverBetPower.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
 
         self.ui_editor.pushButton_update1.clicked.connect(
-            lambda: self.update_strategy_editor_graphs(p.current_strategy))
+            lambda: self.update_strategy_editor_graphs(self.p_edited.current_strategy))
         self.ui_editor.pushButton_update2.clicked.connect(
-            lambda: self.update_strategy_editor_graphs(p.current_strategy))
+            lambda: self.update_strategy_editor_graphs(self.p_edited.current_strategy))
         self.ui_editor.pushButton_update3.clicked.connect(
-            lambda: self.update_strategy_editor_graphs(p.current_strategy))
+            lambda: self.update_strategy_editor_graphs(self.p_edited.current_strategy))
         self.ui_editor.pushButton_update4.clicked.connect(
-            lambda: self.update_strategy_editor_graphs(p.current_strategy))
+            lambda: self.update_strategy_editor_graphs(self.p_edited.current_strategy))
 
         self.ui_editor.pokerSite.addItems(self.pokersite_types)
 
-        self.signal_update_strategy_sliders.emit(p.current_strategy)
+        self.signal_update_strategy_sliders.emit(self.p_edited.current_strategy)
         self.ui_editor.Strategy.currentIndexChanged.connect(
             lambda: self.update_strategy_editor_sliders(self.ui_editor.Strategy.currentText()))
         self.ui_editor.pushButton_save_new_strategy.clicked.connect(
@@ -307,7 +309,7 @@ class UIActionAndSignals(QObject):
         self.ui_editor.pushButton_save_current_strategy.clicked.connect(
             lambda: self.save_strategy(self.ui_editor.Strategy.currentText(), True))
 
-        self.playable_list = self.p.get_playable_strategy_list()
+        self.playable_list = self.p_edited.get_playable_strategy_list()
         self.ui_editor.Strategy.addItems(self.playable_list)
         config = ConfigObj("config.ini")
         initial_selection = config['last_strategy']
@@ -540,11 +542,11 @@ class UIActionAndSignals(QObject):
         if (name != "" and name not in self.playable_list) or update:
             strategy_dict = self.update_dictionary(name)
             if update:
-                self.p.update_strategy(strategy_dict)
+                self.p_edited.update_strategy(strategy_dict)
             else:
-                self.p.save_strategy(strategy_dict)
+                self.pp_edited.save_strategy(strategy_dict)
                 self.ui_editor.Strategy.insertItem(0, name)
-                idx = len(self.p.get_playable_strategy_list())
+                idx = len(self.p_edited.get_playable_strategy_list())
                 self.ui_editor.Strategy.setCurrentIndex(0)
                 self.ui.comboBox_current_strategy.insertItem(0, name)
             msg = QMessageBox()
