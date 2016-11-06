@@ -232,12 +232,15 @@ class Table(object):
         try:
             if force_method == 1 or fix_number(lst[0]) == '':
                 lst.append(pytesseract.image_to_string(img_mod, None, False, "-psm 6"))
+                lst.append(pytesseract.image_to_string(img_min, None, False, "-psm 6"))
         except Exception as e:
             self.logger.warning(str(e))
             try:
                 self.entireScreenPIL.save('pics/err_debug_fullscreen.png')
             except:
                 self.logger.warning("Coulnd't safe debugging png file for ocr")
+
+
 
         try:
             final_value = ''
@@ -296,10 +299,12 @@ class Table(object):
         first_caller = np.nan
 
         for n in range(5):  # n is absolute position of other player, 0 is player after bot
-            i = (self.dealer_position + n + 3 - 2) % 5  # less myself as 0 is now first other player to my left and no longer myself
+            i = (
+                    self.dealer_position + n + 3 - 2) % 5  # less myself as 0 is now first other player to my left and no longer myself
             self.logger.debug("Go through pots to find raiser abs: {0} {1}".format(i, self.other_players[i]['pot']))
             if self.other_players[i]['pot'] != '':  # check if not empty (otherwise can't convert string)
-                if self.other_players[i]['pot'] > reference_pot:  # reference pot is bb for first round and bot for second round
+                if self.other_players[i][
+                    'pot'] > reference_pot:  # reference pot is bb for first round and bot for second round
                     if np.isnan(first_raiser):
                         first_raiser = int(i)
                         first_raiser_pot = self.other_players[i]['pot']
@@ -311,8 +316,8 @@ class Table(object):
         highest_raiser = np.nanmax([first_raiser, second_raiser])
         second_raiser_utg = self.get_utg_from_abs_pos(second_raiser, self.dealer_position)
 
-        first_possible_caller = int(
-            self.big_blind_position_abs_op + 1 if np.isnan(highest_raiser) else highest_raiser + 1)
+        first_possible_caller = int(self.big_blind_position_abs_op + 1) if np.isnan(highest_raiser) else int(
+            highest_raiser + 1)
         self.logger.debug("First possible potential caller is: " + str(first_possible_caller))
 
         # get first caller after raise in preflop
@@ -329,15 +334,15 @@ class Table(object):
         first_caller_utg = self.get_utg_from_abs_pos(first_caller, self.dealer_position)
 
         # check for callers between bot and first raiser. If so, first raiser becomes second raiser and caller becomes first raiser
-        first_possible_caller=0
-        if self.position_utg_plus==3: first_possible_caller=1
+        first_possible_caller = 0
+        if self.position_utg_plus == 3: first_possible_caller = 1
         if self.position_utg_plus == 4: first_possible_caller = 2
         if not np.isnan(first_raiser):
-            for n in range(first_possible_caller,first_raiser):
+            for n in range(first_possible_caller, first_raiser):
                 if self.other_players[n]['status'] == 1 and \
-                        not(self.other_players[n]['utg_position']==5 and p.selected_strategy['bigBlind']) and \
-                        not (self.other_players[n]['utg_position'] == 4 and p.selected_strategy['smallBlind']) and\
-                        not (self.other_players[n]['pot']==''):
+                        not (self.other_players[n]['utg_position'] == 5 and p.selected_strategy['bigBlind']) and \
+                        not (self.other_players[n]['utg_position'] == 4 and p.selected_strategy['smallBlind']) and \
+                        not (self.other_players[n]['pot'] == ''):
                     second_raiser = first_raiser
                     first_raiser = n
                     first_raiser_utg = self.get_utg_from_abs_pos(first_raiser, self.dealer_position)

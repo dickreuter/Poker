@@ -371,7 +371,8 @@ class TableScreenBased(Table):
             if has_small_dollarsign:
                 pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1],
                                             self.tlc[0] + fd[2], self.tlc[1] + fd[3])
-                value = self.get_ocr_float(pil_image, str(inspect.stack()[0][3]), force_method=1)
+                method=func_dict[6]
+                value = self.get_ocr_float(pil_image, str(inspect.stack()[0][3]), force_method=method)
                 try:
                     value = re.findall(r'\d{1}\.\d{1,2}', str(value))[0]
                 except:

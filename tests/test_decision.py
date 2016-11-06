@@ -49,7 +49,7 @@ class TestDecision(TestCase):
         p.selected_strategy['pre_flop_equity_reduction_by_position'] = 0.02
 
         d.__init__(t, h, p, logger, l)
-        self.assertAlmostEqual(d.preflop_adjustment, 0.08, delta=0.01)
+        self.assertAlmostEqual(d.preflop_adjustment, 0.1, delta=0.01)
 
     def test_preflop_round2(self):
         t, p, gui_signals, h, logger = init_table('tests/screenshots/378278828_PreFlop_1.png', round_number=1)
@@ -117,8 +117,8 @@ class TestDecision(TestCase):
         d.__init__(t, h, p, logger, l)
         d.preflop_override(t, logger, h, p)
 
-        self.assertEqual(t.first_raiser_utg, 2)
-        self.assertEqual(t.second_raiser_utg, 4)
+        self.assertEqual(t.first_raiser, 2)
+        self.assertEqual(t.second_raiser, 4)
 
         self.assertEqual(t.preflop_sheet_name, 'R1R2')
 
