@@ -1,0 +1,9 @@
+pyinstaller main.spec
+cp coordinates.txt dist
+cp icon.ico dist
+cp -R pics/ dist/
+mkdir dist/log
+mkdir dist/log/screenshots
+mkdir dist/decisionmaker
+cp decisionmaker/preflop.xlsx dist/decisionmaker/
+makensis -V3 DeepMindPokerbot.nsi
