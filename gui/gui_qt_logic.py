@@ -171,7 +171,7 @@ class UIActionAndSignals(QObject):
 
         ui_main_window.button_genetic_algorithm.clicked.connect(lambda: self.open_genetic_algorithm(p, l))
         ui_main_window.button_log_analyser.clicked.connect(lambda: self.open_strategy_analyser(p, l))
-        ui_main_window.button_strategy_editor.clicked.connect(lambda: self.open_strategy_editor(p, l))
+        ui_main_window.button_strategy_editor.clicked.connect(lambda: self.open_strategy_editor())
         ui_main_window.button_pause.clicked.connect(lambda: self.pause(ui_main_window, p))
         ui_main_window.button_resume.clicked.connect(lambda: self.resume(ui_main_window, p))
 
@@ -259,8 +259,9 @@ class UIActionAndSignals(QObject):
         self.gui_bar2.drawfigure(l, self.ui_analyser.combobox_strategy.currentText())
         self.update_strategy_analyser(l, p)
 
-    def open_strategy_editor(self, p, l):
-        self.p_edited=deepcopy(p)
+    def open_strategy_editor(self):
+        self.p_edited = StrategyHandler()
+        self.p_edited.read_strategy()
         self.signal_progressbar_reset.emit()
         self.stragegy_editor_form = QtWidgets.QWidget()
         self.ui_editor = Ui_editor_form()
@@ -516,7 +517,7 @@ class UIActionAndSignals(QObject):
             print("retry")
 
     def update_dictionary(self, name):
-        self.strategy_dict = self.p.selected_strategy
+        self.strategy_dict = self.p_edited.selected_strategy
         for key, value in self.strategy_items_with_multipliers.items():
             func = getattr(self.ui_editor, key)
             self.strategy_dict[key] = func.value() / value
@@ -544,7 +545,7 @@ class UIActionAndSignals(QObject):
             if update:
                 self.p_edited.update_strategy(strategy_dict)
             else:
-                self.pp_edited.save_strategy(strategy_dict)
+                self.p_edited.save_strategy(strategy_dict)
                 self.ui_editor.Strategy.insertItem(0, name)
                 idx = len(self.p_edited.get_playable_strategy_list())
                 self.ui_editor.Strategy.setCurrentIndex(0)

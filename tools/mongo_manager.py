@@ -135,6 +135,8 @@ class StrategyHandler(object):
         result = self.mongodb.strategies.insert_one(strategy_dict)
 
     def update_strategy(self,strategy):
+        try: del strategy['_id']
+        except: pass
         result = self.mongodb.strategies.update_one(
             {"Strategy": strategy['Strategy']},
             {"$set": strategy}
