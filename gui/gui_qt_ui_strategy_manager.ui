@@ -26,30 +26,6 @@
    <string>Strategy editor</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="2" column="0">
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
-     <item>
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>New name</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="lineEdit_new_name"/>
-     </item>
-     <item>
-      <widget class="QPushButton" name="pushButton_save_new_strategy">
-       <property name="toolTip">
-        <string>Saves the current strategy under a new name</string>
-       </property>
-       <property name="text">
-        <string>Save under new name</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
    <item row="0" column="0">
     <widget class="QLabel" name="label_4">
      <property name="font">
@@ -96,6 +72,30 @@
         </widget>
        </item>
       </layout>
+     </item>
+    </layout>
+   </item>
+   <item row="2" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>New name</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="lineEdit_new_name"/>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_save_new_strategy">
+       <property name="toolTip">
+        <string>Saves the current strategy under a new name</string>
+       </property>
+       <property name="text">
+        <string>Save under new name</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
@@ -2811,453 +2811,532 @@
       <attribute name="title">
        <string>Betting</string>
       </attribute>
-      <layout class="QGridLayout" name="gridLayout_40">
-       <item row="0" column="0">
-        <widget class="QGroupBox" name="groupBox_14">
-         <property name="title">
-          <string>Betting sizes</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_34">
-          <item row="0" column="0">
-           <layout class="QHBoxLayout" name="horizontalLayout_19">
+      <widget class="QGroupBox" name="groupBox_14">
+       <property name="geometry">
+        <rect>
+         <x>9</x>
+         <y>9</y>
+         <width>681</width>
+         <height>195</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Betting sizes</string>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_11">
+        <item row="0" column="0">
+         <layout class="QHBoxLayout" name="horizontalLayout_19">
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_52">
             <item>
-             <layout class="QVBoxLayout" name="verticalLayout_52">
-              <item>
-               <widget class="QLabel" name="label_21">
-                <property name="text">
-                 <string>Minimum bet of: 1(bet), 2(betplus), 3(bet half pot), 4(bet pot)</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QSlider" name="minimum_bet_size">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-                <property name="mouseTracking">
-                 <bool>false</bool>
-                </property>
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This impacts the amount the bot will bet after the flop. You can set it to 3 if you only want it to bet at least half a pot, even though he would bet only bet or betPlus&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-                <property name="minimum">
-                 <number>1</number>
-                </property>
-                <property name="maximum">
-                 <number>4</number>
-                </property>
-                <property name="pageStep">
-                 <number>1</number>
-                </property>
-                <property name="value">
-                 <number>3</number>
-                </property>
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="tickPosition">
-                 <enum>QSlider::TicksAbove</enum>
-                </property>
-               </widget>
-              </item>
-             </layout>
+             <widget class="QLabel" name="label_21">
+              <property name="text">
+               <string>Minimum bet of: 1(bet), 2(betplus), 3(bet half pot), 4(bet pot)</string>
+              </property>
+             </widget>
             </item>
             <item>
-             <widget class="QLCDNumber" name="lcdNumber_106"/>
+             <widget class="QSlider" name="minimum_bet_size">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="mouseTracking">
+               <bool>false</bool>
+              </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This impacts the amount the bot will bet after the flop. You can set it to 3 if you only want it to bet at least half a pot, even though he would bet only bet or betPlus&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>4</number>
+              </property>
+              <property name="pageStep">
+               <number>1</number>
+              </property>
+              <property name="value">
+               <number>3</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="tickPosition">
+               <enum>QSlider::TicksAbove</enum>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
-          <item row="1" column="0">
-           <layout class="QHBoxLayout" name="horizontalLayout_5">
-            <item>
-             <layout class="QVBoxLayout" name="verticalLayout_14">
-              <item>
-               <widget class="QLabel" name="label_20">
-                <property name="text">
-                 <string>Bet Plus: how many times the + is pressed to increase the bet</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QSlider" name="BetPlusInc">
-                <property name="mouseTracking">
-                 <bool>false</bool>
-                </property>
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When the bot decides a simple press on the bet button is not enough, it can do a 'betPlus'. That means it will shift the slider to the right with x clicks and then only press the bet button. Here you can adjust how many times it should click to slide the slider to the right to increase the bet size.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-                <property name="minimum">
-                 <number>1</number>
-                </property>
-                <property name="maximum">
-                 <number>20</number>
-                </property>
-                <property name="pageStep">
-                 <number>1</number>
-                </property>
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="tickPosition">
-                 <enum>QSlider::TicksAbove</enum>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <widget class="QLCDNumber" name="lcdNumber_56"/>
-            </item>
-           </layout>
+          <item>
+           <widget class="QLCDNumber" name="lcdNumber_106"/>
           </item>
          </layout>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label_74">
-         <property name="font">
-          <font>
-           <weight>75</weight>
-           <bold>true</bold>
-          </font>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QGroupBox" name="groupBox_13">
-         <property name="title">
-          <string>Postflop ranges for other plyaers</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_33">
-          <item row="0" column="0">
-           <layout class="QHBoxLayout" name="horizontalLayout_6">
+        </item>
+        <item row="1" column="0">
+         <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_14">
             <item>
-             <layout class="QVBoxLayout" name="verticalLayout_15">
-              <item>
-               <widget class="QLabel" name="label_22">
-                <property name="text">
-                 <string>Assumed postfop Range for UTG player</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QSlider" name="range_utg0">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-                <property name="mouseTracking">
-                 <bool>false</bool>
-                </property>
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For the calculation of the equity after the flop, the other players are given ranges. Here you can adjust the top% of preflop equity cards that the player is assumed to hold. 100% means he can hold any cards. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-                <property name="minimum">
-                 <number>10</number>
-                </property>
-                <property name="maximum">
-                 <number>100</number>
-                </property>
-                <property name="pageStep">
-                 <number>1</number>
-                </property>
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="tickPosition">
-                 <enum>QSlider::TicksAbove</enum>
-                </property>
-               </widget>
-              </item>
-             </layout>
+             <widget class="QLabel" name="label_20">
+              <property name="text">
+               <string>Bet Plus: how many times the + is pressed to increase the bet</string>
+              </property>
+             </widget>
             </item>
             <item>
-             <widget class="QLCDNumber" name="lcdNumber_64"/>
+             <widget class="QSlider" name="BetPlusInc">
+              <property name="mouseTracking">
+               <bool>false</bool>
+              </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When the bot decides a simple press on the bet button is not enough, it can do a 'betPlus'. That means it will shift the slider to the right with x clicks and then only press the bet button. Here you can adjust how many times it should click to slide the slider to the right to increase the bet size.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>20</number>
+              </property>
+              <property name="pageStep">
+               <number>1</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="tickPosition">
+               <enum>QSlider::TicksAbove</enum>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
-          <item row="1" column="0">
-           <layout class="QHBoxLayout" name="horizontalLayout_12">
-            <item>
-             <layout class="QVBoxLayout" name="verticalLayout_21">
-              <item>
-               <widget class="QLabel" name="label_28">
-                <property name="text">
-                 <string>Assumed postfop Range for UTG+1 player</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QSlider" name="range_utg1">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-                <property name="mouseTracking">
-                 <bool>false</bool>
-                </property>
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For the calculation of the equity after the flop, the other players are given ranges. Here you can adjust the top% of preflop equity cards that the player is assumed to hold. 100% means he can hold any cards. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-                <property name="minimum">
-                 <number>10</number>
-                </property>
-                <property name="maximum">
-                 <number>100</number>
-                </property>
-                <property name="pageStep">
-                 <number>1</number>
-                </property>
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="tickPosition">
-                 <enum>QSlider::TicksAbove</enum>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <widget class="QLCDNumber" name="lcdNumber_70"/>
-            </item>
-           </layout>
-          </item>
-          <item row="2" column="0">
-           <layout class="QHBoxLayout" name="horizontalLayout_10">
-            <item>
-             <layout class="QVBoxLayout" name="verticalLayout_19">
-              <item>
-               <widget class="QLabel" name="label_26">
-                <property name="text">
-                 <string>Assumed postfop Range for UTG+2 player</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QSlider" name="range_utg2">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-                <property name="mouseTracking">
-                 <bool>false</bool>
-                </property>
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For the calculation of the equity after the flop, the other players are given ranges. Here you can adjust the top% of preflop equity cards that the player is assumed to hold. 100% means he can hold any cards. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-                <property name="minimum">
-                 <number>10</number>
-                </property>
-                <property name="maximum">
-                 <number>100</number>
-                </property>
-                <property name="pageStep">
-                 <number>1</number>
-                </property>
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="tickPosition">
-                 <enum>QSlider::TicksAbove</enum>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <widget class="QLCDNumber" name="lcdNumber_68"/>
-            </item>
-           </layout>
-          </item>
-          <item row="3" column="0">
-           <layout class="QHBoxLayout" name="horizontalLayout_16">
-            <item>
-             <layout class="QVBoxLayout" name="verticalLayout_49">
-              <item>
-               <widget class="QLabel" name="label_54">
-                <property name="text">
-                 <string>Assumed postfop Range for UTG+3 player</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QSlider" name="range_utg3">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-                <property name="mouseTracking">
-                 <bool>false</bool>
-                </property>
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For the calculation of the equity after the flop, the other players are given ranges. Here you can adjust the top% of preflop equity cards that the player is assumed to hold. 100% means he can hold any cards. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-                <property name="minimum">
-                 <number>10</number>
-                </property>
-                <property name="maximum">
-                 <number>100</number>
-                </property>
-                <property name="pageStep">
-                 <number>1</number>
-                </property>
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="tickPosition">
-                 <enum>QSlider::TicksAbove</enum>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <widget class="QLCDNumber" name="lcdNumber_103"/>
-            </item>
-           </layout>
-          </item>
-          <item row="4" column="0">
-           <layout class="QHBoxLayout" name="horizontalLayout_17">
-            <item>
-             <layout class="QVBoxLayout" name="verticalLayout_50">
-              <item>
-               <widget class="QLabel" name="label_55">
-                <property name="text">
-                 <string>Assumed postfop Range for UTG+4 player</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QSlider" name="range_utg4">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-                <property name="mouseTracking">
-                 <bool>false</bool>
-                </property>
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For the calculation of the equity after the flop, the other players are given ranges. Here you can adjust the top% of preflop equity cards that the player is assumed to hold. 100% means he can hold any cards. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-                <property name="minimum">
-                 <number>10</number>
-                </property>
-                <property name="maximum">
-                 <number>100</number>
-                </property>
-                <property name="pageStep">
-                 <number>1</number>
-                </property>
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="tickPosition">
-                 <enum>QSlider::TicksAbove</enum>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <widget class="QLCDNumber" name="lcdNumber_104"/>
-            </item>
-           </layout>
-          </item>
-          <item row="5" column="0">
-           <layout class="QHBoxLayout" name="horizontalLayout_18">
-            <item>
-             <layout class="QVBoxLayout" name="verticalLayout_51">
-              <item>
-               <widget class="QLabel" name="label_56">
-                <property name="text">
-                 <string>Assumed postfop Range for UTG+5 player</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QSlider" name="range_utg5">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-                <property name="mouseTracking">
-                 <bool>false</bool>
-                </property>
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For the calculation of the equity after the flop, the other players are given ranges. Here you can adjust the top% of preflop equity cards that the player is assumed to hold. 100% means he can hold any cards. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-                <property name="minimum">
-                 <number>10</number>
-                </property>
-                <property name="maximum">
-                 <number>100</number>
-                </property>
-                <property name="pageStep">
-                 <number>1</number>
-                </property>
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="tickPosition">
-                 <enum>QSlider::TicksAbove</enum>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <widget class="QLCDNumber" name="lcdNumber_105"/>
-            </item>
-           </layout>
-          </item>
-          <item row="6" column="0">
-           <layout class="QHBoxLayout" name="horizontalLayout_22">
-            <item>
-             <layout class="QVBoxLayout" name="verticalLayout_71">
-              <item>
-               <widget class="QLabel" name="label_83">
-                <property name="text">
-                 <string>Assumed range for other players if more than 1 other player</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QSlider" name="range_multiple_players">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-                <property name="mouseTracking">
-                 <bool>false</bool>
-                </property>
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For the calculation of the equity after the flop, the other players are given ranges. Here you can adjust the top% of preflop equity cards that the playesr are assumed to hold. 100% means they can hold any cards. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-                <property name="minimum">
-                 <number>10</number>
-                </property>
-                <property name="maximum">
-                 <number>100</number>
-                </property>
-                <property name="pageStep">
-                 <number>1</number>
-                </property>
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="tickPosition">
-                 <enum>QSlider::TicksAbove</enum>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <widget class="QLCDNumber" name="lcdNumber_126"/>
-            </item>
-           </layout>
+          <item>
+           <widget class="QLCDNumber" name="lcdNumber_56"/>
           </item>
          </layout>
-        </widget>
-       </item>
-      </layout>
+        </item>
+        <item row="2" column="0">
+         <layout class="QHBoxLayout" name="horizontalLayout_7">
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_16">
+            <item>
+             <widget class="QLabel" name="label_24">
+              <property name="text">
+               <string>Always bluff at Flop and Turn if the minimum amount of outs surpasses this value and check button is present</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSlider" name="min_out_bluff">
+              <property name="mouseTracking">
+               <bool>false</bool>
+              </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When the bot decides a simple press on the bet button is not enough, it can do a 'betPlus'. That means it will shift the slider to the right with x clicks and then only press the bet button. Here you can adjust how many times it should click to slide the slider to the right to increase the bet size.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>8</number>
+              </property>
+              <property name="pageStep">
+               <number>1</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="tickPosition">
+               <enum>QSlider::TicksAbove</enum>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QLCDNumber" name="lcdNumber_69"/>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QLabel" name="label_74">
+       <property name="geometry">
+        <rect>
+         <x>9</x>
+         <y>154</y>
+         <width>16</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <weight>75</weight>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+      <widget class="QGroupBox" name="groupBox_13">
+       <property name="geometry">
+        <rect>
+         <x>9</x>
+         <y>211</y>
+         <width>680</width>
+         <height>381</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Postflop ranges for other plyaers</string>
+       </property>
+       <widget class="QCheckBox" name="checkBox">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>23</y>
+          <width>358</width>
+          <height>17</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Use preflop reverse tables on heads-up if preflop tables are activated</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QWidget" name="">
+        <layout class="QHBoxLayout" name="horizontalLayout_6">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_15">
+           <item>
+            <widget class="QLabel" name="label_22">
+             <property name="text">
+              <string>Assumed postfop Range for UTG player</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="range_utg0">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="mouseTracking">
+              <bool>false</bool>
+             </property>
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For the calculation of the equity after the flop, the other players are given ranges. Here you can adjust the top% of preflop equity cards that the player is assumed to hold. 100% means he can hold any cards. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="minimum">
+              <number>10</number>
+             </property>
+             <property name="maximum">
+              <number>100</number>
+             </property>
+             <property name="pageStep">
+              <number>1</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="tickPosition">
+              <enum>QSlider::TicksAbove</enum>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QLCDNumber" name="lcdNumber_64"/>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="">
+        <layout class="QHBoxLayout" name="horizontalLayout_12">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_21">
+           <item>
+            <widget class="QLabel" name="label_28">
+             <property name="text">
+              <string>Assumed postfop Range for UTG+1 player</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="range_utg1">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="mouseTracking">
+              <bool>false</bool>
+             </property>
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For the calculation of the equity after the flop, the other players are given ranges. Here you can adjust the top% of preflop equity cards that the player is assumed to hold. 100% means he can hold any cards. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="minimum">
+              <number>10</number>
+             </property>
+             <property name="maximum">
+              <number>100</number>
+             </property>
+             <property name="pageStep">
+              <number>1</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="tickPosition">
+              <enum>QSlider::TicksAbove</enum>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QLCDNumber" name="lcdNumber_70"/>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="">
+        <layout class="QHBoxLayout" name="horizontalLayout_10">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_19">
+           <item>
+            <widget class="QLabel" name="label_26">
+             <property name="text">
+              <string>Assumed postfop Range for UTG+2 player</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="range_utg2">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="mouseTracking">
+              <bool>false</bool>
+             </property>
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For the calculation of the equity after the flop, the other players are given ranges. Here you can adjust the top% of preflop equity cards that the player is assumed to hold. 100% means he can hold any cards. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="minimum">
+              <number>10</number>
+             </property>
+             <property name="maximum">
+              <number>100</number>
+             </property>
+             <property name="pageStep">
+              <number>1</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="tickPosition">
+              <enum>QSlider::TicksAbove</enum>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QLCDNumber" name="lcdNumber_68"/>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="">
+        <layout class="QHBoxLayout" name="horizontalLayout_16">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_49">
+           <item>
+            <widget class="QLabel" name="label_54">
+             <property name="text">
+              <string>Assumed postfop Range for UTG+3 player</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="range_utg3">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="mouseTracking">
+              <bool>false</bool>
+             </property>
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For the calculation of the equity after the flop, the other players are given ranges. Here you can adjust the top% of preflop equity cards that the player is assumed to hold. 100% means he can hold any cards. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="minimum">
+              <number>10</number>
+             </property>
+             <property name="maximum">
+              <number>100</number>
+             </property>
+             <property name="pageStep">
+              <number>1</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="tickPosition">
+              <enum>QSlider::TicksAbove</enum>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QLCDNumber" name="lcdNumber_103"/>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="">
+        <layout class="QHBoxLayout" name="horizontalLayout_17">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_50">
+           <item>
+            <widget class="QLabel" name="label_55">
+             <property name="text">
+              <string>Assumed postfop Range for UTG+4 player</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="range_utg4">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="mouseTracking">
+              <bool>false</bool>
+             </property>
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For the calculation of the equity after the flop, the other players are given ranges. Here you can adjust the top% of preflop equity cards that the player is assumed to hold. 100% means he can hold any cards. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="minimum">
+              <number>10</number>
+             </property>
+             <property name="maximum">
+              <number>100</number>
+             </property>
+             <property name="pageStep">
+              <number>1</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="tickPosition">
+              <enum>QSlider::TicksAbove</enum>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QLCDNumber" name="lcdNumber_104"/>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="">
+        <layout class="QHBoxLayout" name="horizontalLayout_18">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_51">
+           <item>
+            <widget class="QLabel" name="label_56">
+             <property name="text">
+              <string>Assumed postfop Range for UTG+5 player</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="range_utg5">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="mouseTracking">
+              <bool>false</bool>
+             </property>
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For the calculation of the equity after the flop, the other players are given ranges. Here you can adjust the top% of preflop equity cards that the player is assumed to hold. 100% means he can hold any cards. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="minimum">
+              <number>10</number>
+             </property>
+             <property name="maximum">
+              <number>100</number>
+             </property>
+             <property name="pageStep">
+              <number>1</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="tickPosition">
+              <enum>QSlider::TicksAbove</enum>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QLCDNumber" name="lcdNumber_105"/>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="">
+        <layout class="QHBoxLayout" name="horizontalLayout_22">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_71">
+           <item>
+            <widget class="QLabel" name="label_83">
+             <property name="text">
+              <string>Assumed range for other players if more than 1 other player</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QSlider" name="range_multiple_players">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="mouseTracking">
+              <bool>false</bool>
+             </property>
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For the calculation of the equity after the flop, the other players are given ranges. Here you can adjust the top% of preflop equity cards that the playesr are assumed to hold. 100% means they can hold any cards. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="minimum">
+              <number>10</number>
+             </property>
+             <property name="maximum">
+              <number>100</number>
+             </property>
+             <property name="pageStep">
+              <number>1</number>
+             </property>
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="tickPosition">
+              <enum>QSlider::TicksAbove</enum>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QLCDNumber" name="lcdNumber_126"/>
+         </item>
+        </layout>
+       </widget>
+      </widget>
      </widget>
      <widget class="QWidget" name="Conditions">
       <attribute name="title">
@@ -3808,12 +3887,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>119</x>
-     <y>184</y>
+     <x>141</x>
+     <y>561</y>
     </hint>
     <hint type="destinationlabel">
-     <x>119</x>
-     <y>184</y>
+     <x>346</x>
+     <y>562</y>
     </hint>
    </hints>
   </connection>
@@ -3824,12 +3903,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>119</x>
-     <y>184</y>
+     <x>142</x>
+     <y>488</y>
     </hint>
     <hint type="destinationlabel">
-     <x>119</x>
-     <y>184</y>
+     <x>688</x>
+     <y>489</y>
     </hint>
    </hints>
   </connection>
@@ -3856,12 +3935,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>119</x>
-     <y>172</y>
+     <x>141</x>
+     <y>224</y>
     </hint>
     <hint type="destinationlabel">
-     <x>119</x>
-     <y>172</y>
+     <x>346</x>
+     <y>225</y>
     </hint>
    </hints>
   </connection>
@@ -3872,12 +3951,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>119</x>
-     <y>172</y>
+     <x>141</x>
+     <y>289</y>
     </hint>
     <hint type="destinationlabel">
-     <x>119</x>
-     <y>172</y>
+     <x>346</x>
+     <y>290</y>
     </hint>
    </hints>
   </connection>
@@ -3888,12 +3967,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>119</x>
-     <y>184</y>
+     <x>142</x>
+     <y>540</y>
     </hint>
     <hint type="destinationlabel">
-     <x>119</x>
-     <y>184</y>
+     <x>688</x>
+     <y>541</y>
     </hint>
    </hints>
   </connection>
@@ -3904,12 +3983,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>130</x>
-     <y>183</y>
+     <x>152</x>
+     <y>223</y>
     </hint>
     <hint type="destinationlabel">
-     <x>130</x>
-     <y>183</y>
+     <x>541</x>
+     <y>224</y>
     </hint>
    </hints>
   </connection>
@@ -3920,12 +3999,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>119</x>
-     <y>178</y>
+     <x>141</x>
+     <y>387</y>
     </hint>
     <hint type="destinationlabel">
-     <x>119</x>
-     <y>178</y>
+     <x>346</x>
+     <y>388</y>
     </hint>
    </hints>
   </connection>
@@ -3968,12 +4047,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>119</x>
-     <y>184</y>
+     <x>142</x>
+     <y>435</y>
     </hint>
     <hint type="destinationlabel">
-     <x>119</x>
-     <y>184</y>
+     <x>688</x>
+     <y>436</y>
     </hint>
    </hints>
   </connection>
@@ -3984,12 +4063,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>163</x>
-     <y>184</y>
+     <x>484</x>
+     <y>593</y>
     </hint>
     <hint type="destinationlabel">
-     <x>163</x>
-     <y>184</y>
+     <x>689</x>
+     <y>594</y>
     </hint>
    </hints>
   </connection>
@@ -4000,12 +4079,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>119</x>
-     <y>172</y>
+     <x>141</x>
+     <y>272</y>
     </hint>
     <hint type="destinationlabel">
-     <x>119</x>
-     <y>172</y>
+     <x>360</x>
+     <y>273</y>
     </hint>
    </hints>
   </connection>
@@ -4016,12 +4095,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>119</x>
-     <y>184</y>
+     <x>142</x>
+     <y>593</y>
     </hint>
     <hint type="destinationlabel">
-     <x>119</x>
-     <y>184</y>
+     <x>688</x>
+     <y>594</y>
     </hint>
    </hints>
   </connection>
@@ -4032,12 +4111,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>119</x>
-     <y>184</y>
+     <x>142</x>
+     <y>646</y>
     </hint>
     <hint type="destinationlabel">
-     <x>119</x>
-     <y>184</y>
+     <x>688</x>
+     <y>647</y>
     </hint>
    </hints>
   </connection>
@@ -4048,12 +4127,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>119</x>
-     <y>184</y>
+     <x>142</x>
+     <y>698</y>
     </hint>
     <hint type="destinationlabel">
-     <x>119</x>
-     <y>184</y>
+     <x>688</x>
+     <y>699</y>
     </hint>
    </hints>
   </connection>
@@ -4064,12 +4143,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>119</x>
-     <y>172</y>
+     <x>142</x>
+     <y>269</y>
     </hint>
     <hint type="destinationlabel">
-     <x>119</x>
-     <y>172</y>
+     <x>689</x>
+     <y>270</y>
     </hint>
    </hints>
   </connection>
@@ -4080,12 +4159,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>120</x>
-     <y>333</y>
+     <x>142</x>
+     <y>433</y>
     </hint>
     <hint type="destinationlabel">
-     <x>120</x>
-     <y>333</y>
+     <x>351</x>
+     <y>434</y>
     </hint>
    </hints>
   </connection>
@@ -4096,12 +4175,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>163</x>
-     <y>184</y>
+     <x>484</x>
+     <y>660</y>
     </hint>
     <hint type="destinationlabel">
-     <x>163</x>
-     <y>184</y>
+     <x>689</x>
+     <y>661</y>
     </hint>
    </hints>
   </connection>
@@ -4112,12 +4191,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>119</x>
-     <y>172</y>
+     <x>142</x>
+     <y>213</y>
     </hint>
     <hint type="destinationlabel">
-     <x>119</x>
-     <y>172</y>
+     <x>689</x>
+     <y>214</y>
     </hint>
    </hints>
   </connection>
@@ -4176,12 +4255,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>130</x>
-     <y>563</y>
+     <x>152</x>
+     <y>711</y>
     </hint>
     <hint type="destinationlabel">
-     <x>130</x>
-     <y>563</y>
+     <x>541</x>
+     <y>712</y>
     </hint>
    </hints>
   </connection>
@@ -4192,12 +4271,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>130</x>
-     <y>563</y>
+     <x>152</x>
+     <y>664</y>
     </hint>
     <hint type="destinationlabel">
-     <x>130</x>
-     <y>563</y>
+     <x>541</x>
+     <y>665</y>
     </hint>
    </hints>
   </connection>
@@ -4272,12 +4351,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>163</x>
-     <y>184</y>
+     <x>484</x>
+     <y>539</y>
     </hint>
     <hint type="destinationlabel">
-     <x>163</x>
-     <y>184</y>
+     <x>689</x>
+     <y>540</y>
     </hint>
    </hints>
   </connection>
@@ -4288,12 +4367,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>130</x>
-     <y>563</y>
+     <x>152</x>
+     <y>618</y>
     </hint>
     <hint type="destinationlabel">
-     <x>130</x>
-     <y>563</y>
+     <x>541</x>
+     <y>619</y>
     </hint>
    </hints>
   </connection>
@@ -4320,12 +4399,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>120</x>
-     <y>513</y>
+     <x>142</x>
+     <y>620</y>
     </hint>
     <hint type="destinationlabel">
-     <x>120</x>
-     <y>513</y>
+     <x>351</x>
+     <y>621</y>
     </hint>
    </hints>
   </connection>
@@ -4336,12 +4415,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>119</x>
-     <y>172</y>
+     <x>141</x>
+     <y>215</y>
     </hint>
     <hint type="destinationlabel">
-     <x>119</x>
-     <y>172</y>
+     <x>360</x>
+     <y>216</y>
     </hint>
    </hints>
   </connection>
@@ -4352,12 +4431,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>163</x>
-     <y>184</y>
+     <x>484</x>
+     <y>714</y>
     </hint>
     <hint type="destinationlabel">
-     <x>163</x>
-     <y>184</y>
+     <x>689</x>
+     <y>715</y>
     </hint>
    </hints>
   </connection>
@@ -4368,12 +4447,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>120</x>
-     <y>333</y>
+     <x>142</x>
+     <y>376</y>
     </hint>
     <hint type="destinationlabel">
-     <x>120</x>
-     <y>333</y>
+     <x>351</x>
+     <y>377</y>
     </hint>
    </hints>
   </connection>
@@ -4384,12 +4463,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>130</x>
-     <y>353</y>
+     <x>152</x>
+     <y>501</y>
     </hint>
     <hint type="destinationlabel">
-     <x>130</x>
-     <y>353</y>
+     <x>541</x>
+     <y>502</y>
     </hint>
    </hints>
   </connection>
@@ -4400,12 +4479,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>119</x>
-     <y>178</y>
+     <x>141</x>
+     <y>452</y>
     </hint>
     <hint type="destinationlabel">
-     <x>119</x>
-     <y>178</y>
+     <x>346</x>
+     <y>453</y>
     </hint>
    </hints>
   </connection>
@@ -4416,12 +4495,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>130</x>
-     <y>353</y>
+     <x>152</x>
+     <y>447</y>
     </hint>
     <hint type="destinationlabel">
-     <x>130</x>
-     <y>353</y>
+     <x>541</x>
+     <y>448</y>
     </hint>
    </hints>
   </connection>
@@ -4432,12 +4511,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>130</x>
-     <y>353</y>
+     <x>152</x>
+     <y>393</y>
     </hint>
     <hint type="destinationlabel">
-     <x>130</x>
-     <y>353</y>
+     <x>541</x>
+     <y>394</y>
     </hint>
    </hints>
   </connection>
@@ -4464,12 +4543,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>119</x>
-     <y>184</y>
+     <x>141</x>
+     <y>638</y>
     </hint>
     <hint type="destinationlabel">
-     <x>119</x>
-     <y>184</y>
+     <x>346</x>
+     <y>639</y>
     </hint>
    </hints>
   </connection>
@@ -4544,12 +4623,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>119</x>
-     <y>184</y>
+     <x>142</x>
+     <y>751</y>
     </hint>
     <hint type="destinationlabel">
-     <x>119</x>
-     <y>184</y>
+     <x>688</x>
+     <y>752</y>
     </hint>
    </hints>
   </connection>
@@ -4592,12 +4671,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>120</x>
-     <y>513</y>
+     <x>142</x>
+     <y>566</y>
     </hint>
     <hint type="destinationlabel">
-     <x>120</x>
-     <y>513</y>
+     <x>351</x>
+     <y>567</y>
     </hint>
    </hints>
   </connection>
@@ -4816,12 +4895,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>120</x>
-     <y>383</y>
+     <x>142</x>
+     <y>407</y>
     </hint>
     <hint type="destinationlabel">
-     <x>120</x>
-     <y>383</y>
+     <x>681</x>
+     <y>408</y>
     </hint>
    </hints>
   </connection>
@@ -4832,12 +4911,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>120</x>
-     <y>233</y>
+     <x>142</x>
+     <y>276</y>
     </hint>
     <hint type="destinationlabel">
-     <x>120</x>
-     <y>233</y>
+     <x>681</x>
+     <y>277</y>
     </hint>
    </hints>
   </connection>
@@ -4848,12 +4927,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>120</x>
-     <y>233</y>
+     <x>142</x>
+     <y>333</y>
     </hint>
     <hint type="destinationlabel">
-     <x>120</x>
-     <y>233</y>
+     <x>681</x>
+     <y>334</y>
     </hint>
    </hints>
   </connection>
@@ -4864,12 +4943,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>130</x>
-     <y>183</y>
+     <x>152</x>
+     <y>277</y>
     </hint>
     <hint type="destinationlabel">
-     <x>130</x>
-     <y>183</y>
+     <x>541</x>
+     <y>278</y>
     </hint>
    </hints>
   </connection>
@@ -4880,12 +4959,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>119</x>
-     <y>184</y>
+     <x>141</x>
+     <y>714</y>
     </hint>
     <hint type="destinationlabel">
-     <x>119</x>
-     <y>184</y>
+     <x>346</x>
+     <y>715</y>
     </hint>
    </hints>
   </connection>
@@ -4896,12 +4975,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>120</x>
-     <y>513</y>
+     <x>142</x>
+     <y>674</y>
     </hint>
     <hint type="destinationlabel">
-     <x>120</x>
-     <y>513</y>
+     <x>351</x>
+     <y>675</y>
     </hint>
    </hints>
   </connection>
@@ -4918,6 +4997,22 @@
     <hint type="destinationlabel">
      <x>659</x>
      <y>605</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>min_out_bluff</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_69</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>541</x>
+     <y>310</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>654</x>
+     <y>306</y>
     </hint>
    </hints>
   </connection>

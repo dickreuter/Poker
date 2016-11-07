@@ -68,7 +68,7 @@ class TableScreenBased(Table):
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
-        count, points, bestfit, _ = self.find_template_on_screen(self.check, img, func_dict['tolerance'])
+        count, points, bestfit, minval = self.find_template_on_screen(self.check, img, func_dict['tolerance'])
 
         if count > 0:
             self.checkButton = True
@@ -361,17 +361,18 @@ class TableScreenBased(Table):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
         self.gui_signals.signal_status.emit("Get player pots")
         for n in range(5):
-            fd=func_dict[n]
+            fd = func_dict[n]
             self.gui_signals.signal_progressbar_increase.emit(1)
             pot_area_image = self.crop_image(self.entireScreenPIL, self.tlc[0] - 20 + fd[0], self.tlc[1] + fd[1] - 20,
                                              self.tlc[0] + fd[2] + 20, self.tlc[1] + fd[3] + 20)
             img = cv2.cvtColor(np.array(pot_area_image), cv2.COLOR_BGR2RGB)
-            count, points, bestfit, minvalue = self.find_template_on_screen(self.smallDollarSign1, img, float(func_dict[5]))
+            count, points, bestfit, minvalue = self.find_template_on_screen(self.smallDollarSign1, img,
+                                                                            float(func_dict[5]))
             has_small_dollarsign = count > 0
             if has_small_dollarsign:
                 pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1],
                                             self.tlc[0] + fd[2], self.tlc[1] + fd[3])
-                method=func_dict[6]
+                method = func_dict[6]
                 value = self.get_ocr_float(pil_image, str(inspect.stack()[0][3]), force_method=method)
                 try:
                     value = re.findall(r'\d{1}\.\d{1,2}', str(value))[0]
@@ -568,6 +569,8 @@ class TableScreenBased(Table):
         if self.currentCallValue != '':
             self.getCallButtonValueSuccess = True
         else:
+            self.checkButton = True
+            self.logger.debug("Assuming check button as call value is zero")
             try:
                 pil_image.save("pics/ErrCallValue.png")
             except:
