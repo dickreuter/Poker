@@ -25,6 +25,10 @@ class Decision(DecisionBase):
 
         t.bigBlindMultiplier = t.bigBlind / 0.02
 
+        out_multiplier=p.selected_strategy['out_multiplier']
+        outs=0 #todo replace with function that delivers amount of outs
+        self.out_adjustment=outs*out_multiplier*.01
+
         self.preflop_adjustment= -float(p.selected_strategy['pre_flop_equity_reduction_by_position']) * t.position_utg_plus
 
         if not np.isnan(t.first_raiser_utg):
@@ -97,7 +101,7 @@ class Decision(DecisionBase):
         elif t.gameStage == GameStages.Turn.value:
             t.power1 = float(p.selected_strategy['TurnCallPower']) + secondRoundAdjustmentPowerIncrease
             t.minEquityCall = float(
-                p.selected_strategy['TurnMinCallEquity']) + self.secondRoundAdjustment - self.potAdjustment
+                p.selected_strategy['TurnMinCallEquity']) + self.secondRoundAdjustment - self.potAdjustment - self.out_adjustment
             t.minCallAmountIfAboveLimit = t.bigBlind * 2
             t.potStretch = 1
             t.maxEquityCall = 1
@@ -129,7 +133,7 @@ class Decision(DecisionBase):
         elif t.gameStage == GameStages.Turn.value:
             t.power2 = float(p.selected_strategy['TurnBetPower']) + secondRoundAdjustmentPowerIncrease
             t.minEquityBet = float(
-                p.selected_strategy['TurnMinBetEquity']) + self.secondRoundAdjustment
+                p.selected_strategy['TurnMinBetEquity']) + self.secondRoundAdjustment - self.out_adjustment
             t.maxEquityBet = 1
             t.minBetAmountIfAboveLimit = t.bigBlind * 2
         elif t.gameStage == GameStages.River.value:

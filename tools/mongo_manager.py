@@ -74,6 +74,7 @@ class StrategyHandler(object):
         return l
 
     def check_defaults(self):
+        if not 'out_multiplier' in self.selected_strategy: self.selected_strategy['out_multiplier'] = 0
         if not 'FlopBluffMaxEquity' in self.selected_strategy: self.selected_strategy['FlopBluffMaxEquity'] = 100
         if not 'TurnBluffMaxEquity' in self.selected_strategy: self.selected_strategy['TurnBluffMaxEquity'] = 100
         if not 'RiverBluffMaxEquity' in self.selected_strategy: self.selected_strategy['RiverBluffMaxEquity'] = 100
