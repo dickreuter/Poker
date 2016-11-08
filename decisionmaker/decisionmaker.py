@@ -5,12 +5,17 @@ h contains values from the historical (last) decision
 p contains values from the Strategy as defined in the xml file
 """
 
+import pandas as pd
+import numpy as np
+
+from enum import Enum
+
 from .base import DecisionBase, Collusion
 from .curvefitting import *
 from .montecarlo_python import *
-from enum import Enum
-import pandas as pd
-import numpy as np
+from .outs_calculator import Outs_Calculator
+
+
 
 class DecisionTypes(Enum):
     i_am_back,fold,check,call,bet1,bet2,bet3,bet4,bet_bluff,call_deception, check_deception=['Imback','Fold','Check','Call','Bet', 'BetPlus','Bet half pot', 'Bet pot','Bet Bluff','Call Deception','Check Deception']
@@ -26,7 +31,11 @@ class Decision(DecisionBase):
         t.bigBlindMultiplier = t.bigBlind / 0.02
 
         out_multiplier=p.selected_strategy['out_multiplier']
-        outs=0 #todo replace with function that delivers amount of outs
+        oc = Outs_Calculator()
+        if 3 <= len(t.cardsOnTable) <= 4: # Flop and Turn
+            outs = oc.evaluate_hands(t.mycards, t.cardsOnTable, oc)
+        else:
+            outs = 0
         self.out_adjustment=outs*out_multiplier*.01
 
         self.preflop_adjustment= -float(p.selected_strategy['pre_flop_equity_reduction_by_position']) * t.position_utg_plus
