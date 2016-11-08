@@ -1,18 +1,19 @@
 import logging
 import random
+import logging
 
 import numpy as np
 from configobj import ConfigObj
 
 import pymouse
 from captcha.key_press_vbox import *
-from tools.debug_logger import debug_logger
 from tools.vbox_manager import VirtualBoxController
 
 
 class MouseMover(VirtualBoxController):
     def __init__(self, vbox_mode):
-        self.logger = debug_logger().start_logger('mouse')
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.DEBUG)
         if vbox_mode:
             super().__init__()
         self.mouse=pymouse.PyMouse()
@@ -84,7 +85,8 @@ class MouseMover(VirtualBoxController):
 class MouseMoverTableBased(MouseMover):
     def __init__(self, pokersite,betplus_inc=1,bet_bluff_inc=1):
         config = ConfigObj("config.ini")
-        self.logger = debug_logger().start_logger('mouse')
+        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger(__name__)
 
         try:
             mouse_control = config['control']

@@ -1,8 +1,8 @@
 import os.path
-import os.path
 import re
 import sys
 import time
+import logging
 
 import cv2  # opencv 3.0
 import numpy as np
@@ -11,7 +11,6 @@ from PIL import Image, ImageFilter, ImageGrab
 from configobj import ConfigObj
 
 from decisionmaker.genetic_algorithm import GeneticAlgorithm
-from tools.debug_logger import debug_logger
 from tools.vbox_manager import VirtualBoxController
 
 
@@ -22,7 +21,8 @@ class Table(object):
         self.ip = ''
         self.load_templates(p)
         self.load_coordinates()
-        self.logger = debug_logger().start_logger('table')
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.DEBUG)
         self.gui_signals = gui_signals
         self.game_logger = game_logger
 

@@ -3,6 +3,7 @@ __author__ = 'Nicolas Dickreuter'
 Runs a Montecarlo simulation to calculate the probability of winning with a certain pokerhand and a given amount of players
 '''
 import operator
+import logging
 import time
 import winsound
 from collections import Counter
@@ -10,7 +11,6 @@ from copy import copy
 
 import numpy as np
 
-from tools.debug_logger import debug_logger
 
 
 class MonteCarlo(object):
@@ -430,7 +430,8 @@ class MonteCarlo(object):
 def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_state, h):
     # Prepare for montecarlo simulation to evaluate equity (probability of winning with given cards)
 
-    logger = debug_logger().start_logger('montecarlo')
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
 
     if t.gameStage == "PreFlop":
         t.assumedPlayers = 2

@@ -35,6 +35,7 @@ class TestDecision(TestCase):
 
     def test_position_adjustment(self):
         t, p, gui_signals, h, logger = init_table('tests/screenshots/467381034_PreFlop_0.png', strategy='Pokemon4')
+        t.gameStage="PreFlop"
         p = StrategyHandler()
         p.read_strategy('Nickpick12')
         l = MagicMock()

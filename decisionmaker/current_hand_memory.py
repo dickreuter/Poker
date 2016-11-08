@@ -1,6 +1,6 @@
 import numpy as np
+import logging
 from copy import copy, deepcopy
-from tools.debug_logger import debug_logger
 
 
 class History:
@@ -32,7 +32,8 @@ class History:
 class CurrentHandPreflopState:
     def __init__(self):
         self.other_player = None
-        self.logger = debug_logger().start_logger('preflop_memory')
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.DEBUG)
         self.bot_preflop_decision = ''
         self.preflop_caller_positions = []
         self.preflop_raiser_positions = []

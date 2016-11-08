@@ -1,6 +1,7 @@
 import matplotlib
 
 matplotlib.use('Qt5Agg')
+import logging, logging.handlers
 import pytesseract
 import threading
 import datetime
@@ -8,15 +9,17 @@ import sys
 from PIL import Image
 from PyQt5 import QtWidgets, QtGui
 
-from decisionmaker.decisionmaker import *
 from tools.mouse_mover import *
 from gui.gui_qt_ui import Ui_Pokerbot
 from gui.gui_qt_logic import UIActionAndSignals
 from tools.mongo_manager import StrategyHandler, UpdateChecker, GameLogger
 from table_analysers.table_screen_based import TableScreenBased
 from decisionmaker.current_hand_memory import History, CurrentHandPreflopState
+from decisionmaker.montecarlo_python import run_montecarlo_wrapper
+from decisionmaker.decisionmaker import Decision
 
-version = 1.921
+
+version = 1.93
 
 
 class ThreadManager(threading.Thread):
@@ -26,7 +29,9 @@ class ThreadManager(threading.Thread):
         self.name = name
         self.counter = counter
         self.gui_signals = gui_signals
-        self.logger = debug_logger().start_logger('main')
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.DEBUG)
+
         self.game_logger = GameLogger()
 
     def update_most_gui_items(self, p, t, d, h, gui_signals):
@@ -167,6 +172,25 @@ class ThreadManager(threading.Thread):
 
 # ==== MAIN PROGRAM =====
 if __name__ == '__main__':
+    fh = logging.handlers.RotatingFileHandler('log/pokerprogram.log', maxBytes=1000000, backupCount=10)
+    fh.setLevel(logging.DEBUG)
+    fh2 = logging.handlers.RotatingFileHandler('log/pokerprogram_info_only.log', maxBytes=1000000, backupCount=5)
+    fh2.setLevel(logging.INFO)
+    er = logging.handlers.RotatingFileHandler('log/errors.log', maxBytes=2000000, backupCount=2)
+    er.setLevel(logging.WARNING)
+    ch = logging.StreamHandler(sys.stdout)
+    ch.setLevel(logging.WARNING)
+    fh.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+    fh2.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+    er.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+    ch.setFormatter(logging.Formatter('%(name)s - %(levelname)s - %(message)s'))
+
+    root = logging.getLogger()
+    root.addHandler(fh)
+    root.addHandler(fh2)
+    root.addHandler(ch)
+    root.addHandler(er)
+
     print(
         "This is a testversion and error messages will appear here. The user interface has opened in a separate window.")
     # Back up the reference to the exceptionhook
@@ -177,7 +201,8 @@ if __name__ == '__main__':
 
     def my_exception_hook(exctype, value, traceback):
         # Print the error and traceback
-        logger = debug_logger().start_logger('exception_hook')
+        logger = logging.getLogger(__name__)
+        logger.setLevel(logging.DEBUG)
         print(exctype, value, traceback)
         logger.error(str(exctype))
         logger.error(str(value))
