@@ -1,5 +1,6 @@
 import numpy as np
 import itertools as iter
+import time
 
 
 class Outs_Calculator(object):
@@ -17,15 +18,17 @@ class Outs_Calculator(object):
         self.gut_shot_two_overcards = False  # get_gut_shot_two_overcards_draw
         self.gut_shot_and_flush = False  # get_straight_flush_draw
         self.open_straight_and_flush = False  # get_straight_flush_draw
+        self.two_overcards = False  # boolean for two overcards
+        self.straight_flush = False  # boolean for straight or flush is counted
 
-    def create_card_deck(self, hand):
+    def create_card_deck(self, oc):
         values = "23456789TJQKA"
         suites = "CDHS"
-        Deck = []
-        [Deck.append(x + y) for x in values for y in suites]
+        oc.deck = []
+        [oc.deck.append(x + y) for x in values for y in suites]
         # remove drawn cards
-        Deck = [elem for elem in Deck if elem not in hand]
-        return Deck
+        oc.deck = [elem for elem in oc.deck if elem not in oc.hand]
+        return oc.deck
 
     def calc_score(self, hand):  # assign a calc_score to the hand so it can be compared with other hands
         card_ranks_original = '23456789TJQKA'
@@ -126,107 +129,134 @@ class Outs_Calculator(object):
         return score, card_ranks, hand_type
 
     def evaluate_hands(self, pocket, board, oc):
-        hand = pocket + board
-        self.board = board
-        self.pocket = pocket
-        self.hand = hand
+        oc.hand = pocket + board
+        oc.board = board
+        oc.pocket = pocket
 
-        pocket_score, pocket_cards, pocket_result = oc.calc_score(pocket)
-        board_score, board_cards, board_result = oc.calc_score(board)
-        hand_score, hand_cards, hand_result = oc.calc_score(hand)
+        oc.pocket_score, oc.pocket_cards, oc.pocket_result = oc.calc_score(oc.pocket)
+        oc.board_score, oc.board_cards, oc.board_result = oc.calc_score(oc.board)
+        oc.hand_score, oc.hand_cards, oc.hand_result = oc.calc_score(oc.hand)
 
-        '''print("----------pocket-------")
-        print(pocket_score)
-        print(pocket_cards)
-        print(pocket_result)
-        print("----------board-------")
-        print(board_score)
-        print(board_cards)
-        print(board_result)
-        print("----------hand-------")
-        print(hand_score)
-        print(hand_cards)
-        print(hand_result)'''
+        outs = self.calculate_outs(oc)
 
-        print("---------CALCULATING OUTS--------")
+        return outs
 
-        self.calculate_outs(pocket_score, pocket_cards, pocket_result, board_score, board_cards, board_result, hand_score,
-                          hand_cards, hand_result, hand)
-
-    def calculate_outs(self, pocket_score, pocket_cards, pocket_result, board_score, board_cards, board_result,
-                       hand_score,
-                       hand_cards, hand_result, hand):
+    def calculate_outs(self, oc):
         outs = 0
-        deck = self.create_card_deck(hand)
+        oc.deck = self.create_card_deck(oc)
 
         # Use functions to calculate outs
-        # DONE TODO if we have straight draw and board has 2/3/4 same suit, straight outs 6 + 0,5 0,5 (count 2 straight outs as half, because they can make flush for opponent)
-        # DONE TODO if my pocket pair is higher then board-1 cards, my outs are going to be raised. E.g: AA 72K ->> 2 Ace + 3 K = 5 -> 72KJ ->> 2 Ace + 3 K + 3 J = 8 outs
-        self.get_straight_flush_draw(hand, deck)
-        self.get_gut_shot_two_overcards_draw(hand, board_cards, pocket_cards, deck)
-        self.get_flush_draw(hand)
-        self.get_open_straight_draw(hand, deck)
-        self.get_set_to_fh_or_4_kind(pocket_result, hand_result, board_result)
-        self.get_two_overcards_to_over_pair(pocket_cards, pocket_result, board_cards, board_result, hand_result)
-        self.get_no_pair_to_pair(pocket_result, board_result, hand_result)
-        self.get_one_pair_to_two_pair_or_set(pocket_result, board_result, hand_result)
-        self.get_two_pair_to_fh(hand_result, board_result)
-        self.get_gut_shot_straight_draw(hand, deck)
-        self.get_one_overcard(pocket_cards, board_cards, pocket_result, board_result)
-        self.get_pocket_pair_to_set(board_result, pocket_result, board_cards,pocket_cards)
+        outs_list = [0] * 12
+        outs_rank = [
+            self.get_straight_flush_draw,
+            self.get_gut_shot_two_overcards_draw,
+            self.get_flush_draw, self.get_open_straight_draw,
+            self.get_gut_shot_straight_draw,
+            self.get_set_to_fh_or_4_kind,
+            self.get_two_overcards_to_over_pair,
+            self.get_one_overcard,
+            self.get_no_pair_to_pair,
+            self.get_one_pair_to_two_pair_or_set,
+            self.get_two_pair_to_fh,
+            self.get_pocket_pair_to_set
+        ]
+
+        for i in range(0, len(outs_rank)):
+            outs = outs_list[i] = outs_rank[i](oc)
+            if i == 0 and outs_list[0] != 0:
+                outs = outs_list[0] + (outs_rank[6](oc) + outs_rank[7](oc)) / 2
+                break
+            if i == 1 and outs_list[i] != 0:
+                outs = outs_list[1]
+                break
+            elif i == 2 and outs_list[i] != 0:
+                outs = outs_list[2] + (outs_rank[6](oc) + outs_rank[7](oc)) / 2
+                break
+            elif i == 3 and outs_list[i] != 0:
+                outs = outs_list[3] + (outs_rank[6](oc) + outs_rank[7](oc)) / 2
+                break
+            elif i == 4 and outs_list[i] != 0:
+                outs = outs_list[4] + (outs_rank[6](oc) + outs_rank[7](oc)) / 2
+                break
+            elif i == 5 and outs_list[i] != 0:
+                outs = outs_list[5]
+                break
+            elif i == 6 and outs_list[i] != 0:
+                outs = outs_list[6]
+                break
+            elif i == 7 and outs_list[i] != 0:
+                outs = outs_list[7]
+                break
+            elif i == 8 and outs_list[i] != 0:
+                outs = outs_list[8]
+                break
+            elif i == 9 and outs_list[i] != 0:
+                outs = outs_list[9]
+                break
+            elif i == 10 and outs_list[i] != 0:
+                outs = outs_list[10]
+                break
+            elif i == 11 and outs_list[i] != 0:
+                outs = outs_list[11]
+                break
+
+        print(outs)
 
         return outs
 
     # Pocket Pair to Set
-    def get_pocket_pair_to_set(self, board_result, pocket_result, board_cards,pocket_cards):
+    # Revisit this
+    def get_pocket_pair_to_set(self, oc):
         # TODO:if paired card rank is lower then minimum board card rank then outs = outs / 2
-        if pocket_result == 'Pair' and board_result != 'Pair':
+        if oc.pocket_result == 'Pair' and oc.board_result != 'Pair':
             self.pocket_pair_to_set = True
             outs = 2
             overcard = 0
             # calculate overcards
-            for i in range(0,len(pocket_cards)):
-                for j in range(0,len(board_cards)):
-                    if(pocket_cards[i] > board_cards[j]):
+            for i in range(0, len(oc.pocket_cards)):
+                for j in range(0, len(oc.board_cards)):
+                    if (oc.pocket_cards[i] > oc.board_cards[j]):
                         overcard += 1
             # if overcard is 3, get highest board card also as outs
-            if(overcard == 3):
+            if (overcard == 3):
                 outs += 3
             # if overcard is 4, get highest 2 board card also as outs
-            if(overcard == 4):
+            if (overcard == 4):
                 outs += 6
         else:
             self.pocket_pair_to_set = False
             outs = 0
-        print("get_pocket_pair_to_set   OUT AMOUNT ------------  " + str(outs))
         return outs
 
     # One Overcard
-    def get_one_overcard(self, pocket_cards, board_cards, pocket_result, board_result):
-
-        if pocket_result == 'HighCard' and board_result == 'HighCard':
+    # TODO: REMOVE IF STATEMENT
+    def get_one_overcard(self, oc):
+        outs = 0
+        if oc.pocket_result == 'HighCard' and oc.board_result == 'HighCard' and self.no_pair_to_pair == False:
             # check overcard
-            for i in range(0, len(pocket_cards)):
-                for j in range(0, len(board_cards)):
-                    if pocket_cards[i] <= board_cards[j]:
-                        self.one_overcard = False
-                        outs = 0
+            if self.two_overcards == False:
+                for i in range(0, len(oc.pocket_cards)):
+                    if self.one_overcard == True:
+                        break
                     else:
-                        self.one_overcard = True
-                        outs = 3
-                        break;
-        else:
-            outs = 0
-        print("get_one_overcard   OUT AMOUNT ------------  " + str(outs))
+                        for j in range(0, len(oc.board_cards)):
+                            if oc.pocket_cards[i] <= oc.board_cards[j]:
+                                self.one_overcard = False
+                                outs = 0
+                                break
+                            else:
+                                self.one_overcard = True
+                                outs = 3
+
         return outs
 
     # Inside Straight
-    def get_gut_shot_straight_draw(self, hand, deck):
+    def get_gut_shot_straight_draw(self, oc):
         straight_outs = 0
         boardFlush = self.check_board_flush()
-        for ghost_card in deck:
+        for ghost_card in oc.deck:
 
-            tupleList = list(iter.combinations(hand, 4))
+            tupleList = list(iter.combinations(oc.hand, 4))
             handList = [[]] * len(tupleList)
 
             for i in range(0, len(tupleList)):
@@ -242,78 +272,77 @@ class Outs_Calculator(object):
         else:
             self.gut_shot_straight = False
             outs = 0
-        print("get_gut_shot_straight_draw   OUT AMOUNT ------------  " + str(outs))
+
         return outs
 
     # Two Pair to Full House
-    def get_two_pair_to_fh(self, hand_result, board_result):
+    def get_two_pair_to_fh(self, oc):
         # TODO ask if board can also have one pair
-        if hand_result == 'TwoPair' and board_result == 'HighCard':
+        if oc.hand_result == 'TwoPair' and oc.board_result == 'HighCard':
             self.two_pair_to_fh = True
             outs = 4
         else:
             self.two_pair_to_fh = False
             outs = 0
-        print("get_two_pair_to_fh   OUT AMOUNT ------------  " + str(outs))
         return outs
 
     # One Pair to Two Pair or Set
-    def get_one_pair_to_two_pair_or_set(self, pocket_result, board_result, hand_result):
-        if pocket_result == 'HighCard' and hand_result == 'Pair' and board_result == 'HighCard':
+    def get_one_pair_to_two_pair_or_set(self, oc):
+        if oc.pocket_result == 'HighCard' and oc.hand_result == 'Pair' and oc.board_result == 'HighCard':
             outs = 5
             self.one_pair_to_two_pair_or_set = True
         else:
             outs = 0
             self.one_pair_to_two_pair_or_set = False
-        print("get_one_pair_to_two_pair_or_set   OUT AMOUNT ------------  " + str(outs))
         return outs
 
     # No pair to one pair
-    def get_no_pair_to_pair(self, pocket_result, board_result, hand_result):
-        if pocket_result == 'HighCard' and hand_result == 'HighCard' and board_result == 'HighCard':
+    # TODO: REMOVE IF STATEMENT
+    def get_no_pair_to_pair(self, oc):
+        if oc.pocket_result == 'HighCard' and oc.hand_result == 'HighCard' and oc.board_result == 'HighCard' and self.two_overcards == False:
             outs = 6
             self.no_pair_to_pair = True
         else:
             outs = 0
             self.no_pair_to_pair = False
-        print("get_no_pair_to_pair   OUT AMOUNT ------------  " + str(outs))
         return outs
 
     # Two Overcards to Over Pair
-    def get_two_overcards_to_over_pair(self, pocket_cards, pocket_result, board_cards, board_result, hand_result):
+    # TODO: OVERCARD BOOL STATEMNT
+    def get_two_overcards_to_over_pair(self, oc):
         outs = 0
-        if pocket_result == 'HighCard' and hand_result == 'HighCard' and board_result == 'HighCard':
+        if oc.pocket_result == 'HighCard' and oc.hand_result == 'HighCard' and oc.board_result == 'HighCard':
             # checkovercard
-            for i in range(0, len(pocket_cards)):
-                for j in range(0, len(board_cards)):
-                    if pocket_cards[i] <= board_cards[j]:
+            for i in range(0, len(oc.pocket_cards)):
+                for j in range(0, len(oc.board_cards)):
+                    if oc.pocket_cards[i] <= oc.board_cards[j]:
                         self.two_overcards_to_over_pair = False
                         outs = 0
-                        break;
+                        self.two_overcards = False
+                        break
                     else:
                         self.two_overcards_to_over_pair = True
+                        self.two_overcards = True
                         outs = 6
-        print("get_two_overcards_to_over_pair   OUT AMOUNT ------------  " + str(outs))
         return outs
 
     # Set to Full House or Four of a Kind
-    def get_set_to_fh_or_4_kind(self, pocket_result, hand_result, board_result):
-        if pocket_result == 'Pair' and hand_result == 'ThreeOfAKind' and board_result == 'HighCard':
+    def get_set_to_fh_or_4_kind(self, oc):
+        if oc.pocket_result == 'Pair' and oc.hand_result == 'ThreeOfAKind' and oc.board_result == 'HighCard':
             outs = 7
             self.set_to_fh_or_4_kind = True
         else:
             outs = 0
             self.set_to_fh_or_4_kind = False
-        print("get_set_to_fh_or_4_kind   OUT AMOUNT ------------  " + str(outs))
         return outs
 
     # Open Straight
-    def get_open_straight_draw(self, hand, deck):
+    def get_open_straight_draw(self, oc):
         straight_outs = 0
         boardFlush = self.check_board_flush()
-        for ghost_card in deck:
+        for ghost_card in oc.deck:
 
-            tupleList = list(iter.combinations(hand, 4))
+            tupleList = list(iter.combinations(oc.hand, 4))
             handList = [[]] * len(tupleList)
 
             for i in range(0, len(tupleList)):
@@ -330,42 +359,40 @@ class Outs_Calculator(object):
             outs = 0
             self.open_straight = False
 
-        print("get_open_straight_draw OUTS ----- " + str(outs))
         return outs
 
     # Flush Draw
-    def get_flush_draw(self, hand):
-
+    def get_flush_draw(self, oc):
         original_suits = 'CDHS'
-        boardFlush = self.check_board_flush
+        bool_outs = True
         # check flush draw
-        suits = [s for _, s in hand]
+        boardFlush = self.check_board_flush
+        suits = [s for _, s in oc.hand]
         for flushSuit in original_suits:  # get the suit of the flush
             suits.count(flushSuit)
             if suits.count(flushSuit) == 4:
                 outs = 9
                 if boardFlush: outs -= 1
                 self.flush_draw = True
+                break
             else:
                 outs = 0
                 self.flush_draw = False
-        print("get_flush_draw   OUT AMOUNT ------------  " + str(outs))
         return outs
 
     # Inside Straight and Two Overcards
-    def get_gut_shot_two_overcards_draw(self, hand, board_cards, pocket_cards, deck):
-
+    def get_gut_shot_two_overcards_draw(self, oc):
         # check overcard
-        for i in range(0, len(pocket_cards)):
-            for j in range(0, len(board_cards)):
-                if pocket_cards[i] <= board_cards[j]:
+        for i in range(0, len(oc.pocket_cards)):
+            for j in range(0, len(oc.board_cards)):
+                if oc.pocket_cards[i] <= oc.board_cards[j]:
                     two_overcards = False
-                    break;
+                    break
                 else:
                     two_overcards = True
 
         if two_overcards:
-            outs2 = self.get_gut_shot_straight_draw(hand, deck)
+            outs2 = self.get_gut_shot_straight_draw(oc)
             if outs2 == 4:
                 self.gut_shot_two_overcards = True
                 outs = 10
@@ -376,12 +403,10 @@ class Outs_Calculator(object):
             self.gut_shot_two_overcards = False
             outs = 0
 
-        print("get_gut_shot_two_overcards_draw OUTS ----- " + str(outs))
         return outs
 
     # Inside Straight and Flush // Open Straight and Flush
-    def get_straight_flush_draw(self, hand, deck):
-
+    def get_straight_flush_draw(self, oc):
         original_suits = 'CDHS'
         outs = 0
         straight_outs = 0
@@ -390,53 +415,48 @@ class Outs_Calculator(object):
         # check flush draw
 
         boardFlush = self.check_board_flush()
-        suits = [s for _, s in hand]
+        suits = [s for _, s in oc.hand]
         for flush_suit in original_suits:  # get the suit of the flush
             suits.count(flush_suit)
             if suits.count(flush_suit) == 4:
-                flush_draw = True
-                break;
+                self.flush_draw = True
+                break
             else:
-                flush_draw = False
+                self.flush_draw = False
         # check straight draw
-        for ghost_card in deck:
+        for ghost_card in oc.deck:
 
-            tupleList = list(iter.combinations(hand, 4))
-            handList = [[]] * len(tupleList)
+            tupleList = list(iter.combinations(oc.hand, 4))
+            hand_list = [[]] * len(tupleList)
 
             for i in range(0, len(tupleList)):
-                handList[i] = list(tupleList[i])
-                handList[i].append(ghost_card)
+                hand_list[i] = list(tupleList[i])
+                hand_list[i].append(ghost_card)
 
-            straight_draw, straight_outs = self.check_straight(handList, ghost_card, straight_outs)
+            straight_draw, straight_outs = self.check_straight(hand_list, ghost_card, straight_outs)
 
         if straight_outs == 8 or straight_outs == 4:
             straight_draw = True
 
-        if flush_draw and straight_draw:
-
+        if self.flush_draw and straight_draw:
             if straight_outs == 4:
                 outs = 12
                 if boardFlush: outs -= 1
-                print("gut_shot_and_flush   OUT AMOUNT ------------  " + str(outs))
                 self.gut_shot_and_flush = True
                 self.open_straight_and_flush = False
             elif straight_outs == 8:
                 outs = 15
                 if boardFlush: outs -= 1
-                print("open_straight_and_flush   OUT AMOUNT ------------  " + str(outs))
                 self.open_straight_and_flush = True
                 self.gut_shot_and_flush = False
             else:
                 print("ERROR CHECK STRAIGHT_FLUSH_DRAW FUNCTION")
                 outs = 0
-        else:
-            print("FLUSH AND STRAIGHT NOT FOUND")
+
         return outs
 
     # Determine how many straight outs are they
     def check_straight(self, hand_list, ghost_card, straight_outs):
-
         card_ranks_original = '23456789TJQKA'
         straight = False
         tempHand = [[]] * 5
@@ -459,7 +479,6 @@ class Outs_Calculator(object):
                     if tempHand[4] != hand[4]:
                         straight_outs += 1
                     tempHand = hand
-                    handy = hand
         return straight, straight_outs
 
     def check_board_flush(self):
@@ -470,7 +489,7 @@ class Outs_Calculator(object):
             suits.count(flush_suit)
             if suits.count(flush_suit) >= 2:
                 flush_draw = True
-                break;
+                break
             else:
                 flush_draw = False
 
@@ -478,7 +497,9 @@ class Outs_Calculator(object):
 
 
 if __name__ == '__main__':
+    start_time = time.clock()
     oc = Outs_Calculator()
+
     my_cards = ['KH', 'KC']
     cards_on_table = ['QD', '4H', '9S']
     print("POCKET PAIR TO SET")
@@ -608,3 +629,5 @@ if __name__ == '__main__':
     print("")
     print("")
     print("")
+
+    print(time.clock() - start_time)
