@@ -1,8 +1,13 @@
+from .outs_calculator import Outs_Calculator
+
 class Implied_Odds(object):
     def __init__(self):
         pass
 
-    def calculate_implied_odds(self, effective_stacks,call_value,pot_value,table_phase,outs):
+    def calculate_implied_odds(self, effective_stacks,call_value,pot_value,table_phase,t):
+
+        oc = Outs_Calculator()
+        outs = oc.evaluate_hands(self,t.myCards,t.cardsOnTable)
 
         pot_odds = (pot_value + call_value) / call_value
 

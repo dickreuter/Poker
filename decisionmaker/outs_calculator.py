@@ -132,113 +132,77 @@ class Outs_Calculator(object):
         oc.hand = pocket + board
         oc.board = board
         oc.pocket = pocket
-        oc.hand = oc.hand
 
         oc.pocket_score, oc.pocket_cards, oc.pocket_result = oc.calc_score(oc.pocket)
         oc.board_score, oc.board_cards, oc.board_result = oc.calc_score(oc.board)
         oc.hand_score, oc.hand_cards, oc.hand_result = oc.calc_score(oc.hand)
-
-        '''print("----------pocket-------")
-        print(pocket_score)
-        print(pocket_cards)
-        print(pocket_result)
-        print("----------board-------")
-        print(board_score)
-        print(board_cards)
-        print(board_result)
-        print("----------hand-------")
-        print(hand_score)
-        print(hand_cards)
-        print(hand_result)'''
-
-        print("---------CALCULATING OUTS--------")
 
         outs = self.calculate_outs(oc)
 
         return outs
 
     def calculate_outs(self, oc):
-            outs = 0
-            oc.deck = self.create_card_deck(oc)
+        outs = 0
+        oc.deck = self.create_card_deck(oc)
 
+        # Use functions to calculate outs
+        outs_list = [0] * 12
+        outs_rank = [
+            self.get_straight_flush_draw,
+            self.get_gut_shot_two_overcards_draw,
+            self.get_flush_draw, self.get_open_straight_draw,
+            self.get_gut_shot_straight_draw,
+            self.get_set_to_fh_or_4_kind,
+            self.get_two_overcards_to_over_pair,
+            self.get_one_overcard,
+            self.get_no_pair_to_pair,
+            self.get_one_pair_to_two_pair_or_set,
+            self.get_two_pair_to_fh,
+            self.get_pocket_pair_to_set
+        ]
 
+        for i in range(0, len(outs_rank)):
+            outs = outs_list[i] = outs_rank[i](oc)
+            if i == 0 and outs_list[0] != 0:
+                outs = outs_list[0] + (outs_rank[6](oc) + outs_rank[7](oc)) / 2
+                break
+            if i == 1 and outs_list[i] != 0:
+                outs = outs_list[1]
+                break
+            elif i == 2 and outs_list[i] != 0:
+                outs = outs_list[2] + (outs_rank[6](oc) + outs_rank[7](oc)) / 2
+                break
+            elif i == 3 and outs_list[i] != 0:
+                outs = outs_list[3] + (outs_rank[6](oc) + outs_rank[7](oc)) / 2
+                break
+            elif i == 4 and outs_list[i] != 0:
+                outs = outs_list[4] + (outs_rank[6](oc) + outs_rank[7](oc)) / 2
+                break
+            elif i == 5 and outs_list[i] != 0:
+                outs = outs_list[5]
+                break
+            elif i == 6 and outs_list[i] != 0:
+                outs = outs_list[6]
+                break
+            elif i == 7 and outs_list[i] != 0:
+                outs = outs_list[7]
+                break
+            elif i == 8 and outs_list[i] != 0:
+                outs = outs_list[8]
+                break
+            elif i == 9 and outs_list[i] != 0:
+                outs = outs_list[9]
+                break
+            elif i == 10 and outs_list[i] != 0:
+                outs = outs_list[10]
+                break
+            elif i == 11 and outs_list[i] != 0:
+                outs = outs_list[11]
+                break
 
-            # Use functions to calculate outs
-            # DONE TODO if we have straight draw and board has 2/3/4 same suit, straight outs 6 + 0,5 0,5 (count 2 straight outs as half, because they can make flush for opponent)
-            # DONE TODO if my pocket pair is higher then board-1 cards, my outs are going to be raised. E.g: AA 72K ->> 2 Ace + 3 K = 5 -> 72KJ ->> 2 Ace + 3 K + 3 J = 8 outs
+        print(outs)
 
-            outs_list = [0] * 12
-
-            outs_rank = [
-                self.get_straight_flush_draw,
-                self.get_gut_shot_two_overcards_draw,
-                self.get_flush_draw, self.get_open_straight_draw,
-                self.get_gut_shot_straight_draw,
-                self.get_set_to_fh_or_4_kind,
-                self.get_two_overcards_to_over_pair,
-                self.get_one_overcard,
-                self.get_no_pair_to_pair,
-                self.get_one_pair_to_two_pair_or_set,
-                self.get_two_pair_to_fh,
-                self.get_pocket_pair_to_set
-            ]
-
-            for i in range(0,len(outs_rank)):
-                outs = outs_list[i] = outs_rank[i](oc)
-                if i == 0 and outs_list[0] != 0:
-                    outs = outs_list[0] + (outs_rank[6](oc)+outs_rank[7](oc))/2
-                    break;
-                if i == 1 and outs_list[i] != 0:
-                    outs = outs_list[1]
-                    break;
-                elif i == 2 and  outs_list[i] != 0:
-                    outs = outs_list[2] + (outs_rank[6](oc)+outs_rank[7](oc))/2
-                    break;
-                elif i == 3 and outs_list[i] != 0:
-                    outs = outs_list[3] + (outs_rank[6](oc)+outs_rank[7](oc))/2
-                    break;
-                elif i == 4 and  outs_list[i] != 0:
-                    outs = outs_list[4] + (outs_rank[6](oc)+outs_rank[7](oc))/2
-                    break;
-                elif i == 5 and  outs_list[i] != 0:
-                    outs = outs_list[5]
-                    break;
-                elif i == 6 and outs_list[i] != 0:
-                    outs = outs_list[6]
-                    break;
-                elif i == 7 and outs_list[i] != 0:
-                    outs = outs_list[7]
-                    break;
-                elif i == 8 and outs_list[i] != 0:
-                    outs = outs_list[8]
-                    break;
-                elif i == 9 and outs_list[i] != 0:
-                    outs = outs_list[9]
-                    break;
-                elif i == 10 and outs_list[i] != 0:
-                    outs = outs_list[10]
-                    break;
-                elif i == 11 and outs_list[i] != 0:
-                    outs = outs_list[11]
-                    break;
-            print(outs)
-            return outs
-
-    '''self.get_straight_flush_draw(hand, deck)
-    self.get_gut_shot_two_overcards_draw(hand, board_cards, pocket_cards, deck)
-    self.get_flush_draw(hand)
-    self.get_open_straight_draw(hand, deck)
-    self.get_set_to_fh_or_4_kind(pocket_result, hand_result, board_result)
-    self.get_two_overcards_to_over_pair(pocket_cards, pocket_result, board_cards, board_result,
-                                                      hand_result)
-    self.get_no_pair_to_pair(pocket_result, board_result, hand_result)
-    self.get_one_pair_to_two_pair_or_set(pocket_result, board_result, hand_result)
-    self.get_two_pair_to_fh(hand_result, board_result)
-    self.get_gut_shot_straight_draw(hand, deck)
-    self.get_one_overcard(pocket_cards, board_cards, pocket_result, board_result)
-    self.get_pocket_pair_to_set(board_result, pocket_result, board_cards, pocket_cards)'''
-
-
+        return outs
 
     # Pocket Pair to Set
     # Revisit this
@@ -262,9 +226,7 @@ class Outs_Calculator(object):
         else:
             self.pocket_pair_to_set = False
             outs = 0
-        print("get_pocket_pair_to_set   OUT AMOUNT ------------  " + str(outs))
         return outs
-
 
     # One Overcard
     # TODO: REMOVE IF STATEMENT
@@ -281,16 +243,12 @@ class Outs_Calculator(object):
                             if oc.pocket_cards[i] <= oc.board_cards[j]:
                                 self.one_overcard = False
                                 outs = 0
-                                break;
+                                break
                             else:
                                 self.one_overcard = True
                                 outs = 3
 
-
-
-        print("get_one_overcard   OUT AMOUNT ------------  " + str(outs))
         return outs
-
 
     # Inside Straight
     def get_gut_shot_straight_draw(self, oc):
@@ -314,9 +272,8 @@ class Outs_Calculator(object):
         else:
             self.gut_shot_straight = False
             outs = 0
-        print("get_gut_shot_straight_draw   OUT AMOUNT ------------  " + str(outs))
-        return outs
 
+        return outs
 
     # Two Pair to Full House
     def get_two_pair_to_fh(self, oc):
@@ -327,9 +284,7 @@ class Outs_Calculator(object):
         else:
             self.two_pair_to_fh = False
             outs = 0
-        print("get_two_pair_to_fh   OUT AMOUNT ------------  " + str(outs))
         return outs
-
 
     # One Pair to Two Pair or Set
     def get_one_pair_to_two_pair_or_set(self, oc):
@@ -339,9 +294,7 @@ class Outs_Calculator(object):
         else:
             outs = 0
             self.one_pair_to_two_pair_or_set = False
-        print("get_one_pair_to_two_pair_or_set   OUT AMOUNT ------------  " + str(outs))
         return outs
-
 
     # No pair to one pair
     # TODO: REMOVE IF STATEMENT
@@ -352,9 +305,7 @@ class Outs_Calculator(object):
         else:
             outs = 0
             self.no_pair_to_pair = False
-        print("get_no_pair_to_pair   OUT AMOUNT ------------  " + str(outs))
         return outs
-
 
     # Two Overcards to Over Pair
     # TODO: OVERCARD BOOL STATEMNT
@@ -368,14 +319,12 @@ class Outs_Calculator(object):
                         self.two_overcards_to_over_pair = False
                         outs = 0
                         self.two_overcards = False
-                        break;
+                        break
                     else:
                         self.two_overcards_to_over_pair = True
                         self.two_overcards = True
                         outs = 6
-        print("get_two_overcards_to_over_pair   OUT AMOUNT ------------  " + str(outs))
         return outs
-
 
     # Set to Full House or Four of a Kind
     def get_set_to_fh_or_4_kind(self, oc):
@@ -385,9 +334,7 @@ class Outs_Calculator(object):
         else:
             outs = 0
             self.set_to_fh_or_4_kind = False
-        print("get_set_to_fh_or_4_kind   OUT AMOUNT ------------  " + str(outs))
         return outs
-
 
     # Open Straight
     def get_open_straight_draw(self, oc):
@@ -412,9 +359,7 @@ class Outs_Calculator(object):
             outs = 0
             self.open_straight = False
 
-        print("get_open_straight_draw OUTS ----- " + str(outs))
         return outs
-
 
     # Flush Draw
     def get_flush_draw(self, oc):
@@ -429,13 +374,11 @@ class Outs_Calculator(object):
                 outs = 9
                 if boardFlush: outs -= 1
                 self.flush_draw = True
-                break;
+                break
             else:
                 outs = 0
                 self.flush_draw = False
-        print("get_flush_draw   OUT AMOUNT ------------  " + str(outs))
         return outs
-
 
     # Inside Straight and Two Overcards
     def get_gut_shot_two_overcards_draw(self, oc):
@@ -444,7 +387,7 @@ class Outs_Calculator(object):
             for j in range(0, len(oc.board_cards)):
                 if oc.pocket_cards[i] <= oc.board_cards[j]:
                     two_overcards = False
-                    break;
+                    break
                 else:
                     two_overcards = True
 
@@ -460,9 +403,7 @@ class Outs_Calculator(object):
             self.gut_shot_two_overcards = False
             outs = 0
 
-        print("get_gut_shot_two_overcards_draw OUTS ----- " + str(outs))
         return outs
-
 
     # Inside Straight and Flush // Open Straight and Flush
     def get_straight_flush_draw(self, oc):
@@ -479,7 +420,7 @@ class Outs_Calculator(object):
             suits.count(flush_suit)
             if suits.count(flush_suit) == 4:
                 self.flush_draw = True
-                break;
+                break
             else:
                 self.flush_draw = False
         # check straight draw
@@ -501,22 +442,18 @@ class Outs_Calculator(object):
             if straight_outs == 4:
                 outs = 12
                 if boardFlush: outs -= 1
-                print("gut_shot_and_flush   OUT AMOUNT ------------  " + str(outs))
                 self.gut_shot_and_flush = True
                 self.open_straight_and_flush = False
             elif straight_outs == 8:
                 outs = 15
                 if boardFlush: outs -= 1
-                print("open_straight_and_flush   OUT AMOUNT ------------  " + str(outs))
                 self.open_straight_and_flush = True
                 self.gut_shot_and_flush = False
             else:
                 print("ERROR CHECK STRAIGHT_FLUSH_DRAW FUNCTION")
                 outs = 0
-        else:
-            print("FLUSH AND STRAIGHT NOT FOUND")
-        return outs
 
+        return outs
 
     # Determine how many straight outs are they
     def check_straight(self, hand_list, ghost_card, straight_outs):
@@ -544,7 +481,6 @@ class Outs_Calculator(object):
                     tempHand = hand
         return straight, straight_outs
 
-
     def check_board_flush(self):
         flush_draw = False
         original_suits = 'CDHS'
@@ -553,7 +489,7 @@ class Outs_Calculator(object):
             suits.count(flush_suit)
             if suits.count(flush_suit) >= 2:
                 flush_draw = True
-                break;
+                break
             else:
                 flush_draw = False
 
@@ -695,5 +631,3 @@ if __name__ == '__main__':
     print("")
 
     print(time.clock() - start_time)
-
-
