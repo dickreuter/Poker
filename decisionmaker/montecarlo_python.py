@@ -15,7 +15,8 @@ import numpy as np
 
 class MonteCarlo(object):
     def __init__(self):
-        pass
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.DEBUG)
 
     def get_two_short_notation(self, input_cards):
         card1 = input_cards[0][0]
@@ -406,12 +407,13 @@ class MonteCarlo(object):
             self.equity = np.round(wins / runs, 3)
 
             try:
-                if m % 1000 == 0:
+                if m % 500 == 0:
                     # if gui.active == True:
                     #     gui.progress["value"] = int(round(m * 100 / maxRuns))
                     #     gui.var2.set("Equity: " + str(self.equity * 100) + "%")
                     #     gui.statusbar.set("Running Monte Carlo: " + str(m) + "/" + str(maxRuns))
                     if m > 999 and time.time() > timeout:
+                        self.logger.warning("Cutting short montecarlo due to timeout")
                         break
             except:
                 pass

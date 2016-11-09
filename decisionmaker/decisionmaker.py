@@ -107,7 +107,7 @@ class Decision(DecisionBase):
         elif t.gameStage == GameStages.Flop.value:
             t.power1 = float(p.selected_strategy['FlopCallPower']) + secondRoundAdjustmentPowerIncrease
             t.minEquityCall = float(
-                p.selected_strategy['FlopMinCallEquity']) + self.secondRoundAdjustment - self.potAdjustment
+                p.selected_strategy['FlopMinCallEquity']) + self.secondRoundAdjustment - self.potAdjustment - self.out_adjustment
             t.minCallAmountIfAboveLimit = t.bigBlind * 2
             t.potStretch = 1
             t.maxEquityCall = 1
@@ -140,7 +140,7 @@ class Decision(DecisionBase):
         elif t.gameStage == GameStages.Flop.value:
             t.power2 = float(p.selected_strategy['FlopBetPower']) + secondRoundAdjustmentPowerIncrease
             t.minEquityBet = float(
-                p.selected_strategy['FlopMinBetEquity']) + self.secondRoundAdjustment
+                p.selected_strategy['FlopMinBetEquity']) + self.secondRoundAdjustment - self.out_adjustment
             t.maxEquityBet = 1
             t.minBetAmountIfAboveLimit = t.bigBlind * 2
         elif t.gameStage == GameStages.Turn.value:

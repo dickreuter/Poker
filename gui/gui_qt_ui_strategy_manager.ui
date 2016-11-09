@@ -2850,7 +2850,7 @@
             <item>
              <widget class="QLabel" name="label_24">
               <property name="text">
-               <string>Reduce required miminum equity for call and bet per 1 out at Turn</string>
+               <string>Reduce required miminum equity for call and bet per 1 out at Flop and Turn</string>
               </property>
              </widget>
             </item>

@@ -1943,7 +1943,7 @@ class Ui_editor_form(object):
         self.minimum_bet_size.setToolTip(_translate("editor_form", "<html><head/><body><p>This impacts the amount the bot will bet after the flop. You can set it to 3 if you only want it to bet at least half a pot, even though he would bet only bet or betPlus</p></body></html>"))
         self.label_20.setText(_translate("editor_form", "Bet Plus: how many times the + is pressed to increase the bet"))
         self.BetPlusInc.setToolTip(_translate("editor_form", "<html><head/><body><p>When the bot decides a simple press on the bet button is not enough, it can do a \'betPlus\'. That means it will shift the slider to the right with x clicks and then only press the bet button. Here you can adjust how many times it should click to slide the slider to the right to increase the bet size.</p></body></html>"))
-        self.label_24.setText(_translate("editor_form", "Reduce required miminum equity for call and bet per 1 out at Turn"))
+        self.label_24.setText(_translate("editor_form", "Reduce required miminum equity for call and bet per 1 out at Flop and Turn"))
         self.out_multiplier.setToolTip(_translate("editor_form", "<html><head/><body><p>When the bot decides a simple press on the bet button is not enough, it can do a \'betPlus\'. That means it will shift the slider to the right with x clicks and then only press the bet button. Here you can adjust how many times it should click to slide the slider to the right to increase the bet size.</p></body></html>"))
         self.groupBox_13.setTitle(_translate("editor_form", "Postflop ranges for other plyaers"))
         self.checkBox.setText(_translate("editor_form", "Use preflop reverse tables on heads-up if preflop tables are activated"))
