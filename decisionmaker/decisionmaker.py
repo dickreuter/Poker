@@ -32,7 +32,7 @@ class Decision(DecisionBase):
 
         out_multiplier=p.selected_strategy['out_multiplier']
         oc = Outs_Calculator()
-        if 3 <= len(t.cardsOnTable) <= 4: # Flop and Turn
+        if 3 <= len(t.cardsOnTable) <= 4: #
             outs = oc.evaluate_hands(t.mycards, t.cardsOnTable, oc)
         else:
             outs = 0

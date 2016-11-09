@@ -392,6 +392,7 @@ class Table(object):
             else:
                 self.logger.warning(
                     "Using backup round 2 sheetname R1R2 because sheet was not found: " + round2_sheetname)
+                self.logger.warning("Check screenshot: "+str(h.GameID) + "_" + str(t.gameStage) + "_" + str(h.round_number) + ".png")
                 sheet_name = 'R1R2'
         if not np.isnan(second_raiser_utg):
             self.logger.warning("Using second raiser backup preflop_table R1R2")
