@@ -117,7 +117,7 @@ class ThreadManager(threading.Thread):
             if not self.gui_signals.pause_thread:
                 config = ConfigObj("config.ini")
                 run_montecarlo_wrapper(p, self.gui_signals, config, ui, t, self.game_logger, preflop_state, h)
-                d = Decision(t, h, p, self.logger, self.game_logger)
+                d = Decision(t, h, p, self.game_logger)
                 d.make_decision(t, h, p, self.logger, self.game_logger)
                 if self.gui_signals.exit_thread: sys.exit()
 

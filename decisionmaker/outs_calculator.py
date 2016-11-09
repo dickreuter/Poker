@@ -1,10 +1,14 @@
 import numpy as np
 import itertools as iter
 import time
+import logging
 
 
 class Outs_Calculator(object):
     def __init__(self):
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.DEBUG)
+
         self.pocket_pair_to_set = False
         self.one_overcard = False
         self.gut_shot_straight = False  # get_gut_shot_straight_draw
@@ -200,7 +204,7 @@ class Outs_Calculator(object):
                 outs = outs_list[11]
                 break
 
-        print(outs)
+        self.logger.info(outs)
 
         return outs
 
@@ -450,7 +454,7 @@ class Outs_Calculator(object):
                 self.open_straight_and_flush = True
                 self.gut_shot_and_flush = False
             else:
-                print("ERROR CHECK STRAIGHT_FLUSH_DRAW FUNCTION")
+                self.logger.warning("ERROR CHECK STRAIGHT_FLUSH_DRAW FUNCTION")
                 outs = 0
 
         return outs

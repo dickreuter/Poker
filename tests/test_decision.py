@@ -17,7 +17,7 @@ class TestDecision(TestCase):
         t.totalPotValue = 0.5
         t.equity = 0.7
         t.checkButton = True
-        d = Decision(t, h, p, logger, l)
+        d = Decision(t, h, p, l)
         t.isHeadsUp = True
         t.gameStage = "Flop"
         p.selected_strategy['FlopBluffMinEquity'] = 0.3
@@ -25,12 +25,12 @@ class TestDecision(TestCase):
 
         d.decision = DecisionTypes.check
         t.playersAhead = 0
-        d.bluff(t, p, h, logger)
+        d.bluff(t, p, h)
         self.assertEqual(d.decision, DecisionTypes.bet_bluff)
 
         d.decision = DecisionTypes.check
         t.playersAhead = 1
-        d.bluff(t, p, h, logger)
+        d.bluff(t, p, h)
         self.assertEqual(d.decision, DecisionTypes.check)
 
     def test_position_adjustment(self):
@@ -42,14 +42,14 @@ class TestDecision(TestCase):
         t.totalPotValue = 0.5
         t.equity = 0.5
         t.checkButton = True
-        d = Decision(t, h, p, logger, l)
+        d = Decision(t, h, p, l)
         t.isHeadsUp = True
         t.gameStage = "Flop"
         p.selected_strategy['FlopBluffMinEquity'] = 0.3
         p.selected_strategy['FlopBluff'] = "1"
         p.selected_strategy['pre_flop_equity_reduction_by_position'] = 0.02
 
-        d.__init__(t, h, p, logger, l)
+        d.__init__(t, h, p, l)
         self.assertAlmostEqual(d.preflop_adjustment, 0.1, delta=0.01)
 
     def test_preflop_round2(self):
@@ -60,11 +60,11 @@ class TestDecision(TestCase):
         t.totalPotValue = 0.5
         t.equity = 0.5
         t.checkButton = False
-        d = Decision(t, h, p, logger, l)
+        d = Decision(t, h, p, l)
         t.isHeadsUp = True
         t.gameStage = "PreFlop"
 
-        d.__init__(t, h, p, logger, l)
+        d.__init__(t, h, p, l)
         d.preflop_override(t, logger, h, p)
         self.assertEqual(t.first_raiser_utg, 2)
         # self.assertEqual(t.preflop_sheet_name, '42R3')
@@ -77,11 +77,11 @@ class TestDecision(TestCase):
         t.totalPotValue = 0.5
         t.equity = 0.5
         t.checkButton = False
-        d = Decision(t, h, p, logger, l)
+        d = Decision(t, h, p, l)
         t.isHeadsUp = True
         t.gameStage = "PreFlop"
 
-        d.__init__(t, h, p, logger, l)
+        d.__init__(t, h, p, l)
         d.preflop_override(t, logger, h, p)
         self.assertEqual(t.first_raiser_utg, 4)
         # self.assertEqual(t.preflop_sheet_name, '22R5')
@@ -94,11 +94,11 @@ class TestDecision(TestCase):
         t.totalPotValue = 0.5
         t.equity = 0.5
         t.checkButton = False
-        d = Decision(t, h, p, logger, l)
+        d = Decision(t, h, p, l)
         t.isHeadsUp = True
         t.gameStage = "PreFlop"
 
-        d.__init__(t, h, p, logger, l)
+        d.__init__(t, h, p, l)
         d.preflop_override(t, logger, h, p)
         self.assertEqual(t.first_raiser_utg, 2)
         # self.assertEqual(t.preflop_sheet_name, '12R3')
@@ -111,11 +111,11 @@ class TestDecision(TestCase):
         t.totalPotValue = 0.5
         t.equity = 0.5
         t.checkButton = False
-        d = Decision(t, h, p, logger, l)
+        d = Decision(t, h, p, l)
         t.isHeadsUp = True
         t.gameStage = "PreFlop"
 
-        d.__init__(t, h, p, logger, l)
+        d.__init__(t, h, p, l)
         d.preflop_override(t, logger, h, p)
 
         self.assertEqual(t.first_raiser, 2)
@@ -129,11 +129,11 @@ class TestDecision(TestCase):
         t.totalPotValue = 0.5
         t.equity = 0.5
         t.checkButton = False
-        d = Decision(t, h, p, logger, l)
+        d = Decision(t, h, p, l)
         t.isHeadsUp = True
         t.gameStage = "PreFlop"
 
-        d.__init__(t, h, p, logger, l)
+        d.__init__(t, h, p, l)
         d.preflop_override(t, logger, h, p)
 
         self.assertEqual(t.first_raiser_utg, 3)
@@ -147,10 +147,10 @@ class TestDecision(TestCase):
         t.totalPotValue = 0.5
         t.equity = 0.5
         t.checkButton = False
-        d = Decision(t, h, p, logger, l)
+        d = Decision(t, h, p, l)
         t.isHeadsUp = True
         t.gameStage = "PreFlop"
-        d.__init__(t, h, p, logger, l)
+        d.__init__(t, h, p, l)
         d.preflop_override(t, logger, h, p)
 
         self.assertEqual(t.first_raiser_utg, 4)
@@ -164,10 +164,10 @@ class TestDecision(TestCase):
         t.totalPotValue = 0.5
         t.equity = 0.5
         t.checkButton = False
-        d = Decision(t, h, p, logger, l)
+        d = Decision(t, h, p, l)
         t.isHeadsUp = True
         t.gameStage = "PreFlop"
-        d.__init__(t, h, p, logger, l)
+        d.__init__(t, h, p, l)
         d.preflop_override(t, logger, h, p)
 
         self.assertEqual(t.preflop_sheet_name, '6R1C2')
@@ -178,10 +178,10 @@ class TestDecision(TestCase):
         t.totalPotValue = 0.5
         t.equity = 0.5
         t.checkButton = False
-        d = Decision(t, h, p, logger, l)
+        d = Decision(t, h, p, l)
         t.isHeadsUp = True
         t.gameStage = "PreFlop"
-        d.__init__(t, h, p, logger, l)
+        d.__init__(t, h, p, l)
         d.preflop_override(t, logger, h, p)
 
         self.assertEqual(t.preflop_sheet_name, '22R6')
@@ -192,10 +192,10 @@ class TestDecision(TestCase):
         t.totalPotValue = 0.5
         t.equity = 0.5
         t.checkButton = False
-        d = Decision(t, h, p, logger, l)
+        d = Decision(t, h, p, l)
         t.isHeadsUp = True
         t.gameStage = "PreFlop"
-        d.__init__(t, h, p, logger, l)
+        d.__init__(t, h, p, l)
         d.preflop_override(t, logger, h, p)
 
         self.assertEqual(t.preflop_sheet_name, '2R1')
@@ -206,10 +206,10 @@ class TestDecision(TestCase):
         t.totalPotValue = 0.5
         t.equity = 0.5
         t.checkButton = False
-        d = Decision(t, h, p, logger, l)
+        d = Decision(t, h, p, l)
         t.isHeadsUp = True
         t.gameStage = "PreFlop"
-        d.__init__(t, h, p, logger, l)
+        d.__init__(t, h, p, l)
         d.preflop_override(t, logger, h, p)
 
         self.assertEqual(t.preflop_sheet_name, '4R1')
@@ -220,10 +220,10 @@ class TestDecision(TestCase):
         t.totalPotValue = 0.5
         t.equity = 0.5
         t.checkButton = False
-        d = Decision(t, h, p, logger, l)
+        d = Decision(t, h, p, l)
         t.isHeadsUp = True
         t.gameStage = "PreFlop"
-        d.__init__(t, h, p, logger, l)
+        d.__init__(t, h, p, l)
         d.preflop_override(t, logger, h, p)
 
         self.assertEqual(t.preflop_sheet_name, '4R3')
@@ -234,10 +234,10 @@ class TestDecision(TestCase):
         t.totalPotValue = 0.5
         t.equity = 0.5
         t.checkButton = False
-        d = Decision(t, h, p, logger, l)
+        d = Decision(t, h, p, l)
         t.isHeadsUp = True
         t.gameStage = "PreFlop"
-        d.__init__(t, h, p, logger, l)
+        d.__init__(t, h, p, l)
         d.preflop_override(t, logger, h, p)
 
         self.assertEqual(t.preflop_sheet_name, '3R2')

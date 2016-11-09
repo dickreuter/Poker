@@ -18,10 +18,10 @@ class TestReverseTables(TestCase):
         t.totalPotValue = 0.5
         t.equity = 0.5
         t.checkButton = False
-        d = Decision(t, h, p, logger, l)
+        d = Decision(t, h, p, l)
         t.isHeadsUp = True
         t.gameStage = "PreFlop"
-        d.__init__(t, h, p, logger, l)
+        d.__init__(t, h, p, l)
         d.preflop_override(t, logger, h, p)
         preflop_state = CurrentHandPreflopState()
         bot_preflop_decision = 'Call'
@@ -48,10 +48,10 @@ class TestReverseTables(TestCase):
         t.totalPotValue = 0.5
         t.equity = 0.5
         t.checkButton = False
-        d = Decision(t, h, p, logger, l)
+        d = Decision(t, h, p, l)
         t.isHeadsUp = True
         t.gameStage = "PreFlop"
-        d.__init__(t, h, p, logger, l)
+        d.__init__(t, h, p, l)
         d.preflop_override(t, logger, h, p)
         preflop_state = CurrentHandPreflopState()
         bot_preflop_decision = 'Call'
@@ -77,10 +77,10 @@ class TestReverseTables(TestCase):
         t.totalPotValue = 0.5
         t.equity = 0.5
         t.checkButton = False
-        d = Decision(t, h, p, logger, l)
+        d = Decision(t, h, p, l)
         t.isHeadsUp = True
         t.gameStage = "PreFlop"
-        d.__init__(t, h, p, logger, l)
+        d.__init__(t, h, p, l)
         d.preflop_override(t, logger, h, p)
         preflop_state = CurrentHandPreflopState()
         bot_preflop_decision = 'Call'
@@ -102,10 +102,10 @@ class TestReverseTables(TestCase):
         t.totalPotValue = 0.5
         t.equity = 0.5
         t.checkButton = False
-        d = Decision(t, h, p, logger, l)
+        d = Decision(t, h, p, l)
         t.isHeadsUp = True
         t.gameStage = "PreFlop"
-        d.__init__(t, h, p, logger, l)
+        d.__init__(t, h, p, l)
         d.preflop_override(t, logger, h, p)
         preflop_state = CurrentHandPreflopState()
         bot_preflop_decision = 'Bet'
@@ -129,10 +129,10 @@ class TestReverseTables(TestCase):
         t.totalPotValue = 0.5
         t.equity = 0.5
         t.checkButton = False
-        d = Decision(t, h, p, logger, l)
+        d = Decision(t, h, p, l)
         t.isHeadsUp = True
         t.gameStage = "PreFlop"
-        d.__init__(t, h, p, logger, l)
+        d.__init__(t, h, p, l)
         d.preflop_override(t, logger, h, p)
 
         self.assertEqual('6R4', t.preflop_sheet_name)
