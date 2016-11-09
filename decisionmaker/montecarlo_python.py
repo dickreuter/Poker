@@ -407,7 +407,7 @@ class MonteCarlo(object):
             self.equity = np.round(wins / runs, 3)
 
             try:
-                if m % 500 == 0:
+                if m % 100 == 0:
                     # if gui.active == True:
                     #     gui.progress["value"] = int(round(m * 100 / maxRuns))
                     #     gui.var2.set("Equity: " + str(self.equity * 100) + "%")
