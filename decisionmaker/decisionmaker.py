@@ -23,7 +23,7 @@ class GameStages(Enum):
 
 class Decision(DecisionBase):
     def __init__(self, t, h, p, l):
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger('decision')
         self.logger.setLevel(logging.DEBUG)
         t.bigBlind = float(p.selected_strategy['bigBlind'])
         t.smallBlind = float(p.selected_strategy['smallBlind'])

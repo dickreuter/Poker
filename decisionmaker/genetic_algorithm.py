@@ -8,7 +8,7 @@ from tools.mongo_manager import *
 
 class GeneticAlgorithm(object):
     def __init__(self, write_update, L):
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger('genetic_algo')
         self.logger.setLevel(logging.DEBUG)
         self.output = ''
         p = StrategyHandler()

@@ -29,7 +29,7 @@ class ThreadManager(threading.Thread):
         self.name = name
         self.counter = counter
         self.gui_signals = gui_signals
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger('main')
         self.logger.setLevel(logging.DEBUG)
 
         self.game_logger = GameLogger()
@@ -201,7 +201,7 @@ if __name__ == '__main__':
 
     def my_exception_hook(exctype, value, traceback):
         # Print the error and traceback
-        logger = logging.getLogger(__name__)
+        logger = logging.getLogger('main')
         logger.setLevel(logging.DEBUG)
         print(exctype, value, traceback)
         logger.error(str(exctype))

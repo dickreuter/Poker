@@ -6,7 +6,7 @@ import logging
 
 class Outs_Calculator(object):
     def __init__(self):
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger('out_calc')
         self.logger.setLevel(logging.DEBUG)
 
         self.pocket_pair_to_set = False

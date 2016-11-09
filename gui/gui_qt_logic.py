@@ -66,9 +66,7 @@ class UIActionAndSignals(QObject):
     signal_open_setup = QtCore.pyqtSignal(object, object)
 
     def __init__(self, ui_main_window):
-        self.logger = logging.getLogger(__name__)
-        self.logger = logging.getLogger(__name__)
-
+        self.logger = logging.getLogger('gui')
 
         l = GameLogger()
         l.clean_database()

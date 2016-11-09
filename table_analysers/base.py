@@ -21,7 +21,7 @@ class Table(object):
         self.ip = ''
         self.load_templates(p)
         self.load_coordinates()
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger('table')
         self.logger.setLevel(logging.DEBUG)
         self.gui_signals = gui_signals
         self.game_logger = game_logger

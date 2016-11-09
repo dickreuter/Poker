@@ -15,7 +15,7 @@ import numpy as np
 
 class MonteCarlo(object):
     def __init__(self):
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger('montecarlo')
         self.logger.setLevel(logging.DEBUG)
 
     def get_two_short_notation(self, input_cards):
@@ -432,7 +432,7 @@ class MonteCarlo(object):
 def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_state, h):
     # Prepare for montecarlo simulation to evaluate equity (probability of winning with given cards)
 
-    logger = logging.getLogger(__name__)
+    logger = logging.getLogger('montecarlo')
     logger.setLevel(logging.DEBUG)
 
     if t.gameStage == "PreFlop":

@@ -32,7 +32,7 @@ class History:
 class CurrentHandPreflopState:
     def __init__(self):
         self.other_player = None
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger('handmemory')
         self.logger.setLevel(logging.DEBUG)
         self.bot_preflop_decision = ''
         self.preflop_caller_positions = []
