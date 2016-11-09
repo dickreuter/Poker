@@ -489,7 +489,7 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
     if t.gameStage == "PreFlop":
         maxRuns = 1000
     else:
-        maxRuns = 5000
+        maxRuns = 7500
 
     if t.gameStage != 'PreFlop':
         try:
