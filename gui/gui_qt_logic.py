@@ -354,7 +354,7 @@ class UIActionAndSignals(QObject):
             pass  # no virtual machine
 
         self.ui_setup.comboBox_vm.addItems(vm_list)
-        timeouts = ['10', '11', '12']
+        timeouts = ['8','9','10', '11','12']
         self.ui_setup.comboBox_2.addItems(timeouts)
 
         config = ConfigObj("config.ini")

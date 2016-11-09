@@ -317,7 +317,7 @@ class MonteCarlo(object):
         return Deck
 
     def distribute_cards_to_players(self, deck, player_amount, player_card_list, table_card_list,
-                                    opponent_allowed_cards):
+                                    opponent_allowed_cards, passes):
         Players = []
         CardsOnTable = []
         knownPlayers = 0  # for potential collusion if more than one bot is running on the same table
@@ -336,6 +336,7 @@ class MonteCarlo(object):
         n = 0
         while True:
             plr = []
+            passes +=1
 
             random_card1 = np.random.random_integers(0, len(deck) - 1)
             plr.append(deck.pop(random_card1))
@@ -352,7 +353,7 @@ class MonteCarlo(object):
                 n += 1
             if n == player_amount - knownPlayers or knownPlayers >= 2: break
 
-        return Players, deck
+        return Players, deck, passes
 
     def distribute_cards_to_table(self, Deck, table_card_list):
         remaningRandoms = 5 - len(table_card_list)
@@ -373,6 +374,7 @@ class MonteCarlo(object):
         winnerCardTypeList = []
         wins = 0
         runs = 0
+        passes=0
         OriginalDeck = self.create_card_deck()
         if ghost_cards != '':
             OriginalDeck.pop(OriginalDeck.index(ghost_cards[0]))
@@ -383,8 +385,8 @@ class MonteCarlo(object):
             Deck = copy(OriginalDeck)
             PlayerCardList = original_player_card_list[:]
             TableCardsList = original_table_card_list[:]
-            Players, Deck = self.distribute_cards_to_players(Deck, player_amount, PlayerCardList, TableCardsList,
-                                                             opponent_allowed_cards)
+            Players, Deck, passes = self.distribute_cards_to_players(Deck, player_amount, PlayerCardList, TableCardsList,
+                                                             opponent_allowed_cards, passes)
             Deck5Cards = self.distribute_cards_to_table(Deck, TableCardsList)
             PlayerFinalCardsWithTableCards = []
             for o in range(0, player_amount):
@@ -406,17 +408,12 @@ class MonteCarlo(object):
 
             self.equity = np.round(wins / runs, 3)
 
-            try:
-                if m % 100 == 0:
-                    # if gui.active == True:
-                    #     gui.progress["value"] = int(round(m * 100 / maxRuns))
-                    #     gui.var2.set("Equity: " + str(self.equity * 100) + "%")
-                    #     gui.statusbar.set("Running Monte Carlo: " + str(m) + "/" + str(maxRuns))
-                    if m > 999 and time.time() > timeout:
-                        self.logger.warning("Cutting short montecarlo due to timeout")
-                        break
-            except:
-                pass
+            if passes > 999 and time.time() > timeout:
+                self.logger.warning("Cutting short montecarlo due to timeout")
+                break
+
+            #if passes >= maxruns: break
+
 
         self.equity = wins / runs
         self.winnerCardTypeList = Counter(winnerCardTypeList)
@@ -425,6 +422,7 @@ class MonteCarlo(object):
 
         self.winTypesDict = self.winnerCardTypeList.items()
         self.runs = runs
+        self.passes=passes
 
         return self.equity, self.winTypesDict
 
@@ -491,7 +489,7 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
     if t.gameStage == "PreFlop":
         maxRuns = 1000
     else:
-        maxRuns = 7500
+        maxRuns = 5000
 
     if t.gameStage != 'PreFlop':
         try:
@@ -547,13 +545,15 @@ if __name__ == '__main__':
     my_cards = [['2D', 'AD']]
     cards_on_table = ['3S', 'AH', '8D']
     players = 2
-    secs = 3
+    secs = 5
+    maxruns=10000
     start_time = time.time()
     timeout = start_time + secs
     ghost_cards = ''
-    Simulation.run_montecarlo(logging, my_cards, cards_on_table, player_amount=players, ui=None, maxRuns=15000,
+    Simulation.run_montecarlo(logging, my_cards, cards_on_table, player_amount=players, ui=None, maxRuns=maxruns,
                               ghost_cards=ghost_cards, timeout=timeout, opponent_range=0.3)
     print("--- %s seconds ---" % (time.time() - start_time))
     print("Runs: " + str(Simulation.runs))
+    print("Passes: " + str(Simulation.passes))
     equity = Simulation.equity  # considering draws as wins
     print("Equity: " + str(equity))
