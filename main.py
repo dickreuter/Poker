@@ -34,22 +34,31 @@ class ThreadManager(threading.Thread):
 
         self.game_logger = GameLogger()
 
-    def update_most_gui_items(self, p, t, d, h, gui_signals):
+    def update_most_gui_items(self, p, m, t, d, h, gui_signals):
         try: sheet_name=t.preflop_sheet_name
         except: sheet_name=''
         gui_signals.signal_decision.emit(str(d.decision + " " + sheet_name))
         gui_signals.signal_status.emit(d.decision)
 
-        gui_signals.signal_lcd_number_update.emit('equity', np.round(t.equity * 100, 2))
-        gui_signals.signal_lcd_number_update.emit('required_minbet', t.currentBetValue)
-        gui_signals.signal_lcd_number_update.emit('required_mincall', t.minCall)
+        gui_signals.signal_label_number_update.emit('equity', str(np.round(t.equity * 100, 2)))
+        gui_signals.signal_label_number_update.emit('required_minbet', str(t.currentBetValue))
+        gui_signals.signal_label_number_update.emit('required_mincall', str(t.minCall))
         # gui_signals.signal_lcd_number_update.emit('potsize', t.totalPotValue)
-        gui_signals.signal_lcd_number_update.emit('gamenumber',
-                                                  int(self.game_logger.get_game_count(p.current_strategy)))
-        gui_signals.signal_lcd_number_update.emit('assumed_players', int(t.assumedPlayers))
-        gui_signals.signal_lcd_number_update.emit('calllimit', d.finalCallLimit)
-        gui_signals.signal_lcd_number_update.emit('betlimit', d.finalBetLimit)
-        # gui_signals.signa.l_lcd_number_update.emit('zero_ev', round(d.maxCallEV, 2))
+        gui_signals.signal_label_number_update.emit('gamenumber',str(int(self.game_logger.get_game_count(p.current_strategy))))
+        gui_signals.signal_label_number_update.emit('assumed_players', str(int(t.assumedPlayers)))
+        gui_signals.signal_label_number_update.emit('calllimit', str(d.finalCallLimit))
+        gui_signals.signal_label_number_update.emit('betlimit', str(d.finalBetLimit))
+        gui_signals.signal_label_number_update.emit('runs', str(int(m.runs)))
+        gui_signals.signal_label_number_update.emit('sheetname', sheet_name)
+        gui_signals.signal_label_number_update.emit('collusion_cards', str(m.collusion_cards))
+        gui_signals.signal_label_number_update.emit('mycards', str(t.mycards))
+        gui_signals.signal_label_number_update.emit('tablecards', str(t.cardsOnTable))
+        gui_signals.signal_label_number_update.emit('opponent_range', str(m.opponent_range))
+        gui_signals.signal_label_number_update.emit('mincallequity', str(np.round(t.minEquityCall,2)*100)+"%")
+        gui_signals.signal_label_number_update.emit('minbetequity', str(np.round(t.minEquityBet,2)*100)+"%")
+        gui_signals.signal_label_number_update.emit('outs', str(d.outs))
+
+        # gui_signals.signal_lcd_number_update.emit('zero_ev', round(d.maxCallEV, 2))
 
         gui_signals.signal_pie_chart_update.emit(t.winnerCardTypeList)
         gui_signals.signal_curve_chart_update1.emit(h.histEquity, h.histMinCall, h.histMinBet, t.equity,
@@ -116,12 +125,12 @@ class ThreadManager(threading.Thread):
 
             if not self.gui_signals.pause_thread:
                 config = ConfigObj("config.ini")
-                run_montecarlo_wrapper(p, self.gui_signals, config, ui, t, self.game_logger, preflop_state, h)
+                m = run_montecarlo_wrapper(p, self.gui_signals, config, ui, t, self.game_logger, preflop_state, h)
                 d = Decision(t, h, p, self.game_logger)
                 d.make_decision(t, h, p, self.logger, self.game_logger)
                 if self.gui_signals.exit_thread: sys.exit()
 
-                self.update_most_gui_items(p, t, d, h, self.gui_signals)
+                self.update_most_gui_items(p, m, t, d, h, self.gui_signals)
 
                 self.logger.info(
                     "Equity: " + str(t.equity * 100) + "% -> " + str(int(t.assumedPlayers)) + " (" + str(

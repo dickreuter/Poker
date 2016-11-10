@@ -60,6 +60,7 @@ class UIActionAndSignals(QObject):
     signal_curve_chart_update1 = QtCore.pyqtSignal(float, float, float, float, float, float, str, str)
     signal_curve_chart_update2 = QtCore.pyqtSignal(float, float, float, float, float, float, float, float, float, float)
     signal_lcd_number_update = QtCore.pyqtSignal(str, float)
+    signal_label_number_update = QtCore.pyqtSignal(str, str)
     signal_update_selected_strategy = QtCore.pyqtSignal(str)
 
     signal_update_strategy_sliders = QtCore.pyqtSignal(str)
@@ -160,6 +161,7 @@ class UIActionAndSignals(QObject):
         self.signal_decision.connect(self.update_mainwindow_decision)
 
         self.signal_lcd_number_update.connect(self.update_lcd_number)
+        self.signal_label_number_update.connect(self.update_label_number)
 
         self.signal_bar_chart_update.connect(lambda: self.gui_bar.drawfigure(l, p.current_strategy))
 
@@ -227,6 +229,10 @@ class UIActionAndSignals(QObject):
         func = getattr(self.ui, item)
         func.display(value)
 
+    def update_label_number(self, item, value):
+        func = getattr(self.ui, item)
+        func.setText(str(value))
+
     def open_strategy_analyser(self, p, l):
         self.signal_progressbar_reset.emit()
         self.stragegy_analyser_form = QtWidgets.QWidget()
@@ -272,24 +278,6 @@ class UIActionAndSignals(QObject):
         self.curveplot_flop = CurvePlot(self.ui_editor, self.p_edited, layout='verticalLayout_flop')
         self.curveplot_turn = CurvePlot(self.ui_editor, self.p_edited, layout='verticalLayout_turn')
         self.curveplot_river = CurvePlot(self.ui_editor, self.p_edited, layout='verticalLayout_river')
-
-        # self.ui_editor.PreFlopMinCallEquity.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
-        # self.ui_editor.PreFlopCallPower.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
-        # self.ui_editor.PreFlopMinBetEquity.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
-        # self.ui_editor.PreFlopBetPower.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
-        # self.ui_editor.PreFlopMaxBetEquity.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
-        # self.ui_editor.FlopMinCallEquity.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
-        # self.ui_editor.FlopCallPower.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
-        # self.ui_editor.FlopMinBetEquity.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
-        # self.ui_editor.FlopBetPower.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
-        # self.ui_editor.TurnMinCallEquity.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
-        # self.ui_editor.TurnCallPower.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
-        # self.ui_editor.TurnMinBetEquity.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
-        # self.ui_editor.TurnBetPower.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
-        # self.ui_editor.RiverMinCallEquity.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
-        # self.ui_editor.RiverCallPower.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
-        # self.ui_editor.RiverMinBetEquity.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
-        # self.ui_editor.RiverBetPower.valueChanged['int'].connect(lambda: self.update_strategy_editor_graphs(p.current_strategy))
 
         self.ui_editor.pushButton_update1.clicked.connect(
             lambda: self.update_strategy_editor_graphs(self.p_edited.current_strategy))

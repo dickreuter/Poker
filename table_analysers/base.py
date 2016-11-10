@@ -268,8 +268,8 @@ class Table(object):
         lg = int(
             p.selected_strategy['considerLastGames'])  # only consider lg last games to see if there was a loss
         f = self.game_logger.get_strategy_return(p.current_strategy, lg)
-        self.gui_signals.signal_lcd_number_update.emit('gamenumber', int(n))
-        self.gui_signals.signal_lcd_number_update.emit('winnings', f)
+        self.gui_signals.signal_label_number_update.emit('gamenumber', str(int(n)))
+        self.gui_signals.signal_label_number_update.emit('winnings', str(np.round(f,2)))
         self.logger.info("Game #" + str(n) + " - Last " + str(lg) + ": $" + str(f))
         if n % int(p.selected_strategy['strategyIterationGames']) == 0 and f < float(
                 p.selected_strategy['minimumLossForIteration']):
@@ -396,6 +396,7 @@ class Table(object):
                 sheet_name = 'R1R2'
         if not np.isnan(second_raiser_utg):
             self.logger.warning("Using second raiser backup preflop_table R1R2")
+            self.logger.warning("Check screenshot: " + str(h.GameID) + "_" + str(t.gameStage) + "_" + str(h.round_number) + ".png")
             sheet_name = 'R1R2'
         if h.round_number == 2:
             sheet_name = 'R1R2R1A2'

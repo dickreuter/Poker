@@ -429,6 +429,7 @@ class MonteCarlo(object):
 
 def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_state, h):
     # Prepare for montecarlo simulation to evaluate equity (probability of winning with given cards)
+    m = MonteCarlo()
 
     logger = logging.getLogger('montecarlo')
     logger.setLevel(logging.DEBUG)
@@ -471,20 +472,27 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
     t.PlayerCardList.append(t.mycards)
     t.PlayerCardList_and_others = copy(t.PlayerCardList)
 
+
     ghost_cards = ''
+    m.collusion_cards=''
 
     if p.selected_strategy['collusion'] == 1:
         collusion_cards, collusion_player_dropped_out = L.get_collusion_cards(t.game_number_on_screen, t.gameStage)
+
         if collusion_cards != '':
+            m.collusion_cards=collusion_cards
             winsound.Beep(1000, 100)
             if not collusion_player_dropped_out:
                 t.PlayerCardList_and_others.append(collusion_cards)
-                logger.info("Collusion found, player still in game.")
+                logger.info("Collusion found, player still in game. "+str(collusion_cards))
             elif collusion_player_dropped_out:
-                logger.info("COllusion found, but player dropped out.")
+                logger.info("COllusion found, but player dropped out." + str(collusion_cards))
                 ghost_cards = collusion_cards
         else:
             logger.debug("No collusion found")
+
+    else:
+        m.collusion_cards = ''
 
     if t.gameStage == "PreFlop":
         maxRuns = 1000
@@ -510,7 +518,7 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
     logger.debug("Running Monte Carlo")
     t.montecarlo_timeout = float(config['montecarlo_timeout'])
     timeout = t.mt_tm + t.montecarlo_timeout
-    m = MonteCarlo()
+
     logger.debug("Used opponent range for montecarlo: " + str(opponent_range))
     logger.debug("maxRuns: " + str(maxRuns))
     logger.debug("Player amount: " + str(t.assumedPlayers))
@@ -535,6 +543,8 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
     t.winnerCardTypeList = m.winnerCardTypeList
 
     ui_action_and_signals.signal_progressbar_increase.emit(30)
+    m.opponent_range=opponent_range
+    return m
 
 
 if __name__ == '__main__':

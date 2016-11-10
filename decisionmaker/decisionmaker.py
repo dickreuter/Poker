@@ -37,10 +37,11 @@ class Decision(DecisionBase):
         else:
             outs = 0
         self.out_adjustment=outs*out_multiplier*.01
-        self.logger.debug("Outs: %s", outs)
+
+        self.outs=outs
 
         if outs>0:
-            self.logger.warning("Minimum equity is reduced because of outs by percent: %s", int(self.out_adjustment*100))
+            self.logger.info("Minimum equity is reduced because of outs by percent: %s", int(self.out_adjustment*100))
 
         self.preflop_adjustment= -float(p.selected_strategy['pre_flop_equity_reduction_by_position']) * t.position_utg_plus
 
