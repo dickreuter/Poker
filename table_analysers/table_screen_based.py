@@ -122,7 +122,6 @@ class TableScreenBased(Table):
 
     def check_for_imback(self, mouse):
         if self.tbl == 'SN': return True
-        mouse.move_mouse_away_from_buttons()
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
@@ -223,7 +222,7 @@ class TableScreenBased(Table):
 
         if self.gameStage == '':
             self.logger.critical("Table cards not recognised correctly: " + str(len(self.cardsOnTable)))
-            exit()
+            self.gameStage = "River"
 
         self.logger.info("---")
         self.logger.info("Gamestage: " + self.gameStage)
@@ -234,7 +233,7 @@ class TableScreenBased(Table):
 
         return True
 
-    def check_fast_fold(self, h, p):
+    def check_fast_fold(self, h, p, mouse):
         if p.selected_strategy['preflop_override'] and self.gameStage == "PreFlop":
             m = MonteCarlo()
             crd1, crd2 = m.get_two_short_notation(self.mycards)
@@ -256,7 +255,6 @@ class TableScreenBased(Table):
                 found_card = crd1[0:2]
 
             if found_card == '':
-                mouse = MouseMoverTableBased(p.selected_strategy['pokerSite'], 0, 0)
                 mouse_target = "Fold"
                 mouse.mouse_action(mouse_target, self.tlc)
                 self.logger.info("-------- FAST FOLD -------")
@@ -672,8 +670,6 @@ class TableScreenBased(Table):
             h.lastSecondRoundAdjustment = 0
             h.last_round_bluff = False  # reset the bluffing marker
             h.round_number = 0
-
-            mouse.move_mouse_away_from_buttons()
 
             self.take_screenshot(False, p)
         return True

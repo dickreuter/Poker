@@ -113,7 +113,7 @@ class ThreadManager(threading.Thread):
                         t.upload_collusion_wrapper(p, h) and \
                         t.get_dealer_position() and \
                         t.get_snowie_advice(p, h) and \
-                        t.check_fast_fold(h, p) and \
+                        t.check_fast_fold(h, p, mouse) and \
                         t.check_for_button() and \
                         t.get_round_number(h) and \
                         t.init_get_other_players_info() and \
@@ -147,8 +147,6 @@ class ThreadManager(threading.Thread):
                     "Pot size: " + str((t.totalPotValue)) + " -> Zero EV Call: " + str(round(d.maxCallEV, 2)))
                 self.logger.info("+++++++++++++++++++++++ Decision: " + str(d.decision) + "+++++++++++++++++++++++")
 
-                mouse = MouseMoverTableBased(p.selected_strategy['pokerSite'],
-                                             p.selected_strategy['BetPlusInc'], t.currentBluff)
                 mouse_target = d.decision
                 if mouse_target == 'Call' and t.allInCallButton:
                     mouse_target = 'Call2'

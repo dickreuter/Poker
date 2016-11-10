@@ -88,7 +88,7 @@ class MouseMover(VirtualBoxController):
         time.sleep(np.random.uniform(0.1, 0.5, 1)[0])
 
 class MouseMoverTableBased(MouseMover):
-    def __init__(self, pokersite,betplus_inc=1,bet_bluff_inc=1):
+    def __init__(self, pokersite):
         config = ConfigObj("config.ini")
         self.logger = logging.getLogger('mouse')
 
@@ -167,6 +167,7 @@ class MouseMoverTableBased(MouseMover):
                 self.mouse_mover(x1, y1, action[2]+ tlx, action[3]+ tly)
                 self.mouse_clicker(action[2]+ tlx, action[3]+ tly,action[4], action[5])
 
+        time.sleep(0.2)
         self.move_mouse_away_from_buttons()
 
 if __name__=="__main__":
