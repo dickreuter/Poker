@@ -632,15 +632,15 @@ class TableScreenBased(Table):
             self.gui_signals.signal_progressbar_reset.emit()
             self.logger.warning("Game over")
             # user_input = input("Press Enter for exit ")
-            gui_signals.signal_curve_chart_update1.emit(h.histEquity, h.histMinCall, h.histMinBet, t.equity,
-                                                        t.minCall, t.minBet,
-                                                        'bo',
-                                                        'ro')
-
-            gui_signals.signal_curve_chart_update2.emit(t.power1, t.power2, t.minEquityCall, t.minEquityBet,
-                                                        t.smallBlind, t.bigBlind,
-                                                        t.maxValue,
-                                                        t.maxEquityCall, t.max_X, t.maxEquityBet)
+            # gui_signals.signal_curve_chart_update1.emit(h.histEquity, h.histMinCall, h.histMinBet, t.equity,
+            #                                             t.minCall, t.minBet,
+            #                                             'bo',
+            #                                             'ro')
+            #
+            # gui_signals.signal_curve_chart_update2.emit(t.power1, t.power2, t.minEquityCall, t.minEquityBet,
+            #                                             t.smallBlind, t.bigBlind,
+            #                                             t.maxValue,
+            #                                             t.maxEquityCall, t.max_X, t.maxEquityBet)
             sys.exit()
         else:
             return True
