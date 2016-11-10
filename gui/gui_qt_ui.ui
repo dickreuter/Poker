@@ -289,43 +289,19 @@
     <item row="3" column="5">
      <layout class="QVBoxLayout" name="verticalLayout_6">
       <item>
-       <widget class="QLabel" name="assumed_players">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="required_mincall">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="required_minbet">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QLabel" name="winnings">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="assumed_players">
         <property name="font">
          <font>
           <pointsize>10</pointsize>
@@ -350,6 +326,30 @@
       </item>
       <item>
        <widget class="QLabel" name="minbetequity">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="required_mincall">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="required_minbet">
         <property name="font">
          <font>
           <pointsize>10</pointsize>
@@ -401,6 +401,18 @@
     <item row="3" column="3" colspan="2">
      <layout class="QVBoxLayout" name="verticalLayout_5">
       <item>
+       <widget class="QLabel" name="label_10">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Last 500 hands return</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QLabel" name="label_6">
         <property name="font">
          <font>
@@ -409,6 +421,30 @@
         </property>
         <property name="text">
          <string>Assumed players</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label1">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Minimum call equity after adj</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_5">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Minimum bet equity after adj</string>
         </property>
        </widget>
       </item>
@@ -437,42 +473,6 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label_10">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Last 500 hands return</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label1">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Minimum call equity</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_5">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Minimum bet equity</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QLabel" name="label_3">
         <property name="font">
          <font>
@@ -480,7 +480,7 @@
          </font>
         </property>
         <property name="text">
-         <string>Final call limit</string>
+         <string>Final maximum call threshold</string>
         </property>
        </widget>
       </item>
@@ -492,7 +492,7 @@
          </font>
         </property>
         <property name="text">
-         <string>Final bet Limit</string>
+         <string>Final maximum bet threshold</string>
         </property>
        </widget>
       </item>
