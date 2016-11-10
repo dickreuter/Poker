@@ -33,7 +33,11 @@ class Decision(DecisionBase):
         out_multiplier=p.selected_strategy['out_multiplier']
         oc = Outs_Calculator()
         if 3 <= len(t.cardsOnTable) <= 4: #
-            outs = oc.evaluate_hands(t.mycards, t.cardsOnTable, oc)
+            try:
+                outs = oc.evaluate_hands(t.mycards, t.cardsOnTable, oc)
+            except:
+                outs=0
+                logger.critical("Error in outs calculation!")
         else:
             outs = 0
         self.out_adjustment=outs*out_multiplier*.01
