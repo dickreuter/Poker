@@ -168,7 +168,6 @@ class Outs_Calculator(object):
                 break
 
         self.logger.info(outs)
-        print(outs)
         return outs
 
     # Inside Straight
