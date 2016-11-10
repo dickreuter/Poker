@@ -410,6 +410,8 @@ class MonteCarlo(object):
 
             if passes > 999 and time.time() > timeout:
                 self.logger.warning("Cutting short montecarlo due to timeout")
+                self.logger.warning("Passes: "+str(passes))
+                self.logger.warning("Runs: "+str(runs))
                 break
 
             #if passes >= maxruns: break

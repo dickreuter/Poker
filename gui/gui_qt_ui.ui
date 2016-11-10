@@ -597,6 +597,18 @@
        </widget>
       </item>
       <item>
+       <widget class="QLabel" name="initiative">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QLabel" name="gamenumber">
         <property name="font">
          <font>
@@ -693,6 +705,18 @@
         </property>
         <property name="text">
          <string>Montecarlo runs</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_18">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Other player has initiative</string>
         </property>
        </widget>
       </item>

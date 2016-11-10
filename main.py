@@ -61,6 +61,8 @@ class ThreadManager(threading.Thread):
         gui_signals.signal_label_number_update.emit('mincallequity', str(np.round(t.minEquityCall,2)*100)+"%")
         gui_signals.signal_label_number_update.emit('minbetequity', str(np.round(t.minEquityBet,2)*100)+"%")
         gui_signals.signal_label_number_update.emit('outs', str(d.outs))
+        gui_signals.signal_label_number_update.emit('initiative', str(t.other_player_has_initiative))
+
 
         # gui_signals.signal_lcd_number_update.emit('zero_ev', round(d.maxCallEV, 2))
 

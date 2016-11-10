@@ -18,6 +18,8 @@ class MouseMover(VirtualBoxController):
             super().__init__()
         self.mouse=pymouse.PyMouse()
         self.vbox_mode=vbox_mode
+        self.old_x=int(np.round(np.random.uniform(0, 500, 1)))
+        self.old_y=int(np.round(np.random.uniform(0, 500, 1)))
 
     def click(self, x, y):
         if self.vbox_mode:
@@ -64,6 +66,9 @@ class MouseMover(VirtualBoxController):
             self.mouse.move(x2, y2)
             #win32api.SetCursorPos((x2, y2))
 
+        self.old_x=x2
+        self.old_y=y2
+
 
 
     def mouse_clicker(self, x2, y2, buttonToleranceX, buttonToleranceY):
@@ -109,7 +114,10 @@ class MouseMoverTableBased(MouseMover):
         y2 = int(np.round(np.random.uniform(10, 200, 1), 0)[0])
 
         time.sleep(np.random.uniform(0.5, 1.2, 1)[0])
-        (x1, y1) = self.mouse.position()
+        if not self.vbox_mode: (x1, y1) = self.mouse.position()
+        else:
+            x1 = self.old_x
+            y1 = self.old_y
         x1 = 10 if x1 > 2000 else x1
         y1 = 10 if y1 >1000 else y1
 
@@ -125,7 +133,10 @@ class MouseMoverTableBased(MouseMover):
         buttonToleranceY = 0
         tlx = topleftcorner[0]
         tly = topleftcorner[1]
-        (x1, y1) = self.mouse.position()
+        if not self.vbox_mode: (x1, y1) = self.mouse.position()
+        else:
+            x1=self.old_x
+            y1=self.old_y
         x2 = 30 + tlx
         y2 = 565 + tly
         self.mouse_mover(x1, y1, x2, y2)
@@ -147,7 +158,12 @@ class MouseMoverTableBased(MouseMover):
             for i in range (int(action[0])):
                 time.sleep(np.random.uniform(0, action[1], 1)[0])
                 self.logger.debug("Mouse action:"+str(action))
-                (x1, y1) = self.mouse.position()
+                if not self.vbox_mode:
+                    (x1, y1) = self.mouse.position()
+                else:
+                    x1 = self.old_x
+                    y1 = self.old_y
+                x2 = 30 + tlx
                 self.mouse_mover(x1, y1, action[2]+ tlx, action[3]+ tly)
                 self.mouse_clicker(action[2]+ tlx, action[3]+ tly,action[4], action[5])
 
