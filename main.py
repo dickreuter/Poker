@@ -161,10 +161,10 @@ class ThreadManager(threading.Thread):
 
                 self.gui_signals.signal_status.emit("Logging data")
 
-                # t_log_db = threading.Thread(name='t_log_db', target=self.game_loggerwrite_log_file,args=[p, h, t, d])
-                # t_log_db.daemon = True
-                # t_log_db.start()
-                self.game_logger.write_log_file(p, h, t, d)
+                t_log_db = threading.Thread(name='t_log_db', target=self.game_logger.write_log_file,args=[p, h, t, d])
+                t_log_db.daemon = True
+                t_log_db.start()
+                #self.game_logger.write_log_file(p, h, t, d)
 
                 h.previousPot = t.totalPotValue
                 h.histGameStage = t.gameStage
