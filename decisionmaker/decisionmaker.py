@@ -37,7 +37,7 @@ class Decision(DecisionBase):
                 outs = oc.evaluate_hands(t.mycards, t.cardsOnTable, oc)
             except:
                 outs=0
-                logger.critical("Error in outs calculation!")
+                self.logger.critical("Error in outs calculation!")
         else:
             outs = 0
         self.out_adjustment=outs*out_multiplier*.01
