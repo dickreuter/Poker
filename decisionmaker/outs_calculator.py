@@ -150,7 +150,7 @@ class Outs_Calculator(object):
             self.get_gut_shot_straight_draw
         ]
 
-        print(len(outs_rank))
+        #print(len(outs_rank))
 
         for i in range(0, len(outs_rank)):
             outs = outs_list[i] = outs_rank[i](oc)
@@ -168,7 +168,6 @@ class Outs_Calculator(object):
                 break
 
         self.logger.info(outs)
-        print(outs)
         return outs
 
     # Inside Straight
