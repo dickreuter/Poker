@@ -100,6 +100,7 @@ class CurrentHandPreflopState:
             sheet_name += ''.join(['C' + str(x + 1) for x in sorted(preflop_caller_positions)])
 
         self.logger.info('Reverse sheetname: ' + sheet_name)
+        t.reverse_sheet_name = sheet_name
         return sheet_name
 
     def get_rangecards_from_sheetname(self, abs_pos, sheet_name, t, h):

@@ -525,7 +525,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="sheetname">
+       <widget class="QLabel" name="opponent_range">
         <property name="font">
          <font>
           <pointsize>10</pointsize>
@@ -537,7 +537,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="opponent_range">
+       <widget class="QLabel" name="sheetname">
         <property name="font">
          <font>
           <pointsize>10</pointsize>
@@ -625,18 +625,6 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label_9">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Last used sheetname</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QLabel" name="label_13">
         <property name="font">
          <font>
@@ -645,6 +633,18 @@
         </property>
         <property name="text">
          <string>Range</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_9">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Preflop sheet</string>
         </property>
        </widget>
       </item>

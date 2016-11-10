@@ -40,7 +40,11 @@ class ThreadManager(threading.Thread):
         gui_signals.signal_decision.emit(str(d.decision + " " + sheet_name))
         gui_signals.signal_status.emit(d.decision)
 
-        gui_signals.signal_label_number_update.emit('equity', str(np.round(t.equity * 100, 2)))
+        if hasattr(t, 'reverse_sheet_name'): range="Reverse sheet: "+t.reverse_sheet_name
+        else: range=str(m.opponent_range)
+        if range=='1': range='All cards'
+
+        gui_signals.signal_label_number_update.emit('equity', str(np.round(t.equity * 100, 2))+"%")
         gui_signals.signal_label_number_update.emit('required_minbet', str(t.currentBetValue))
         gui_signals.signal_label_number_update.emit('required_mincall', str(t.minCall))
         # gui_signals.signal_lcd_number_update.emit('potsize', t.totalPotValue)
@@ -53,7 +57,7 @@ class ThreadManager(threading.Thread):
         gui_signals.signal_label_number_update.emit('collusion_cards', str(m.collusion_cards))
         gui_signals.signal_label_number_update.emit('mycards', str(t.mycards))
         gui_signals.signal_label_number_update.emit('tablecards', str(t.cardsOnTable))
-        gui_signals.signal_label_number_update.emit('opponent_range', str(m.opponent_range))
+        gui_signals.signal_label_number_update.emit('opponent_range', str(range))
         gui_signals.signal_label_number_update.emit('mincallequity', str(np.round(t.minEquityCall,2)*100)+"%")
         gui_signals.signal_label_number_update.emit('minbetequity', str(np.round(t.minEquityBet,2)*100)+"%")
         gui_signals.signal_label_number_update.emit('outs', str(d.outs))
