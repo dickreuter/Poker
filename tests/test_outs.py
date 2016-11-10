@@ -1,6 +1,4 @@
 from unittest import TestCase
-import numpy as np
-from . import init_table
 from decisionmaker.outs_calculator import Outs_Calculator
 
 class TestPocketPairToSet(TestCase):
