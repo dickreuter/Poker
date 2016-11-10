@@ -49,10 +49,19 @@ class VirtualBoxController():
         time.sleep(np.random.uniform(0.27, 0.4, 1)[0])
         self.session.console.mouse.put_mouse_event_absolute(x, y, dz, dw, 0)
 
+    def get_mouse_position_vbox(self):
+        return None
+
+    def callback(event):
+        print(("%s %s %s" % (event.x, event.y, event.z)))
+
+
+
 if __name__=='__main__':
     vb=VirtualBoxController()
     #vb.get_vbox_list()
     # vb.mouse_move_vbox(1,1)
     # vb.mouse_click_vbox(1,1)
     # vb.get_screenshot_vbox()
+    vb.session.console.mouse.set_guest_mouse(vb.callback)
 

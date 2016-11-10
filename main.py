@@ -199,7 +199,7 @@ if __name__ == '__main__':
     u.check_update(version)
 
 
-    def my_exception_hook(exctype, value, traceback):
+    def exception_hook(exctype, value, traceback):
         # Print the error and traceback
         logger = logging.getLogger('main')
         logger.setLevel(logging.DEBUG)
@@ -208,12 +208,12 @@ if __name__ == '__main__':
         logger.error(str(value))
         logger.error(str(traceback))
         # Call the normal Exception hook after
-        sys._excepthook(exctype, value, traceback)
+        sys.__excepthook__(exctype, value, traceback)
         sys.exit(1)
 
 
     # Set the exception hook to our wrapping function
-    sys.excepthook = my_exception_hook
+    sys.__excepthook__ = exception_hook
 
     # check for tesseract
     try:

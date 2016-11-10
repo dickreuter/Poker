@@ -701,7 +701,8 @@ class TableScreenBased(Table):
             self.game_number_on_screen = pytesseract.image_to_string(img_mod, None, False, "-psm 6")
             self.logger.info("Game number on screen: " + str(self.game_number_on_screen))
         except:
-            self.logger.info("Failed to get game number from screen")
+            self.logger.warning("Failed to get game number from screen")
+            self.game_number_on_screen=''
 
         return True
 
