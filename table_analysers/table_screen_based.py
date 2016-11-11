@@ -295,7 +295,6 @@ class TableScreenBased(Table):
         go_through_each_card(img, False)
 
         if len(self.mycards) == 2:
-            self.myFundsChange = float(self.myFunds) - float(str(h.myFundsHistory[-1]).strip('[]'))
             self.logger.info("My cards: " + str(self.mycards))
             return True
         else:
@@ -549,6 +548,7 @@ class TableScreenBased(Table):
             self.entireScreenPIL.save("pics/FundsError.png")
             time.sleep(0.5)
         self.logger.debug("Funds: " + str(self.myFunds))
+        self.myFundsChange = float(self.myFunds) - float(str(h.myFundsHistory[-1]).strip('[]'))
         return True
 
     def get_current_call_value(self, p):
@@ -648,7 +648,9 @@ class TableScreenBased(Table):
     def get_new_hand(self, mouse, h, p):
         self.gui_signals.signal_progressbar_increase.emit(5)
         if h.previousCards != self.mycards:
+            self.get_my_funds(h, p)
             self.get_game_number_on_screen(h)
+            self.get_my_funds(h, p)
             self.logger.info("+++========================== NEW HAND ==========================+++")
             self.time_new_cards_recognised = datetime.datetime.utcnow()
             h.lastGameID = str(h.GameID)
@@ -674,6 +676,8 @@ class TableScreenBased(Table):
             mouse.move_mouse_away_from_buttons_jump()
             self.take_screenshot(False, p)
         self.logger.info("Game number on screen: " + str(h.game_number_on_screen))
+        self.myFunds = float(h.myFundsHistory[-1])
+        self.logger.debug("Remembering funds: "+str(self.myFunds))
         return True
 
     def upload_collusion_wrapper(self, p, h):

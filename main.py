@@ -107,7 +107,6 @@ class ThreadManager(threading.Thread):
                         t.check_for_captcha(mouse) and \
                         t.get_lost_everything(h, t, p, gui_signals) and \
                         t.check_for_imback(mouse) and \
-                        t.get_my_funds(h, p) and \
                         t.get_my_cards(h) and \
                         t.get_new_hand(mouse, h, p) and \
                         t.get_table_cards(h) and \
