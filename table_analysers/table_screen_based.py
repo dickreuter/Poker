@@ -648,10 +648,9 @@ class TableScreenBased(Table):
     def get_new_hand(self, mouse, h, p):
         self.gui_signals.signal_progressbar_increase.emit(5)
         if h.previousCards != self.mycards:
-            self.get_my_funds(h, p)
+            self.logger.info("+++========================== NEW HAND ==========================+++")
             self.get_game_number_on_screen(h)
             self.get_my_funds(h, p)
-            self.logger.info("+++========================== NEW HAND ==========================+++")
             self.time_new_cards_recognised = datetime.datetime.utcnow()
             h.lastGameID = str(h.GameID)
             h.GameID = int(round(np.random.uniform(0, 999999999), 0))
