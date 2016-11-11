@@ -647,8 +647,8 @@ class TableScreenBased(Table):
 
     def get_new_hand(self, mouse, h, p):
         self.gui_signals.signal_progressbar_increase.emit(5)
-        self.get_game_number_on_screen()
         if h.previousCards != self.mycards:
+            self.get_game_number_on_screen(h)
             self.logger.info("+++========================== NEW HAND ==========================+++")
             self.time_new_cards_recognised = datetime.datetime.utcnow()
             h.lastGameID = str(h.GameID)
@@ -671,16 +671,17 @@ class TableScreenBased(Table):
             h.last_round_bluff = False  # reset the bluffing marker
             h.round_number = 0
 
+            mouse.move_mouse_away_from_buttons_jump()
             self.take_screenshot(False, p)
         return True
 
     def upload_collusion_wrapper(self, p, h):
         if not (h.GameID, self.gameStage) in h.uploader:
             h.uploader[(h.GameID, self.gameStage)] = True
-            self.game_logger.upload_collusion_data(self.game_number_on_screen, self.mycards, p, self.gameStage)
+            self.game_logger.upload_collusion_data(h.game_number_on_screen, self.mycards, p, self.gameStage)
         return True
 
-    def get_game_number_on_screen(self):
+    def get_game_number_on_screen(self,h):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
@@ -694,11 +695,11 @@ class TableScreenBased(Table):
         img_mod = img_resized.filter(ImageFilter.ModeFilter).filter(ImageFilter.SHARPEN)
 
         try:
-            self.game_number_on_screen = pytesseract.image_to_string(img_mod, None, False, "-psm 6")
-            self.logger.info("Game number on screen: " + str(self.game_number_on_screen))
+            h.game_number_on_screen = pytesseract.image_to_string(img_mod, None, False, "-psm 6")
+            self.logger.info("Game number on screen: " + str(h.game_number_on_screen))
         except:
             self.logger.warning("Failed to get game number from screen")
-            self.game_number_on_screen=''
+            h.game_number_on_screen=''
 
         return True
 

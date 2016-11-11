@@ -479,7 +479,7 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
     m.collusion_cards=''
 
     if p.selected_strategy['collusion'] == 1:
-        collusion_cards, collusion_player_dropped_out = L.get_collusion_cards(t.game_number_on_screen, t.gameStage)
+        collusion_cards, collusion_player_dropped_out = L.get_collusion_cards(h.game_number_on_screen, t.gameStage)
 
         if collusion_cards != '':
             m.collusion_cards=collusion_cards

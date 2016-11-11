@@ -119,13 +119,26 @@ class MouseMoverTableBased(MouseMover):
             x1 = self.old_x
             y1 = self.old_y
         x1 = 10 if x1 > 2000 else x1
-        y1 = 10 if y1 >1000 else y1
+        y1 = 10 if y1 > 1000 else y1
 
         try:
             self.logger.debug("Moving mouse away: "+str(x1)+","+str(y1)+","+str(x2)+","+str(y2))
             self.mouse_mover(x1, y1, x2, y2)
         except Exception as e:
             self.logger.warning("Moving mouse away failed")
+
+    def move_mouse_away_from_buttons_jump(self):
+        x2 = int(np.round(np.random.uniform(1700, 2000, 1), 0)[0])
+        y2 = int(np.round(np.random.uniform(10, 200, 1), 0)[0])
+
+        try:
+            self.logger.debug("Moving mouse away via jump: "+str(x1)+","+str(y1)+","+str(x2)+","+str(y2))
+            if self.vbox_mode:
+                self.mouse_move_vbox(x2, y2)
+            else:
+                self.mouse.move(x2, y2)
+        except Exception as e:
+            self.logger.warning("Moving mouse via jump away failed")
 
     def enter_captcha(self, captchaString, topleftcorner):
         self.logger.warning("Entering Captcha: " + str(captchaString))

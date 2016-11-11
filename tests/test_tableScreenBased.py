@@ -5,8 +5,8 @@ from . import init_table
 class TestTableScreenBased(TestCase):
     def test_game_number(self):
         t, p, gui_signals, h, logger = init_table('tests/screenshots/1773793_PreFlop_0.png')
-        t.get_game_number_on_screen()
-        self.assertEqual(t.game_number_on_screen,"15,547,039,153")
+        t.get_game_number_on_screen(h)
+        self.assertEqual(h.game_number_on_screen,"15,547,039,153")
 
     def test_other_players1(self):
         t, p, gui_signals, h, logger=init_table('tests/screenshots/1773793_PreFlop_0.png')
