@@ -650,6 +650,7 @@ class TableScreenBased(Table):
         if h.previousCards != self.mycards:
             self.logger.info("+++========================== NEW HAND ==========================+++")
             self.get_game_number_on_screen(h)
+            self.logger.info("Game number on screen: " + str(h.game_number_on_screen))
             self.get_my_funds(h, p)
             self.time_new_cards_recognised = datetime.datetime.utcnow()
             h.lastGameID = str(h.GameID)
@@ -674,9 +675,10 @@ class TableScreenBased(Table):
 
             mouse.move_mouse_away_from_buttons_jump()
             self.take_screenshot(False, p)
-        self.logger.info("Game number on screen: " + str(h.game_number_on_screen))
-        self.myFunds = float(h.myFundsHistory[-1])
-        self.logger.debug("Remembering funds: "+str(self.myFunds))
+        else:
+            self.logger.info("Game number on screen: " + str(h.game_number_on_screen))
+            self.myFunds = float(h.myFundsHistory[-1])
+            self.logger.debug("Remembering funds: "+str(self.myFunds))
         return True
 
     def upload_collusion_wrapper(self, p, h):
