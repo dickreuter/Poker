@@ -704,43 +704,43 @@ class TableScreenBased(Table):
         return True
 
     def get_snowie_advice(self, p, h):
-        if self.tbl == 'SN':
-            func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
-            img = cv2.cvtColor(np.array(self.entireScreenPIL), cv2.COLOR_BGR2RGB)
-            count1, points1, bestfit, minvalue = self.find_template_on_screen(self.topLeftCorner_snowieadvice1, img,
-                                                                              0.07)
-            # count2, points2, _ = self.find_template_on_screen(self.topLeftCorner_snowieadvice2, img, 0.07)
-
-            if count1 == 1:
-                tlc_adv1 = points1[0]
-                # tlc_adv2 = points2[0]
-
-                fd = func_dict['fold']
-                fold_image = self.crop_image(self.entireScreenPIL, tlc_adv1[0] + fd['x1'], tlc_adv1[1] + fd['y1'],
-                                             tlc_adv1[0] + fd['x2'], tlc_adv1[1] + fd['y2'])
-                fd = func_dict['call']
-                call_image = self.crop_image(self.entireScreenPIL, tlc_adv1[0] + fd['x1'], tlc_adv1[1] + fd['y1'],
-                                             tlc_adv1[0] + fd['x2'], tlc_adv1[1] + fd['y2'])
-                fd = func_dict['raise']
-                raise_image = self.crop_image(self.entireScreenPIL, tlc_adv1[0] + fd['x1'], tlc_adv1[1] + fd['y1'],
-                                              tlc_adv1[0] + fd['x2'], tlc_adv1[1] + fd['y2'])
-                # fd=func_dict['betsize']
-                # betsize_image = self.crop_image(self.entireScreenPIL, tlc_adv2[0] + fd['x1'], tlc_adv2[1] + fd['y1'],
-                #                             tlc_adv2[0] + fd['x2'], tlc_adv2[1] + fd['y2'])
-
-                self.fold_advice = float(self.get_ocr_float(fold_image, str(inspect.stack()[0][3])))
-                self.call_advice = float(self.get_ocr_float(call_image, str(inspect.stack()[0][3])))
-                try:
-                    self.raise_advice = float(self.get_ocr_float(raise_image, str(inspect.stack()[0][3])))
-                except:
-                    self.raise_advice = np.nan
-                # self.betzise_advice = float(self.get_ocr_float(betsize_image, str(inspect.stack()[0][3])))
-
-                self.logger.info("Fold Advice: {0}".format(self.fold_advice))
-                self.logger.info("Call Advice: {0}".format(self.call_advice))
-                self.logger.info("Raise Advice: {0}".format(self.raise_advice))
-                # logger.info("Betsize Advice: {0}".format(self.betzise_advice))
-            else:
-                self.logger.warning("Could not identify snowie advice window. minValue: {0}".format(minvalue))
+        # if self.tbl == 'SN':
+        #     func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        #     img = cv2.cvtColor(np.array(self.entireScreenPIL), cv2.COLOR_BGR2RGB)
+        #     count1, points1, bestfit, minvalue = self.find_template_on_screen(self.topLeftCorner_snowieadvice1, img,
+        #                                                                       0.07)
+        #     # count2, points2, _ = self.find_template_on_screen(self.topLeftCorner_snowieadvice2, img, 0.07)
+        #
+        #     if count1 == 1:
+        #         tlc_adv1 = points1[0]
+        #         # tlc_adv2 = points2[0]
+        #
+        #         fd = func_dict['fold']
+        #         fold_image = self.crop_image(self.entireScreenPIL, tlc_adv1[0] + fd['x1'], tlc_adv1[1] + fd['y1'],
+        #                                      tlc_adv1[0] + fd['x2'], tlc_adv1[1] + fd['y2'])
+        #         fd = func_dict['call']
+        #         call_image = self.crop_image(self.entireScreenPIL, tlc_adv1[0] + fd['x1'], tlc_adv1[1] + fd['y1'],
+        #                                      tlc_adv1[0] + fd['x2'], tlc_adv1[1] + fd['y2'])
+        #         fd = func_dict['raise']
+        #         raise_image = self.crop_image(self.entireScreenPIL, tlc_adv1[0] + fd['x1'], tlc_adv1[1] + fd['y1'],
+        #                                       tlc_adv1[0] + fd['x2'], tlc_adv1[1] + fd['y2'])
+        #         # fd=func_dict['betsize']
+        #         # betsize_image = self.crop_image(self.entireScreenPIL, tlc_adv2[0] + fd['x1'], tlc_adv2[1] + fd['y1'],
+        #         #                             tlc_adv2[0] + fd['x2'], tlc_adv2[1] + fd['y2'])
+        #
+        #         self.fold_advice = float(self.get_ocr_float(fold_image, str(inspect.stack()[0][3])))
+        #         self.call_advice = float(self.get_ocr_float(call_image, str(inspect.stack()[0][3])))
+        #         try:
+        #             self.raise_advice = float(self.get_ocr_float(raise_image, str(inspect.stack()[0][3])))
+        #         except:
+        #             self.raise_advice = np.nan
+        #         # self.betzise_advice = float(self.get_ocr_float(betsize_image, str(inspect.stack()[0][3])))
+        #
+        #         self.logger.info("Fold Advice: {0}".format(self.fold_advice))
+        #         self.logger.info("Call Advice: {0}".format(self.call_advice))
+        #         self.logger.info("Raise Advice: {0}".format(self.raise_advice))
+        #         # logger.info("Betsize Advice: {0}".format(self.betzise_advice))
+        #     else:
+        #         self.logger.warning("Could not identify snowie advice window. minValue: {0}".format(minvalue))
 
         return True
