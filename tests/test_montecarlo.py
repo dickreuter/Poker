@@ -7,13 +7,36 @@ import time
 import unittest
 from unittest.mock import MagicMock
 
-
 import numpy as np
 
 from decisionmaker import montecarlo_python as mc
 
 
 class TestMonteCarlo(unittest.TestCase):
+    def test_twopairs1(
+            self):
+        Simulation = mc.MonteCarlo()
+
+        Simulation.player_final_cards = [['3H', '3S', '4H', '4S', '8S', '8C', 'QH'],
+                                         ['KH', '6C', '4H', '4S', '8S', '8C', 'QH']]
+        print(Simulation.eval_best_hand(Simulation.player_final_cards)[1])
+        print("\r")
+        self.assertEqual(
+            Simulation.player_final_cards.index(Simulation.eval_best_hand(Simulation.player_final_cards)[0]),
+            1)
+
+    def test_twopairs2(
+            self):
+        Simulation = mc.MonteCarlo()
+
+        Simulation.player_final_cards = [['3H', '3S', '4H', '4S', '8S', '8C', 'QH'],
+                                         ['KH', '3D', '4H', '4S', '8S', '8C', 'QH']]
+        print(Simulation.eval_best_hand(Simulation.player_final_cards)[1])
+        print("\r")
+        self.assertEqual(
+            Simulation.player_final_cards.index(Simulation.eval_best_hand(Simulation.player_final_cards)[0]),
+            1)
+
     def test_evaluator(
             self):  # unittest to make sure the evaluator returns the corret winner hand 1 or 2 (returned as index of 0 or 1)
         Simulation = mc.MonteCarlo()
@@ -116,7 +139,7 @@ class TestMonteCarlo(unittest.TestCase):
             1)
 
         Simulation.player_final_cards = [['9S', '7H', 'KS', 'KH', 'AH', 'AS', 'AC'],
-                                         ['8D', '2H', 'KS', 'KH', 'AH', 'AS', 'AC']]  # Full house on table_analysers that is draw
+                                         ['8D', '2H', 'KS', 'KH', 'AH', 'AS', 'AC']]
         print(Simulation.eval_best_hand(Simulation.player_final_cards)[1])
         print("\r")
         self.assertEqual(
@@ -132,8 +155,9 @@ class TestMonteCarlo(unittest.TestCase):
             total_result = []
             for n in range(testRuns):
                 start_time = time.time() + secs
-                logger=MagicMock()
-                Simulation.run_montecarlo(logger, my_cards, cards_on_table, players, 1, maxRuns=maxRuns, timeout=start_time, ghost_cards='', opponent_range=1)
+                logger = MagicMock()
+                Simulation.run_montecarlo(logger, my_cards, cards_on_table, players, 1, maxRuns=maxRuns,
+                                          timeout=start_time, ghost_cards='', opponent_range=1)
                 equity = Simulation.equity
                 total_result.append(equity * 100)
                 print("--- %s seconds ---" % (time.time() - start_time))
@@ -149,10 +173,16 @@ class TestMonteCarlo(unittest.TestCase):
             print("Mean: " + str(avg))
             print("Stdev: " + str(stdev))
 
-            self.assertAlmostEqual(avg, expected_results, delta=1)
-            self.assertAlmostEqual(stdev, 0, delta=1)
+            self.assertAlmostEqual(avg, expected_results, delta=2)
+            self.assertAlmostEqual(stdev, 0, delta=2)
 
         Simulation = mc.MonteCarlo()
+
+        my_cards = [['3H', '3S']]
+        cards_on_table = ['8S', '4S', 'QH', '8C', '4H']
+        expected_results = 40.2
+        players = 2
+        testRun(Simulation, my_cards, cards_on_table, players, expected_results)
 
         my_cards = [['8H', '8D']]
         cards_on_table = ['QH', '7H', '9H', 'JH', 'TH']
@@ -252,12 +282,12 @@ class TestMonteCarlo(unittest.TestCase):
 
         my_cards = [['JD', 'JS']]
         cards_on_table = ['8C', 'TC', 'JC', '5H', 'QC']
-        expected_results = 26
+        expected_results = 5702
         players = 3
         testRun(Simulation, my_cards, cards_on_table, players, expected_results)
 
         my_cards = [['TD', '7D']]
         cards_on_table = ['8D', 'QD', '7C', '5D', '6D']
-        expected_results = 87
+        expected_results = 52.8
         players = 2
         testRun(Simulation, my_cards, cards_on_table, players, expected_results)

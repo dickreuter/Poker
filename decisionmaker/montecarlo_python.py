@@ -226,8 +226,8 @@ class MonteCarlo(object):
             score = (3, 2)
         elif score[0:4] == (2, 2, 2, 1):  # special case: convert three pair to two pair
             score = (2, 2, 1)  # as three pair are not worth more than two pair
-            sortedCrdRanks = sorted(card_ranks, reverse=True)  # avoid for example 11,8,6,7
-            card_ranks = (sortedCrdRanks[0], sortedCrdRanks[1], sortedCrdRanks[2], sortedCrdRanks[3])
+            kicker = max(card_ranks[2],card_ranks[3])  # avoid for example 11,8,6,7
+            card_ranks = (card_ranks[0], card_ranks[1], kicker)
         elif score[0] == 4:  # four of a kind
             score = (4,)
             sortedCrdRanks = sorted(card_ranks, reverse=True)  # avoid for example 11,8,9
@@ -554,8 +554,10 @@ if __name__ == '__main__':
     import logging
 
     logger = logging.getLogger('Montecarlo main')
-    my_cards = [['2D', 'AD']]
-    cards_on_table = ['3S', 'AH', '8D']
+    # my_cards = [['2D', 'AD']]
+    # cards_on_table = ['3S', 'AH', '8D']
+    my_cards = [['3H', '3S']]
+    cards_on_table = ['8S', '4S', 'QH', '8C', '4H']
     players = 2
     secs = 5
     maxruns=10000
