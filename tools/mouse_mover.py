@@ -132,13 +132,13 @@ class MouseMoverTableBased(MouseMover):
         y2 = int(np.round(np.random.uniform(10, 200, 1), 0)[0])
 
         try:
-            self.logger.debug("Moving mouse away via jump: "+str(x1)+","+str(y1)+","+str(x2)+","+str(y2))
+            self.logger.debug("Moving mouse away via jump: "+str(x2)+","+str(y2))
             if self.vbox_mode:
                 self.mouse_move_vbox(x2, y2)
             else:
                 self.mouse.move(x2, y2)
         except Exception as e:
-            self.logger.warning("Moving mouse via jump away failed")
+            self.logger.warning("Moving mouse via jump away failed"+str(e))
 
     def enter_captcha(self, captchaString, topleftcorner):
         self.logger.warning("Entering Captcha: " + str(captchaString))

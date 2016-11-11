@@ -673,6 +673,7 @@ class TableScreenBased(Table):
 
             mouse.move_mouse_away_from_buttons_jump()
             self.take_screenshot(False, p)
+        self.logger.info("Game number on screen: " + str(h.game_number_on_screen))
         return True
 
     def upload_collusion_wrapper(self, p, h):
@@ -696,7 +697,6 @@ class TableScreenBased(Table):
 
         try:
             h.game_number_on_screen = pytesseract.image_to_string(img_mod, None, False, "-psm 6")
-            self.logger.info("Game number on screen: " + str(h.game_number_on_screen))
         except:
             self.logger.warning("Failed to get game number from screen")
             h.game_number_on_screen=''
