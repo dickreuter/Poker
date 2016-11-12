@@ -464,7 +464,6 @@ class TableScreenBased(Table):
     def get_dealer_position(self):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
         self.gui_signals.signal_progressbar_increase.emit(5)
-        self.gui_signals.signal_status.emit("Analyse dealer position")
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + 0, self.tlc[1] + 0,
                                     self.tlc[0] + 950, self.tlc[1] + 700)
 
@@ -548,7 +547,6 @@ class TableScreenBased(Table):
             self.entireScreenPIL.save("pics/FundsError.png")
             time.sleep(0.5)
         self.logger.debug("Funds: " + str(self.myFunds))
-        self.myFundsChange = float(self.myFunds) - float(str(h.myFundsHistory[-1]).strip('[]'))
         return True
 
     def get_current_call_value(self, p):
@@ -626,7 +624,7 @@ class TableScreenBased(Table):
         count, points, bestfit, _ = self.find_template_on_screen(self.lostEverything, img, 0.001)
         if count > 0:
             h.lastGameID = str(h.GameID)
-            self.myFundsChange = float(0) - float(str(h.myFundsHistory[-1]).strip('[]'))
+            self.myFundsChange = float(0) - float(h.myFundsHistory[-1])
             self.game_logger.mark_last_game(t, h, p)
             self.gui_signals.signal_status.emit("Everything is lost. Last game has been marked.")
             self.gui_signals.signal_progressbar_reset.emit()
@@ -649,14 +647,18 @@ class TableScreenBased(Table):
         self.gui_signals.signal_progressbar_increase.emit(5)
         if h.previousCards != self.mycards:
             self.logger.info("+++========================== NEW HAND ==========================+++")
+            self.time_new_cards_recognised = datetime.datetime.utcnow()
             self.get_game_number_on_screen(h)
             self.get_my_funds(h, p)
-            self.time_new_cards_recognised = datetime.datetime.utcnow()
+
             h.lastGameID = str(h.GameID)
             h.GameID = int(round(np.random.uniform(0, 999999999), 0))
             cards = ' '.join(self.mycards)
             self.gui_signals.signal_status.emit("New hand: " + str(cards))
-            self.game_logger.mark_last_game(self, h, p)
+
+            if not len(h.myFundsHistory) == 0:
+                self.myFundsChange = float(self.myFunds) - float(h.myFundsHistory[-1])
+                self.game_logger.mark_last_game(self, h, p)
 
             t_algo = threading.Thread(name='Algo', target=self.call_genetic_algorithm, args=(p,))
             t_algo.daemon = True
@@ -666,7 +668,7 @@ class TableScreenBased(Table):
             self.gui_signals.signal_bar_chart_update.emit(self.game_logger, p.current_strategy)
 
             h.myLastBet = 0
-            h.myFundsHistory.append(str(self.myFunds))
+            h.myFundsHistory.append(self.myFunds)
             h.previousCards = self.mycards
             h.lastSecondRoundAdjustment = 0
             h.last_round_bluff = False  # reset the bluffing marker
@@ -676,8 +678,7 @@ class TableScreenBased(Table):
             self.take_screenshot(False, p)
         else:
             self.logger.info("Game number on screen: " + str(h.game_number_on_screen))
-            self.myFunds = float(h.myFundsHistory[-1])
-            self.logger.debug("Remembering funds: "+str(self.myFunds))
+            self.get_my_funds(h, p)
 
         return True
 

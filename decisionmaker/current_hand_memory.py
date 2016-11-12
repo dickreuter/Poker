@@ -10,7 +10,7 @@ class History:
         self.previousCards = []
         self.myLastBet = 0
         self.histGameStage = ""
-        self.myFundsHistory = [2.0]
+        self.myFundsHistory = []
         self.losses = 0
         self.wins = 0
         self.totalGames = 0

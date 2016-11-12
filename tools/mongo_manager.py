@@ -74,6 +74,7 @@ class StrategyHandler(object):
         return l
 
     def check_defaults(self):
+        if not 'always_call_low_stack_multiplier' in self.selected_strategy: self.selected_strategy['always_call_low_stack_multiplier'] = 8
         if not 'differentiate_reverse_sheet' in self.selected_strategy: self.selected_strategy['differentiate_reverse_sheet'] = 1
         if not 'out_multiplier' in self.selected_strategy: self.selected_strategy['out_multiplier'] = 0
         if not 'FlopBluffMaxEquity' in self.selected_strategy: self.selected_strategy['FlopBluffMaxEquity'] = 100

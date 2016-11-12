@@ -81,6 +81,7 @@ class UIActionAndSignals(QObject):
 
         QObject.__init__(self)
         self.strategy_items_with_multipliers = {
+            "always_call_low_stack_multiplier": 1,
             "out_multiplier": 1,
             "FlopBluffMaxEquity": 100,
             "TurnBluffMaxEquity": 100,

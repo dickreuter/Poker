@@ -443,6 +443,10 @@ class Decision(DecisionBase):
             self.logger.info("Equity is above the always call threshold")
             self.finalCallLimit = 99999999
 
+        if t.myFunds*int(p.selected_strategy['always_call_low_stack_multiplier']) < t.totalPotValue:
+            self.logger.info("Low funds call everything activated")
+            self.finalCallLimit = 99999999
+
         if p.selected_strategy['preflop_override'] and t.gameStage==GameStages.PreFlop.value:
             self.preflop_override(t,logger,h,p)
 

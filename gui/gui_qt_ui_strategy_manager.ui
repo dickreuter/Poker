@@ -25,7 +25,80 @@
   <property name="windowTitle">
    <string>Strategy editor</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
+  <layout class="QGridLayout" name="gridLayout_13">
+   <item row="0" column="0">
+    <widget class="QLabel" name="label_4">
+     <property name="font">
+      <font>
+       <pointsize>20</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Strategy editor</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Select Strategy</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="Strategy">
+         <property name="toolTip">
+          <string>Select a strategy you want to edit</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton_save_current_strategy">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="toolTip">
+          <string>You can only save strategies you have created yourself. Otherwise save it under a new name.</string>
+         </property>
+         <property name="text">
+          <string>Save</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item row="2" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>New name</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="lineEdit_new_name"/>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_save_new_strategy">
+       <property name="toolTip">
+        <string>Saves the current strategy under a new name</string>
+       </property>
+       <property name="text">
+        <string>Save under new name</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
    <item row="3" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="enabled">
@@ -2135,400 +2208,430 @@
       <attribute name="title">
        <string>Additional options</string>
       </attribute>
-      <widget class="QGroupBox" name="groupBox_35">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>20</y>
-         <width>521</width>
-         <height>135</height>
-        </rect>
-       </property>
-       <property name="title">
-        <string>Extreme cases</string>
-       </property>
-       <layout class="QGridLayout" name="gridLayout_3">
-        <item row="0" column="0">
-         <layout class="QVBoxLayout" name="verticalLayout_27">
-          <item>
-           <widget class="QLabel" name="label_32">
-            <property name="text">
-             <string>Equity threshold above which everything is called</string>
-            </property>
-           </widget>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="0">
+        <widget class="QGroupBox" name="groupBox_35">
+         <property name="title">
+          <string>Extreme cases</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_3">
+          <item row="0" column="0">
+           <layout class="QVBoxLayout" name="verticalLayout_27">
+            <item>
+             <widget class="QLabel" name="label_32">
+              <property name="text">
+               <string>Equity threshold above which everything is called</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSlider" name="alwaysCallEquity">
+              <property name="mouseTracking">
+               <bool>false</bool>
+              </property>
+              <property name="toolTip">
+               <string notr="true">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the equity (winning probability) is higher than the value, the bot will never fold.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>100</number>
+              </property>
+              <property name="singleStep">
+               <number>5</number>
+              </property>
+              <property name="pageStep">
+               <number>10</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="tickPosition">
+               <enum>QSlider::TicksAbove</enum>
+              </property>
+              <property name="tickInterval">
+               <number>0</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
-          <item>
-           <widget class="QSlider" name="alwaysCallEquity">
-            <property name="mouseTracking">
-             <bool>false</bool>
-            </property>
-            <property name="toolTip">
-             <string notr="true">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If the equity (winning probability) is higher than the value, the bot will never fold.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="minimum">
-             <number>1</number>
-            </property>
-            <property name="maximum">
-             <number>100</number>
-            </property>
-            <property name="singleStep">
-             <number>5</number>
-            </property>
-            <property name="pageStep">
-             <number>10</number>
-            </property>
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="tickPosition">
-             <enum>QSlider::TicksAbove</enum>
-            </property>
-            <property name="tickInterval">
-             <number>0</number>
-            </property>
-           </widget>
+          <item row="0" column="1">
+           <widget class="QLCDNumber" name="lcdNumber_57"/>
           </item>
-         </layout>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLCDNumber" name="lcdNumber_57"/>
-        </item>
-        <item row="1" column="0">
-         <layout class="QVBoxLayout" name="verticalLayout_32">
-          <item>
-           <widget class="QLabel" name="label_37">
-            <property name="text">
-             <string>Maximum amount to call or bet at 100% equity in cents (corresponds to initial funds). This is to limit the amount for ll in calls.</string>
-            </property>
-            <property name="wordWrap">
-             <bool>true</bool>
-            </property>
-           </widget>
+          <item row="1" column="0">
+           <layout class="QVBoxLayout" name="verticalLayout_32">
+            <item>
+             <widget class="QLabel" name="label_37">
+              <property name="text">
+               <string>Maximum amount to call or bet at 100% equity in cents (corresponds to initial funds). This is to limit the amount for ll in calls.</string>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSlider" name="initialFunds">
+              <property name="mouseTracking">
+               <bool>false</bool>
+              </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When equity is 100% then this is the maximum amount whre the bot will call. In the graph it corresponds to the upper right corner where equity is 100%. I suggest you put slightly more than your initial funds. The parameter is also used as a verification in case your funds are not read correctly and the funds change to the previous game is higher than that value, it will not consider the game for the statistics.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>5000</number>
+              </property>
+              <property name="singleStep">
+               <number>10</number>
+              </property>
+              <property name="pageStep">
+               <number>100</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="tickPosition">
+               <enum>QSlider::TicksAbove</enum>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
-          <item>
-           <widget class="QSlider" name="initialFunds">
-            <property name="mouseTracking">
-             <bool>false</bool>
-            </property>
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When equity is 100% then this is the maximum amount whre the bot will call. In the graph it corresponds to the upper right corner where equity is 100%. I suggest you put slightly more than your initial funds. The parameter is also used as a verification in case your funds are not read correctly and the funds change to the previous game is higher than that value, it will not consider the game for the statistics.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="minimum">
-             <number>1</number>
-            </property>
-            <property name="maximum">
-             <number>5000</number>
-            </property>
-            <property name="singleStep">
-             <number>10</number>
-            </property>
-            <property name="pageStep">
-             <number>100</number>
-            </property>
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="tickPosition">
-             <enum>QSlider::TicksAbove</enum>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item row="1" column="1">
-         <widget class="QLCDNumber" name="lcdNumber_61"/>
-        </item>
-       </layout>
-       <zorder></zorder>
-       <zorder>lcdNumber_57</zorder>
-       <zorder>lcdNumber_61</zorder>
-      </widget>
-      <widget class="QGroupBox" name="groupBox_36">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>400</y>
-         <width>521</width>
-         <height>189</height>
-        </rect>
-       </property>
-       <property name="title">
-        <string>Bullying other players with little fund with aggressive behaviour</string>
-       </property>
-       <layout class="QGridLayout" name="gridLayout_52">
-        <item row="3" column="1">
-         <widget class="QLCDNumber" name="lcdNumber_59"/>
-        </item>
-        <item row="2" column="1">
-         <widget class="QLCDNumber" name="lcdNumber_55"/>
-        </item>
-        <item row="3" column="0">
-         <layout class="QVBoxLayout" name="verticalLayout_34">
-          <item>
-           <widget class="QLabel" name="label_39">
-            <property name="text">
-             <string>Maximum equity to bully</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QSlider" name="maxBullyEquity">
-            <property name="mouseTracking">
-             <bool>false</bool>
-            </property>
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Upper limit of equity where bully mode can be activated if all conditions are met.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="minimum">
-             <number>0</number>
-            </property>
-            <property name="maximum">
-             <number>100</number>
-            </property>
-            <property name="singleStep">
-             <number>1</number>
-            </property>
-            <property name="pageStep">
-             <number>10</number>
-            </property>
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="tickPosition">
-             <enum>QSlider::TicksAbove</enum>
-            </property>
-           </widget>
+          <item row="1" column="1">
+           <widget class="QLCDNumber" name="lcdNumber_61"/>
           </item>
          </layout>
-        </item>
-        <item row="2" column="0">
-         <layout class="QVBoxLayout" name="verticalLayout_33">
-          <item>
-           <widget class="QLabel" name="label_38">
-            <property name="text">
-             <string>Minimum required equity to bully</string>
-            </property>
-           </widget>
+         <zorder></zorder>
+         <zorder>lcdNumber_57</zorder>
+         <zorder>lcdNumber_61</zorder>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QGroupBox" name="groupBox_37">
+         <property name="title">
+          <string>Self improvement with genetic algorithm</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_53">
+          <item row="0" column="0">
+           <layout class="QVBoxLayout" name="verticalLayout_432">
+            <item>
+             <widget class="QLabel" name="label_449">
+              <property name="text">
+               <string>Minimum loss to initiate Genetic Algorithm</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSlider" name="minimumLossForIteration">
+              <property name="mouseTracking">
+               <bool>false</bool>
+              </property>
+              <property name="minimum">
+               <number>0</number>
+              </property>
+              <property name="maximum">
+               <number>100</number>
+              </property>
+              <property name="singleStep">
+               <number>1</number>
+              </property>
+              <property name="pageStep">
+               <number>10</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="tickPosition">
+               <enum>QSlider::TicksAbove</enum>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
-          <item>
-           <widget class="QSlider" name="minBullyEquity">
-            <property name="mouseTracking">
-             <bool>false</bool>
-            </property>
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In order activate bully mode (meaning the bot is more aggressive), a minimum amounf of equity (winning probability as determined by the simulation) can be selected.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="minimum">
-             <number>0</number>
-            </property>
-            <property name="maximum">
-             <number>100</number>
-            </property>
-            <property name="pageStep">
-             <number>10</number>
-            </property>
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="tickPosition">
-             <enum>QSlider::TicksAbove</enum>
-            </property>
-           </widget>
+          <item row="0" column="1">
+           <widget class="QLCDNumber" name="lcdNumber_109"/>
           </item>
-         </layout>
-        </item>
-        <item row="1" column="0">
-         <layout class="QVBoxLayout" name="verticalLayout_6">
-          <item>
-           <widget class="QLabel" name="label_12">
-            <property name="text">
-             <string>Bullying when heads up opponent stacks are below value, original funds divided by:</string>
-            </property>
-           </widget>
+          <item row="1" column="0">
+           <layout class="QVBoxLayout" name="verticalLayout_435">
+            <item>
+             <widget class="QLabel" name="label_452">
+              <property name="text">
+               <string>Considering the last # of games for genetic algorithm</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSlider" name="considerLastGames">
+              <property name="mouseTracking">
+               <bool>false</bool>
+              </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The genetic algorithm can be activated automatically. Here you can select under what conditions this will happen. It only makes sens to have it activated after playing at least 500 hands.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="minimum">
+               <number>100</number>
+              </property>
+              <property name="maximum">
+               <number>10000</number>
+              </property>
+              <property name="singleStep">
+               <number>1</number>
+              </property>
+              <property name="pageStep">
+               <number>100</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="tickPosition">
+               <enum>QSlider::TicksAbove</enum>
+              </property>
+              <property name="tickInterval">
+               <number>100</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
-          <item>
-           <widget class="QSlider" name="bullyDivider">
-            <property name="mouseTracking">
-             <bool>false</bool>
-            </property>
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In headsup when the single opponent has less than a certain amount of stacks left, the bot can be more agressive. This is activated when he has less funds than initial funds divided by the divider (which is this slide). For example for initial funds of $2 and a divider of 4, the bot would become more agressive if the opponent has less than $0.50.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="minimum">
-             <number>1</number>
-            </property>
-            <property name="maximum">
-             <number>10</number>
-            </property>
-            <property name="pageStep">
-             <number>1</number>
-            </property>
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="tickPosition">
-             <enum>QSlider::TicksAbove</enum>
-            </property>
-           </widget>
+          <item row="1" column="1">
+           <widget class="QLCDNumber" name="lcdNumber_112"/>
           </item>
-         </layout>
-        </item>
-        <item row="1" column="1">
-         <widget class="QLCDNumber" name="lcdNumber_58"/>
-        </item>
-        <item row="0" column="0">
-         <widget class="QCheckBox" name="checkBox_2">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>Gather player stack sizes and activate bullying</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QGroupBox" name="groupBox_37">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>190</y>
-         <width>521</width>
-         <height>189</height>
-        </rect>
-       </property>
-       <property name="title">
-        <string>Self improvement with genetic algorithm</string>
-       </property>
-       <layout class="QGridLayout" name="gridLayout_53">
-        <item row="0" column="0">
-         <layout class="QVBoxLayout" name="verticalLayout_432">
-          <item>
-           <widget class="QLabel" name="label_449">
-            <property name="text">
-             <string>Minimum loss to initiate Genetic Algorithm</string>
-            </property>
-           </widget>
+          <item row="2" column="0">
+           <layout class="QVBoxLayout" name="verticalLayout_436">
+            <item>
+             <widget class="QLabel" name="label_453">
+              <property name="text">
+               <string>Initiate self improvement ever x hands</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSlider" name="strategyIterationGames">
+              <property name="mouseTracking">
+               <bool>false</bool>
+              </property>
+              <property name="minimum">
+               <number>100</number>
+              </property>
+              <property name="maximum">
+               <number>10000</number>
+              </property>
+              <property name="singleStep">
+               <number>1</number>
+              </property>
+              <property name="pageStep">
+               <number>100</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="tickPosition">
+               <enum>QSlider::TicksAbove</enum>
+              </property>
+              <property name="tickInterval">
+               <number>100</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
-          <item>
-           <widget class="QSlider" name="minimumLossForIteration">
-            <property name="mouseTracking">
-             <bool>false</bool>
-            </property>
-            <property name="minimum">
-             <number>0</number>
-            </property>
-            <property name="maximum">
-             <number>100</number>
-            </property>
-            <property name="singleStep">
-             <number>1</number>
-            </property>
-            <property name="pageStep">
-             <number>10</number>
-            </property>
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="tickPosition">
-             <enum>QSlider::TicksAbove</enum>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLCDNumber" name="lcdNumber_109"/>
-        </item>
-        <item row="1" column="0">
-         <layout class="QVBoxLayout" name="verticalLayout_435">
-          <item>
-           <widget class="QLabel" name="label_452">
-            <property name="text">
-             <string>Considering the last # of games for genetic algorithm</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QSlider" name="considerLastGames">
-            <property name="mouseTracking">
-             <bool>false</bool>
-            </property>
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The genetic algorithm can be activated automatically. Here you can select under what conditions this will happen. It only makes sens to have it activated after playing at least 500 hands.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="minimum">
-             <number>100</number>
-            </property>
-            <property name="maximum">
-             <number>10000</number>
-            </property>
-            <property name="singleStep">
-             <number>1</number>
-            </property>
-            <property name="pageStep">
-             <number>100</number>
-            </property>
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="tickPosition">
-             <enum>QSlider::TicksAbove</enum>
-            </property>
-            <property name="tickInterval">
-             <number>100</number>
-            </property>
-           </widget>
+          <item row="2" column="1">
+           <widget class="QLCDNumber" name="lcdNumber_113"/>
           </item>
          </layout>
-        </item>
-        <item row="1" column="1">
-         <widget class="QLCDNumber" name="lcdNumber_112"/>
-        </item>
-        <item row="2" column="0">
-         <layout class="QVBoxLayout" name="verticalLayout_436">
-          <item>
-           <widget class="QLabel" name="label_453">
-            <property name="text">
-             <string>Initiate self improvement ever x hands</string>
-            </property>
-           </widget>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QGroupBox" name="groupBox_36">
+         <property name="title">
+          <string>Bullying other players with little fund with aggressive behaviour and behaviour with low funds</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_12">
+          <item row="4" column="0">
+           <layout class="QVBoxLayout" name="verticalLayout_38">
+            <item>
+             <widget class="QLabel" name="label_44">
+              <property name="text">
+               <string>Always call if pot size is more than x times than bot stack size</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSlider" name="always_call_low_stack_multiplier">
+              <property name="mouseTracking">
+               <bool>false</bool>
+              </property>
+              <property name="toolTip">
+               <string>If the bot stack size is below a certain amount, the bot will always call. The slider controls the multiplier. 10 means that he will always call when the stack is less than 1 if the pot is 10</string>
+              </property>
+              <property name="minimum">
+               <number>2</number>
+              </property>
+              <property name="maximum">
+               <number>20</number>
+              </property>
+              <property name="singleStep">
+               <number>1</number>
+              </property>
+              <property name="pageStep">
+               <number>1</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="tickPosition">
+               <enum>QSlider::TicksAbove</enum>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
-          <item>
-           <widget class="QSlider" name="strategyIterationGames">
-            <property name="mouseTracking">
+          <item row="4" column="1">
+           <widget class="QLCDNumber" name="lcdNumber_71"/>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLCDNumber" name="lcdNumber_59"/>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLCDNumber" name="lcdNumber_55"/>
+          </item>
+          <item row="3" column="0">
+           <layout class="QVBoxLayout" name="verticalLayout_34">
+            <item>
+             <widget class="QLabel" name="label_39">
+              <property name="text">
+               <string>Maximum equity to bully</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSlider" name="maxBullyEquity">
+              <property name="mouseTracking">
+               <bool>false</bool>
+              </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Upper limit of equity where bully mode can be activated if all conditions are met.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="minimum">
+               <number>0</number>
+              </property>
+              <property name="maximum">
+               <number>100</number>
+              </property>
+              <property name="singleStep">
+               <number>1</number>
+              </property>
+              <property name="pageStep">
+               <number>10</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="tickPosition">
+               <enum>QSlider::TicksAbove</enum>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="2" column="0">
+           <layout class="QVBoxLayout" name="verticalLayout_33">
+            <item>
+             <widget class="QLabel" name="label_38">
+              <property name="text">
+               <string>Minimum required equity to bully</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSlider" name="minBullyEquity">
+              <property name="mouseTracking">
+               <bool>false</bool>
+              </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In order activate bully mode (meaning the bot is more aggressive), a minimum amounf of equity (winning probability as determined by the simulation) can be selected.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="minimum">
+               <number>0</number>
+              </property>
+              <property name="maximum">
+               <number>100</number>
+              </property>
+              <property name="pageStep">
+               <number>10</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="tickPosition">
+               <enum>QSlider::TicksAbove</enum>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLCDNumber" name="lcdNumber_58"/>
+          </item>
+          <item row="0" column="0">
+           <widget class="QCheckBox" name="checkBox_2">
+            <property name="enabled">
              <bool>false</bool>
             </property>
-            <property name="minimum">
-             <number>100</number>
-            </property>
-            <property name="maximum">
-             <number>10000</number>
-            </property>
-            <property name="singleStep">
-             <number>1</number>
-            </property>
-            <property name="pageStep">
-             <number>100</number>
-            </property>
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="tickPosition">
-             <enum>QSlider::TicksAbove</enum>
-            </property>
-            <property name="tickInterval">
-             <number>100</number>
+            <property name="text">
+             <string>Gather player stack sizes and activate bullying</string>
             </property>
            </widget>
           </item>
+          <item row="1" column="0">
+           <layout class="QVBoxLayout" name="verticalLayout_6">
+            <item>
+             <widget class="QLabel" name="label_12">
+              <property name="text">
+               <string>Bullying when heads up opponent stacks are below value, original funds divided by:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSlider" name="bullyDivider">
+              <property name="mouseTracking">
+               <bool>false</bool>
+              </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In headsup when the single opponent has less than a certain amount of stacks left, the bot can be more agressive. This is activated when he has less funds than initial funds divided by the divider (which is this slide). For example for initial funds of $2 and a divider of 4, the bot would become more agressive if the opponent has less than $0.50.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>10</number>
+              </property>
+              <property name="pageStep">
+               <number>1</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="tickPosition">
+               <enum>QSlider::TicksAbove</enum>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
          </layout>
-        </item>
-        <item row="2" column="1">
-         <widget class="QLCDNumber" name="lcdNumber_113"/>
-        </item>
-       </layout>
-      </widget>
+        </widget>
+       </item>
+      </layout>
+      <zorder>groupBox_35</zorder>
+      <zorder>groupBox_36</zorder>
+      <zorder>groupBox_37</zorder>
+      <zorder>always_call_low_stack_multiplier</zorder>
      </widget>
      <widget class="QWidget" name="tab_5">
       <attribute name="title">
@@ -2912,14 +3015,14 @@
         <rect>
          <x>9</x>
          <y>211</y>
-         <width>568</width>
-         <height>410</height>
+         <width>598</width>
+         <height>297</height>
         </rect>
        </property>
        <property name="title">
         <string>Postflop ranges for other plyaers</string>
        </property>
-       <layout class="QFormLayout" name="formLayout">
+       <layout class="QGridLayout" name="gridLayout_14">
         <item row="0" column="0" colspan="2">
          <widget class="QCheckBox" name="checkBox">
           <property name="enabled">
@@ -2933,6 +3036,16 @@
           </property>
           <property name="checked">
            <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QCheckBox" name="differentiate_reverse_sheet">
+          <property name="toolTip">
+           <string/>
+          </property>
+          <property name="text">
+           <string>Differentiate between call and raise in the reverse sheet</string>
           </property>
          </widget>
         </item>
@@ -3212,7 +3325,7 @@
           </item>
          </layout>
         </item>
-        <item row="9" column="0" colspan="2">
+        <item row="5" column="0" colspan="2">
          <layout class="QHBoxLayout" name="horizontalLayout_22">
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_71">
@@ -3257,16 +3370,6 @@
            <widget class="QLCDNumber" name="lcdNumber_126"/>
           </item>
          </layout>
-        </item>
-        <item row="1" column="0">
-         <widget class="QCheckBox" name="differentiate_reverse_sheet">
-          <property name="toolTip">
-           <string/>
-          </property>
-          <property name="text">
-           <string>Differentiate between call and raise in the reverse sheet</string>
-          </property>
-         </widget>
         </item>
        </layout>
       </widget>
@@ -3777,79 +3880,6 @@
      </widget>
     </widget>
    </item>
-   <item row="2" column="0">
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
-     <item>
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>New name</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="lineEdit_new_name"/>
-     </item>
-     <item>
-      <widget class="QPushButton" name="pushButton_save_new_strategy">
-       <property name="toolTip">
-        <string>Saves the current strategy under a new name</string>
-       </property>
-       <property name="text">
-        <string>Save under new name</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item row="1" column="0">
-    <layout class="QVBoxLayout" name="verticalLayout_2">
-     <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_4">
-       <item>
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>Select Strategy</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QComboBox" name="Strategy">
-         <property name="toolTip">
-          <string>Select a strategy you want to edit</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButton_save_current_strategy">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="toolTip">
-          <string>You can only save strategies you have created yourself. Otherwise save it under a new name.</string>
-         </property>
-         <property name="text">
-          <string>Save</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-    </layout>
-   </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="label_4">
-     <property name="font">
-      <font>
-       <pointsize>20</pointsize>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>Strategy editor</string>
-     </property>
-    </widget>
-   </item>
   </layout>
  </widget>
  <resources/>
@@ -3894,11 +3924,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>141</x>
-     <y>561</y>
+     <y>594</y>
     </hint>
     <hint type="destinationlabel">
-     <x>346</x>
-     <y>562</y>
+     <x>343</x>
+     <y>595</y>
     </hint>
    </hints>
   </connection>
@@ -3909,12 +3939,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>142</x>
-     <y>488</y>
+     <x>465</x>
+     <y>461</y>
     </hint>
     <hint type="destinationlabel">
-     <x>688</x>
-     <y>489</y>
+     <x>576</x>
+     <y>462</y>
     </hint>
    </hints>
   </connection>
@@ -3945,7 +3975,7 @@
      <y>224</y>
     </hint>
     <hint type="destinationlabel">
-     <x>346</x>
+     <x>343</x>
      <y>225</y>
     </hint>
    </hints>
@@ -3961,8 +3991,8 @@
      <y>289</y>
     </hint>
     <hint type="destinationlabel">
-     <x>346</x>
-     <y>290</y>
+     <x>343</x>
+     <y>298</y>
     </hint>
    </hints>
   </connection>
@@ -3973,12 +4003,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>142</x>
-     <y>540</y>
+     <x>165</x>
+     <y>517</y>
     </hint>
     <hint type="destinationlabel">
-     <x>688</x>
-     <y>541</y>
+     <x>306</x>
+     <y>518</y>
     </hint>
    </hints>
   </connection>
@@ -3989,12 +4019,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>152</x>
-     <y>223</y>
+     <x>163</x>
+     <y>213</y>
     </hint>
     <hint type="destinationlabel">
-     <x>541</x>
-     <y>224</y>
+     <x>682</x>
+     <y>214</y>
     </hint>
    </hints>
   </connection>
@@ -4009,8 +4039,8 @@
      <y>387</y>
     </hint>
     <hint type="destinationlabel">
-     <x>346</x>
-     <y>388</y>
+     <x>343</x>
+     <y>404</y>
     </hint>
    </hints>
   </connection>
@@ -4057,8 +4087,8 @@
      <y>435</y>
     </hint>
     <hint type="destinationlabel">
-     <x>688</x>
-     <y>436</y>
+     <x>292</x>
+     <y>462</y>
     </hint>
    </hints>
   </connection>
@@ -4069,12 +4099,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>484</x>
-     <y>593</y>
+     <x>481</x>
+     <y>626</y>
     </hint>
     <hint type="destinationlabel">
-     <x>689</x>
-     <y>594</y>
+     <x>682</x>
+     <y>627</y>
     </hint>
    </hints>
   </connection>
@@ -4101,12 +4131,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>142</x>
-     <y>593</y>
+     <x>465</x>
+     <y>517</y>
     </hint>
     <hint type="destinationlabel">
-     <x>688</x>
-     <y>594</y>
+     <x>576</x>
+     <y>518</y>
     </hint>
    </hints>
   </connection>
@@ -4117,12 +4147,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>142</x>
-     <y>646</y>
+     <x>165</x>
+     <y>573</y>
     </hint>
     <hint type="destinationlabel">
-     <x>688</x>
-     <y>647</y>
+     <x>306</x>
+     <y>574</y>
     </hint>
    </hints>
   </connection>
@@ -4133,12 +4163,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>142</x>
-     <y>698</y>
+     <x>465</x>
+     <y>573</y>
     </hint>
     <hint type="destinationlabel">
-     <x>688</x>
-     <y>699</y>
+     <x>576</x>
+     <y>574</y>
     </hint>
    </hints>
   </connection>
@@ -4181,12 +4211,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>484</x>
-     <y>660</y>
+     <x>481</x>
+     <y>693</y>
     </hint>
     <hint type="destinationlabel">
-     <x>689</x>
-     <y>661</y>
+     <x>682</x>
+     <y>694</y>
     </hint>
    </hints>
   </connection>
@@ -4261,12 +4291,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>152</x>
-     <y>711</y>
+     <x>163</x>
+     <y>693</y>
     </hint>
     <hint type="destinationlabel">
-     <x>541</x>
-     <y>712</y>
+     <x>682</x>
+     <y>694</y>
     </hint>
    </hints>
   </connection>
@@ -4277,12 +4307,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>152</x>
-     <y>664</y>
+     <x>163</x>
+     <y>639</y>
     </hint>
     <hint type="destinationlabel">
-     <x>541</x>
-     <y>665</y>
+     <x>682</x>
+     <y>640</y>
     </hint>
    </hints>
   </connection>
@@ -4357,12 +4387,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>484</x>
-     <y>539</y>
+     <x>481</x>
+     <y>572</y>
     </hint>
     <hint type="destinationlabel">
-     <x>689</x>
-     <y>540</y>
+     <x>682</x>
+     <y>573</y>
     </hint>
    </hints>
   </connection>
@@ -4373,12 +4403,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>152</x>
-     <y>618</y>
+     <x>163</x>
+     <y>585</y>
     </hint>
     <hint type="destinationlabel">
-     <x>541</x>
-     <y>619</y>
+     <x>682</x>
+     <y>586</y>
     </hint>
    </hints>
   </connection>
@@ -4437,12 +4467,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>484</x>
-     <y>714</y>
+     <x>481</x>
+     <y>747</y>
     </hint>
     <hint type="destinationlabel">
-     <x>689</x>
-     <y>715</y>
+     <x>682</x>
+     <y>748</y>
     </hint>
    </hints>
   </connection>
@@ -4469,12 +4499,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>152</x>
-     <y>501</y>
+     <x>163</x>
+     <y>475</y>
     </hint>
     <hint type="destinationlabel">
-     <x>541</x>
-     <y>502</y>
+     <x>682</x>
+     <y>476</y>
     </hint>
    </hints>
   </connection>
@@ -4486,11 +4516,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>141</x>
-     <y>452</y>
+     <y>485</y>
     </hint>
     <hint type="destinationlabel">
-     <x>346</x>
-     <y>453</y>
+     <x>343</x>
+     <y>478</y>
     </hint>
    </hints>
   </connection>
@@ -4501,12 +4531,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>152</x>
-     <y>447</y>
+     <x>163</x>
+     <y>421</y>
     </hint>
     <hint type="destinationlabel">
-     <x>541</x>
-     <y>448</y>
+     <x>682</x>
+     <y>422</y>
     </hint>
    </hints>
   </connection>
@@ -4517,12 +4547,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>152</x>
-     <y>393</y>
+     <x>163</x>
+     <y>367</y>
     </hint>
     <hint type="destinationlabel">
-     <x>541</x>
-     <y>394</y>
+     <x>682</x>
+     <y>368</y>
     </hint>
    </hints>
   </connection>
@@ -4550,11 +4580,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>141</x>
-     <y>638</y>
+     <y>671</y>
     </hint>
     <hint type="destinationlabel">
-     <x>346</x>
-     <y>639</y>
+     <x>343</x>
+     <y>672</y>
     </hint>
    </hints>
   </connection>
@@ -4629,12 +4659,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>142</x>
-     <y>751</y>
+     <x>165</x>
+     <y>653</y>
     </hint>
     <hint type="destinationlabel">
-     <x>688</x>
-     <y>752</y>
+     <x>576</x>
+     <y>654</y>
     </hint>
    </hints>
   </connection>
@@ -4747,22 +4777,6 @@
     <hint type="destinationlabel">
      <x>166</x>
      <y>525</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>preflop_override</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>secondRoundAdjustmentPowerIncrease</receiver>
-   <slot>setDisabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>197</x>
-     <y>182</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>192</x>
-     <y>686</y>
     </hint>
    </hints>
   </connection>
@@ -4953,8 +4967,8 @@
      <y>277</y>
     </hint>
     <hint type="destinationlabel">
-     <x>541</x>
-     <y>278</y>
+     <x>682</x>
+     <y>281</y>
     </hint>
    </hints>
   </connection>
@@ -4966,11 +4980,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>141</x>
-     <y>714</y>
+     <y>747</y>
     </hint>
     <hint type="destinationlabel">
-     <x>346</x>
-     <y>715</y>
+     <x>343</x>
+     <y>748</y>
     </hint>
    </hints>
   </connection>
@@ -5019,6 +5033,22 @@
     <hint type="destinationlabel">
      <x>654</x>
      <y>306</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>always_call_low_stack_multiplier</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>lcdNumber_71</receiver>
+   <slot>display(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>442</x>
+     <y>729</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>639</x>
+     <y>732</y>
     </hint>
    </hints>
   </connection>
