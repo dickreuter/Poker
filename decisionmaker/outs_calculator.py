@@ -1,6 +1,5 @@
 import numpy as np
 import itertools as iter
-import time
 import logging
 
 
@@ -108,7 +107,7 @@ class Outs_Calculator(object):
         elif score[0:3] == (3, 1, 2):
             hand_type = "Straight"
             card_ranks = card_ranks[:5]
-        elif score[0:2] == (3, 1):
+        elif score[0] == 3:
             hand_type = "ThreeOfAKind"
             card_ranks = card_ranks[:3]
         elif score[0:2] == (2, 2):
@@ -329,140 +328,3 @@ class Outs_Calculator(object):
                 flush_draw = False
 
         return flush_draw
-
-
-if __name__ == '__main__':
-    start_time = time.clock()
-    oc = Outs_Calculator()
-
-    my_cards = ['KH', 'KC']
-    cards_on_table = ['QD', '4H', '9S']
-    print("POCKET PAIR TO SET")
-    print(my_cards + cards_on_table)
-    print("----------------")
-    oc.evaluate_hands(my_cards, cards_on_table, oc)
-    print("")
-    print("")
-    print("")
-
-    my_cards = ['AS', '8D']
-    cards_on_table = ['JC', '5S', '2D']
-    print("ONE OVERCARD")
-    print(my_cards + cards_on_table)
-    print("----------------")
-    oc.evaluate_hands(my_cards, cards_on_table, oc)
-    print("")
-    print("")
-    print("")
-
-    my_cards = ['JH', '9C']
-    cards_on_table = ['QS', '8D', '4C']
-    print("INSIDE STRAIGHT DRAW")
-    print(my_cards + cards_on_table)
-    print("----------------")
-    oc.evaluate_hands(my_cards, cards_on_table, oc)
-    print("")
-    print("")
-    print("")
-
-    my_cards = ['KH', 'QS']
-    cards_on_table = ['KC', 'QD', '5S']
-    print("TWO PAIR TO FULL HOUSE")
-    print(my_cards + cards_on_table)
-    print("----------------")
-    oc.evaluate_hands(my_cards, cards_on_table, oc)
-    print("")
-    print("")
-    print("")
-
-    my_cards = ['AC', 'QD']
-    cards_on_table = ['AD', 'TC', '3S']
-    print("ONE PAIR TO TWO PAIR OF SET")
-    print(my_cards + cards_on_table)
-    print("----------------")
-    oc.evaluate_hands(my_cards, cards_on_table, oc)
-    print("")
-    print("")
-    print("")
-
-    my_cards = ['9C', '7D']
-    cards_on_table = ['2S', '3D', 'JC']
-    print("NO PAIR TO PAIR")
-    print(my_cards + cards_on_table)
-    print("----------------")
-    oc.evaluate_hands(my_cards, cards_on_table, oc)
-    print("")
-    print("")
-    print("")
-
-    my_cards = ['AD', 'JH']
-    cards_on_table = ['TC', '8D', '2S']
-    print("TWO OVERCARDS TO OVER PAIR")
-    print(my_cards + cards_on_table)
-    print("----------------")
-    oc.evaluate_hands(my_cards, cards_on_table, oc)
-    print("")
-    print("")
-    print("")
-
-    my_cards = ['6C', '6D']
-    cards_on_table = ['6S', '7H', 'JC']
-    print("SET TO FULLHOUSE / FOUR OF A KIND")
-    print(my_cards + cards_on_table)
-    print("----------------")
-    oc.evaluate_hands(my_cards, cards_on_table, oc)
-    print("")
-    print("")
-    print("")
-
-    my_cards = ['9C', '8D']
-    cards_on_table = ['7C', 'TH', '3S']
-    print("OPEN ENDED STRAIGHT DRAW")
-    print(my_cards + cards_on_table)
-    print("----------------")
-    oc.evaluate_hands(my_cards, cards_on_table, oc)
-    print("")
-    print("")
-    print("")
-
-    my_cards = ['KS', 'JS']
-    cards_on_table = ['AS', '6S', '8D']
-    print("FLUSH DRAW")
-    print(my_cards + cards_on_table)
-    print("----------------")
-    oc.evaluate_hands(my_cards, cards_on_table, oc)
-    print("")
-    print("")
-    print("")
-
-    my_cards = ['AC', 'KD']
-    cards_on_table = ['QH', 'TC', '2S']
-    print("INSIDE STRAIGHT AND TWO OVERCARDS DRAW")
-    print(my_cards + cards_on_table)
-    print("----------------")
-    oc.evaluate_hands(my_cards, cards_on_table, oc)
-    print("")
-    print("")
-    print("")
-
-    my_cards = ['AD', 'KD']
-    cards_on_table = ['JD', 'QS', '3D']
-    print("INSIDE STRAIGHT AND FLUSH DRAW")
-    print(my_cards + cards_on_table)
-    print("----------------")
-    oc.evaluate_hands(my_cards, cards_on_table, oc)
-    print("")
-    print("")
-    print("")
-
-    my_cards = ['KH', 'QH']
-    cards_on_table = ['TH', 'JS', '4H']
-    print("OPEN STRAIGHT AND FLUSH DRAW")
-    print(my_cards + cards_on_table)
-    print("----------------")
-    oc.evaluate_hands(my_cards, cards_on_table, oc)
-    print("")
-    print("")
-    print("")
-
-    print(time.clock() - start_time)
