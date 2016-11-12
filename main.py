@@ -18,8 +18,7 @@ from decisionmaker.current_hand_memory import History, CurrentHandPreflopState
 from decisionmaker.montecarlo_python import run_montecarlo_wrapper
 from decisionmaker.decisionmaker import Decision
 
-
-version = 1.941
+version = 1.942
 
 
 class ThreadManager(threading.Thread):
@@ -34,21 +33,29 @@ class ThreadManager(threading.Thread):
 
         self.game_logger = GameLogger()
 
-    def update_most_gui_items(self, p, m, t, d, h, gui_signals):
-        try: sheet_name=t.preflop_sheet_name
-        except: sheet_name=''
+    def update_most_gui_items(self, preflop_state, p, m, t, d, h, gui_signals):
+        try:
+            sheet_name = t.preflop_sheet_name
+        except:
+            sheet_name = ''
         gui_signals.signal_decision.emit(str(d.decision + " " + sheet_name))
         gui_signals.signal_status.emit(d.decision)
+        range2 = ''
+        if hasattr(t, 'reverse_sheet_name'):
+            range = t.reverse_sheet_name
+            if hasattr(preflop_state, 'range_column_name'):
+                range2 = " " + preflop_state.range_column_name + ""
 
-        if hasattr(t, 'reverse_sheet_name'): range="Reverse sheet: "+t.reverse_sheet_name
-        else: range=str(m.opponent_range)
-        if range=='1': range='All cards'
+        else:
+            range = str(m.opponent_range)
+        if range == '1': range = 'All cards'
 
-        gui_signals.signal_label_number_update.emit('equity', str(np.round(t.equity * 100, 2))+"%")
+        gui_signals.signal_label_number_update.emit('equity', str(np.round(t.equity * 100, 2)) + "%")
         gui_signals.signal_label_number_update.emit('required_minbet', str(t.currentBetValue))
         gui_signals.signal_label_number_update.emit('required_mincall', str(t.minCall))
         # gui_signals.signal_lcd_number_update.emit('potsize', t.totalPotValue)
-        gui_signals.signal_label_number_update.emit('gamenumber',str(int(self.game_logger.get_game_count(p.current_strategy))))
+        gui_signals.signal_label_number_update.emit('gamenumber',
+                                                    str(int(self.game_logger.get_game_count(p.current_strategy))))
         gui_signals.signal_label_number_update.emit('assumed_players', str(int(t.assumedPlayers)))
         gui_signals.signal_label_number_update.emit('calllimit', str(d.finalCallLimit))
         gui_signals.signal_label_number_update.emit('betlimit', str(d.finalBetLimit))
@@ -57,12 +64,11 @@ class ThreadManager(threading.Thread):
         gui_signals.signal_label_number_update.emit('collusion_cards', str(m.collusion_cards))
         gui_signals.signal_label_number_update.emit('mycards', str(t.mycards))
         gui_signals.signal_label_number_update.emit('tablecards', str(t.cardsOnTable))
-        gui_signals.signal_label_number_update.emit('opponent_range', str(range))
-        gui_signals.signal_label_number_update.emit('mincallequity', str(np.round(t.minEquityCall,2)*100)+"%")
-        gui_signals.signal_label_number_update.emit('minbetequity', str(np.round(t.minEquityBet,2)*100)+"%")
+        gui_signals.signal_label_number_update.emit('opponent_range', str(range) + str(range2))
+        gui_signals.signal_label_number_update.emit('mincallequity', str(np.round(t.minEquityCall, 2) * 100) + "%")
+        gui_signals.signal_label_number_update.emit('minbetequity', str(np.round(t.minEquityBet, 2) * 100) + "%")
         gui_signals.signal_label_number_update.emit('outs', str(d.outs))
         gui_signals.signal_label_number_update.emit('initiative', str(t.other_player_has_initiative))
-
 
         # gui_signals.signal_lcd_number_update.emit('zero_ev', round(d.maxCallEV, 2))
 
@@ -136,7 +142,7 @@ class ThreadManager(threading.Thread):
                 d.make_decision(t, h, p, self.logger, self.game_logger)
                 if self.gui_signals.exit_thread: sys.exit()
 
-                self.update_most_gui_items(p, m, t, d, h, self.gui_signals)
+                self.update_most_gui_items(preflop_state, p, m, t, d, h, self.gui_signals)
 
                 self.logger.info(
                     "Equity: " + str(t.equity * 100) + "% -> " + str(int(t.assumedPlayers)) + " (" + str(
@@ -161,10 +167,10 @@ class ThreadManager(threading.Thread):
 
                 self.gui_signals.signal_status.emit("Logging data")
 
-                t_log_db = threading.Thread(name='t_log_db', target=self.game_logger.write_log_file,args=[p, h, t, d])
+                t_log_db = threading.Thread(name='t_log_db', target=self.game_logger.write_log_file, args=[p, h, t, d])
                 t_log_db.daemon = True
                 t_log_db.start()
-                #self.game_logger.write_log_file(p, h, t, d)
+                # self.game_logger.write_log_file(p, h, t, d)
 
                 h.previousPot = t.totalPotValue
                 h.histGameStage = t.gameStage

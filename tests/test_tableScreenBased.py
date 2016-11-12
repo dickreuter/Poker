@@ -146,3 +146,10 @@ class TestTableScreenBased(TestCase):
         self.assertEqual(t.dealer_position, 4)
         self.assertEqual(np.isnan(t.second_raiser), True)
         self.assertEqual(t.first_caller_utg,2)
+
+    def test_raiser_utg3(self):
+        t, p, gui_signals, h, logger = init_table('tests/screenshots/571351571_PreFlop_0.png', round_number=0)
+        self.assertEqual(t.position_utg_plus, 5)
+        self.assertEqual(t.dealer_position, 4)
+        self.assertEqual(np.isnan(t.second_raiser), True)
+        self.assertEqual(t.first_raiser_utg, 3)

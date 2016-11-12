@@ -505,8 +505,8 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
         try:
             for abs_pos in range(5):
                 if t.other_players[abs_pos]['status'] == 1:
-                    sheet_name = preflop_state.get_reverse_sheetname(abs_pos, t)
-                    ranges = preflop_state.get_rangecards_from_sheetname(abs_pos, sheet_name, t, h)
+                    sheet_name = preflop_state.get_reverse_sheetname(abs_pos, t, h)
+                    ranges = preflop_state.get_rangecards_from_sheetname(abs_pos, sheet_name, t, h, p)
                     #logger.debug("Ranges from reverse table: "+str(ranges))
 
                     # the last player's range will be relevant

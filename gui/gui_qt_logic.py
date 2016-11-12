@@ -439,6 +439,7 @@ class UIActionAndSignals(QObject):
             idx = i
         self.ui_editor.pokerSite.setCurrentIndex(idx)
 
+        self.ui_editor.differentiate_reverse_sheet.setChecked(self.p.selected_strategy['differentiate_reverse_sheet'])
         self.ui_editor.preflop_override.setChecked(self.p.selected_strategy['preflop_override'])
         self.ui_editor.gather_player_names.setChecked(self.p.selected_strategy['gather_player_names'])
 
@@ -512,6 +513,8 @@ class UIActionAndSignals(QObject):
         self.strategy_dict['Strategy'] = name
         self.strategy_dict['pokerSite'] = self.ui_editor.pokerSite.currentText()
         self.strategy_dict['computername'] = os.environ['COMPUTERNAME']
+
+        self.strategy_dict['differentiate_reverse_sheet'] = int(self.ui_editor.differentiate_reverse_sheet.isChecked())
         self.strategy_dict['preflop_override'] = int(self.ui_editor.preflop_override.isChecked())
         self.strategy_dict['gather_player_names'] = int(self.ui_editor.gather_player_names.isChecked())
 

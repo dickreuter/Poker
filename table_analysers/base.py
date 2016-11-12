@@ -358,13 +358,6 @@ class Table(object):
 
         return first_raiser, second_raiser, first_caller, first_raiser_utg, second_raiser_utg, first_caller_utg
 
-    def get_reverse_sheet(self, position):
-        sheet_name = ''
-        sheet_name += self.other_players[position]['utg_position']
-        pass
-
-    def get_range_from_prefloop_sheet(self, sheet_name, action):
-        pass
 
     def get_utg_from_abs_pos(self, abs_pos, dealer_pos):
         utg_pos = (abs_pos - dealer_pos + 4) % 6
