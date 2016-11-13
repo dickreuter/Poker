@@ -74,6 +74,9 @@ class StrategyHandler(object):
         return l
 
     def check_defaults(self):
+        if not 'opponent_raised_without_initiative_flop' in self.selected_strategy: self.selected_strategy['opponent_raised_without_initiative_flop'] = 1
+        if not 'opponent_raised_without_initiative_turn' in self.selected_strategy: self.selected_strategy['opponent_raised_without_initiative_turn'] = 1
+        if not 'opponent_raised_without_initiative_river' in self.selected_strategy: self.selected_strategy['opponent_raised_without_initiative_river'] = 1
         if not 'always_call_low_stack_multiplier' in self.selected_strategy: self.selected_strategy[
             'always_call_low_stack_multiplier'] = 8
         if not 'differentiate_reverse_sheet' in self.selected_strategy: self.selected_strategy[

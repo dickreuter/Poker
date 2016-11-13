@@ -108,7 +108,7 @@
       <string/>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>7</number>
      </property>
      <widget class="QWidget" name="tab_5">
       <attribute name="title">
@@ -3377,165 +3377,6 @@
        <string>Bet and Bluff conditions</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_26">
-       <item row="0" column="0">
-        <layout class="QVBoxLayout" name="verticalLayout">
-         <item>
-          <widget class="QGroupBox" name="groupBox">
-           <property name="title">
-            <string>Flop betting</string>
-           </property>
-           <layout class="QGridLayout" name="gridLayout_28">
-            <item row="0" column="0">
-             <layout class="QVBoxLayout" name="verticalLayout_66">
-              <item>
-               <widget class="QCheckBox" name="flop_bet_condition_41">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="text">
-                 <string>Equity is higher than minimum bet equity for that stage</string>
-                </property>
-                <property name="checked">
-                 <bool>true</bool>
-                </property>
-                <property name="autoRepeat">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="flop_bet_condition_47">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="text">
-                 <string>The required raise is to the right of the red betting curve</string>
-                </property>
-                <property name="checked">
-                 <bool>true</bool>
-                </property>
-                <property name="autoRepeat">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="flop_betting_condidion_1">
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Other player has initiative when the following conditions are met:&lt;/p&gt;&lt;p&gt;- we called in the last round&lt;/p&gt;&lt;p&gt;- we are not the last player in this round if there's a check button&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-                <property name="text">
-                 <string>Don't bet if other player has initiative unless no check button</string>
-                </property>
-                <property name="checked">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-           </layout>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="0" column="1">
-        <layout class="QVBoxLayout" name="verticalLayout_224">
-         <item>
-          <widget class="QGroupBox" name="groupBox_10">
-           <property name="title">
-            <string>Flop bluffing</string>
-           </property>
-           <layout class="QGridLayout" name="gridLayout_27">
-            <item row="0" column="0">
-             <layout class="QVBoxLayout" name="verticalLayout_225">
-              <item>
-               <widget class="QCheckBox" name="flop_bet_condition_16">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="text">
-                 <string>There is a check button</string>
-                </property>
-                <property name="checked">
-                 <bool>true</bool>
-                </property>
-                <property name="autoRepeat">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="flop_bet_condition_44">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="text">
-                 <string>HeadsUp (only 1 opponent remains in the game)</string>
-                </property>
-                <property name="checked">
-                 <bool>true</bool>
-                </property>
-                <property name="autoRepeat">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="flop_bet_condition_38">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="text">
-                 <string>Equity is higher than minimum bluff equity for that stage</string>
-                </property>
-                <property name="checked">
-                 <bool>true</bool>
-                </property>
-                <property name="autoRepeat">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="flop_bet_condition_51">
-                <property name="enabled">
-                 <bool>false</bool>
-                </property>
-                <property name="text">
-                 <string>Only bluff in first round of the current stage</string>
-                </property>
-                <property name="checked">
-                 <bool>true</bool>
-                </property>
-                <property name="autoRepeat">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="flop_bluffing_condidion_1">
-                <property name="toolTip">
-                 <string/>
-                </property>
-                <property name="text">
-                 <string>Only bluff if no players are ahead in this round (in position)</string>
-                </property>
-                <property name="checked">
-                 <bool>true</bool>
-                </property>
-                <property name="autoRepeat">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-           </layout>
-          </widget>
-         </item>
-        </layout>
-       </item>
        <item row="1" column="0">
         <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
@@ -3598,6 +3439,68 @@
          </item>
         </layout>
        </item>
+       <item row="0" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <item>
+          <widget class="QGroupBox" name="groupBox">
+           <property name="title">
+            <string>Flop betting</string>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_28">
+            <item row="0" column="0">
+             <layout class="QVBoxLayout" name="verticalLayout_66">
+              <item>
+               <widget class="QCheckBox" name="flop_bet_condition_41">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="text">
+                 <string>Equity is higher than minimum bet equity for that stage</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+                <property name="autoRepeat">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="flop_bet_condition_47">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="text">
+                 <string>The required raise is to the right of the red betting curve</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+                <property name="autoRepeat">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="flop_betting_condidion_1">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Other player has initiative when the following conditions are met:&lt;/p&gt;&lt;p&gt;- we called in the last round&lt;/p&gt;&lt;p&gt;- we are not the last player in this round if there's a check button&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="text">
+                 <string>Don't bet if other player has initiative unless no check button</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </item>
        <item row="1" column="1">
         <layout class="QVBoxLayout" name="verticalLayout_226">
          <item>
@@ -3605,7 +3508,7 @@
            <property name="title">
             <string>Turn bluffing</string>
            </property>
-           <layout class="QGridLayout" name="gridLayout_30">
+           <layout class="QGridLayout" name="gridLayout_17">
             <item row="0" column="0">
              <layout class="QVBoxLayout" name="verticalLayout_227">
               <item>
@@ -3698,6 +3601,117 @@
                 </property>
                </widget>
               </item>
+              <item>
+               <widget class="QCheckBox" name="opponent_raised_without_initiative_turn">
+                <property name="text">
+                 <string>Add 10% to required equity if opponent raised without initiative</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="0" column="1">
+        <layout class="QGridLayout" name="gridLayout_18">
+         <item row="0" column="0">
+          <widget class="QGroupBox" name="groupBox_10">
+           <property name="title">
+            <string>Flop bluffing</string>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_19">
+            <item row="0" column="0">
+             <layout class="QVBoxLayout" name="verticalLayout_225">
+              <item>
+               <widget class="QCheckBox" name="flop_bet_condition_16">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="text">
+                 <string>There is a check button</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+                <property name="autoRepeat">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="flop_bet_condition_44">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="text">
+                 <string>HeadsUp (only 1 opponent remains in the game)</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+                <property name="autoRepeat">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="flop_bet_condition_38">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="text">
+                 <string>Equity is higher than minimum bluff equity for that stage</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+                <property name="autoRepeat">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="flop_bet_condition_51">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="text">
+                 <string>Only bluff in first round of the current stage</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+                <property name="autoRepeat">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="flop_bluffing_condidion_1">
+                <property name="toolTip">
+                 <string/>
+                </property>
+                <property name="text">
+                 <string>Only bluff if no players are ahead in this round (in position)</string>
+                </property>
+                <property name="checked">
+                 <bool>true</bool>
+                </property>
+                <property name="autoRepeat">
+                 <bool>false</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="opponent_raised_without_initiative_flop">
+                <property name="text">
+                 <string>Add 10% to required equity if opponent raised without initiative</string>
+                </property>
+               </widget>
+              </item>
              </layout>
             </item>
            </layout>
@@ -3774,7 +3788,7 @@
            <property name="title">
             <string>River bluffing</string>
            </property>
-           <layout class="QGridLayout" name="gridLayout_31">
+           <layout class="QGridLayout" name="gridLayout_16">
             <item row="0" column="0">
              <layout class="QVBoxLayout" name="verticalLayout_229">
               <item>
@@ -3864,6 +3878,13 @@
                 </property>
                 <property name="checked">
                  <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="opponent_raised_without_initiative_river">
+                <property name="text">
+                 <string>Add 10% to required equity if opponent raised without initiative</string>
                 </property>
                </widget>
               </item>
