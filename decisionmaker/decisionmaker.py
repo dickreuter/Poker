@@ -412,7 +412,6 @@ class Decision(DecisionBase):
 
 
         if t.checkButton == False and t.minCall == 0.0:
-            self.decision = DecisionTypes.fold  # for cases where call button cannnot be read, not even after deriving from Bet Button
             self.ErrCallButton = True
             self.logger.error("Call button had no value")
         else:

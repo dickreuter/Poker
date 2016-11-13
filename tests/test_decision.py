@@ -214,16 +214,3 @@ class TestDecision(TestCase):
         d.preflop_override(t, logger, h, p)
 
         self.assertEqual(t.preflop_sheet_name, '12R4R6')
-
-    # def sheet_6R5C4(self):
-    #     t, p, gui_signals, h, logger = init_table('tests/screenshots/6R5C4.png')
-    #     l = MagicMock()
-    #     t.checkButton = False
-    #     d = Decision(t, h, p, l)
-    #     t.isHeadsUp = True
-    #     t.gameStage = "PreFlop"
-    #     d.__init__(t, h, p, l)
-    #     d.preflop_override(t, logger, h, p)
-    #
-    #     self.assertEqual(t.preflop_sheet_name, '6R5C4')
-

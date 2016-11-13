@@ -171,7 +171,7 @@ class Table(object):
         # plt.show()
         return count, points, bestFit, min_val
 
-    def get_ocr_float(self, img_orig, name, force_method=0):
+    def get_ocr_float(self, img_orig, name, force_method=0, binarize=False):
         def binarize_array(image, threshold=200):
             """Binarize a numpy array."""
             numpy_array=np.array(image)
@@ -215,7 +215,8 @@ class Table(object):
         wpercent = (basewidth / float(img_orig.size[0]))
         hsize = int((float(img_orig.size[1]) * float(wpercent)))
         img_resized = img_orig.convert('L').resize((basewidth, hsize), Image.ANTIALIAS)
-        img_resized = binarize_array(img_resized, 200)
+        if binarize:
+            img_resized = binarize_array(img_resized, 200)
 
         img_min = img_resized.filter(ImageFilter.MinFilter)
         #img_med = img_resized.filter(ImageFilter.MedianFilter)

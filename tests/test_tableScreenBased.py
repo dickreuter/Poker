@@ -161,3 +161,9 @@ class TestTableScreenBased(TestCase):
     def funds_error2(self):
         t, p, gui_signals, h, logger = init_table('tests/screenshots/FundsError2.png')
         self.assertEqual(t.myFunds, 10.80)
+
+    def sheet_incorrect_fold(self):
+        t, p, gui_signals, h, logger = init_table('tests/screenshots/49278076_PreFlop_0.png')
+        self.assertEqual(t.currentCallValue,0.34)
+        self.assertEqual(t.currentBetValue, 0.60)
+        self.assertEqual(t.myFunds,4.98)
