@@ -5,6 +5,17 @@ from tools.mongo_manager import StrategyHandler
 from unittest.mock import MagicMock
 from decisionmaker.decisionmaker import Decision
 
+def reverse_init(t,h,p,logger):
+    l = MagicMock()
+    t.totalPotValue = 0.5
+    t.equity = 0.5
+    t.checkButton = False
+    d = Decision(t, h, p, l)
+    t.isHeadsUp = True
+    t.gameStage = "PreFlop"
+    d.__init__(t, h, p, l)
+    d.preflop_override(t, logger, h, p)
+    return d
 
 class TestReverseTables(TestCase):
     def test_preflop_state1(self):
@@ -42,17 +53,7 @@ class TestReverseTables(TestCase):
 
         # preflop
         t, p, gui_signals, h, logger = init_table('tests/screenshots/458770525_PreFlop_0.png', strategy=strategy)
-        p = StrategyHandler()
-        p.read_strategy(strategy)
-        l = MagicMock()
-        t.totalPotValue = 0.5
-        t.equity = 0.5
-        t.checkButton = False
-        d = Decision(t, h, p, l)
-        t.isHeadsUp = True
-        t.gameStage = "PreFlop"
-        d.__init__(t, h, p, l)
-        d.preflop_override(t, logger, h, p)
+        d = reverse_init(t, h, p, logger)
         preflop_state = CurrentHandPreflopState()
         bot_preflop_decision = 'Call'
         preflop_state.update_values(t, bot_preflop_decision, h)
@@ -70,17 +71,7 @@ class TestReverseTables(TestCase):
 
         # preflop
         t, p, gui_signals, h, logger = init_table('tests/screenshots/1791526_PreFlop_0.png', strategy=strategy)
-        p = StrategyHandler()
-        p.read_strategy(strategy)
-        l = MagicMock()
-        t.totalPotValue = 0.5
-        t.equity = 0.5
-        t.checkButton = False
-        d = Decision(t, h, p, l)
-        t.isHeadsUp = True
-        t.gameStage = "PreFlop"
-        d.__init__(t, h, p, l)
-        d.preflop_override(t, logger, h, p)
+        d = reverse_init(t, h, p, logger)
         preflop_state = CurrentHandPreflopState()
         bot_preflop_decision = 'Call'
         preflop_state.update_values(t, bot_preflop_decision, h)
@@ -97,15 +88,7 @@ class TestReverseTables(TestCase):
         strategy = 'Snowie3'
         # preflop
         t, p, gui_signals, h, logger = init_table('tests/screenshots/88.png', strategy=strategy)
-        l = MagicMock()
-        t.totalPotValue = 0.5
-        t.equity = 0.5
-        t.checkButton = False
-        d = Decision(t, h, p, l)
-        t.isHeadsUp = True
-        t.gameStage = "PreFlop"
-        d.__init__(t, h, p, l)
-        d.preflop_override(t, logger, h, p)
+        d = reverse_init(t, h, p, logger)
         preflop_state = CurrentHandPreflopState()
         bot_preflop_decision = 'Bet'
         preflop_state.update_values(t, bot_preflop_decision, h)
@@ -122,14 +105,7 @@ class TestReverseTables(TestCase):
         strategy = 'Snowie3'
         # preflop
         t, p, gui_signals, h, logger = init_table('tests/screenshots/76ss.png', strategy=strategy)
-        l = MagicMock()
-        t.totalPotValue = 0.5
-        t.equity = 0.5
-        t.checkButton = False
-        d = Decision(t, h, p, l)
-        t.isHeadsUp = True
-        t.gameStage = "PreFlop"
-        d.__init__(t, h, p, l)
+        d = reverse_init(t, h, p, logger)
         d.preflop_override(t, logger, h, p)
 
         self.assertEqual('6R4', t.preflop_sheet_name)
@@ -149,14 +125,7 @@ class TestReverseTables(TestCase):
     def test_ranges(self):
         # preflop
         t, p, gui_signals, h, logger = init_table('tests/screenshots/709250829_PreFlop_0.png')
-        l = MagicMock()
-        t.totalPotValue = 0.5
-        t.equity = 0.5
-        t.checkButton = False
-        d = Decision(t, h, p, l)
-        t.isHeadsUp = True
-        t.gameStage = "PreFlop"
-        d.__init__(t, h, p, l)
+        d = reverse_init(t, h, p, logger)
         d.preflop_override(t, logger, h, p)
 
         self.assertEqual('3R1', t.preflop_sheet_name)
@@ -179,15 +148,7 @@ class TestReverseTables(TestCase):
     def test_ranges_2nd_round(self):
         # preflop
         t, p, gui_signals, h, logger = init_table('tests/screenshots/709250829_PreFlop_0.png')
-        l = MagicMock()
-        t.totalPotValue = 0.5
-        t.equity = 0.5
-        t.checkButton = False
-        d = Decision(t, h, p, l)
-        t.isHeadsUp = True
-        t.gameStage = "PreFlop"
-        d.__init__(t, h, p, l)
-        d.preflop_override(t, logger, h, p)
+        d = reverse_init(t, h, p, logger)
 
         self.assertEqual('3R1', t.preflop_sheet_name)
 
@@ -204,3 +165,42 @@ class TestReverseTables(TestCase):
 
         self.assertEqual('12R3', sheet_name)
         #self.assertEqual(38, len(ranges))
+
+    def test_ranges_2nd_call(self):
+        # preflop
+        t, p, gui_signals, h, logger = init_table('tests/screenshots/AJ2.png')
+
+        d=reverse_init(t,h,p,logger)
+
+        self.assertEqual('6R3', t.preflop_sheet_name)
+
+        preflop_state = CurrentHandPreflopState()
+        bot_preflop_decision = 'Bet'
+        preflop_state.update_values(t, bot_preflop_decision, h)
+
+        # flop after 2nd round preflop
+        t, p, gui_signals, h, logger = init_table('tests/screenshots/AJs.png')
+        for abs_pos in range(5):
+            if t.other_players[abs_pos]['status'] == 1:
+                sheet_name = preflop_state.get_reverse_sheetname(abs_pos, t, h)
+                ranges = preflop_state.get_rangecards_from_sheetname(abs_pos, sheet_name, t, h, p)
+
+        self.assertEqual('32R6', sheet_name)
+        self.assertEqual("Call", preflop_state.range_column_name)
+
+    def test_ranges_call_column(self):
+        # preflop
+        t, p, gui_signals, h, logger = init_table('tests/screenshots/KQ2.png')
+        reverse_init(t,h,p,logger)
+        preflop_state = CurrentHandPreflopState()
+        bot_preflop_decision = 'Bet'
+        preflop_state.update_values(t, bot_preflop_decision, h)
+        t, p, gui_signals, h, logger = init_table('tests/screenshots/KQ.png')
+        for abs_pos in range(5):
+            if t.other_players[abs_pos]['status'] == 1:
+                sheet_name = preflop_state.get_reverse_sheetname(abs_pos, t, h)
+                ranges = preflop_state.get_rangecards_from_sheetname(abs_pos, sheet_name, t, h, p)
+
+        self.assertEqual('42R5', sheet_name)
+        self.assertEqual("Call", preflop_state.range_column_name)
+

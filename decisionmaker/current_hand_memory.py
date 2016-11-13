@@ -84,10 +84,11 @@ class CurrentHandPreflopState:
 
 
         sheet_name = str(utg_position + 1)
-        self.all_preflop_raiser_positions_abs = copy(preflop_raiser_positions)
 
         if abs_pos in preflop_raiser_positions: preflop_raiser_positions.remove(abs_pos)
         if abs_pos in preflop_caller_positions: preflop_caller_positions.remove(abs_pos)
+
+        self.all_preflop_raiser_positions_abs = copy(preflop_raiser_positions)
 
         try: second_round = True if utg_position < preflop_raiser_positions[0] else second_round
         except: pass
