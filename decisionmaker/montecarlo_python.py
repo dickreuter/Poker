@@ -536,8 +536,8 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
             m.equity = m.preflop_equities[crd1]
         elif crd2 in m.preflop_equities:
             m.equity = m.preflop_equities[crd2]
-        elif crd1[0:2] in m.preflop_equities:
-            m.equity = m.preflop_equities[crd1[0:2]]
+        elif crd1+'O' in m.preflop_equities:
+            m.equity = m.preflop_equities[crd1+'O']
         else:
             logger.warning("Preflop equity not found in lookup table: " + str(crd1))
 

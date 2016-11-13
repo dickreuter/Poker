@@ -113,11 +113,17 @@ class CurrentHandPreflopState:
     def get_rangecards_from_sheetname(self, abs_pos, sheet_name, t, h, p):
         utg_position = t.get_utg_from_abs_pos(abs_pos, t.dealer_position)
 
+        if sheet_name == '6': sheet_name = '5'
+
         if sheet_name not in h.preflop_sheet:
             self.logger.warning('Reverse sheetname not found: ' + sheet_name)
-            sheet_name = sheet_name[0]
-            if sheet_name == '6': sheet_name = '5'
-            self.logger.warning('Using backup reverse sheet: ' + sheet_name)
+            sheet_name = sheet_name[:-2]
+            self.logger.warning('Trying to cut last element of reverse sheet: ' + sheet_name)
+
+            if sheet_name not in h.preflop_sheet:
+                self.logger.warning('Cut reverse sheetname not found either: ' + sheet_name)
+                sheet_name = sheet_name[0]
+                self.logger.warning('Using backup reverse sheet: ' + sheet_name)
 
         ranges_call = h.preflop_sheet[sheet_name][h.preflop_sheet[sheet_name]['Call'] > 0.1]['Hand'].tolist()
         ranges_raise = h.preflop_sheet[sheet_name][h.preflop_sheet[sheet_name]['Raise'] > 0.1]['Hand'].tolist()
