@@ -153,3 +153,11 @@ class TestTableScreenBased(TestCase):
         self.assertEqual(t.dealer_position, 4)
         self.assertEqual(np.isnan(t.second_raiser), True)
         self.assertEqual(t.first_raiser_utg, 3)
+
+    def funds_error1(self):
+        t, p, gui_signals, h, logger = init_table('tests/screenshots/FundsError1.png')
+        self.assertEqual(t.myFunds, 8.80)
+
+    def funds_error2(self):
+        t, p, gui_signals, h, logger = init_table('tests/screenshots/FundsError2.png')
+        self.assertEqual(t.myFunds, 10.80)

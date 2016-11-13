@@ -172,6 +172,17 @@ class Table(object):
         return count, points, bestFit, min_val
 
     def get_ocr_float(self, img_orig, name, force_method=0):
+        def binarize_array(image, threshold=200):
+            """Binarize a numpy array."""
+            numpy_array=np.array(image)
+            for i in range(len(numpy_array)):
+                for j in range(len(numpy_array[0])):
+                    if numpy_array[i][j] > threshold:
+                        numpy_array[i][j] = 255
+                    else:
+                        numpy_array[i][j] = 0
+            return Image.fromarray(numpy_array)
+
         def fix_number(t):
             t = t.replace("I", "1").replace("Â°lo", "").replace("O", "0").replace("o", "0") \
                 .replace("-", ".").replace("D", "0").replace("I", "1").replace("_", ".").replace("-", ".").replace("B",
@@ -203,10 +214,11 @@ class Table(object):
         basewidth = 300
         wpercent = (basewidth / float(img_orig.size[0]))
         hsize = int((float(img_orig.size[1]) * float(wpercent)))
-        img_resized = img_orig.resize((basewidth, hsize), Image.ANTIALIAS)
+        img_resized = img_orig.convert('L').resize((basewidth, hsize), Image.ANTIALIAS)
+        img_resized = binarize_array(img_resized, 200)
 
         img_min = img_resized.filter(ImageFilter.MinFilter)
-        img_med = img_resized.filter(ImageFilter.MedianFilter)
+        #img_med = img_resized.filter(ImageFilter.MedianFilter)
         img_mod = img_resized.filter(ImageFilter.ModeFilter).filter(ImageFilter.SHARPEN)
 
         lst = []
@@ -246,6 +258,7 @@ class Table(object):
                 self.logger.debug("OCR of " + name + " method " + str(i) + ": " + str(j))
                 lst[i] = fix_number(lst[i]) if lst[i] != '' else lst[i]
                 final_value = lst[i] if final_value == '' else final_value
+                final_value.replace('..','.')
 
             self.logger.info(name + " FINAL VALUE: " + str(final_value))
             if final_value == '':

@@ -2552,11 +2552,9 @@
            </layout>
           </item>
          </layout>
-         <zorder></zorder>
          <zorder>lcdNumber_57</zorder>
          <zorder>lcdNumber_61</zorder>
          <zorder>lcdNumber_71</zorder>
-         <zorder>layoutWidget_2</zorder>
         </widget>
        </item>
        <item row="1" column="0">
@@ -2846,7 +2844,6 @@
       <zorder>groupBox_35</zorder>
       <zorder>groupBox_36</zorder>
       <zorder>groupBox_37</zorder>
-      <zorder>always_call_low_stack_multiplier</zorder>
      </widget>
      <widget class="QWidget" name="tab_3">
       <attribute name="title">

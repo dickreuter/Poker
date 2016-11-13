@@ -1287,7 +1287,6 @@ class Ui_editor_form(object):
         self.groupBox_35.raise_()
         self.groupBox_36.raise_()
         self.groupBox_37.raise_()
-        self.always_call_low_stack_multiplier.raise_()
         self.tabWidget.addTab(self.additionaloptions, "")
         self.tab_3 = QtWidgets.QWidget()
         self.tab_3.setObjectName("tab_3")

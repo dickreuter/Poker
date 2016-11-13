@@ -127,7 +127,7 @@ class TableScreenBased(Table):
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
         # Convert RGB to BGR
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
-        count, points, bestfit, _ = self.find_template_on_screen(self.ImBack, img, func_dict['tolerance'])
+        count, points, bestfit, minvalue = self.find_template_on_screen(self.ImBack, img, func_dict['tolerance'])
         if count > 0:
             self.gui_signals.signal_status.emit("I am back found")
             mouse.mouse_action("Imback", self.tlc)
@@ -528,8 +528,9 @@ class TableScreenBased(Table):
             wpercent = (basewidth / float(pil_image.size[0]))
             hsize = int((float(pil_image.size[1]) * float(wpercent)))
             pil_image = pil_image.resize((basewidth, hsize), Image.ANTIALIAS)
-            pil_image_filtered = pil_image.filter(ImageFilter.ModeFilter)
-            pil_image_filtered2 = pil_image.filter(ImageFilter.MedianFilter)
+
+        pil_image_filtered = pil_image.filter(ImageFilter.ModeFilter)
+        pil_image_filtered2 = pil_image.filter(ImageFilter.MedianFilter)
 
         self.myFundsError = False
         try:
@@ -538,6 +539,10 @@ class TableScreenBased(Table):
             self.logger.info("Could not save myFunds.png")
 
         self.myFunds = self.get_ocr_float(pil_image, 'MyFunds')
+        if self.myFunds == '':
+            self.myFunds = self.get_ocr_float(pil_image_filtered, 'MyFunds')
+        if self.myFunds == '':
+            self.myFunds = self.get_ocr_float(pil_image_filtered2, 'MyFunds')
 
         if self.myFunds == '':
             self.myFundsError = True
