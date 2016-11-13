@@ -90,10 +90,10 @@ class CurrentHandPreflopState:
 
         self.all_preflop_raiser_positions_abs = copy(preflop_raiser_positions)
 
-        try: second_round = True if utg_position < preflop_raiser_positions[0] else second_round
+        try: second_round = True if utg_position < t.get_utg_from_abs_pos(preflop_raiser_positions[0], t.dealer_position) else second_round
         except: pass
 
-        try: second_round = True if utg_position < preflop_raiser_positions[1] else second_round
+        try: second_round = True if utg_position < t.get_utg_from_abs_pos(preflop_raiser_positions[1], t.dealer_position) else second_round
         except: pass
 
         if second_round:
