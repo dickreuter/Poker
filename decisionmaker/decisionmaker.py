@@ -226,8 +226,6 @@ class Decision(DecisionBase):
                 found_card=crd1
             elif crd2 in handlist:
                 found_card=crd2
-            elif crd1[0:2] in handlist:
-                found_card=crd1[0:2]
 
             self.logger.debug("Looking in preflop table for: " + crd1+", "+ crd2+", "+ crd1[0:2])
             self.logger.debug("Found in preflop table: "+found_card)

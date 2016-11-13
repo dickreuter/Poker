@@ -12,7 +12,6 @@ from copy import copy
 import numpy as np
 
 
-
 class MonteCarlo(object):
     def __init__(self):
         self.logger = logging.getLogger('montecarlo')
@@ -22,7 +21,8 @@ class MonteCarlo(object):
         card1 = input_cards[0][0]
         card2 = input_cards[1][0]
         suited_str = 'S' if input_cards[0][1] == input_cards[1][1] else 'O'
-        if card1[0] == card2[0]: suited_str = ''
+        if card1[0] == card2[0]:
+            suited_str = ''
 
         return card1 + card2 + suited_str, card2 + card1 + suited_str
 
@@ -227,7 +227,7 @@ class MonteCarlo(object):
             score = (3, 2)
         elif score[0:4] == (2, 2, 2, 1):  # special case: convert three pair to two pair
             score = (2, 2, 1)  # as three pair are not worth more than two pair
-            kicker = max(card_ranks[2],card_ranks[3])  # avoid for example 11,8,6,7
+            kicker = max(card_ranks[2], card_ranks[3])  # avoid for example 11,8,6,7
             card_ranks = (card_ranks[0], card_ranks[1], kicker)
         elif score[0] == 4:  # four of a kind
             score = (4,)
@@ -337,7 +337,7 @@ class MonteCarlo(object):
         n = 0
         while True:
             plr = []
-            passes +=1
+            passes += 1
 
             random_card1 = np.random.random_integers(0, len(deck) - 1)
             plr.append(deck.pop(random_card1))
@@ -375,7 +375,7 @@ class MonteCarlo(object):
         winnerCardTypeList = []
         wins = 0
         runs = 0
-        passes=0
+        passes = 0
         OriginalDeck = self.create_card_deck()
         if ghost_cards != '':
             OriginalDeck.pop(OriginalDeck.index(ghost_cards[0]))
@@ -386,8 +386,9 @@ class MonteCarlo(object):
             Deck = copy(OriginalDeck)
             PlayerCardList = original_player_card_list[:]
             TableCardsList = original_table_card_list[:]
-            Players, Deck, passes = self.distribute_cards_to_players(Deck, player_amount, PlayerCardList, TableCardsList,
-                                                             opponent_allowed_cards, passes)
+            Players, Deck, passes = self.distribute_cards_to_players(Deck, player_amount, PlayerCardList,
+                                                                     TableCardsList,
+                                                                     opponent_allowed_cards, passes)
             Deck5Cards = self.distribute_cards_to_table(Deck, TableCardsList)
             PlayerFinalCardsWithTableCards = []
             for o in range(0, player_amount):
@@ -411,12 +412,11 @@ class MonteCarlo(object):
 
             if passes > 999 and time.time() > timeout:
                 self.logger.warning("Cutting short montecarlo due to timeout")
-                self.logger.warning("Passes: "+str(passes))
-                self.logger.warning("Runs: "+str(runs))
+                self.logger.warning("Passes: " + str(passes))
+                self.logger.warning("Runs: " + str(runs))
                 break
 
-            #if passes >= maxruns: break
-
+                # if passes >= maxruns: break
 
         self.equity = wins / runs
         self.winnerCardTypeList = Counter(winnerCardTypeList)
@@ -425,7 +425,7 @@ class MonteCarlo(object):
 
         self.winTypesDict = self.winnerCardTypeList.items()
         self.runs = runs
-        self.passes=passes
+        self.passes = passes
 
         return self.equity, self.winTypesDict
 
@@ -475,19 +475,18 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
     t.PlayerCardList.append(t.mycards)
     t.PlayerCardList_and_others = copy(t.PlayerCardList)
 
-
     ghost_cards = ''
-    m.collusion_cards=''
+    m.collusion_cards = ''
 
     if p.selected_strategy['collusion'] == 1:
         collusion_cards, collusion_player_dropped_out = L.get_collusion_cards(h.game_number_on_screen, t.gameStage)
 
         if collusion_cards != '':
-            m.collusion_cards=collusion_cards
+            m.collusion_cards = collusion_cards
             winsound.Beep(1000, 100)
             if not collusion_player_dropped_out:
                 t.PlayerCardList_and_others.append(collusion_cards)
-                logger.info("Collusion found, player still in game. "+str(collusion_cards))
+                logger.info("Collusion found, player still in game. " + str(collusion_cards))
             elif collusion_player_dropped_out:
                 logger.info("COllusion found, but player dropped out." + str(collusion_cards))
                 ghost_cards = collusion_cards
@@ -508,10 +507,10 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
                 if t.other_players[abs_pos]['status'] == 1:
                     sheet_name = preflop_state.get_reverse_sheetname(abs_pos, t, h)
                     ranges = preflop_state.get_rangecards_from_sheetname(abs_pos, sheet_name, t, h, p)
-                    #logger.debug("Ranges from reverse table: "+str(ranges))
+                    # logger.debug("Ranges from reverse table: "+str(ranges))
 
                     # the last player's range will be relevant
-                    if t.isHeadsUp==True:
+                    if t.isHeadsUp == True:
                         opponent_range = ranges
 
         except Exception as e:
@@ -546,7 +545,7 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
     t.winnerCardTypeList = m.winnerCardTypeList
 
     ui_action_and_signals.signal_progressbar_increase.emit(30)
-    m.opponent_range=opponent_range
+    m.opponent_range = opponent_range
     return m
 
 
@@ -561,7 +560,7 @@ if __name__ == '__main__':
     cards_on_table = ['8S', '4S', 'QH', '8C', '4H']
     players = 2
     secs = 5
-    maxruns=10000
+    maxruns = 10000
     start_time = time.time()
     timeout = start_time + secs
     ghost_cards = ''
