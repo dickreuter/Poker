@@ -208,7 +208,7 @@ class Decision(DecisionBase):
                 sheet=excel_file[sheet_name]
                 self.logger.debug("Sheetname found")
             elif sheet_name[:-2] in excel_file:
-                self.logger.warning("Sheetname not found but found it cutting last two strings: "+sheet_name[:-2])
+                self.logger.warning("Sheetname "+sheet_name+" not found but found, cutting last element: "+sheet_name[:-2])
                 sheet = excel_file[sheet_name[:-2]]
             else:
                 backup_sheet_name='2R1'

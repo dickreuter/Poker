@@ -596,7 +596,7 @@ class TableScreenBased(Table):
             self.currentBetValue = 9999999.0
 
         if self.currentCallValue == '':
-            self.logger.error("Call Value was empty. ")
+            self.logger.error("Call Value was empty")
             if p.selected_strategy['pokerSite'][0:2] == "PS" and self.allInCallButton:
                 self.currentCallValue = self.currentBetValue
                 self.currentBetValue = 9999999

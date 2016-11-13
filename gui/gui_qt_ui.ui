@@ -270,7 +270,7 @@
          <enum>QFrame::Sunken</enum>
         </property>
         <property name="text">
-         <string>TextLabel</string>
+         <string>I'm ready!</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
