@@ -110,6 +110,210 @@
      <property name="currentIndex">
       <number>0</number>
      </property>
+     <widget class="QWidget" name="tab_5">
+      <attribute name="title">
+       <string>Table Parameters</string>
+      </attribute>
+      <widget class="QGroupBox" name="groupBox_33">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>70</y>
+         <width>671</width>
+         <height>141</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Blinds</string>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_7">
+        <item row="0" column="0">
+         <layout class="QVBoxLayout" name="verticalLayout_5">
+          <item>
+           <widget class="QLabel" name="label_11">
+            <property name="text">
+             <string>Small Blind (cents)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSlider" name="smallBlind">
+            <property name="mouseTracking">
+             <bool>false</bool>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>500</number>
+            </property>
+            <property name="pageStep">
+             <number>10</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="tickPosition">
+             <enum>QSlider::TicksAbove</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLCDNumber" name="lcdNumber_62"/>
+        </item>
+        <item row="1" column="0">
+         <layout class="QVBoxLayout" name="verticalLayout_437">
+          <item>
+           <widget class="QLabel" name="label_454">
+            <property name="text">
+             <string>Big Blind (cents)</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSlider" name="bigBlind">
+            <property name="mouseTracking">
+             <bool>false</bool>
+            </property>
+            <property name="minimum">
+             <number>2</number>
+            </property>
+            <property name="maximum">
+             <number>1000</number>
+            </property>
+            <property name="pageStep">
+             <number>10</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="tickPosition">
+             <enum>QSlider::TicksAbove</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLCDNumber" name="lcdNumber_114"/>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QGroupBox" name="groupBox_34">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>220</y>
+         <width>671</width>
+         <height>111</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Logging</string>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_51">
+        <item row="0" column="1">
+         <widget class="QLCDNumber" name="lcdNumber_66"/>
+        </item>
+        <item row="2" column="0">
+         <widget class="QCheckBox" name="gather_player_names">
+          <property name="text">
+           <string>Gather player names</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <layout class="QVBoxLayout" name="verticalLayout_12">
+          <item>
+           <widget class="QLabel" name="label_43">
+            <property name="text">
+             <string>Don't log changes in my pot if the exceed this threshold (to avoid confusing the chart if the funds are not read correctly for a round)</string>
+            </property>
+            <property name="wordWrap">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSlider" name="max_abs_fundchange">
+            <property name="mouseTracking">
+             <bool>false</bool>
+            </property>
+            <property name="toolTip">
+             <string/>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>5000</number>
+            </property>
+            <property name="singleStep">
+             <number>10</number>
+            </property>
+            <property name="pageStep">
+             <number>100</number>
+            </property>
+            <property name="value">
+             <number>500</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="tickPosition">
+             <enum>QSlider::TicksAbove</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="3" column="0">
+         <widget class="QCheckBox" name="collusion">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;You can participate in collusion. This means your cards are shared with other players that are using the bot and if you happen to be on the same table both bots will know each others cards. If one of the bots drops out the remaining bot will be able to run a more accurate montecarlo simulation as he knows which 2 cards the remaining third party player does not hold for sure.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Participate in collusion</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="layoutWidget">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>10</y>
+         <width>261</width>
+         <height>51</height>
+        </rect>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_7">
+        <item>
+         <widget class="QLabel" name="label_13">
+          <property name="text">
+           <string>Poker Site (Party Poker or Poker Stars)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="pokerSite">
+          <property name="toolTip">
+           <string>Currently Partypoker (PP) and Pokerstars (PS) are supported</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
      <widget class="QWidget" name="PreFlop">
       <attribute name="title">
        <string>PreFlop</string>
@@ -2215,6 +2419,12 @@
           <string>Extreme cases</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_3">
+          <item row="2" column="2">
+           <widget class="QLCDNumber" name="lcdNumber_71"/>
+          </item>
+          <item row="1" column="2">
+           <widget class="QLCDNumber" name="lcdNumber_61"/>
+          </item>
           <item row="0" column="0">
            <layout class="QVBoxLayout" name="verticalLayout_27">
             <item>
@@ -2257,7 +2467,7 @@
             </item>
            </layout>
           </item>
-          <item row="0" column="1">
+          <item row="0" column="2">
            <widget class="QLCDNumber" name="lcdNumber_57"/>
           </item>
           <item row="1" column="0">
@@ -2302,13 +2512,51 @@
             </item>
            </layout>
           </item>
-          <item row="1" column="1">
-           <widget class="QLCDNumber" name="lcdNumber_61"/>
+          <item row="2" column="0">
+           <layout class="QVBoxLayout" name="verticalLayout_38">
+            <item>
+             <widget class="QLabel" name="label_44">
+              <property name="text">
+               <string>Always call if pot size is more than x times than bot stack size</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSlider" name="always_call_low_stack_multiplier">
+              <property name="mouseTracking">
+               <bool>false</bool>
+              </property>
+              <property name="toolTip">
+               <string>If the bot stack size is below a certain amount, the bot will always call. The slider controls the multiplier. 10 means that he will always call when the stack is less than 1 if the pot is 10</string>
+              </property>
+              <property name="minimum">
+               <number>2</number>
+              </property>
+              <property name="maximum">
+               <number>20</number>
+              </property>
+              <property name="singleStep">
+               <number>1</number>
+              </property>
+              <property name="pageStep">
+               <number>1</number>
+              </property>
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="tickPosition">
+               <enum>QSlider::TicksAbove</enum>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
          </layout>
          <zorder></zorder>
          <zorder>lcdNumber_57</zorder>
          <zorder>lcdNumber_61</zorder>
+         <zorder>lcdNumber_71</zorder>
+         <zorder>layoutWidget_2</zorder>
         </widget>
        </item>
        <item row="1" column="0">
@@ -2452,48 +2700,6 @@
           <string>Bullying other players with little fund with aggressive behaviour and behaviour with low funds</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_12">
-          <item row="4" column="0">
-           <layout class="QVBoxLayout" name="verticalLayout_38">
-            <item>
-             <widget class="QLabel" name="label_44">
-              <property name="text">
-               <string>Always call if pot size is more than x times than bot stack size</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QSlider" name="always_call_low_stack_multiplier">
-              <property name="mouseTracking">
-               <bool>false</bool>
-              </property>
-              <property name="toolTip">
-               <string>If the bot stack size is below a certain amount, the bot will always call. The slider controls the multiplier. 10 means that he will always call when the stack is less than 1 if the pot is 10</string>
-              </property>
-              <property name="minimum">
-               <number>2</number>
-              </property>
-              <property name="maximum">
-               <number>20</number>
-              </property>
-              <property name="singleStep">
-               <number>1</number>
-              </property>
-              <property name="pageStep">
-               <number>1</number>
-              </property>
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="tickPosition">
-               <enum>QSlider::TicksAbove</enum>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item row="4" column="1">
-           <widget class="QLCDNumber" name="lcdNumber_71"/>
-          </item>
           <item row="3" column="1">
            <widget class="QLCDNumber" name="lcdNumber_59"/>
           </item>
@@ -2511,6 +2717,9 @@
             </item>
             <item>
              <widget class="QSlider" name="maxBullyEquity">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="mouseTracking">
                <bool>false</bool>
               </property>
@@ -2550,6 +2759,9 @@
             </item>
             <item>
              <widget class="QSlider" name="minBullyEquity">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="mouseTracking">
                <bool>false</bool>
               </property>
@@ -2599,6 +2811,9 @@
             </item>
             <item>
              <widget class="QSlider" name="bullyDivider">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="mouseTracking">
                <bool>false</bool>
               </property>
@@ -2633,213 +2848,9 @@
       <zorder>groupBox_37</zorder>
       <zorder>always_call_low_stack_multiplier</zorder>
      </widget>
-     <widget class="QWidget" name="tab_5">
-      <attribute name="title">
-       <string>Table Parameters</string>
-      </attribute>
-      <widget class="QGroupBox" name="groupBox_33">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>70</y>
-         <width>671</width>
-         <height>141</height>
-        </rect>
-       </property>
-       <property name="title">
-        <string>Blinds</string>
-       </property>
-       <layout class="QGridLayout" name="gridLayout_7">
-        <item row="0" column="0">
-         <layout class="QVBoxLayout" name="verticalLayout_5">
-          <item>
-           <widget class="QLabel" name="label_11">
-            <property name="text">
-             <string>Small Blind (cents)</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QSlider" name="smallBlind">
-            <property name="mouseTracking">
-             <bool>false</bool>
-            </property>
-            <property name="minimum">
-             <number>1</number>
-            </property>
-            <property name="maximum">
-             <number>500</number>
-            </property>
-            <property name="pageStep">
-             <number>10</number>
-            </property>
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="tickPosition">
-             <enum>QSlider::TicksAbove</enum>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item row="0" column="1">
-         <widget class="QLCDNumber" name="lcdNumber_62"/>
-        </item>
-        <item row="1" column="0">
-         <layout class="QVBoxLayout" name="verticalLayout_437">
-          <item>
-           <widget class="QLabel" name="label_454">
-            <property name="text">
-             <string>Big Blind (cents)</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QSlider" name="bigBlind">
-            <property name="mouseTracking">
-             <bool>false</bool>
-            </property>
-            <property name="minimum">
-             <number>2</number>
-            </property>
-            <property name="maximum">
-             <number>1000</number>
-            </property>
-            <property name="pageStep">
-             <number>10</number>
-            </property>
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="tickPosition">
-             <enum>QSlider::TicksAbove</enum>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item row="1" column="1">
-         <widget class="QLCDNumber" name="lcdNumber_114"/>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QGroupBox" name="groupBox_34">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>220</y>
-         <width>671</width>
-         <height>111</height>
-        </rect>
-       </property>
-       <property name="title">
-        <string>Logging</string>
-       </property>
-       <layout class="QGridLayout" name="gridLayout_51">
-        <item row="0" column="1">
-         <widget class="QLCDNumber" name="lcdNumber_66"/>
-        </item>
-        <item row="2" column="0">
-         <widget class="QCheckBox" name="gather_player_names">
-          <property name="text">
-           <string>Gather player names</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0">
-         <layout class="QVBoxLayout" name="verticalLayout_12">
-          <item>
-           <widget class="QLabel" name="label_43">
-            <property name="text">
-             <string>Don't log changes in my pot if the exceed this threshold (to avoid confusing the chart if the funds are not read correctly for a round)</string>
-            </property>
-            <property name="wordWrap">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QSlider" name="max_abs_fundchange">
-            <property name="mouseTracking">
-             <bool>false</bool>
-            </property>
-            <property name="toolTip">
-             <string/>
-            </property>
-            <property name="minimum">
-             <number>1</number>
-            </property>
-            <property name="maximum">
-             <number>5000</number>
-            </property>
-            <property name="singleStep">
-             <number>10</number>
-            </property>
-            <property name="pageStep">
-             <number>100</number>
-            </property>
-            <property name="value">
-             <number>500</number>
-            </property>
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="tickPosition">
-             <enum>QSlider::TicksAbove</enum>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item row="3" column="0">
-         <widget class="QCheckBox" name="collusion">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;You can participate in collusion. This means your cards are shared with other players that are using the bot and if you happen to be on the same table both bots will know each others cards. If one of the bots drops out the remaining bot will be able to run a more accurate montecarlo simulation as he knows which 2 cards the remaining third party player does not hold for sure.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="text">
-           <string>Participate in collusion</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="layoutWidget">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>10</y>
-         <width>261</width>
-         <height>51</height>
-        </rect>
-       </property>
-       <layout class="QVBoxLayout" name="verticalLayout_7">
-        <item>
-         <widget class="QLabel" name="label_13">
-          <property name="text">
-           <string>Poker Site (Party Poker or Poker Stars)</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QComboBox" name="pokerSite">
-          <property name="toolTip">
-           <string>Currently Partypoker (PP) and Pokerstars (PS) are supported</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-     </widget>
      <widget class="QWidget" name="tab_3">
       <attribute name="title">
-       <string>Betting</string>
+       <string>Betting and Ranges</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_15">
        <item row="0" column="0">
@@ -3366,7 +3377,7 @@
      </widget>
      <widget class="QWidget" name="Conditions">
       <attribute name="title">
-       <string>Conditions</string>
+       <string>Bet and Bluff conditions</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_26">
        <item row="0" column="0">
@@ -3914,11 +3925,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>141</x>
-     <y>594</y>
+     <y>561</y>
     </hint>
     <hint type="destinationlabel">
-     <x>343</x>
-     <y>595</y>
+     <x>346</x>
+     <y>562</y>
     </hint>
    </hints>
   </connection>
@@ -3929,12 +3940,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>465</x>
-     <y>461</y>
+     <x>498</x>
+     <y>545</y>
     </hint>
     <hint type="destinationlabel">
-     <x>576</x>
-     <y>462</y>
+     <x>688</x>
+     <y>546</y>
     </hint>
    </hints>
   </connection>
@@ -3981,8 +3992,8 @@
      <y>289</y>
     </hint>
     <hint type="destinationlabel">
-     <x>343</x>
-     <y>298</y>
+     <x>346</x>
+     <y>290</y>
     </hint>
    </hints>
   </connection>
@@ -3994,11 +4005,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>165</x>
-     <y>517</y>
+     <y>601</y>
     </hint>
     <hint type="destinationlabel">
-     <x>306</x>
-     <y>518</y>
+     <x>355</x>
+     <y>602</y>
     </hint>
    </hints>
   </connection>
@@ -4010,11 +4021,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>163</x>
-     <y>213</y>
+     <y>212</y>
     </hint>
     <hint type="destinationlabel">
-     <x>682</x>
-     <y>214</y>
+     <x>689</x>
+     <y>213</y>
     </hint>
    </hints>
   </connection>
@@ -4029,8 +4040,8 @@
      <y>387</y>
     </hint>
     <hint type="destinationlabel">
-     <x>343</x>
-     <y>404</y>
+     <x>346</x>
+     <y>388</y>
     </hint>
    </hints>
   </connection>
@@ -4074,11 +4085,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>142</x>
-     <y>435</y>
+     <y>519</y>
     </hint>
     <hint type="destinationlabel">
-     <x>292</x>
-     <y>462</y>
+     <x>355</x>
+     <y>546</y>
     </hint>
    </hints>
   </connection>
@@ -4089,12 +4100,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>481</x>
-     <y>626</y>
+     <x>484</x>
+     <y>593</y>
     </hint>
     <hint type="destinationlabel">
-     <x>682</x>
-     <y>627</y>
+     <x>689</x>
+     <y>594</y>
     </hint>
    </hints>
   </connection>
@@ -4121,12 +4132,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>465</x>
-     <y>517</y>
+     <x>498</x>
+     <y>601</y>
     </hint>
     <hint type="destinationlabel">
-     <x>576</x>
-     <y>518</y>
+     <x>688</x>
+     <y>602</y>
     </hint>
    </hints>
   </connection>
@@ -4138,11 +4149,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>165</x>
-     <y>573</y>
+     <y>657</y>
     </hint>
     <hint type="destinationlabel">
-     <x>306</x>
-     <y>574</y>
+     <x>355</x>
+     <y>658</y>
     </hint>
    </hints>
   </connection>
@@ -4153,12 +4164,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>465</x>
-     <y>573</y>
+     <x>498</x>
+     <y>657</y>
     </hint>
     <hint type="destinationlabel">
-     <x>576</x>
-     <y>574</y>
+     <x>688</x>
+     <y>658</y>
     </hint>
    </hints>
   </connection>
@@ -4170,11 +4181,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>142</x>
-     <y>269</y>
+     <y>326</y>
     </hint>
     <hint type="destinationlabel">
-     <x>689</x>
-     <y>270</y>
+     <x>688</x>
+     <y>298</y>
     </hint>
    </hints>
   </connection>
@@ -4201,12 +4212,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>481</x>
-     <y>693</y>
+     <x>484</x>
+     <y>660</y>
     </hint>
     <hint type="destinationlabel">
-     <x>682</x>
-     <y>694</y>
+     <x>689</x>
+     <y>661</y>
     </hint>
    </hints>
   </connection>
@@ -4218,10 +4229,10 @@
    <hints>
     <hint type="sourcelabel">
      <x>142</x>
-     <y>213</y>
+     <y>241</y>
     </hint>
     <hint type="destinationlabel">
-     <x>689</x>
+     <x>688</x>
      <y>214</y>
     </hint>
    </hints>
@@ -4282,7 +4293,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>163</x>
-     <y>693</y>
+     <y>714</y>
     </hint>
     <hint type="destinationlabel">
      <x>682</x>
@@ -4298,7 +4309,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>163</x>
-     <y>639</y>
+     <y>667</y>
     </hint>
     <hint type="destinationlabel">
      <x>682</x>
@@ -4377,12 +4388,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>481</x>
-     <y>572</y>
+     <x>484</x>
+     <y>539</y>
     </hint>
     <hint type="destinationlabel">
-     <x>682</x>
-     <y>573</y>
+     <x>689</x>
+     <y>540</y>
     </hint>
    </hints>
   </connection>
@@ -4394,7 +4405,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>163</x>
-     <y>585</y>
+     <y>620</y>
     </hint>
     <hint type="destinationlabel">
      <x>682</x>
@@ -4457,12 +4468,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>481</x>
-     <y>747</y>
+     <x>484</x>
+     <y>714</y>
     </hint>
     <hint type="destinationlabel">
-     <x>682</x>
-     <y>748</y>
+     <x>689</x>
+     <y>715</y>
     </hint>
    </hints>
   </connection>
@@ -4490,7 +4501,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>163</x>
-     <y>475</y>
+     <y>517</y>
     </hint>
     <hint type="destinationlabel">
      <x>682</x>
@@ -4506,11 +4517,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>141</x>
-     <y>485</y>
+     <y>452</y>
     </hint>
     <hint type="destinationlabel">
-     <x>343</x>
-     <y>478</y>
+     <x>346</x>
+     <y>453</y>
     </hint>
    </hints>
   </connection>
@@ -4522,7 +4533,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>163</x>
-     <y>421</y>
+     <y>463</y>
     </hint>
     <hint type="destinationlabel">
      <x>682</x>
@@ -4538,7 +4549,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>163</x>
-     <y>367</y>
+     <y>409</y>
     </hint>
     <hint type="destinationlabel">
      <x>682</x>
@@ -4570,11 +4581,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>141</x>
-     <y>671</y>
+     <y>638</y>
     </hint>
     <hint type="destinationlabel">
-     <x>343</x>
-     <y>672</y>
+     <x>346</x>
+     <y>639</y>
     </hint>
    </hints>
   </connection>
@@ -4650,11 +4661,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>165</x>
-     <y>653</y>
+     <y>713</y>
     </hint>
     <hint type="destinationlabel">
-     <x>576</x>
-     <y>654</y>
+     <x>688</x>
+     <y>714</y>
     </hint>
    </hints>
   </connection>
@@ -4954,11 +4965,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>152</x>
-     <y>277</y>
+     <y>268</y>
     </hint>
     <hint type="destinationlabel">
-     <x>682</x>
-     <y>281</y>
+     <x>689</x>
+     <y>269</y>
     </hint>
    </hints>
   </connection>
@@ -4970,11 +4981,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>141</x>
-     <y>747</y>
+     <y>714</y>
     </hint>
     <hint type="destinationlabel">
-     <x>343</x>
-     <y>748</y>
+     <x>346</x>
+     <y>715</y>
     </hint>
    </hints>
   </connection>
@@ -5018,11 +5029,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>541</x>
-     <y>310</y>
+     <y>395</y>
     </hint>
     <hint type="destinationlabel">
-     <x>654</x>
-     <y>306</y>
+     <x>653</x>
+     <y>363</y>
     </hint>
    </hints>
   </connection>
@@ -5034,11 +5045,155 @@
    <hints>
     <hint type="sourcelabel">
      <x>442</x>
-     <y>729</y>
+     <y>304</y>
     </hint>
     <hint type="destinationlabel">
-     <x>639</x>
-     <y>732</y>
+     <x>646</x>
+     <y>307</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>preflop_override</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>range_utg4</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>108</x>
+     <y>180</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>158</x>
+     <y>644</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>preflop_override</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>range_utg2</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>108</x>
+     <y>180</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>158</x>
+     <y>588</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>preflop_override</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>range_utg1</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>108</x>
+     <y>180</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>491</x>
+     <y>532</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>preflop_override</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>range_utg5</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>108</x>
+     <y>180</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>491</x>
+     <y>644</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>preflop_override</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>range_utg3</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>108</x>
+     <y>180</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>491</x>
+     <y>588</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>preflop_override</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>range_utg0</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>108</x>
+     <y>180</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>158</x>
+     <y>532</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_2</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>bullyDivider</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>207</x>
+     <y>566</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>214</x>
+     <y>607</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_2</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>minBullyEquity</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>301</x>
+     <y>562</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>319</x>
+     <y>655</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_2</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>maxBullyEquity</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>405</x>
+     <y>567</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>416</x>
+     <y>706</y>
     </hint>
    </hints>
   </connection>
