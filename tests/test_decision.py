@@ -39,8 +39,6 @@ class TestDecision(TestCase):
         p = StrategyHandler()
         p.read_strategy('Nickpick12')
         l = MagicMock()
-        t.totalPotValue = 0.5
-        t.equity = 0.5
         t.checkButton = True
         d = Decision(t, h, p, l)
         t.isHeadsUp = True
@@ -57,8 +55,6 @@ class TestDecision(TestCase):
         p = StrategyHandler()
         p.read_strategy('Pokemon4')
         l = MagicMock()
-        t.totalPotValue = 0.5
-        t.equity = 0.5
         t.checkButton = False
         d = Decision(t, h, p, l)
         t.isHeadsUp = True
@@ -74,8 +70,6 @@ class TestDecision(TestCase):
         p = StrategyHandler()
         p.read_strategy('Pokemon4')
         l = MagicMock()
-        t.totalPotValue = 0.5
-        t.equity = 0.5
         t.checkButton = False
         d = Decision(t, h, p, l)
         t.isHeadsUp = True
@@ -91,8 +85,6 @@ class TestDecision(TestCase):
         p = StrategyHandler()
         p.read_strategy('Pokemon4')
         l = MagicMock()
-        t.totalPotValue = 0.5
-        t.equity = 0.5
         t.checkButton = False
         d = Decision(t, h, p, l)
         t.isHeadsUp = True
@@ -104,12 +96,10 @@ class TestDecision(TestCase):
         # self.assertEqual(t.preflop_sheet_name, '12R3')
 
     def test_preflop_call_before_raise(self):
-        t, p, gui_signals, h, logger = init_table('tests/screenshots/1791526_PreFlop_0.png', round_number=1)
+        t, p, gui_signals, h, logger = init_table('tests/screenshots/1791526_PreFlop_0.png', round_number=0)
         p = StrategyHandler()
         p.read_strategy('Pokemon4')
         l = MagicMock()
-        t.totalPotValue = 0.5
-        t.equity = 0.5
         t.checkButton = False
         d = Decision(t, h, p, l)
         t.isHeadsUp = True
@@ -121,13 +111,11 @@ class TestDecision(TestCase):
         self.assertEqual(t.first_raiser, 2)
         self.assertEqual(t.second_raiser, 4)
 
-        self.assertEqual(t.preflop_sheet_name, 'R1R2')
+        self.assertEqual(t.preflop_sheet_name, '6R5C3')
 
     def incorrect_second_raiser(self):
         t, p, gui_signals, h, logger = init_table('tests/screenshots/Q9o-first_raiser.png', strategy='Snowie3')
         l = MagicMock()
-        t.totalPotValue = 0.5
-        t.equity = 0.5
         t.checkButton = False
         d = Decision(t, h, p, l)
         t.isHeadsUp = True
@@ -144,8 +132,6 @@ class TestDecision(TestCase):
     def incorrect_preflop_table1(self):
         t, p, gui_signals, h, logger = init_table('tests/screenshots/K9o.png', strategy='Snowie3')
         l = MagicMock()
-        t.totalPotValue = 0.5
-        t.equity = 0.5
         t.checkButton = False
         d = Decision(t, h, p, l)
         t.isHeadsUp = True
@@ -161,8 +147,6 @@ class TestDecision(TestCase):
     def incorrect_preflop_table2(self):
         t, p, gui_signals, h, logger = init_table('tests/screenshots/3Ts.png', strategy='Snowie3')
         l = MagicMock()
-        t.totalPotValue = 0.5
-        t.equity = 0.5
         t.checkButton = False
         d = Decision(t, h, p, l)
         t.isHeadsUp = True
@@ -175,8 +159,6 @@ class TestDecision(TestCase):
     def second_round_with_raiser(self):
         t, p, gui_signals, h, logger = init_table('tests/screenshots/QQ.png', strategy='Snowie3', round_number=1)
         l = MagicMock()
-        t.totalPotValue = 0.5
-        t.equity = 0.5
         t.checkButton = False
         d = Decision(t, h, p, l)
         t.isHeadsUp = True
@@ -189,8 +171,6 @@ class TestDecision(TestCase):
     def first_round_2R1(self):
         t, p, gui_signals, h, logger = init_table('tests/screenshots/JJ.png', strategy='Snowie3', round_number=0)
         l = MagicMock()
-        t.totalPotValue = 0.5
-        t.equity = 0.5
         t.checkButton = False
         d = Decision(t, h, p, l)
         t.isHeadsUp = True
@@ -203,8 +183,6 @@ class TestDecision(TestCase):
     def first_round_4R1(self):
         t, p, gui_signals, h, logger = init_table('tests/screenshots/AJ.png', strategy='Snowie3', round_number=0)
         l = MagicMock()
-        t.totalPotValue = 0.5
-        t.equity = 0.5
         t.checkButton = False
         d = Decision(t, h, p, l)
         t.isHeadsUp = True
@@ -216,9 +194,6 @@ class TestDecision(TestCase):
 
     def first_round_98h(self):
         t, p, gui_signals, h, logger = init_table('tests/screenshots/98h.png', strategy='Snowie3', round_number=0)
-        l = MagicMock()
-        t.totalPotValue = 0.5
-        t.equity = 0.5
         t.checkButton = False
         d = Decision(t, h, p, l)
         t.isHeadsUp = True
@@ -228,11 +203,9 @@ class TestDecision(TestCase):
 
         self.assertEqual(t.preflop_sheet_name, '4R3')
 
-    def first_round_67s(self):
-        t, p, gui_signals, h, logger = init_table('tests/screenshots/67s.png', strategy='Snowie3', round_number=0)
+    def sheet_12R4R6(self):
+        t, p, gui_signals, h, logger = init_table('tests/screenshots/12R4R6.png', round_number=1)
         l = MagicMock()
-        t.totalPotValue = 0.5
-        t.equity = 0.5
         t.checkButton = False
         d = Decision(t, h, p, l)
         t.isHeadsUp = True
@@ -240,4 +213,5 @@ class TestDecision(TestCase):
         d.__init__(t, h, p, l)
         d.preflop_override(t, logger, h, p)
 
-        self.assertEqual(t.preflop_sheet_name, '3R2')
+        self.assertEqual(t.preflop_sheet_name, '12R4R6')
+

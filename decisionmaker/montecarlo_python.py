@@ -22,6 +22,7 @@ class MonteCarlo(object):
         card1 = input_cards[0][0]
         card2 = input_cards[1][0]
         suited_str = 'S' if input_cards[0][1] == input_cards[1][1] else 'O'
+        if card1[0] == card2[0]: suited_str = ''
 
         return card1 + card2 + suited_str, card2 + card1 + suited_str
 
@@ -565,7 +566,7 @@ if __name__ == '__main__':
     timeout = start_time + secs
     ghost_cards = ''
     Simulation.run_montecarlo(logging, my_cards, cards_on_table, player_amount=players, ui=None, maxRuns=maxruns,
-                              ghost_cards=ghost_cards, timeout=timeout, opponent_range=0.3)
+                              ghost_cards=ghost_cards, timeout=timeout, opponent_range={'JJ'})
     print("--- %s seconds ---" % (time.time() - start_time))
     print("Runs: " + str(Simulation.runs))
     print("Passes: " + str(Simulation.passes))

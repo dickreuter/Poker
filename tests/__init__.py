@@ -9,6 +9,8 @@ from PIL import Image
 
 from tools.mongo_manager import GameLogger
 from tools.mongo_manager import StrategyHandler
+from tools.mongo_manager import UpdateChecker
+
 from decisionmaker.current_hand_memory import History, CurrentHandPreflopState
 
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
@@ -24,7 +26,11 @@ def init_table(file,round_number=0, strategy='Pokemon4'):
     p = StrategyHandler()
     p.read_strategy(strategy_override=strategy)
     h = main.History()
-    h.preflop_sheet = pd.read_excel('decisionmaker/preflop.xlsx', sheetname=None)
+    u = UpdateChecker()
+    cursor = u.mongodb.internal.find()
+    c = cursor.next()
+    preflop_url = c['preflop_url']
+    h.preflop_sheet = pd.read_excel(preflop_url, sheetname=None)
     game_logger = GameLogger()
     t = main.TableScreenBased(p,gui_signals,game_logger,0.0)
     t.entireScreenPIL = Image.open(file)
@@ -48,6 +54,8 @@ def init_table(file,round_number=0, strategy='Pokemon4'):
     t.get_current_bet_value(p)
     p = MagicMock()
     gui_signals = MagicMock()
+    t.totalPotValue = 0.5
+    t.equity = 0.5
     return t,p,gui_signals,h,logger
 
 

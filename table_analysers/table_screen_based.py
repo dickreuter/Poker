@@ -372,7 +372,8 @@ class TableScreenBased(Table):
                 method = func_dict[6]
                 value = self.get_ocr_float(pil_image, str(inspect.stack()[0][3]), force_method=method)
                 try:
-                    value = re.findall(r'\d{1}\.\d{1,2}', str(value))[0]
+                    if not str(value)=='':
+                        value = re.findall(r'\d{1}\.\d{1,2}', str(value))[0]
                 except:
                     self.logger.warning("Player pot regex problem: " + str(value))
                     value = ''
