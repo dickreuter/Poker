@@ -147,17 +147,17 @@ class TestMonteCarlo(unittest.TestCase):
             0)
 
     def test_monteCarlo(self):  # Unittest to ensure correct winning probabilities are returned
-        def testRun(Simulation, my_cards, cards_on_table, players, expected_results):
+        def testRun(Simulation, my_cards, cards_on_table, players, expected_results, opponent_range=1):
             maxRuns = 15000  # maximum number of montecarlo runs
             testRuns = 5  # make several testruns to get standard deviation of winning probability
             secs = 1  # cut simulation short if amount of seconds are exceeded
 
             total_result = []
-            for n in range(testRuns):
+            for _ in range(testRuns):
                 start_time = time.time() + secs
                 logger = MagicMock()
                 Simulation.run_montecarlo(logger, my_cards, cards_on_table, players, 1, maxRuns=maxRuns,
-                                          timeout=start_time, ghost_cards='', opponent_range=1)
+                                          timeout=start_time, ghost_cards='', opponent_range=opponent_range)
                 equity = Simulation.equity
                 total_result.append(equity * 100)
                 print("--- %s seconds ---" % (time.time() - start_time))
@@ -282,12 +282,19 @@ class TestMonteCarlo(unittest.TestCase):
 
         my_cards = [['JD', 'JS']]
         cards_on_table = ['8C', 'TC', 'JC', '5H', 'QC']
-        expected_results = 5702
+        expected_results = 26.1
         players = 3
         testRun(Simulation, my_cards, cards_on_table, players, expected_results)
 
         my_cards = [['TD', '7D']]
         cards_on_table = ['8D', 'QD', '7C', '5D', '6D']
-        expected_results = 52.8
+        expected_results = 87
         players = 2
         testRun(Simulation, my_cards, cards_on_table, players, expected_results)
+
+        my_cards = [['KS', 'KC']]
+        cards_on_table = ['3D', '9H', 'AS', '7S', 'QH']
+        opponent_range=0.25
+        expected_results = 32.8
+        players = 3
+        testRun(Simulation, my_cards, cards_on_table, players, expected_results, opponent_range=opponent_range)

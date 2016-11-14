@@ -1,4 +1,4 @@
-from montecarlo_v3 import MonteCarlo
+from montecarlo_python import MonteCarlo
 import json
 import time
 from collections import OrderedDict
@@ -27,11 +27,12 @@ if __name__ == '__main__':
                     cards_on_table = []
                     players = 2
                     start_time = time.time()+2
-                    Simulation.run_montecarlo(my_cards, cards_on_table, players, 1, maxRuns=15000, timeout=start_time)
+                    Simulation.run_montecarlo(my_cards, cards_on_table, players, 1, maxRuns=15000, timeout=start_time, ui=None, ghost_cards='', opponent_range=1)
                     print("--- %s seconds ---" % (time.time() - start_time))
                     equity = Simulation.equity  # considering draws as wins
 
                     suited_str='S' if suit1==suits[0] else 'O'
+                    if my_cards[0][0][0]==my_cards[0][1][0]: suited_str=''
                     print (my_cards[0][0][0]+my_cards[0][1][0]+suited_str+": "+str(equity))
                     equity_dict[my_cards[0][0][0]+my_cards[0][1][0]+suited_str]=equity
 

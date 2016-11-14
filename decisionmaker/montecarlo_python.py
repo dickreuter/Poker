@@ -6,23 +6,25 @@ import operator
 import logging
 import time
 import winsound
-from collections import Counter
-from copy import copy
-
 import numpy as np
 
+from collections import Counter
+from copy import copy
 
 class MonteCarlo(object):
     def __init__(self):
         self.logger = logging.getLogger('montecarlo')
         self.logger.setLevel(logging.DEBUG)
 
-    def get_two_short_notation(self, input_cards):
+    def get_two_short_notation(self, input_cards, add_O_to_pairs=False):
         card1 = input_cards[0][0]
         card2 = input_cards[1][0]
         suited_str = 'S' if input_cards[0][1] == input_cards[1][1] else 'O'
         if card1[0] == card2[0]:
-            suited_str = ''
+            if add_O_to_pairs:
+                suited_str = "O"
+            else:
+                suited_str = ''
 
         return card1 + card2 + suited_str, card2 + card1 + suited_str
 
@@ -108,7 +110,7 @@ class MonteCarlo(object):
             "79S": 0.5176666666666667,
             "7TS": 0.5187333333333334,
             "2QS": 0.5188666666666667,
-            "22O": 0.5194666666666666,
+            "22": 0.5194666666666666,
             "4QO": 0.5205333333333333,
             "6JS": 0.5217333333333334,
             "5QO": 0.5253333333333333,
@@ -129,7 +131,7 @@ class MonteCarlo(object):
             "9JO": 0.5472666666666667,
             "5QS": 0.5484666666666667,
             "2KS": 0.5512666666666667,
-            "33O": 0.5556,
+            "33": 0.5556,
             "9TS": 0.5558666666666666,
             "8QO": 0.557,
             "6QS": 0.5571333333333334,
@@ -147,7 +149,7 @@ class MonteCarlo(object):
             "8QS": 0.5752,
             "5KS": 0.5762666666666667,
             "9JS": 0.5798666666666666,
-            "44O": 0.5818666666666666,
+            "44": 0.5818666666666666,
             "6KS": 0.5852,
             "TQO": 0.5856666666666667,
             "2AS": 0.5878666666666666,
@@ -170,7 +172,7 @@ class MonteCarlo(object):
             "JKO": 0.6107333333333334,
             "9KS": 0.6149333333333333,
             "8AO": 0.6162666666666666,
-            "55O": 0.6185333333333334,
+            "55": 0.6185333333333334,
             "6AS": 0.6204666666666667,
             "QKO": 0.6242666666666666,
             "5AS": 0.6255333333333334,
@@ -178,25 +180,25 @@ class MonteCarlo(object):
             "8AS": 0.6311333333333333,
             "TKS": 0.6348666666666667,
             "TAO": 0.6371333333333333,
-            "66O": 0.6403333333333333,
+            "66": 0.6403333333333333,
             "QKS": 0.6410666666666667,
             "9AS": 0.6426,
             "JKS": 0.6436,
             "JAO": 0.6460666666666667,
             "TAS": 0.6498,
             "QAO": 0.6514,
-            "77O": 0.6592,
+            "77": 0.6592,
             "KAO": 0.6592,
             "JAS": 0.6612666666666667,
             "QAS": 0.6670666666666667,
             "KAS": 0.6816666666666666,
-            "88O": 0.6978,
-            "99O": 0.7197333333333333,
-            "TTO": 0.7524666666666666,
-            "JJO": 0.7754,
-            "QQO": 0.8024,
-            "KKO": 0.8305333333333333,
-            "AAO": 0.8527333333333333
+            "88": 0.6978,
+            "99": 0.7197333333333333,
+            "TT": 0.7524666666666666,
+            "JJ": 0.7754,
+            "QQ": 0.8024,
+            "KK": 0.8305333333333333,
+            "AA": 0.8527333333333333
         }
         peflop_equity_list = sorted(self.preflop_equities.items(), key=operator.itemgetter(1))
 
@@ -325,9 +327,14 @@ class MonteCarlo(object):
 
         for player_cards in player_card_list:
             first_player = []
-            first_player.append(deck.pop(deck.index(player_cards[0])))
-            first_player.append(deck.pop(deck.index(player_cards[1])))
+            first_player.append(player_cards[0])
+            first_player.append(player_cards[1])
             Players.append(first_player)
+
+            try: deck.pop(deck.index(player_cards[0]))
+            except: pass
+            try: deck.pop(deck.index(player_cards[1]))
+            except: pass
 
             knownPlayers += 1  # my own cards are known
 
@@ -339,13 +346,13 @@ class MonteCarlo(object):
             plr = []
             passes += 1
 
-            random_card1 = np.random.random_integers(0, len(deck) - 1)
+            random_card1 = np.random.randint(0, len(deck))
             plr.append(deck.pop(random_card1))
-            random_card2 = np.random.random_integers(0, len(deck) - 1)
+            random_card2 = np.random.randint(0, len(deck))
             plr.append(deck.pop(random_card2))
 
             # check for ranges
-            crd1, crd2 = self.get_two_short_notation(plr)
+            crd1, crd2 = self.get_two_short_notation(plr, add_O_to_pairs=False)
             if not (crd1 in opponent_allowed_cards or crd2 in opponent_allowed_cards):
                 deck.append(plr[0])
                 deck.append(plr[1])
@@ -367,7 +374,7 @@ class MonteCarlo(object):
 
         if type(opponent_range) == float or type(opponent_range) == int:
             opponent_allowed_cards = self.get_opponent_allowed_cards_list(opponent_range)
-            logger.info('Preflop reverse tables for ranges: NO')
+            self.logger.info('Preflop reverse tables for ranges: NO')
         elif type(opponent_range == set):
             logger.info('Preflop reverse tables for ranges: YES')
             opponent_allowed_cards = opponent_range
@@ -551,23 +558,23 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
 
 if __name__ == '__main__':
     Simulation = MonteCarlo()
-    import logging
-
     logger = logging.getLogger('Montecarlo main')
+    logger.setLevel(logging.DEBUG)
     # my_cards = [['2D', 'AD']]
     # cards_on_table = ['3S', 'AH', '8D']
-    my_cards = [['3H', '3S']]
-    cards_on_table = ['8S', '4S', 'QH', '8C', '4H']
-    players = 2
+    my_cards = [['KS', 'KC']]
+    cards_on_table = ['3D', '9H', 'AS', '7S', 'QH']
+    players = 3
     secs = 5
     maxruns = 10000
     start_time = time.time()
     timeout = start_time + secs
     ghost_cards = ''
     Simulation.run_montecarlo(logging, my_cards, cards_on_table, player_amount=players, ui=None, maxRuns=maxruns,
-                              ghost_cards=ghost_cards, timeout=timeout, opponent_range={'JJ'})
+                              ghost_cards=ghost_cards, timeout=timeout, opponent_range=0.25)
     print("--- %s seconds ---" % (time.time() - start_time))
     print("Runs: " + str(Simulation.runs))
     print("Passes: " + str(Simulation.passes))
     equity = Simulation.equity  # considering draws as wins
     print("Equity: " + str(equity))
+

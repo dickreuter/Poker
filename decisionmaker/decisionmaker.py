@@ -152,14 +152,18 @@ class Decision(DecisionBase):
 
         if not t.other_player_has_initiative and not t.checkButton:
             opponent_raised_without_initiative = 1
-            self.logger.info("Other player has no initiative and there is no check button. Activate increased required equity for betting")
+            self.logger.info(
+                "Other player has no initiative and there is no check button. Activate increased required equity for betting")
         else:
             opponent_raised_without_initiative = 0
             self.logger.debug("Increase required equity for betting not acviated")
 
-        opponent_raised_without_initiative_flop = 0.1 * p.selected_strategy['opponent_raised_without_initiative_flop']*opponent_raised_without_initiative
-        opponent_raised_without_initiative_turn = 0.1 * p.selected_strategy['opponent_raised_without_initiative_turn']*opponent_raised_without_initiative
-        opponent_raised_without_initiative_river = 0.1 * p.selected_strategy['opponent_raised_without_initiative_river']*opponent_raised_without_initiative
+        opponent_raised_without_initiative_flop = 0.1 * p.selected_strategy[
+            'opponent_raised_without_initiative_flop'] * opponent_raised_without_initiative
+        opponent_raised_without_initiative_turn = 0.1 * p.selected_strategy[
+            'opponent_raised_without_initiative_turn'] * opponent_raised_without_initiative
+        opponent_raised_without_initiative_river = 0.1 * p.selected_strategy[
+            'opponent_raised_without_initiative_river'] * opponent_raised_without_initiative
 
         if t.gameStage == GameStages.PreFlop.value:
             t.power2 = float(p.selected_strategy['PreFlopBetPower']) + secondRoundAdjustmentPowerIncrease
@@ -305,7 +309,7 @@ class Decision(DecisionBase):
     def betting(self, t, p, h):
         # preflop
         if t.gameStage == GameStages.PreFlop.value:
-            if (self.finalBetLimit >= float(t.totalPotValue) / 2):
+            if self.finalBetLimit >= float(t.totalPotValue) / 2:
                 self.logger.info("Bet3 condition met")
                 self.decision = DecisionTypes.bet3
 
@@ -326,13 +330,16 @@ class Decision(DecisionBase):
                     self.logger.info("Bet1 condition met")
                 # bet2
                 if self.finalBetLimit >= (t.minBet + t.bigBlind * float(p.selected_strategy['BetPlusInc'])) and ((
-                                                                                                                                 t.gameStage == GameStages.Turn.value and t.totalPotValue > t.bigBlind * 3) or \
-                                                                                                                             t.gameStage == GameStages.River.value) and \
+                     t.gameStage == GameStages.Turn.value and t.totalPotValue > t.bigBlind * 3) or
+                     t.gameStage == GameStages.River.value) and \
                         (not t.checkButton or not t.other_player_has_initiative or p.selected_strategy[
                                 stage + '_betting_condidion_1'] == 0):
                     self.decision = DecisionTypes.bet2
                     self.logger.info("Bet2 condition met")
                 # bet3
+                self.logger.debug(
+                    "Checking for betting half pot: " + str(float(t.totalPotValue) / 2) + "needs be be below or equal " + str(
+                        self.finalBetLimit))
                 if (self.finalBetLimit >= float(t.totalPotValue) / 2) \
                         and (t.minBet < float(t.totalPotValue) / 2) and \
                         (not t.checkButton or not t.other_player_has_initiative or p.selected_strategy[
