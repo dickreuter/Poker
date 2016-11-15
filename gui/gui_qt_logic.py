@@ -440,6 +440,8 @@ class UIActionAndSignals(QObject):
             idx = i
         self.ui_editor.pokerSite.setCurrentIndex(idx)
 
+        self.ui_editor.use_relative_equity.setChecked(self.p.selected_strategy['use_relative_equity'])
+        self.ui_editor.use_pot_multiples.setChecked(self.p.selected_strategy['use_pot_multiples'])
         self.ui_editor.opponent_raised_without_initiative_flop.setChecked(self.p.selected_strategy['opponent_raised_without_initiative_flop'])
         self.ui_editor.opponent_raised_without_initiative_turn.setChecked(self.p.selected_strategy['opponent_raised_without_initiative_turn'])
         self.ui_editor.opponent_raised_without_initiative_river.setChecked(self.p.selected_strategy['opponent_raised_without_initiative_river'])
@@ -518,6 +520,9 @@ class UIActionAndSignals(QObject):
         self.strategy_dict['pokerSite'] = self.ui_editor.pokerSite.currentText()
         self.strategy_dict['computername'] = os.environ['COMPUTERNAME']
 
+        self.strategy_dict['use_relative_equity'] = int(self.ui_editor.use_relative_equity.isChecked())
+        self.strategy_dict['use_pot_multiples'] = int(self.ui_editor.use_pot_multiples.isChecked())
+
         self.strategy_dict['opponent_raised_without_initiative_flop'] = int(self.ui_editor.opponent_raised_without_initiative_flop.isChecked())
         self.strategy_dict['opponent_raised_without_initiative_turn'] = int(self.ui_editor.opponent_raised_without_initiative_turn.isChecked())
         self.strategy_dict['opponent_raised_without_initiative_river'] = int(self.ui_editor.opponent_raised_without_initiative_river.isChecked())
@@ -528,6 +533,7 @@ class UIActionAndSignals(QObject):
         self.strategy_dict['gather_player_names'] = int(self.ui_editor.gather_player_names.isChecked())
 
         self.strategy_dict['collusion'] = int(self.ui_editor.collusion.isChecked())
+
         self.strategy_dict['flop_betting_condidion_1'] = int(self.ui_editor.flop_betting_condidion_1.isChecked())
         self.strategy_dict['turn_betting_condidion_1'] = int(self.ui_editor.turn_betting_condidion_1.isChecked())
         self.strategy_dict['river_betting_condidion_1'] = int(self.ui_editor.river_betting_condidion_1.isChecked())

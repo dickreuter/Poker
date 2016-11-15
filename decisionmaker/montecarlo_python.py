@@ -11,6 +11,7 @@ import numpy as np
 from collections import Counter
 from copy import copy
 
+
 class MonteCarlo(object):
     def __init__(self):
         self.logger = logging.getLogger('montecarlo')
@@ -321,47 +322,66 @@ class MonteCarlo(object):
 
     def distribute_cards_to_players(self, deck, player_amount, player_card_list, table_card_list,
                                     opponent_allowed_cards, passes):
-        Players = []
+
+        # rmove table cards from deck
         CardsOnTable = []
-        knownPlayers = 0  # for potential collusion if more than one bot is running on the same table
-
-        for player_cards in player_card_list:
-            first_player = []
-            first_player.append(player_cards[0])
-            first_player.append(player_cards[1])
-            Players.append(first_player)
-
-            try: deck.pop(deck.index(player_cards[0]))
-            except: pass
-            try: deck.pop(deck.index(player_cards[1]))
-            except: pass
-
-            knownPlayers += 1  # my own cards are known
-
         for c in table_card_list:
             CardsOnTable.append(deck.pop(deck.index(c)))  # remove cards that are on the table from the deck
 
-        n = 0
-        while True:
-            plr = []
-            passes += 1
+        all_players = []
+        knownPlayers = 0  # for potential collusion if more than one bot is running on the same table
 
-            random_card1 = np.random.randint(0, len(deck))
-            plr.append(deck.pop(random_card1))
-            random_card2 = np.random.randint(0, len(deck))
-            plr.append(deck.pop(random_card2))
+        for player_cards in player_card_list:
+            known_player = []
 
-            # check for ranges
-            crd1, crd2 = self.get_two_short_notation(plr, add_O_to_pairs=False)
-            if not (crd1 in opponent_allowed_cards or crd2 in opponent_allowed_cards):
-                deck.append(plr[0])
-                deck.append(plr[1])
-            else:
-                Players.append(plr)
-                n += 1
-            if n == player_amount - knownPlayers or knownPlayers >= 2: break
+            if type(player_cards) == set:
+                while True:
+                    passes += 1
+                    random_card1 = np.random.randint(0, len(deck))
+                    random_card2 = np.random.randint(0, len(deck) - 1)
+                    if not random_card1 == random_card2:
+                        crd1, crd2 = self.get_two_short_notation([deck[random_card1], deck[random_card2]],
+                                                                 add_O_to_pairs=False)
+                        if crd1 in player_cards or crd2 in player_cards:
+                            break
+                player_cards = []
+                player_cards.append(deck[random_card1])
+                player_cards.append(deck[random_card2])
 
-        return Players, deck, passes
+            known_player.append(player_cards[0])
+            known_player.append(player_cards[1])
+            all_players.append(known_player)
+
+            try:
+                deck.pop(deck.index(player_cards[0]))
+            except:
+                pass
+            try:
+                deck.pop(deck.index(player_cards[1]))
+            except:
+                pass
+
+            knownPlayers += 1  # my own cards are known
+
+        for _ in range(player_amount - knownPlayers):
+            random_player = []
+            while True:
+                passes += 1
+                random_card1 = np.random.randint(0, len(deck))
+                random_card2 = np.random.randint(0, len(deck) - 1)
+
+                if not random_card1 == random_card2:
+                    crd1, crd2 = self.get_two_short_notation([deck[random_card1], deck[random_card2]],
+                                                             add_O_to_pairs=False)
+                    if crd1 in opponent_allowed_cards or crd2 in opponent_allowed_cards:
+                        break
+
+            random_player.append(deck.pop(random_card1))
+            random_player.append(deck.pop(random_card2))
+
+            all_players.append(random_player)
+
+        return all_players, deck, passes
 
     def distribute_cards_to_table(self, Deck, table_card_list):
         remaningRandoms = 5 - len(table_card_list)
@@ -391,8 +411,8 @@ class MonteCarlo(object):
         for m in range(maxRuns):
             runs += 1
             Deck = copy(OriginalDeck)
-            PlayerCardList = original_player_card_list[:]
-            TableCardsList = original_table_card_list[:]
+            PlayerCardList = copy(original_player_card_list)
+            TableCardsList = copy(original_table_card_list)
             Players, Deck, passes = self.distribute_cards_to_players(Deck, player_amount, PlayerCardList,
                                                                      TableCardsList,
                                                                      opponent_allowed_cards, passes)
@@ -523,19 +543,37 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
         except Exception as e:
             logger.error("Opponent reverse table failed: " + str(e))
 
-    ui_action_and_signals.signal_status.emit("Running Monte Carlo: " + str(maxRuns))
+    ui_action_and_signals.signal_status.emit("Running range Monte Carlo: " + str(maxRuns))
     logger.debug("Running Monte Carlo")
     t.montecarlo_timeout = float(config['montecarlo_timeout'])
     timeout = t.mt_tm + t.montecarlo_timeout
-
     logger.debug("Used opponent range for montecarlo: " + str(opponent_range))
     logger.debug("maxRuns: " + str(maxRuns))
     logger.debug("Player amount: " + str(t.assumedPlayers))
 
-    m.run_montecarlo(logger, t.PlayerCardList_and_others, t.cardsOnTable, int(t.assumedPlayers), ui, maxRuns=maxRuns,
+    # calculate range equity
+    if t.gameStage != 'PreFlop':
+        if p.selected_strategy['preflop_override']:
+            t.player_card_range_list_and_others = t.PlayerCardList_and_others[:]
+            t.player_card_range_list_and_others[0] = preflop_state.preflop_bot_ranges
+
+            t.range_equity, _ = m.run_montecarlo(logger, t.player_card_range_list_and_others, t.cardsOnTable,
+                                              int(t.assumedPlayers), ui,
+                                              maxRuns=maxRuns,
+                                              ghost_cards=ghost_cards, timeout=timeout, opponent_range=opponent_range)
+            t.range_equity = np.round(t.range_equity, 2)
+            logger.debug("Range montecarlo completed successfully with runs: " + str(m.runs))
+            logger.debug("Range equity: " + str(t.range_equity))
+
+    ui_action_and_signals.signal_progressbar_increase.emit(10)
+    ui_action_and_signals.signal_status.emit("Running card Monte Carlo: " + str(maxRuns))
+
+    # run montecarlo for absolute equity
+    t.abs_equity, _ = m.run_montecarlo(logger, t.PlayerCardList_and_others, t.cardsOnTable, int(t.assumedPlayers), ui, maxRuns=maxRuns,
                      ghost_cards=ghost_cards, timeout=timeout, opponent_range=opponent_range)
     ui_action_and_signals.signal_status.emit("Monte Carlo completed successfully")
-    logger.debug("Monte Carlo completed successfully with runs: " + str(m.runs))
+    logger.debug("Cards Monte Carlo completed successfully with runs: " + str(m.runs))
+    logger.info("Absolute equity (no ranges) " + str(t.abs_equity))
 
     if t.gameStage == "PreFlop":
         crd1, crd2 = m.get_two_short_notation(t.mycards)
@@ -543,16 +581,24 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
             m.equity = m.preflop_equities[crd1]
         elif crd2 in m.preflop_equities:
             m.equity = m.preflop_equities[crd2]
-        elif crd1+'O' in m.preflop_equities:
-            m.equity = m.preflop_equities[crd1+'O']
+        elif crd1 + 'O' in m.preflop_equities:
+            m.equity = m.preflop_equities[crd1 + 'O']
         else:
             logger.warning("Preflop equity not found in lookup table: " + str(crd1))
+        t.abs_equity=m.equity
 
-    t.equity = np.round(m.equity, 3)
+    t.abs_equity = np.round(t.abs_equity, 2)
     t.winnerCardTypeList = m.winnerCardTypeList
 
-    ui_action_and_signals.signal_progressbar_increase.emit(30)
+    ui_action_and_signals.signal_progressbar_increase.emit(15)
     m.opponent_range = opponent_range
+
+    if t.gameStage != 'PreFlop' and p.selected_strategy['use_relative_equity']:
+        t.relative_equity = np.round(t.abs_equity / t.range_equity / 2, 2)
+    else:
+        t.range_equity = ''
+        t.relative_equity = ''
+        logger.info("Relative equity (equity/range equity/2): " + str(t.relative_equity))
     return m
 
 
@@ -563,6 +609,7 @@ if __name__ == '__main__':
     # my_cards = [['2D', 'AD']]
     # cards_on_table = ['3S', 'AH', '8D']
     my_cards = [['KS', 'KC']]
+    my_cards = [{'AKO', 'AA'}]
     cards_on_table = ['3D', '9H', 'AS', '7S', 'QH']
     players = 3
     secs = 5
@@ -577,4 +624,3 @@ if __name__ == '__main__':
     print("Passes: " + str(Simulation.passes))
     equity = Simulation.equity  # considering draws as wins
     print("Equity: " + str(equity))
-

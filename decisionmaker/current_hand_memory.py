@@ -38,16 +38,20 @@ class CurrentHandPreflopState:
         self.preflop_caller_positions = [] #abs
         self.preflop_raiser_positions = [] #abs
         self.range_column_name=''
+        self.preflop_sheet_name = None
+        self.preflop_bot_ranges = None
 
     def reset(self):
         self.__init__()
 
-    def update_values(self, t, decision_str, h):
+    def update_values(self, t, decision_str, h, d):
         self.reset()
         self.other_players = deepcopy(t.other_players)
 
         self.bot_preflop_position_utg = t.position_utg_plus
         self.bot_preflop_decision = decision_str
+        self.preflop_sheet_name = t.preflop_sheet_name
+        self.preflop_bot_ranges = d.preflop_bot_ranges
 
         self.rounds = h.round_number
         if not np.isnan(t.first_raiser_utg):

@@ -295,6 +295,13 @@ class TestMonteCarlo(unittest.TestCase):
         my_cards = [['KS', 'KC']]
         cards_on_table = ['3D', '9H', 'AS', '7S', 'QH']
         opponent_range=0.25
-        expected_results = 32.8
+        expected_results = 12.8
+        players = 3
+        testRun(Simulation, my_cards, cards_on_table, players, expected_results, opponent_range=opponent_range)
+
+        my_cards = [{'AKO','AA'}]
+        cards_on_table = ['3D', '9H', 'AS', '7S', 'QH']
+        opponent_range=0.25
+        expected_results = 77.8
         players = 3
         testRun(Simulation, my_cards, cards_on_table, players, expected_results, opponent_range=opponent_range)

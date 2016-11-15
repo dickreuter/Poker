@@ -74,6 +74,8 @@ class StrategyHandler(object):
         return l
 
     def check_defaults(self):
+        if not 'use_relative_equity' in self.selected_strategy: self.selected_strategy['use_relative_equity'] = 0
+        if not 'use_pot_multiples' in self.selected_strategy: self.selected_strategy['use_pot_multiples'] = 0
         if not 'opponent_raised_without_initiative_flop' in self.selected_strategy: self.selected_strategy['opponent_raised_without_initiative_flop'] = 1
         if not 'opponent_raised_without_initiative_turn' in self.selected_strategy: self.selected_strategy['opponent_raised_without_initiative_turn'] = 1
         if not 'opponent_raised_without_initiative_river' in self.selected_strategy: self.selected_strategy['opponent_raised_without_initiative_river'] = 1
@@ -114,7 +116,7 @@ class StrategyHandler(object):
             'pre_flop_equity_increase_if_bet'] = 0.20
         if not 'pre_flop_equity_increase_if_call' in self.selected_strategy: self.selected_strategy[
             'pre_flop_equity_increase_if_call'] = 0.10
-        if not 'preflop_override' in self.selected_strategy: self.selected_strategy['preflop_override'] = 0
+        if not 'preflop_override' in self.selected_strategy: self.selected_strategy['preflop_override'] = 1
         if not 'gather_player_names' in self.selected_strategy: self.selected_strategy['gather_player_names'] = 0
         if not 'range_utg0' in self.selected_strategy: self.selected_strategy['range_utg0'] = 0.2
         if not 'range_utg1' in self.selected_strategy: self.selected_strategy['range_utg1'] = 0.2

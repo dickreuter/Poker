@@ -39,6 +39,14 @@ class Decision(DecisionBase):
 
         t.bigBlindMultiplier = t.bigBlind / 0.02
 
+        if t.gameStage != 'PreFlop' and p.selected_strategy['use_relative_equity']:
+            self.logger.info("Replacing equity with relative equity")
+            t.equity = t.relative_equity
+        else:
+            t.equity = t.abs_equity
+            self.logger.info("Use absolute equity!")
+
+
         out_multiplier = p.selected_strategy['out_multiplier']
         oc = Outs_Calculator()
         if 3 <= len(t.cardsOnTable) <= 4:  #
@@ -252,6 +260,7 @@ class Decision(DecisionBase):
             sheet['Hand'] = sheet['Hand'].apply(lambda x: str(x).upper())
 
             handlist = set(sheet['Hand'].tolist())
+            self.preflop_bot_ranges = handlist
 
             found_card = ''
 
@@ -330,15 +339,16 @@ class Decision(DecisionBase):
                     self.logger.info("Bet1 condition met")
                 # bet2
                 if self.finalBetLimit >= (t.minBet + t.bigBlind * float(p.selected_strategy['BetPlusInc'])) and ((
-                     t.gameStage == GameStages.Turn.value and t.totalPotValue > t.bigBlind * 3) or
-                     t.gameStage == GameStages.River.value) and \
+                                                                                                                                 t.gameStage == GameStages.Turn.value and t.totalPotValue > t.bigBlind * 3) or
+                                                                                                                         t.gameStage == GameStages.River.value) and \
                         (not t.checkButton or not t.other_player_has_initiative or p.selected_strategy[
                                 stage + '_betting_condidion_1'] == 0):
                     self.decision = DecisionTypes.bet2
                     self.logger.info("Bet2 condition met")
                 # bet3
                 self.logger.debug(
-                    "Checking for betting half pot: " + str(float(t.totalPotValue) / 2) + "needs be be below or equal " + str(
+                    "Checking for betting half pot: " + str(
+                        float(t.totalPotValue) / 2) + "needs be be below or equal " + str(
                         self.finalBetLimit))
                 if (self.finalBetLimit >= float(t.totalPotValue) / 2) \
                         and (t.minBet < float(t.totalPotValue) / 2) and \

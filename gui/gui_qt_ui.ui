@@ -525,7 +525,19 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="opponent_range">
+       <widget class="QLabel" name="range_equity">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="relative_equity">
         <property name="font">
          <font>
           <pointsize>10</pointsize>
@@ -538,6 +550,18 @@
       </item>
       <item>
        <widget class="QLabel" name="sheetname">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="opponent_range">
         <property name="font">
          <font>
           <pointsize>10</pointsize>
@@ -632,19 +656,31 @@
          </font>
         </property>
         <property name="text">
-         <string>Equity</string>
+         <string>Bot absolute equity</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label_13">
+       <widget class="QLabel" name="label_19">
         <property name="font">
          <font>
           <pointsize>10</pointsize>
          </font>
         </property>
         <property name="text">
-         <string>Range</string>
+         <string>Bot range equity</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_20">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Bot relative equity</string>
         </property>
        </widget>
       </item>
@@ -656,7 +692,19 @@
          </font>
         </property>
         <property name="text">
-         <string>Preflop sheet</string>
+         <string>Bot preflop sheet</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_13">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Opponent range</string>
         </property>
        </widget>
       </item>
@@ -668,7 +716,7 @@
          </font>
         </property>
         <property name="text">
-         <string>My cards</string>
+         <string>Bot cards</string>
         </property>
        </widget>
       </item>
