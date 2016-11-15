@@ -394,9 +394,9 @@ class MonteCarlo(object):
 
         if type(opponent_range) == float or type(opponent_range) == int:
             opponent_allowed_cards = self.get_opponent_allowed_cards_list(opponent_range)
-            self.logger.info('Preflop reverse tables for ranges: NO')
+            self.logger.info('Preflop reverse tables for ranges for opponent: NO')
         elif type(opponent_range == set):
-            logger.info('Preflop reverse tables for ranges: YES')
+            logger.info('Preflop reverse tables for ranges for opponent: YES')
             opponent_allowed_cards = opponent_range
 
         winnerCardTypeList = []
@@ -563,7 +563,7 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
                                               ghost_cards=ghost_cards, timeout=timeout, opponent_range=opponent_range)
             t.range_equity = np.round(t.range_equity, 2)
             logger.debug("Range montecarlo completed successfully with runs: " + str(m.runs))
-            logger.debug("Range equity: " + str(t.range_equity))
+            logger.debug("Range equity (range for bot): " + str(t.range_equity))
 
     ui_action_and_signals.signal_progressbar_increase.emit(10)
     ui_action_and_signals.signal_status.emit("Running card Monte Carlo: " + str(maxRuns))
@@ -573,7 +573,7 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
                      ghost_cards=ghost_cards, timeout=timeout, opponent_range=opponent_range)
     ui_action_and_signals.signal_status.emit("Monte Carlo completed successfully")
     logger.debug("Cards Monte Carlo completed successfully with runs: " + str(m.runs))
-    logger.info("Absolute equity (no ranges) " + str(t.abs_equity))
+    logger.info("Absolute equity (no ranges for bot) " + str(t.abs_equity))
 
     if t.gameStage == "PreFlop":
         crd1, crd2 = m.get_two_short_notation(t.mycards)
@@ -593,12 +593,12 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
     ui_action_and_signals.signal_progressbar_increase.emit(15)
     m.opponent_range = opponent_range
 
-    if t.gameStage != 'PreFlop' and p.selected_strategy['use_relative_equity']:
+    if t.gameStage != 'PreFlop' and p.selected_strategy['preflop_override']:
         t.relative_equity = np.round(t.abs_equity / t.range_equity / 2, 2)
+        logger.info("Relative equity (equity/range equity/2): " + str(t.relative_equity))
     else:
         t.range_equity = ''
         t.relative_equity = ''
-        logger.info("Relative equity (equity/range equity/2): " + str(t.relative_equity))
     return m
 
 

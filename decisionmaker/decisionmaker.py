@@ -44,7 +44,7 @@ class Decision(DecisionBase):
             t.equity = t.relative_equity
         else:
             t.equity = t.abs_equity
-            self.logger.info("Use absolute equity!")
+            self.logger.info("Use absolute equity")
 
 
         out_multiplier = p.selected_strategy['out_multiplier']

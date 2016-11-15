@@ -18,7 +18,7 @@ from decisionmaker.current_hand_memory import History, CurrentHandPreflopState
 from decisionmaker.montecarlo_python import run_montecarlo_wrapper
 from decisionmaker.decisionmaker import Decision
 
-version = 1.957
+version = 1.958
 
 
 class ThreadManager(threading.Thread):
@@ -50,6 +50,9 @@ class ThreadManager(threading.Thread):
             range = str(m.opponent_range)
         if range == '1': range = 'All cards'
 
+        if t.gameStage != 'PreFlop' and p.selected_strategy['preflop_override']:
+            sheet_name=preflop_state.preflop_sheet_name
+
         gui_signals.signal_label_number_update.emit('equity', str(np.round(t.abs_equity * 100, 2)) + "%")
         gui_signals.signal_label_number_update.emit('required_minbet', str(t.currentBetValue))
         gui_signals.signal_label_number_update.emit('required_mincall', str(t.minCall))
@@ -70,7 +73,7 @@ class ThreadManager(threading.Thread):
         gui_signals.signal_label_number_update.emit('outs', str(d.outs))
         gui_signals.signal_label_number_update.emit('initiative', str(t.other_player_has_initiative))
 
-        if t.gameStage != 'PreFlop' and p.selected_strategy['use_relative_equity']:
+        if t.gameStage != 'PreFlop' and p.selected_strategy['preflop_override']:
             gui_signals.signal_label_number_update.emit('relative_equity', str(np.round(t.relative_equity,2) * 100) + "%")
             gui_signals.signal_label_number_update.emit('range_equity', str(np.round(t.range_equity,2) * 100) + "%")
         else:
