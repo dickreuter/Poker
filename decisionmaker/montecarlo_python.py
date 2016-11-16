@@ -320,13 +320,13 @@ class MonteCarlo(object):
         [Deck.append(x + y) for x in values for y in suites]
         return Deck
 
-    def distribute_cards_to_players(self, deck, player_amount, player_card_list, table_card_list,
+    def distribute_cards_to_players(self, deck, player_amount, player_card_list, known_table_cards,
                                     opponent_allowed_cards, passes):
 
         # rmove table cards from deck
         CardsOnTable = []
-        for c in table_card_list:
-            CardsOnTable.append(deck.pop(deck.index(c)))  # remove cards that are on the table from the deck
+        for known_table_card in known_table_cards:
+            CardsOnTable.append(deck.pop(deck.index(known_table_card)))  # remove cards that are on the table from the deck
 
         all_players = []
         knownPlayers = 0  # for potential collusion if more than one bot is running on the same table
