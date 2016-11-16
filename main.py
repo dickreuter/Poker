@@ -75,7 +75,7 @@ class ThreadManager(threading.Thread):
         gui_signals.signal_label_number_update.emit('round_pot', str(np.round(t.round_pot_value,2)))
         gui_signals.signal_label_number_update.emit('pot_multiple', str(np.round(d.pot_multiple,2)))
 
-        if t.gameStage != 'PreFlop' and p.selected_strategy['preflop_override']:
+        if t.gameStage != 'PreFlop' and p.selected_strategy['use_relative_equity']:
             gui_signals.signal_label_number_update.emit('relative_equity', str(np.round(t.relative_equity,2) * 100) + "%")
             gui_signals.signal_label_number_update.emit('range_equity', str(np.round(t.range_equity,2) * 100) + "%")
         else:

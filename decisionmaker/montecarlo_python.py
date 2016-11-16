@@ -552,7 +552,7 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
     logger.debug("Player amount: " + str(t.assumedPlayers))
 
     # calculate range equity
-    if t.gameStage != 'PreFlop':
+    if t.gameStage != 'PreFlop' and p.selected_strategy['use_relative_equity']:
         if p.selected_strategy['preflop_override'] and preflop_state.preflop_bot_ranges!= None:
             t.player_card_range_list_and_others = t.PlayerCardList_and_others[:]
             t.player_card_range_list_and_others[0] = preflop_state.preflop_bot_ranges
@@ -597,7 +597,7 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
     ui_action_and_signals.signal_progressbar_increase.emit(15)
     m.opponent_range = opponent_range
 
-    if t.gameStage != 'PreFlop' and p.selected_strategy['preflop_override']:
+    if t.gameStage != 'PreFlop' and p.selected_strategy['use_relative_equity']:
         t.relative_equity = np.round(t.abs_equity / t.range_equity / 2, 2)
         logger.info("Relative equity (equity/range equity/2): " + str(t.relative_equity))
     else:
