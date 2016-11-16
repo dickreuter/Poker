@@ -372,7 +372,7 @@ class TableScreenBased(Table):
                 method = func_dict[6]
                 value = self.get_ocr_float(pil_image, str(inspect.stack()[0][3]), force_method=method)
                 try:
-                    if not str(value)=='':
+                    if not str(value) == '':
                         value = re.findall(r'\d{1}\.\d{1,2}', str(value))[0]
                 except:
                     self.logger.warning("Player pot regex problem: " + str(value))
@@ -503,17 +503,54 @@ class TableScreenBased(Table):
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
 
-        self.totalPotValue = self.get_ocr_float(pil_image, 'TotalPotValue')
+        value = self.get_ocr_float(pil_image, 'TotalPotValue', force_method=1)
 
-        if self.totalPotValue == '': self.totalPotValue = 0
-        if self.totalPotValue < 0.01:
-            self.logger.info("unable to get pot value")
+        try:
+            if not str(value) == '':
+                value = float(re.findall(r'\d{1,2}\.\d{1,2}', str(value))[0])
+        except:
+            self.logger.warning("Total pot regex problem: " + str(value))
+            value = ''
+            self.logger.warning("unable to get pot value")
             self.gui_signals.signal_status.emit("Unable to get pot value")
-            time.sleep(1)
             pil_image.save("pics/ErrPotValue.png")
             self.totalPotValue = h.previousPot
 
+        if value == '':
+            self.totalPotValue = 0
+        else:
+            self.totalPotValue = value
+
         self.logger.info("Final Total Pot Value: " + str(self.totalPotValue))
+        return True
+
+    def get_round_pot_value(self, h):
+        func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        self.gui_signals.signal_progressbar_increase.emit(2)
+        self.gui_signals.signal_status.emit("Get round pot value")
+        self.logger.debug("Get round pot value")
+        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
+                                    self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
+
+        value = self.get_ocr_float(pil_image, 'TotalPotValue', force_method=1)
+
+        try:
+            if not str(value) == '':
+                value = float(re.findall(r'\d{1,2}\.\d{1,2}', str(value))[0])
+        except:
+            self.logger.warning("Round pot regex problem: " + str(value))
+            value = ''
+            self.logger.warning("unable to get round pot value")
+            self.gui_signals.signal_status.emit("Unable to get round pot value")
+            pil_image.save("pics/ErrRoundPotValue.png")
+            self.round_pot_value = h.previous_round_pot_value
+
+        if value == '':
+            self.round_pot_value = 0
+        else:
+            self.round_pot_value = value
+
+        self.logger.info("Final round pot Value: " + str(self.round_pot_value))
         return True
 
     def get_my_funds(self, h, p):
@@ -694,7 +731,7 @@ class TableScreenBased(Table):
             self.game_logger.upload_collusion_data(h.game_number_on_screen, self.mycards, p, self.gameStage)
         return True
 
-    def get_game_number_on_screen(self,h):
+    def get_game_number_on_screen(self, h):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
@@ -711,7 +748,7 @@ class TableScreenBased(Table):
             h.game_number_on_screen = pytesseract.image_to_string(img_mod, None, False, "-psm 6")
         except:
             self.logger.warning("Failed to get game number from screen")
-            h.game_number_on_screen=''
+            h.game_number_on_screen = ''
 
         return True
 

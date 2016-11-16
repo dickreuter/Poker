@@ -18,7 +18,7 @@ from decisionmaker.current_hand_memory import History, CurrentHandPreflopState
 from decisionmaker.montecarlo_python import run_montecarlo_wrapper
 from decisionmaker.decisionmaker import Decision
 
-version = 1.958
+version = 1.96
 
 
 class ThreadManager(threading.Thread):
@@ -139,6 +139,7 @@ class ThreadManager(threading.Thread):
                         t.get_other_player_funds(p) and \
                         t.get_other_player_pots() and \
                         t.get_total_pot_value(h) and \
+                        t.get_round_pot_value(h) and \
                         t.check_for_checkbutton() and \
                         t.get_other_player_status(p, h) and \
                         t.check_for_call() and \
@@ -160,7 +161,7 @@ class ThreadManager(threading.Thread):
                     "Equity: " + str(t.equity * 100) + "% -> " + str(int(t.assumedPlayers)) + " (" + str(
                         int(t.other_active_players)) + "-" + str(int(t.playersAhead)) + "+1) Plr")
                 self.logger.info("Final Call Limit: " + str(d.finalCallLimit) + " --> " + str(t.minCall))
-                self.logger.info("Final Bet Limit: " + str(d.finalBetLimit) + " --> " + str(t.currentBetValue))
+                self.logger.info("Final Bet Limit: " + str(d.finalBetLimit) + " --> " + str(t.minBet))
                 self.logger.info(
                     "Pot size: " + str((t.totalPotValue)) + " -> Zero EV Call: " + str(round(d.maxCallEV, 2)))
                 self.logger.info("+++++++++++++++++++++++ Decision: " + str(d.decision) + "+++++++++++++++++++++++")
@@ -195,6 +196,7 @@ class ThreadManager(threading.Thread):
                 h.first_caller = t.first_caller
                 h.previous_decision = d.decision
                 h.lastRoundGameID = h.GameID
+                h.previous_round_pot_value=t.round_pot_value
                 h.last_round_bluff = False if t.currentBluff == 0 else True
                 if t.gameStage == 'PreFlop':
                     preflop_state.update_values(t, d.decision, h, d)

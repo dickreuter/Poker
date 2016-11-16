@@ -39,13 +39,49 @@ class Decision(DecisionBase):
 
         t.bigBlindMultiplier = t.bigBlind / 0.02
 
+        if p.selected_strategy['use_pot_multiples']:
+            pots = [player['pot'] for player in t.other_players if type(player['pot']) != str]
+            try:
+                self.max_player_pot = max(pots)
+            except:
+                self.max_player_pot = 0
+
+            self.pot_multiple = self.max_player_pot / t.round_pot_value
+            self.logger.info(
+                "Using pot multiple: Replacing mincall and minbet with highest player pot / round pot: " + str(
+                    self.pot_multiple))
+            if self.pot_multiple == '':
+                self.pot_multiple = 0
+
+            t.minCall = self.pot_multiple
+            t.minBet = self.pot_multiple
+        else:
+            try:
+                t.minCall = float(t.currentCallValue)
+            except:
+                t.minCall = float(0.0)
+                if t.checkButton == False:
+                    self.logger.warning(
+                        "Failed to convert current Call value, saving error.png, deriving from bet value, result:")
+                    self.DeriveCallButtonFromBetButton = True
+                    t.minCall = np.round(float(t.get_current_bet_value(p)) / 2, 2)
+                    self.logger.info("mincall: " + str(t.minCall))
+                    # adjMinCall=minCall*c1*c2
+
+            try:
+                t.minBet = float(t.currentBetValue)
+                t.opponentBetIncreases = t.minBet - h.myLastBet
+            except:
+                self.logger.warning("Betvalue not recognised!")
+                t.minBet = float(100.0)
+                t.opponentBetIncreases = 0
+
         if t.gameStage != 'PreFlop' and p.selected_strategy['use_relative_equity']:
             self.logger.info("Replacing equity with relative equity")
             t.equity = t.relative_equity
         else:
             t.equity = t.abs_equity
             self.logger.info("Use absolute equity")
-
 
         out_multiplier = p.selected_strategy['out_multiplier']
         oc = Outs_Calculator()
@@ -93,25 +129,6 @@ class Decision(DecisionBase):
         self.logger.debug("Max call EV: " + str(self.maxCallEV))
 
         self.DeriveCallButtonFromBetButton = False
-        try:
-            t.minCall = float(t.currentCallValue)
-        except:
-            t.minCall = float(0.0)
-            if t.checkButton == False:
-                self.logger.warning(
-                    "Failed to convert current Call value, saving error.png, deriving from bet value, result:")
-                self.DeriveCallButtonFromBetButton = True
-                t.minCall = np.round(float(t.get_current_bet_value(p)) / 2, 2)
-                self.logger.info("mincall: " + str(t.minCall))
-                # adjMinCall=minCall*c1*c2
-
-        try:
-            t.minBet = float(t.currentBetValue)
-            t.opponentBetIncreases = t.minBet - h.myLastBet
-        except:
-            self.logger.warning("Betvalue not recognised!")
-            t.minBet = float(100.0)
-            t.opponentBetIncreases = 0
 
         self.potAdjustmentPreFlop = t.totalPotValue / t.bigBlind / 250 * float(
             p.selected_strategy['potAdjustmentPreFlop'])
@@ -302,10 +319,6 @@ class Decision(DecisionBase):
                 self.logger.info('Preflop folding, hands not found in preflop table')
 
             t.currentBluff = 0
-            try:
-                max_player_pot = max(t.PlayerPots) if max(t.PlayerPots) != '' else 0
-            except:
-                max_player_pot = 0
 
     def calling(self, t, p, h):
         if self.finalCallLimit < t.minCall:
@@ -348,7 +361,7 @@ class Decision(DecisionBase):
                 # bet3
                 self.logger.debug(
                     "Checking for betting half pot: " + str(
-                        float(t.totalPotValue) / 2) + "needs be be below or equal " + str(
+                        float(t.totalPotValue) / 2) + " needs be be below or equal " + str(
                         self.finalBetLimit))
                 if (self.finalBetLimit >= float(t.totalPotValue) / 2) \
                         and (t.minBet < float(t.totalPotValue) / 2) and \
@@ -472,7 +485,7 @@ class Decision(DecisionBase):
         if int(p.selected_strategy[
                    'minimum_bet_size']) == 4 and self.decision == DecisionTypes.bet3: self.decision = DecisionTypes.bet4
 
-        if t.checkButton == False and t.minCall == 0.0:
+        if t.checkButton == False and t.minCall == 0.0 and p.selected_strategy['use_pot_multiples'] == 0:
             self.ErrCallButton = True
             self.logger.error("Call button had no value")
         else:

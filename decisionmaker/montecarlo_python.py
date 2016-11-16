@@ -553,7 +553,7 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
 
     # calculate range equity
     if t.gameStage != 'PreFlop':
-        if p.selected_strategy['preflop_override']:
+        if p.selected_strategy['preflop_override'] and preflop_state.preflop_bot_ranges!= None:
             t.player_card_range_list_and_others = t.PlayerCardList_and_others[:]
             t.player_card_range_list_and_others[0] = preflop_state.preflop_bot_ranges
 
@@ -565,6 +565,10 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
             logger.debug("Range montecarlo completed successfully with runs: " + str(m.runs))
             logger.debug("Range equity (range for bot): " + str(t.range_equity))
 
+    if preflop_state.preflop_bot_ranges == None and p.selected_strategy['preflop_override'] and t.gameStage != 'PreFlop':
+        logger.error("No preflop range for bot, assuming 50% relative equity")
+        t.range_equity=.5
+
     ui_action_and_signals.signal_progressbar_increase.emit(10)
     ui_action_and_signals.signal_status.emit("Running card Monte Carlo: " + str(maxRuns))
 
@@ -573,7 +577,7 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
                      ghost_cards=ghost_cards, timeout=timeout, opponent_range=opponent_range)
     ui_action_and_signals.signal_status.emit("Monte Carlo completed successfully")
     logger.debug("Cards Monte Carlo completed successfully with runs: " + str(m.runs))
-    logger.info("Absolute equity (no ranges for bot) " + str(t.abs_equity))
+    logger.info("Absolute equity (no ranges for bot) " + str(np.round(t.abs_equity,2)))
 
     if t.gameStage == "PreFlop":
         crd1, crd2 = m.get_two_short_notation(t.mycards)

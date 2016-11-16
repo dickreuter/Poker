@@ -2464,9 +2464,6 @@
           <item row="3" column="2">
            <widget class="QLCDNumber" name="lcdNumber_71"/>
           </item>
-          <item row="1" column="2">
-           <widget class="QLCDNumber" name="lcdNumber_61"/>
-          </item>
           <item row="0" column="2">
            <widget class="QLCDNumber" name="lcdNumber_57"/>
           </item>
@@ -2514,7 +2511,7 @@
             <item>
              <widget class="QLabel" name="label_37">
               <property name="text">
-               <string>Maximum amount to call or bet at 100% equity in cents (corresponds to initial funds) or a multiple of pot. This is to limit the amount for all in calls.</string>
+               <string>Maximum amount to call or bet at 100% equity in cents (corresponds to initial funds) or a multiple of pot. This is to limit the amount for all in calls and bets. Unit is 1/100$ or 1/100 of pot</string>
               </property>
               <property name="wordWrap">
                <bool>true</bool>
@@ -2524,13 +2521,13 @@
             <item>
              <widget class="QCheckBox" name="use_pot_multiples">
               <property name="enabled">
-               <bool>false</bool>
+               <bool>true</bool>
               </property>
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This option has influence on a lot of things. The curves will no longer depend on the total amount of that call and bet button, but will instead be dependent on the highest bidder as a percentage of the pot.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
-               <string>Use multiples of pot sizes instead of absolute $ values</string>
+               <string>Use multiples of pot sizes instead of absolute $ values. If multipler is selected: for maximum of 1x pot select 100</string>
               </property>
              </widget>
             </item>
@@ -2540,7 +2537,7 @@
                <bool>false</bool>
               </property>
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When equity is 100% then this is the maximum amount whre the bot will call. In the graph it corresponds to the upper right corner where equity is 100%. I suggest you put slightly more than your initial funds. The parameter is also used as a verification in case your funds are not read correctly and the funds change to the previous game is higher than that value, it will not consider the game for the statistics.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When equity is 100% then this is the maximum amount whre the bot will call. In the graph it corresponds to the upper right corner where equity is 100%. I suggest you put slightly more than your initial funds. .&lt;/p&gt;&lt;p&gt;If you choose multiple of pot size in the select box, you can select, if you put the slider to 1000 it means that a maximum of 10x pot will be called or raised.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="minimum">
                <number>1</number>
@@ -2564,10 +2561,13 @@
             </item>
            </layout>
           </item>
+          <item row="2" column="2">
+           <widget class="QLCDNumber" name="lcdNumber_61"/>
+          </item>
          </layout>
          <zorder>lcdNumber_57</zorder>
-         <zorder>lcdNumber_61</zorder>
          <zorder>lcdNumber_71</zorder>
+         <zorder>lcdNumber_61</zorder>
         </widget>
        </item>
        <item row="1" column="0">
