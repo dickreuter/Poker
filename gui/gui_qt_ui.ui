@@ -361,6 +361,30 @@
        </widget>
       </item>
       <item>
+       <widget class="QLabel" name="round_pot">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="pot_multiple">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QLabel" name="calllimit">
         <property name="font">
          <font>
@@ -456,7 +480,7 @@
          </font>
         </property>
         <property name="text">
-         <string>Required minimum call</string>
+         <string>Required call (or pot multiple)</string>
         </property>
        </widget>
       </item>
@@ -468,7 +492,31 @@
          </font>
         </property>
         <property name="text">
-         <string>Required minimum bet</string>
+         <string>Required bet (or pot multiple)</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_21">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Pot of this round</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_23">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Player pot / rount pot multiple</string>
         </property>
        </widget>
       </item>

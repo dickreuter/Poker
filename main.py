@@ -18,7 +18,7 @@ from decisionmaker.current_hand_memory import History, CurrentHandPreflopState
 from decisionmaker.montecarlo_python import run_montecarlo_wrapper
 from decisionmaker.decisionmaker import Decision
 
-version = 1.962
+version = 1.963
 
 
 class ThreadManager(threading.Thread):
@@ -54,14 +54,14 @@ class ThreadManager(threading.Thread):
             sheet_name=preflop_state.preflop_sheet_name
 
         gui_signals.signal_label_number_update.emit('equity', str(np.round(t.abs_equity * 100, 2)) + "%")
-        gui_signals.signal_label_number_update.emit('required_minbet', str(t.currentBetValue))
-        gui_signals.signal_label_number_update.emit('required_mincall', str(t.minCall))
+        gui_signals.signal_label_number_update.emit('required_minbet', str(np.round(t.minBet,2)))
+        gui_signals.signal_label_number_update.emit('required_mincall', str(np.round(t.minCall,2)))
         # gui_signals.signal_lcd_number_update.emit('potsize', t.totalPotValue)
         gui_signals.signal_label_number_update.emit('gamenumber',
                                                     str(int(self.game_logger.get_game_count(p.current_strategy))))
         gui_signals.signal_label_number_update.emit('assumed_players', str(int(t.assumedPlayers)))
-        gui_signals.signal_label_number_update.emit('calllimit', str(d.finalCallLimit))
-        gui_signals.signal_label_number_update.emit('betlimit', str(d.finalBetLimit))
+        gui_signals.signal_label_number_update.emit('calllimit', str(np.round(d.finalCallLimit,2)))
+        gui_signals.signal_label_number_update.emit('betlimit', str(np.round(d.finalBetLimit,2)))
         gui_signals.signal_label_number_update.emit('runs', str(int(m.runs)))
         gui_signals.signal_label_number_update.emit('sheetname', sheet_name)
         gui_signals.signal_label_number_update.emit('collusion_cards', str(m.collusion_cards))
@@ -72,6 +72,8 @@ class ThreadManager(threading.Thread):
         gui_signals.signal_label_number_update.emit('minbetequity', str(np.round(t.minEquityBet, 2) * 100) + "%")
         gui_signals.signal_label_number_update.emit('outs', str(d.outs))
         gui_signals.signal_label_number_update.emit('initiative', str(t.other_player_has_initiative))
+        gui_signals.signal_label_number_update.emit('round_pot', str(np.round(t.round_pot_value,2)))
+        gui_signals.signal_label_number_update.emit('pot_multiple', str(np.round(d.pot_multiple,2)))
 
         if t.gameStage != 'PreFlop' and p.selected_strategy['preflop_override']:
             gui_signals.signal_label_number_update.emit('relative_equity', str(np.round(t.relative_equity,2) * 100) + "%")
