@@ -788,6 +788,7 @@ class PiePlotter(FigureCanvas):
 
 class CurvePlot(FigureCanvas):
     def __init__(self, ui, p, layout='vLayout3'):
+        self.p=p
         self.ui = proxy(ui)
         self.fig = Figure(dpi=50)
         super(CurvePlot, self).__init__(self.fig)
@@ -827,8 +828,10 @@ class CurvePlot(FigureCanvas):
                      maxEquityBet):
         x2 = np.linspace(0, 1, 100)
 
-        d1 = Curvefitting(x2, smallBlind, bigBlind * 2, maxValue, minEquityCall, maxEquityCall, max_X, power1)
-        d2 = Curvefitting(x2, smallBlind, bigBlind, maxValue, minEquityBet, maxEquityBet, max_X, power2)
+        minimum_curve_value = 0 if self.p.selected_strategy['use_pot_multiples'] else smallBlind
+        minimum_curve_value2 = 0 if self.p.selected_strategy['use_pot_multiples'] else bigBlind
+        d1 = Curvefitting(x2, minimum_curve_value, minimum_curve_value2 * 2, maxValue, minEquityCall, maxEquityCall, max_X, power1)
+        d2 = Curvefitting(x2, minimum_curve_value, minimum_curve_value2, maxValue, minEquityBet, maxEquityBet, max_X, power2)
         x = np.arange(0, 1, 0.01)
         try:
             self.line1.remove()
@@ -911,7 +914,7 @@ class ScatterPlot(FigureCanvas):
                          ('Wins', 'Losses'), loc=2)
 
         x2 = np.linspace(0, 1, 100)
-        d2 = Curvefitting(x2, smallBlind, bigBlind, maxValue, minEquityBet, maxEquityBet, max_X, power)
+        d2 = Curvefitting(x2, 0, 0, maxValue, minEquityBet, maxEquityBet, max_X, power)
         self.line3, = self.axes.plot(np.arange(0, 1, 0.01), d2.y[-100:],
                                      'r-')  # Returns a tuple of line objects, thus the comma
 

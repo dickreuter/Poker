@@ -43,12 +43,13 @@ class Decision(DecisionBase):
             pots = [player['pot'] for player in t.other_players if type(player['pot']) != str]
             try:
                 self.max_player_pot = max(pots)
+                self.logger.debug("Highest player pot: %s",self.max_player_pot)
             except:
                 self.max_player_pot = 0
             self.logger.debug("Round pot: "+str(t.round_pot_value))
             if t.round_pot_value==0:
-                t.round_pot_value=t.bigBlind
-                self.logger.warning("Assuming round pot is bigBlind")
+                t.round_pot_value=t.bigBlind*4
+                self.logger.debug("Assuming round pot is 4*bigBlind")
 
             self.pot_multiple = self.max_player_pot / t.round_pot_value
             self.logger.info("Using pot multiple: Replacing mincall and minbet: " + str(self.pot_multiple))
@@ -174,7 +175,8 @@ class Decision(DecisionBase):
 
         t.maxValue = float(p.selected_strategy['initialFunds']) * t.potStretch
         minimum_curve_value = 0 if p.selected_strategy['use_pot_multiples'] else t.smallBlind
-        d = Curvefitting(np.array([t.equity]), minimum_curve_value, t.minCallAmountIfAboveLimit, t.maxValue, t.minEquityCall,
+        minimum_curve_value2 = 0 if p.selected_strategy['use_pot_multiples'] else t.minCallAmountIfAboveLimit
+        d = Curvefitting(np.array([t.equity]), minimum_curve_value, minimum_curve_value2, t.maxValue, t.minEquityCall,
                          t.maxEquityCall, t.max_X, t.power1)
         self.maxCallE = round(d.y[0], 2)
 

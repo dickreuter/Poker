@@ -477,7 +477,7 @@ class Ui_Pokerbot(object):
         self.label_7.setText(_translate("Pokerbot", "Required call (or pot multiple)"))
         self.label_8.setText(_translate("Pokerbot", "Required bet (or pot multiple)"))
         self.label_21.setText(_translate("Pokerbot", "Pot of this round"))
-        self.label_23.setText(_translate("Pokerbot", "Player pot / rount pot multiple"))
+        self.label_23.setText(_translate("Pokerbot", "Player pot / round pot multiple"))
         self.label_3.setText(_translate("Pokerbot", "Final maximum call threshold"))
         self.label_4.setText(_translate("Pokerbot", "Final maximum bet threshold"))
         self.label_12.setText(_translate("Pokerbot", "Outs"))

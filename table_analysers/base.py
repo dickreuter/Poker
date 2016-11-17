@@ -174,7 +174,7 @@ class Table(object):
     def get_ocr_float(self, img_orig, name, force_method=0, binarize=False):
         def binarize_array(image, threshold=200):
             """Binarize a numpy array."""
-            numpy_array=np.array(image)
+            numpy_array = np.array(image)
             for i in range(len(numpy_array)):
                 for j in range(len(numpy_array[0])):
                     if numpy_array[i][j] > threshold:
@@ -183,10 +183,10 @@ class Table(object):
                         numpy_array[i][j] = 0
             return Image.fromarray(numpy_array)
 
-        def fix_number(t):
+        def fix_number(t, force_method):
             t = t.replace("I", "1").replace("Â°lo", "").replace("O", "0").replace("o", "0") \
-                .replace("-", ".").replace("D", "0").replace("I", "1").replace("_", ".").replace("-", ".").replace("B",
-                                                                                                                   "8")
+                .replace("-", ".").replace("D", "0").replace("I", "1").replace("_", ".").replace("-", ".") \
+                .replace("B", "8").replace("..", ".")
             t = re.sub("[^0123456789\.]", "", t)
             try:
                 if t[0] == ".": t = t[1:]
@@ -204,6 +204,12 @@ class Table(object):
                 if t[-1] == "-": t = t[0:-1]
             except:
                 pass
+            if force_method == 1:
+                try:
+                    t = re.findall(r'\d{1,3}\.\d{1,2}', str(t))[0]
+                except:
+                    t = ''
+
             return t
 
         try:
@@ -219,7 +225,7 @@ class Table(object):
             img_resized = binarize_array(img_resized, 200)
 
         img_min = img_resized.filter(ImageFilter.MinFilter)
-        #img_med = img_resized.filter(ImageFilter.MedianFilter)
+        # img_med = img_resized.filter(ImageFilter.MedianFilter)
         img_mod = img_resized.filter(ImageFilter.ModeFilter).filter(ImageFilter.SHARPEN)
 
         lst = []
@@ -243,9 +249,11 @@ class Table(object):
                     #    self.logger.error(str(e))
 
         try:
-            if force_method == 1 or fix_number(lst[0]) == '':
+            if force_method == 1 or fix_number(lst[0], force_method=0) == '':
                 lst.append(pytesseract.image_to_string(img_mod, None, False, "-psm 6"))
                 lst.append(pytesseract.image_to_string(img_min, None, False, "-psm 6"))
+        except UnicodeDecodeError:
+            pass
         except Exception as e:
             self.logger.warning(str(e))
             try:
@@ -257,9 +265,8 @@ class Table(object):
             final_value = ''
             for i, j in enumerate(lst):
                 self.logger.debug("OCR of " + name + " method " + str(i) + ": " + str(j))
-                lst[i] = fix_number(lst[i]) if lst[i] != '' else lst[i]
+                lst[i] = fix_number(lst[i], force_method) if lst[i] != '' else lst[i]
                 final_value = lst[i] if final_value == '' else final_value
-                final_value.replace('..','.')
 
             self.logger.info(name + " FINAL VALUE: " + str(final_value))
             if final_value == '':
@@ -388,10 +395,10 @@ class Table(object):
         first_caller_string = 'C' if not np.isnan(first_caller_utg) else ''
         first_caller_number = str(first_caller_utg + 1) if first_caller_string != '' else ''
 
-        round_string ='2' if h.round_number == 1 else ''
+        round_string = '2' if h.round_number == 1 else ''
 
         sheet_name = str(t.position_utg_plus + 1) + \
-                     round_string +\
+                     round_string + \
                      str(first_raiser_string) + str(first_raiser_number) + \
                      str(second_raiser_string) + str(second_raiser_number) + \
                      str(first_caller_string) + str(first_caller_number)
