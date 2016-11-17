@@ -39,23 +39,23 @@ class Decision(DecisionBase):
 
         t.bigBlindMultiplier = t.bigBlind / 0.02
 
+
+        pots = [player['pot'] for player in t.other_players if type(player['pot']) != str]
+        try:
+            self.max_player_pot = max(pots)
+            self.logger.debug("Highest player pot: %s",self.max_player_pot)
+        except:
+            self.max_player_pot = 0
+        self.logger.debug("Round pot: "+str(t.round_pot_value))
+        if t.round_pot_value==0:
+            t.round_pot_value=t.bigBlind*4
+            self.logger.debug("Assuming round pot is 4*bigBlind")
+        self.pot_multiple = self.max_player_pot / t.round_pot_value
+        if self.pot_multiple == '':
+            self.pot_multiple = 0
+
         if p.selected_strategy['use_pot_multiples']:
-            pots = [player['pot'] for player in t.other_players if type(player['pot']) != str]
-            try:
-                self.max_player_pot = max(pots)
-                self.logger.debug("Highest player pot: %s",self.max_player_pot)
-            except:
-                self.max_player_pot = 0
-            self.logger.debug("Round pot: "+str(t.round_pot_value))
-            if t.round_pot_value==0:
-                t.round_pot_value=t.bigBlind*4
-                self.logger.debug("Assuming round pot is 4*bigBlind")
-
-            self.pot_multiple = self.max_player_pot / t.round_pot_value
             self.logger.info("Using pot multiple: Replacing mincall and minbet: " + str(self.pot_multiple))
-            if self.pot_multiple == '':
-                self.pot_multiple = 0
-
             t.minCall = self.pot_multiple
             t.minBet = self.pot_multiple
         else:

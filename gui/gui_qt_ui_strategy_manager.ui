@@ -978,7 +978,7 @@
                <number>1</number>
               </property>
               <property name="maximum">
-               <number>30</number>
+               <number>20</number>
               </property>
               <property name="singleStep">
                <number>5</number>
@@ -1145,7 +1145,7 @@
                <number>1</number>
               </property>
               <property name="maximum">
-               <number>30</number>
+               <number>20</number>
               </property>
               <property name="singleStep">
                <number>5</number>
@@ -1575,7 +1575,7 @@
              <number>1</number>
             </property>
             <property name="maximum">
-             <number>30</number>
+             <number>20</number>
             </property>
             <property name="singleStep">
              <number>5</number>
@@ -1680,7 +1680,7 @@
              <number>1</number>
             </property>
             <property name="maximum">
-             <number>30</number>
+             <number>20</number>
             </property>
             <property name="singleStep">
              <number>5</number>
@@ -2000,7 +2000,7 @@
              <number>1</number>
             </property>
             <property name="maximum">
-             <number>30</number>
+             <number>20</number>
             </property>
             <property name="singleStep">
              <number>5</number>
@@ -2189,7 +2189,7 @@
              <number>1</number>
             </property>
             <property name="maximum">
-             <number>30</number>
+             <number>20</number>
             </property>
             <property name="singleStep">
              <number>5</number>

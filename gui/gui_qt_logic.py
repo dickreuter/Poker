@@ -804,7 +804,7 @@ class CurvePlot(FigureCanvas):
         self.axes.axis((0, 1, 0, 1))
         self.axes.set_title('Maximum bet')
         self.axes.set_xlabel('Equity')
-        self.axes.set_ylabel('Max $')
+        self.axes.set_ylabel('Max $ or pot multiple')
         self.draw()
 
     def update_plots(self, histEquity, histMinCall, histMinBet, equity, minCall, minBet, color1, color2):
