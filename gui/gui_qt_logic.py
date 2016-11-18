@@ -58,7 +58,7 @@ class UIActionAndSignals(QObject):
     signal_funds_chart_update = QtCore.pyqtSignal(object)
     signal_pie_chart_update = QtCore.pyqtSignal(dict)
     signal_curve_chart_update1 = QtCore.pyqtSignal(float, float, float, float, float, float, str, str)
-    signal_curve_chart_update2 = QtCore.pyqtSignal(float, float, float, float, float, float, float, float, float, float)
+    signal_curve_chart_update2 = QtCore.pyqtSignal(float, float, float, float, float, float, float, float, float, float, float)
     signal_lcd_number_update = QtCore.pyqtSignal(str, float)
     signal_label_number_update = QtCore.pyqtSignal(str, str)
     signal_update_selected_strategy = QtCore.pyqtSignal(str)

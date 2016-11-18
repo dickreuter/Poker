@@ -94,7 +94,7 @@ class ThreadManager(threading.Thread):
 
         gui_signals.signal_curve_chart_update2.emit(t.power1, t.power2, t.minEquityCall, t.minEquityBet,
                                                     t.smallBlind, t.bigBlind,
-                                                    t.maxValue,
+                                                    t.maxValue_call,t.maxValue_bet,
                                                     t.maxEquityCall, t.max_X, t.maxEquityBet)
 
     def run(self):
