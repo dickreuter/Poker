@@ -470,7 +470,7 @@ class Ui_Pokerbot(object):
         self.progress_bar.setToolTip(_translate("Pokerbot", "Shows progress when the buttons appear"))
         self.comboBox_current_strategy.setToolTip(_translate("Pokerbot", "Choose the strategy that the bot should use to play"))
         self.status.setText(_translate("Pokerbot", "I\'m ready!"))
-        self.label_10.setText(_translate("Pokerbot", "Last 500 hands return"))
+        self.label_10.setText(_translate("Pokerbot", "BB wins per 100 hands"))
         self.label_6.setText(_translate("Pokerbot", "Assumed players"))
         self.label1.setText(_translate("Pokerbot", "Minimum call equity after adj"))
         self.label_5.setText(_translate("Pokerbot", "Minimum bet equity after adj"))

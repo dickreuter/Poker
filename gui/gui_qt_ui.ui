@@ -432,7 +432,7 @@
          </font>
         </property>
         <property name="text">
-         <string>Last 500 hands return</string>
+         <string>BB wins per 100 hands</string>
         </property>
        </widget>
       </item>

@@ -108,7 +108,7 @@
       </font>
      </property>
      <property name="text">
-      <string>Return per game per small blind ($0.02)</string>
+      <string>Return in bb per 100 hands</string>
      </property>
     </widget>
    </item>
@@ -117,18 +117,6 @@
    </item>
    <item row="4" column="1">
     <widget class="QLCDNumber" name="lcdNumber"/>
-   </item>
-   <item row="4" column="2">
-    <widget class="QLabel" name="label_7">
-     <property name="font">
-      <font>
-       <pointsize>16</pointsize>
-      </font>
-     </property>
-     <property name="text">
-      <string>%</string>
-     </property>
-    </widget>
    </item>
    <item row="5" column="0" colspan="3">
     <widget class="QTabWidget" name="tabWidget">

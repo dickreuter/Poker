@@ -374,10 +374,11 @@ class UIActionAndSignals(QObject):
     def update_strategy_analyser(self, l, p):
         number_of_games = int(l.get_game_count(self.ui_analyser.combobox_strategy.currentText()))
         total_return = l.get_strategy_return(self.ui_analyser.combobox_strategy.currentText(), 999999)
-        small_blind = 0.02
+
+        winnings_per_bb_100 = total_return / p.selected_strategy['bigBlind'] / number_of_games * 100
 
         self.ui_analyser.lcdNumber_2.display(number_of_games)
-        self.ui_analyser.lcdNumber.display(total_return / number_of_games / small_blind * 100)
+        self.ui_analyser.lcdNumber.display(winnings_per_bb_100)
         self.gui_bar2.drawfigure(l, self.ui_analyser.combobox_strategy.currentText())
         self.gui_fundschange.drawfigure()
         self.strategy_analyser_update_plots(l, p)

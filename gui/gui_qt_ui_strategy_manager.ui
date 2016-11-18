@@ -2424,7 +2424,7 @@
             <item>
              <widget class="QLabel" name="label_37">
               <property name="text">
-               <string>Maximum to call at 100% equity</string>
+               <string>Maximum to call at 100% equity (effects how high the bot calls)</string>
               </property>
               <property name="wordWrap">
                <bool>true</bool>
@@ -2469,7 +2469,7 @@
             <item>
              <widget class="QLabel" name="label_3">
               <property name="text">
-               <string>Maximum to bet at 100% equity</string>
+               <string>Maximum to bet at 100% equity (has effect on reraise)</string>
               </property>
              </widget>
             </item>
@@ -2545,9 +2545,6 @@
           <item row="9" column="2" rowspan="2">
            <widget class="QLCDNumber" name="lcdNumber_71"/>
           </item>
-          <item row="1" column="2" rowspan="2">
-           <widget class="QLCDNumber" name="lcdNumber_57"/>
-          </item>
           <item row="0" column="0">
            <widget class="QCheckBox" name="use_pot_multiples">
             <property name="enabled">
@@ -2603,6 +2600,9 @@
             </item>
            </layout>
           </item>
+          <item row="1" column="2" rowspan="2">
+           <widget class="QLCDNumber" name="lcdNumber_57"/>
+          </item>
          </layout>
          <zorder>lcdNumber_57</zorder>
          <zorder>lcdNumber_71</zorder>
@@ -2611,6 +2611,7 @@
          <zorder></zorder>
          <zorder>verticalLayoutWidget</zorder>
          <zorder>use_pot_multiples</zorder>
+         <zorder></zorder>
         </widget>
        </item>
        <item row="1" column="0">

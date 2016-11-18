@@ -390,9 +390,8 @@ class TableScreenBased(Table):
         try:
             value = float(re.findall(r'\d{1}\.\d{1,2}', str(value))[0])
         except:
-            self.logger.warning("bot pot regex problem: " + str(value))
-            self.logger.warning("Assuming bot pot is 2*bigblind")
-            value = float(p.selected_strategy['bigBlind']) * 2
+            self.logger.debug("Assuming bot pot is 0")
+            value = 0
         self.bot_pot = value
         return value
 
