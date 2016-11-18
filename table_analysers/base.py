@@ -209,6 +209,11 @@ class Table(object):
                     t = re.findall(r'\d{1,3}\.\d{1,2}', str(t))[0]
                 except:
                     t = ''
+                if t == '':
+                    try:
+                        t = re.findall(r'\d{1,3}', str(t))[0]
+                    except:
+                        t = ''
 
             return t
 

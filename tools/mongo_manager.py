@@ -74,6 +74,7 @@ class StrategyHandler(object):
         return l
 
     def check_defaults(self):
+        if not 'initialFunds2' in self.selected_strategy: self.selected_strategy['initialFunds2'] =  self.selected_strategy['initialFunds']
         if not 'use_relative_equity' in self.selected_strategy: self.selected_strategy['use_relative_equity'] = 0
         if not 'use_pot_multiples' in self.selected_strategy: self.selected_strategy['use_pot_multiples'] = 0
         if not 'opponent_raised_without_initiative_flop' in self.selected_strategy: self.selected_strategy['opponent_raised_without_initiative_flop'] = 1

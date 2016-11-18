@@ -130,6 +130,7 @@ class UIActionAndSignals(QObject):
             "RiverBetPower": 1,
             "minimumLossForIteration": -1,
             "initialFunds": 100,
+            "initialFunds2": 100,
             "potAdjustment": 1,
             "FlopCheckDeceptionMinEquity": 100,
             "bigBlind": 100,
@@ -472,6 +473,7 @@ class UIActionAndSignals(QObject):
                                                 float(strategy_dict['smallBlind']),
                                                 float(strategy_dict['bigBlind']),
                                                 float(strategy_dict['initialFunds']),
+                                                float(strategy_dict['initialFunds2']),
                                                 1,
                                                 0.85,
                                                 float(strategy_dict['PreFlopMaxBetEquity']))
@@ -483,6 +485,7 @@ class UIActionAndSignals(QObject):
                                              float(strategy_dict['smallBlind']),
                                              float(strategy_dict['bigBlind']),
                                              float(strategy_dict['initialFunds']),
+                                             float(strategy_dict['initialFunds2']),
                                              1,
                                              1,
                                              1)
@@ -494,6 +497,7 @@ class UIActionAndSignals(QObject):
                                              float(strategy_dict['smallBlind']),
                                              float(strategy_dict['bigBlind']),
                                              float(strategy_dict['initialFunds']),
+                                             float(strategy_dict['initialFunds2']),
                                              1,
                                              1,
                                              1)
@@ -505,6 +509,7 @@ class UIActionAndSignals(QObject):
                                               float(strategy_dict['smallBlind']),
                                               float(strategy_dict['bigBlind']),
                                               float(strategy_dict['initialFunds']),
+                                              float(strategy_dict['initialFunds2']),
                                               1,
                                               1,
                                               1)
@@ -823,7 +828,7 @@ class CurvePlot(FigureCanvas):
 
         self.draw()
 
-    def update_lines(self, power1, power2, minEquityCall, minEquityBet, smallBlind, bigBlind, maxValue, maxEquityCall,
+    def update_lines(self, power1, power2, minEquityCall, minEquityBet, smallBlind, bigBlind, maxValue, maxvalue_bet, maxEquityCall,
                      max_X,
                      maxEquityBet):
         x2 = np.linspace(0, 1, 100)
@@ -831,7 +836,7 @@ class CurvePlot(FigureCanvas):
         minimum_curve_value = 0 if self.p.selected_strategy['use_pot_multiples'] else smallBlind
         minimum_curve_value2 = 0 if self.p.selected_strategy['use_pot_multiples'] else bigBlind
         d1 = Curvefitting(x2, minimum_curve_value, minimum_curve_value2 * 2, maxValue, minEquityCall, maxEquityCall, max_X, power1)
-        d2 = Curvefitting(x2, minimum_curve_value, minimum_curve_value2, maxValue, minEquityBet, maxEquityBet, max_X, power2)
+        d2 = Curvefitting(x2, minimum_curve_value, minimum_curve_value2, maxvalue_bet, minEquityBet, maxEquityBet, max_X, power2)
         x = np.arange(0, 1, 0.01)
         try:
             self.line1.remove()
@@ -843,7 +848,7 @@ class CurvePlot(FigureCanvas):
         self.line2, = self.axes.plot(x, d2.y, 'r-')  # Returns a tuple of line objects, thus the comma
         self.axes.legend((self.line1, self.line2), ('Maximum call limit', 'Maximum bet limit'), loc=2)
 
-        self.axes.set_ylim(0, max(1, maxValue))
+        self.axes.set_ylim(0, max(1, maxValue, maxvalue_bet))
 
         stage = 'Flop'
         xmin = 0.2  # float(self.p.selected_strategy[stage+'BluffMinEquity'])

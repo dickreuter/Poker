@@ -121,7 +121,7 @@ class Decision(DecisionBase):
             else:
                 self.secondRoundAdjustment = float(p.selected_strategy['secondRoundAdjustment'])
 
-            secondRoundAdjustmentPowerIncrease = float(p.selected_strategy['secondRoundAdjustmentPowerIncrease'])
+            secondRoundAdjustmentPowerIncrease = int(p.selected_strategy['secondRoundAdjustmentPowerIncrease'])
         else:
             self.secondRoundAdjustment = 0
             secondRoundAdjustmentPowerIncrease = 0
@@ -142,7 +142,7 @@ class Decision(DecisionBase):
         self.potAdjustment = min(self.potAdjustment, float(p.selected_strategy['maxPotAdjustment']))
 
         if t.gameStage == GameStages.PreFlop.value:
-            t.power1 = float(p.selected_strategy['PreFlopCallPower'])
+            t.power1 = int(p.selected_strategy['PreFlopCallPower'])
             t.minEquityCall = float(
                 p.selected_strategy[
                     'PreFlopMinCallEquity']) + self.secondRoundAdjustment - self.potAdjustmentPreFlop + self.preflop_adjustment
@@ -150,7 +150,7 @@ class Decision(DecisionBase):
             t.potStretch = 1
             t.maxEquityCall = 1
         elif t.gameStage == GameStages.Flop.value:
-            t.power1 = float(p.selected_strategy['FlopCallPower']) + secondRoundAdjustmentPowerIncrease
+            t.power1 = int(p.selected_strategy['FlopCallPower']) + secondRoundAdjustmentPowerIncrease
             t.minEquityCall = float(
                 p.selected_strategy[
                     'FlopMinCallEquity']) + self.secondRoundAdjustment - self.potAdjustment - self.out_adjustment
@@ -158,7 +158,7 @@ class Decision(DecisionBase):
             t.potStretch = 1
             t.maxEquityCall = 1
         elif t.gameStage == GameStages.Turn.value:
-            t.power1 = float(p.selected_strategy['TurnCallPower']) + secondRoundAdjustmentPowerIncrease
+            t.power1 = int(p.selected_strategy['TurnCallPower']) + secondRoundAdjustmentPowerIncrease
             t.minEquityCall = float(
                 p.selected_strategy[
                     'TurnMinCallEquity']) + self.secondRoundAdjustment - self.potAdjustment - self.out_adjustment
@@ -166,17 +166,17 @@ class Decision(DecisionBase):
             t.potStretch = 1
             t.maxEquityCall = 1
         elif t.gameStage == GameStages.River.value:
-            t.power1 = float(p.selected_strategy['RiverCallPower']) + secondRoundAdjustmentPowerIncrease
+            t.power1 = int(p.selected_strategy['RiverCallPower']) + secondRoundAdjustmentPowerIncrease
             t.minEquityCall = float(
                 p.selected_strategy['RiverMinCallEquity']) + self.secondRoundAdjustment - self.potAdjustment
             t.minCallAmountIfAboveLimit = t.bigBlind * 2
             t.potStretch = 1
             t.maxEquityCall = 1
 
-        t.maxValue = float(p.selected_strategy['initialFunds']) * t.potStretch
+        t.maxValue_call = float(p.selected_strategy['initialFunds']) * t.potStretch
         minimum_curve_value = 0 if p.selected_strategy['use_pot_multiples'] else t.smallBlind
         minimum_curve_value2 = 0 if p.selected_strategy['use_pot_multiples'] else t.minCallAmountIfAboveLimit
-        d = Curvefitting(np.array([t.equity]), minimum_curve_value, minimum_curve_value2, t.maxValue, t.minEquityCall,
+        d = Curvefitting(np.array([t.equity]), minimum_curve_value, minimum_curve_value2, t.maxValue_call, t.minEquityCall,
                          t.maxEquityCall, t.max_X, t.power1)
         self.maxCallE = round(d.y[0], 2)
 
@@ -196,28 +196,28 @@ class Decision(DecisionBase):
             'opponent_raised_without_initiative_river'] * opponent_raised_without_initiative
 
         if t.gameStage == GameStages.PreFlop.value:
-            t.power2 = float(p.selected_strategy['PreFlopBetPower']) + secondRoundAdjustmentPowerIncrease
+            t.power2 = int(p.selected_strategy['PreFlopBetPower']) + secondRoundAdjustmentPowerIncrease
             t.minEquityBet = float(
                 p.selected_strategy[
                     'PreFlopMinBetEquity']) + self.secondRoundAdjustment - self.potAdjustment + self.preflop_adjustment
             t.maxEquityBet = float(p.selected_strategy['PreFlopMaxBetEquity'])
             t.minBetAmountIfAboveLimit = t.bigBlind * 2
         elif t.gameStage == GameStages.Flop.value:
-            t.power2 = float(p.selected_strategy['FlopBetPower']) + secondRoundAdjustmentPowerIncrease
+            t.power2 = int(p.selected_strategy['FlopBetPower']) + secondRoundAdjustmentPowerIncrease
             t.minEquityBet = float(
                 p.selected_strategy[
                     'FlopMinBetEquity']) + self.secondRoundAdjustment - self.out_adjustment + opponent_raised_without_initiative_flop
             t.maxEquityBet = 1
             t.minBetAmountIfAboveLimit = t.bigBlind * 2
         elif t.gameStage == GameStages.Turn.value:
-            t.power2 = float(p.selected_strategy['TurnBetPower']) + secondRoundAdjustmentPowerIncrease
+            t.power2 = int(p.selected_strategy['TurnBetPower']) + secondRoundAdjustmentPowerIncrease
             t.minEquityBet = float(
                 p.selected_strategy[
                     'TurnMinBetEquity']) + self.secondRoundAdjustment - self.out_adjustment + opponent_raised_without_initiative_turn
             t.maxEquityBet = 1
             t.minBetAmountIfAboveLimit = t.bigBlind * 2
         elif t.gameStage == GameStages.River.value:
-            t.power2 = float(p.selected_strategy['RiverBetPower']) + secondRoundAdjustmentPowerIncrease
+            t.power2 = int(p.selected_strategy['RiverBetPower']) + secondRoundAdjustmentPowerIncrease
             t.minEquityBet = float(
                 p.selected_strategy[
                     'RiverMinBetEquity']) + self.secondRoundAdjustment + opponent_raised_without_initiative_river
@@ -245,8 +245,8 @@ class Decision(DecisionBase):
                 self.player_profile_adjustment = -2
             else:
                 self.player_profile_adjustment = 0
-
-        d = Curvefitting(np.array([t.equity]), minimum_curve_value, t.minBetAmountIfAboveLimit, t.maxValue, t.minEquityBet,
+        t.maxValue_bet = float(p.selected_strategy['initialFunds2']) * t.potStretch
+        d = Curvefitting(np.array([t.equity]), minimum_curve_value, t.minBetAmountIfAboveLimit, t.maxValue_bet, t.minEquityBet,
                          t.maxEquityBet, t.max_X, t.power2)
         self.maxBetE = round(d.y[0], 2)
 
@@ -465,6 +465,9 @@ class Decision(DecisionBase):
             self.logger.debug("Check deception activated")
         else:
             self.UseRiverCheckDeception = False
+
+    def call_deception(self, t, p, h):
+        pass
 
     def bully(self, t, p, h):
         if t.isHeadsUp:
