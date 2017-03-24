@@ -6,4 +6,5 @@ mkdir dist/log
 mkdir dist/log/screenshots
 mkdir dist/decisionmaker
 cp decisionmaker/preflop.xlsx dist/decisionmaker/
+cp config.ini dist
 makensis -V3 DeepMindPokerbot.nsi

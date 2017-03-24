@@ -18,7 +18,7 @@ from decisionmaker.current_hand_memory import History, CurrentHandPreflopState
 from decisionmaker.montecarlo_python import run_montecarlo_wrapper
 from decisionmaker.decisionmaker import Decision
 
-version = 2.03
+version = 2.04
 
 
 class ThreadManager(threading.Thread):
@@ -99,8 +99,11 @@ class ThreadManager(threading.Thread):
 
     def run(self):
         h = History()
-        preflop_url = u.get_preflop_sheet_url()
-        h.preflop_sheet = pd.read_excel(preflop_url, sheetname=None)
+        preflop_url, preflop_url_backup = u.get_preflop_sheet_url()
+        try:
+            h.preflop_sheet = pd.read_excel(preflop_url, sheetname=None)
+        except:
+            h.preflop_sheet = pd.read_excel(preflop_url_backup, sheetname=None)
 
         self.game_logger.clean_database()
 
