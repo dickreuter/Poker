@@ -4,7 +4,7 @@ from PIL import Image,ImageGrab
 from matplotlib import pyplot as plt
 
 #img = cv2.imread('screenshot.png',0)
-img = cv2.cvtColor(np.array(Image.open('tests/screenshot.6.png')), cv2.COLOR_BGR2RGB) # works with 0.02
+img = cv2.cvtColor(np.array(Image.open('tests/screenshots/screenshot.6.png')), cv2.COLOR_BGR2RGB) # works with 0.02
 #img = cv2.cvtColor(np.array(ImageGrab.grab()), cv2.COLOR_BGR2RGB)
 #img = cv2.imread('new_screenshot.png',0)
 #img = cv2.cvtColor(np.array(Image.open('file1.png')), cv2.COLOR_BGR2RGB)
