@@ -1,0 +1,35 @@
+pyHook Change Log
+
+----------
+1.5.1 (2008-10-07)
+
+- Back out the bugfix for deadkeys, since it broke ascii conversion.
+- Allow the processing of negative ncode key events, because, why not?
+- Update the SWIG typemap syntax from a deprecated style to avoid warning during build.
+
+----------
+1.6-pre (2008-07-20), not released
+
+- BUGFIX: deadkeys on international keyboards work correctly.
+- BUGFIX: pyHook can now be used in binaries built with py2exe (maybe this will
+          work with PyInstaller too).
+
+----------
+1.5.0 (1.5a) (2005-04-01)
+- Changed stateful key tracking to work better with SendKeys
+- Possibly fixed bug where weird chars were insert when Alt+Arrow key pressed
+
+----------
+1.4.0 (2005-02-23)
+- Added documentation
+- Added KeyAll property to HookManager
+
+(2004-10-11)
+- Added support for translating virtual keycodes to ASCII characters when possible
+- Added support for stopping event propagation
+
+----------
+1.3.0 (2004-09-13)
+- AA example was updated to work with the wx namespace
+- Added support for allowing/disallowing event propagation (see example.py)
+- Added a proper __init__.py to the package
