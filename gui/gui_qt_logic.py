@@ -15,6 +15,7 @@ from tools.vbox_manager import VirtualBoxController
 from PyQt5.QtWidgets import QMessageBox
 from copy import deepcopy
 
+import webbrowser
 from decisionmaker.genetic_algorithm import *
 from decisionmaker.curvefitting import *
 import os
@@ -324,10 +325,12 @@ class UIActionAndSignals(QObject):
         self.genetic_algorithm_form.buttonBox.accepted.connect(lambda: GeneticAlgorithm(True, self.logger, l))
 
     def open_help(self, p, l):
-        self.help_form = QtWidgets.QWidget()
-        self.ui_help = Ui_help_form()
-        self.ui_help.setupUi(self.help_form)
-        self.help_form.show()
+        url = "https://github.com/dickreuter/Poker/wiki/Frequently-asked-questions"
+        webbrowser.open(url,new=2)
+        # self.help_form = QtWidgets.QWidget()
+        # self.ui_help = Ui_help_form()
+        # self.ui_help.setupUi(self.help_form)
+        # self.help_form.show()
 
     def open_setup(self, p, l):
         self.setup_form = QtWidgets.QWidget()
