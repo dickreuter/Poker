@@ -648,8 +648,13 @@ class TableScreenBased(Table):
 
             self.currentCallValue = 9999999.0
 
-        if self.currentBetValue < self.currentCallValue:
+        if self.currentBetValue < self.currentCallValue and not self.allInCallButton:
             self.currentCallValue = self.currentBetValue / 2
+            self.BetValueReadError = True
+            self.entireScreenPIL.save("pics/BetValueError.png")
+
+        if self.currentBetValue < self.currentCallValue and self.allInCallButton:
+            self.currentBetValue = self.currentCallValue + 0.01
             self.BetValueReadError = True
             self.entireScreenPIL.save("pics/BetValueError.png")
 

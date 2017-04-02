@@ -18,7 +18,7 @@ from decisionmaker.current_hand_memory import History, CurrentHandPreflopState
 from decisionmaker.montecarlo_python import run_montecarlo_wrapper
 from decisionmaker.decisionmaker import Decision
 
-version = 2.06
+version = 2.07
 
 
 class ThreadManager(threading.Thread):

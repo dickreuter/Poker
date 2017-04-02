@@ -253,7 +253,7 @@ class Decision(DecisionBase):
         self.finalCallLimit = self.maxCallE  # min(self.maxCallE, self.maxCallEV)
         self.finalBetLimit = self.maxBetE  # min(self.maxBetE, self.maxCallEV)
 
-    def preflop_override(self, t, logger, h, p):
+    def preflop_table_analyser(self, t, logger, h, p):
         if t.gameStage == GameStages.PreFlop.value:
             m = MonteCarlo()
             crd1, crd2 = m.get_two_short_notation(t.mycards)
@@ -538,10 +538,11 @@ class Decision(DecisionBase):
             self.logger.info("Low funds call everything activated")
             self.finalCallLimit = 99999999
 
-        if p.selected_strategy['preflop_override'] and t.gameStage == GameStages.PreFlop.value:
-            self.preflop_override(t, logger, h, p)
+        if t.gameStage == GameStages.PreFlop.value:
+            self.preflop_table_analyser(t, logger, h, p)
 
-        else:
+        if not(p.selected_strategy['preflop_override'] and t.gameStage == GameStages.PreFlop.value):
+            self.logger.info('Make preflop decision based on non-preflop table')
             self.calling(t, p, h)
             self.betting(t, p, h)
             if t.checkButton:
@@ -552,6 +553,8 @@ class Decision(DecisionBase):
                 self.decision = DecisionTypes.bet4
 
                 # self.bully(t,p,h,logger)
+        else:
+            self.logger.info('Preflop table not used for this decision')
 
         self.admin(t, p, h)
         self.bluff(t, p, h)

@@ -43,6 +43,7 @@ class UpdateChecker():
             print("\n")
             self.downloader()
             subprocess.call(["start", self.file_name], shell=True)
+            self.mongodb.close()
             sys.exit()
 
 if __name__ == '__main__':

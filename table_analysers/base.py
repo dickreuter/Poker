@@ -297,7 +297,9 @@ class Table(object):
         self.gui_signals.signal_label_number_update.emit('gamenumber', str(int(n)))
 
         total_winnings = self.game_logger.get_strategy_return(p.current_strategy, 9999999)
-        winnings_per_bb_100 = total_winnings / p.selected_strategy['bigBlind'] / n * 100
+
+        winnings_per_bb_100 = total_winnings / p.selected_strategy['bigBlind'] / n * 100 if n > 0 else 0
+
         self.logger.info("Total Strategy winnings: %s", total_winnings)
         self.logger.info("Winnings in BB per 100 hands: %s", np.round(winnings_per_bb_100,2))
         self.gui_signals.signal_label_number_update.emit('winnings', str(np.round(winnings_per_bb_100, 2)))

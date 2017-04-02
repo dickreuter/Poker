@@ -14,7 +14,7 @@ def reverse_init(t,h,p,logger):
     t.isHeadsUp = True
     t.gameStage = "PreFlop"
     d.__init__(t, h, p, l)
-    d.preflop_override(t, logger, h, p)
+    d.preflop_table_analyser(t, logger, h, p)
     return d
 
 class TestReverseTables(TestCase):
@@ -33,7 +33,7 @@ class TestReverseTables(TestCase):
         t.isHeadsUp = True
         t.gameStage = "PreFlop"
         d.__init__(t, h, p, l)
-        d.preflop_override(t, logger, h, p)
+        d.preflop_table_analyser(t, logger, h, p)
         preflop_state = CurrentHandPreflopState()
         bot_preflop_decision = 'Call'
         d = MagicMock()
@@ -110,7 +110,7 @@ class TestReverseTables(TestCase):
         # preflop
         t, p, gui_signals, h, logger = init_table('tests/screenshots/76ss.png', strategy=strategy)
         d = reverse_init(t, h, p, logger)
-        d.preflop_override(t, logger, h, p)
+        d.preflop_table_analyser(t, logger, h, p)
 
         self.assertEqual('6R4', t.preflop_sheet_name)
 
@@ -131,7 +131,7 @@ class TestReverseTables(TestCase):
         # preflop
         t, p, gui_signals, h, logger = init_table('tests/screenshots/709250829_PreFlop_0.png')
         d = reverse_init(t, h, p, logger)
-        d.preflop_override(t, logger, h, p)
+        d.preflop_table_analyser(t, logger, h, p)
 
         self.assertEqual('3R1', t.preflop_sheet_name)
 
