@@ -37,8 +37,8 @@ def init_table(file,round_number=0, strategy='Pokemon4'):
     t.get_top_left_corner(p)
     t.get_dealer_position()
     t.get_my_funds(h,p)
-    t.get_my_cards(h)
-    t.get_table_cards(h)
+    t.get_my_cards_nn(h)
+    t.get_table_cards_nn(h)
     t.get_round_number(h)
     h.round_number=round_number
     t.init_get_other_players_info()

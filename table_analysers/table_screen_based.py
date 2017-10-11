@@ -189,26 +189,25 @@ class TableScreenBased(Table):
 
         return True
 
-    def get_table_cards(self, h):
+    def get_table_cards_nn(self, h):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+
         self.gui_signals.signal_progressbar_increase.emit(5)
-        self.logger.debug("Get Table cards")
         self.cardsOnTable = []
-        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
-                                    self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
+        width = 15
+        height = 50
 
-        img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
+        for i in range(5):
+            pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict[i][0],
+                                        self.tlc[1] + func_dict[i][1],
+                                        self.tlc[0] + func_dict[i][0] + width, self.tlc[1] + func_dict[i][1] + height)
 
-        card_images = self.cardImages
+            card = h.n.recognize_card(pil_image.convert('L'))
+            self.cardsOnTable.append(card)
 
-        for key, value in card_images.items():
-            template = value
-            method = eval('cv2.TM_SQDIFF_NORMED')
-            res = cv2.matchTemplate(img, template, method)
-            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-            if min_val < 0.01:
-                self.cardsOnTable.append(key)
-
+        for i in range(5):
+            if 'empty' in self.cardsOnTable:
+                self.cardsOnTable.remove('empty')
         self.gameStage = ''
 
         if len(self.cardsOnTable) < 1:
@@ -261,45 +260,31 @@ class TableScreenBased(Table):
                 return False
         return True
 
-    def get_my_cards(self, h):
+    def get_my_cards_nn(self, h):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
-
-        def go_through_each_card(img, debugging):
-            dic = {}
-            for key, value in self.cardImages.items():
-                template = value
-                method = eval('cv2.TM_SQDIFF_NORMED')
-
-                res = cv2.matchTemplate(img, template, method)
-
-                min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-                dic = {}
-                if min_val < 0.01:
-                    self.mycards.append(key)
-                dic[key] = min_val
-
-                if debugging:
-                    pass
-                    # dic = sorted(dic.items(), key=operator.itemgetter(1))
-                    # self.logger.debug(str(dic))
 
         self.gui_signals.signal_progressbar_increase.emit(5)
         self.mycards = []
-        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
-                                    self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
+        width = 15
+        height = 50
+        pil_image1 = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict[0], self.tlc[1] + func_dict[1],
+                                     self.tlc[0] + func_dict[0] + width, self.tlc[1] + func_dict[1] + height)
+        pil_image2 = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict[2], self.tlc[1] + func_dict[3],
+                                     self.tlc[0] + func_dict[2] + width, self.tlc[1] + func_dict[3] + height)
 
-        # pil_image.show()
-        img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
-        # (thresh, img) = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY |
-        # cv2.THRESH_OTSU)
-        go_through_each_card(img, False)
+        card1 = h.n.recognize_card(pil_image1.convert('L'))
+        card2 = h.n.recognize_card(pil_image2.convert('L'))
+        self.mycards.append(card1)
+        self.mycards.append(card2)
+        for i in range(2):
+            if 'empty' in self.mycards:
+                self.mycards.remove('empty')
 
         if len(self.mycards) == 2:
             self.logger.info("My cards: " + str(self.mycards))
             return True
         else:
             self.logger.debug("Did not find two player cards: " + str(self.mycards))
-            go_through_each_card(img, True)
             return False
 
     def init_get_other_players_info(self):

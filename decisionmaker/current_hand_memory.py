@@ -1,6 +1,7 @@
 import numpy as np
 import logging
 from copy import copy, deepcopy
+from recognition.train import CardNeuralNetwork
 
 
 class History:
@@ -28,6 +29,10 @@ class History:
         self.last_round_bluff = False
         self.uploader = {}
 
+        # initialize the card regognition neural network
+        self.n = CardNeuralNetwork()
+        self.n.load_model()
+
 
 class CurrentHandPreflopState:
     def __init__(self):
@@ -35,9 +40,9 @@ class CurrentHandPreflopState:
         self.logger = logging.getLogger('handmemory')
         self.logger.setLevel(logging.DEBUG)
         self.bot_preflop_decision = ''
-        self.preflop_caller_positions = [] #abs
-        self.preflop_raiser_positions = [] #abs
-        self.range_column_name=''
+        self.preflop_caller_positions = []  # abs
+        self.preflop_raiser_positions = []  # abs
+        self.range_column_name = ''
         self.preflop_sheet_name = None
         self.preflop_bot_ranges = None
 
@@ -69,8 +74,8 @@ class CurrentHandPreflopState:
         second_round = False
         # if the player is situated after the bot, consider the bot's decision in the reverse table
         utg_position = t.get_utg_from_abs_pos(abs_pos, t.dealer_position)
-        preflop_raiser_positions = copy(self.preflop_raiser_positions) # absolute
-        preflop_caller_positions = copy(self.preflop_caller_positions) # absolute
+        preflop_raiser_positions = copy(self.preflop_raiser_positions)  # absolute
+        preflop_caller_positions = copy(self.preflop_caller_positions)  # absolute
 
         if self.bot_preflop_decision == 'Bet' \
                 or self.bot_preflop_decision == 'BetPlus' \
@@ -80,12 +85,11 @@ class CurrentHandPreflopState:
             preflop_raiser_positions.append(bot_abs_pos)
 
             if utg_position < self.bot_preflop_position_utg:
-                second_round=True
+                second_round = True
 
-        if utg_position > self.bot_preflop_position_utg or self.rounds>0:
+        if utg_position > self.bot_preflop_position_utg or self.rounds > 0:
             if self.bot_preflop_decision == 'Call' or self.bot_preflop_decision == 'Call2':
                 preflop_caller_positions.append(bot_abs_pos)
-
 
         sheet_name = str(utg_position + 1)
 
@@ -94,19 +98,27 @@ class CurrentHandPreflopState:
 
         self.all_preflop_raiser_positions_abs = copy(preflop_raiser_positions)
 
-        try: second_round = True if utg_position < t.get_utg_from_abs_pos(preflop_raiser_positions[0], t.dealer_position) else second_round
-        except: pass
+        try:
+            second_round = True if utg_position < t.get_utg_from_abs_pos(preflop_raiser_positions[0],
+                                                                         t.dealer_position) else second_round
+        except:
+            pass
 
-        try: second_round = True if utg_position < t.get_utg_from_abs_pos(preflop_raiser_positions[1], t.dealer_position) else second_round
-        except: pass
+        try:
+            second_round = True if utg_position < t.get_utg_from_abs_pos(preflop_raiser_positions[1],
+                                                                         t.dealer_position) else second_round
+        except:
+            pass
 
         if second_round:
             # second round reverse table'
             self.logger.info('Using second round reverse table')
             sheet_name += '2'
 
-        sheet_name += ''.join(['R' + str(t.get_utg_from_abs_pos(x, t.dealer_position) + 1) for x in sorted(preflop_raiser_positions)])
-        sheet_name += ''.join(['C' + str(t.get_utg_from_abs_pos(x, t.dealer_position) + 1) for x in sorted(preflop_caller_positions)])
+        sheet_name += ''.join(
+            ['R' + str(t.get_utg_from_abs_pos(x, t.dealer_position) + 1) for x in sorted(preflop_raiser_positions)])
+        sheet_name += ''.join(
+            ['C' + str(t.get_utg_from_abs_pos(x, t.dealer_position) + 1) for x in sorted(preflop_caller_positions)])
 
         self.logger.info('Reverse sheetname: ' + sheet_name)
 
@@ -137,10 +149,12 @@ class CurrentHandPreflopState:
             if abs_pos in self.all_preflop_raiser_positions_abs:
                 ranges = ranges_raise
                 self.logger.info("Use raiser reverse column")
-                self.range_column_name='Raise'
+                self.range_column_name = 'Raise'
             else:
                 ranges = ranges_call
-                self.logger.info("Use caller reverse column because abs_pos " +str(abs_pos) +" is not in raisers: "+str(self.preflop_raiser_positions))
+                self.logger.info(
+                    "Use caller reverse column because abs_pos " + str(abs_pos) + " is not in raisers: " + str(
+                        self.preflop_raiser_positions))
                 self.range_column_name = 'Call'
 
         else:
