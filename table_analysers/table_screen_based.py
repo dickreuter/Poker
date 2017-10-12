@@ -202,7 +202,7 @@ class TableScreenBased(Table):
                                         self.tlc[1] + func_dict[i][1],
                                         self.tlc[0] + func_dict[i][0] + width, self.tlc[1] + func_dict[i][1] + height)
 
-            card = h.n.recognize_card(pil_image.convert('L'))
+            card = h.n.recognize_card(pil_image)
             self.cardsOnTable.append(card)
 
         for i in range(5):
@@ -272,8 +272,8 @@ class TableScreenBased(Table):
         pil_image2 = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict[2], self.tlc[1] + func_dict[3],
                                      self.tlc[0] + func_dict[2] + width, self.tlc[1] + func_dict[3] + height)
 
-        card1 = h.n.recognize_card(pil_image1.convert('L'))
-        card2 = h.n.recognize_card(pil_image2.convert('L'))
+        card1 = h.n.recognize_card(pil_image1)
+        card2 = h.n.recognize_card(pil_image2)
         self.mycards.append(card1)
         self.mycards.append(card2)
         for i in range(2):

@@ -1,7 +1,7 @@
 import numpy as np
 import logging
 from copy import copy, deepcopy
-from recognition.train import CardNeuralNetwork
+from card_recognition.card_neural_network import CardNeuralNetwork
 
 
 class History:
