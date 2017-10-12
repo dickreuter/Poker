@@ -1,4 +1,4 @@
-from tools.mongo_manager import UpdateChecker
+from poker.tools import UpdateChecker
 
 u=UpdateChecker()
 u.check_update(0)

@@ -9,8 +9,8 @@
   !define MUI_FILE "main"
   !define MUI_VERSION ""
   !define MUI_BRANDINGTEXT "DeepMind Pokerbot"
-  !define MUI_ICON "C:\Users\Nicolas\Dropbox\PythonProjects\Poker\icon.ico"
-  !define MUI_UNICON "C:\Users\Nicolas\Dropbox\PythonProjects\Poker\icon.ico"
+  !define MUI_ICON "C:\Users\Nicolas\Dropbox\PythonProjects\Poker\poker\icon.ico"
+  !define MUI_UNICON "C:\Users\Nicolas\Dropbox\PythonProjects\Poker\poker\icon.ico"
   CRCCheck On
   
   ;--------------------------------

@@ -7,12 +7,11 @@
 *.xml
 /.vs/Poker/v14
 *.
-/pics/*.png
-config.ini
+/poker/pics/*.png
 **/__pycache__
 *.pyc
-/log/screenshots/*
+/poker/log/screenshots/*
 screenshot_vbox.png
 sheet_not_found.png
-/log/*.png
+/poker/log/*.png
 *.log.*

@@ -71,11 +71,11 @@ class Setup():
         return cropped_example
 
 if __name__=='__main__':
-    screenshot_file = "tests/screenshots/screenshot.4.png"
+    screenshot_file = "C:/Users/Nicolas/Downloads/GSAz.png"
     output_file = 'log/table_setup_output.png'
-    top_left_corner_file="pics/SN/topleft2.png"
+    top_left_corner_file="pics/PS/topleft.png"
     coordinates_file='coordinates.txt'
-    table = 'SN'
+    table = 'PS2'
 
     s = Setup(topleftcorner_file=top_left_corner_file,
               screenshot_file=screenshot_file,
