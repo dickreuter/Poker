@@ -19,7 +19,7 @@ from decisionmaker.montecarlo_python import run_montecarlo_wrapper
 from decisionmaker.decisionmaker import Decision
 
 
-version = 2.07
+version = 3.00
 
 
 class ThreadManager(threading.Thread):

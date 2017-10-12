@@ -194,8 +194,8 @@ class TableScreenBased(Table):
 
         self.gui_signals.signal_progressbar_increase.emit(5)
         self.cardsOnTable = []
-        width = 15
-        height = 50
+        width = self.coo['card_sizes'][self.tbl][0]
+        height = self.coo['card_sizes'][self.tbl][1]
 
         for i in range(5):
             pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict[i][0],
@@ -262,11 +262,10 @@ class TableScreenBased(Table):
 
     def get_my_cards_nn(self, h):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
-
         self.gui_signals.signal_progressbar_increase.emit(5)
         self.mycards = []
-        width = 15
-        height = 50
+        width = self.coo['card_sizes'][self.tbl][0]
+        height = self.coo['card_sizes'][self.tbl][1]
         pil_image1 = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict[0], self.tlc[1] + func_dict[1],
                                      self.tlc[0] + func_dict[0] + width, self.tlc[1] + func_dict[1] + height)
         pil_image2 = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict[2], self.tlc[1] + func_dict[3],

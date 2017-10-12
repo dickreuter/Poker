@@ -1,3 +1,4 @@
+conda activate poker_venv
 pyinstaller main.spec
 cp coordinates.txt dist
 cp icon.ico dist
