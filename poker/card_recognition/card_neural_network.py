@@ -2,6 +2,7 @@ import os
 import keras
 import json
 import numpy as np
+import sys
 from PIL import Image
 from keras.callbacks import TensorBoard
 from keras.constraints import maxnorm
@@ -11,8 +12,12 @@ from keras.layers import Conv2D, MaxPooling2D
 from keras.layers import Activation, Dropout, Flatten, Dense
 from scipy import misc
 
-dir_path = os.path.dirname(os.path.realpath(__file__))
-base_dir = os.path.join(os.path.dirname(__file__), '..')
+if getattr(sys, 'frozen', False):
+    dir_path = 'card_recognition'
+    base_dir = ''
+else:
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    base_dir = os.path.join(os.path.dirname(__file__), '..')
 
 
 def adjust_colors(a, tol=120):  # tol - tolerance to decides on the "-ish" factor

@@ -44,7 +44,7 @@ UninstPage instfiles
 
   ;Name and file
   Name "DeepMindPokerbot"
-  OutFile "DeepMindPokerbot_winstaller.exe"
+  OutFile "..\DeepMindPokerbot_winstaller.exe"
 
   
 
@@ -64,7 +64,7 @@ SectionIn RO
 
    SetOutPath "$INSTDIR"
    File /r "C:\Program Files (x86)\Tesseract-OCR\*"
-   File /r "C:\Users\Nicolas\Dropbox\PythonProjects\Poker\dist\*"
+   File /r "C:\Users\Nicolas\Dropbox\PythonProjects\Poker\poker\dist\*"
 
   
   ;Store installation folder

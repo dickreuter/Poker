@@ -1,1 +1,1 @@
-conda env export --name poker_venv | grep -v "^prefix: " > environment.yml
+conda env export --name poker35_venv | grep -v "^prefix: " > environment.yml
