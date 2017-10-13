@@ -17,7 +17,7 @@ sys.path.insert(0,parentdir)
 from poker import main
 
 
-def init_table(file,round_number=0, strategy='Pokemon4'):
+def init_table(file,round_number=0, strategy='Default1'):
     LOG_FILENAME = 'testing.log'
     logger = logging.getLogger('tester')
     gui_signals = MagicMock()

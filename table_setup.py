@@ -71,9 +71,9 @@ class Setup():
         return cropped_example
 
 if __name__=='__main__':
-    screenshot_file = "C:/Users/Nicolas/Downloads/GSAz.png"
-    output_file = 'log/table_setup_output.png'
-    top_left_corner_file="pics/PS/topleft.png"
+    screenshot_file = "C:/temp/ps.png"
+    output_file = 'poker/log/table_setup_output.png'
+    top_left_corner_file="poker/pics/PS/topleft.png"
     coordinates_file='coordinates.txt'
     table = 'PS2'
 

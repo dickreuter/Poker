@@ -159,7 +159,7 @@ class TableScreenBased(Table):
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
-        count, points, bestfit, _ = self.find_template_on_screen(self.betbutton, img, func_dict['tolerance'])
+        count, points, bestfit, min_val = self.find_template_on_screen(self.betbutton, img, func_dict['tolerance'])
         if count > 0:
             self.bet_button_found = True
             self.logger.debug("Bet button found")
@@ -738,7 +738,7 @@ class TableScreenBased(Table):
         img_mod = img_resized.filter(ImageFilter.ModeFilter).filter(ImageFilter.SHARPEN)
 
         try:
-            h.game_number_on_screen = pytesseract.image_to_string(img_mod, None, False, "-psm 6")
+            h.game_number_on_screen = re.sub("[^0-9]", "", pytesseract.image_to_string(img_mod, None, False, "-psm 6"))
         except:
             self.logger.warning("Failed to get game number from screen")
             h.game_number_on_screen = ''
