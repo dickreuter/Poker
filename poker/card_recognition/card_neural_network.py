@@ -3,6 +3,8 @@ import keras
 import json
 import numpy as np
 import sys
+import shutil
+
 from PIL import Image
 from keras.callbacks import TensorBoard
 from keras.constraints import maxnorm
@@ -44,18 +46,23 @@ class CardNeuralNetwork():
         pass
 
     def create_test_images(self):
+        shutil.rmtree('card_training', ignore_errors=True)
+        shutil.rmtree('card_testing', ignore_errors=True)
+
         datagen = ImageDataGenerator(
             rotation_range=1,
-            width_shift_range=0.07,
-            height_shift_range=0.07,
-            shear_range=0.02,
+            width_shift_range=0.1,
+            height_shift_range=0.1,
+            shear_range=0.05,
             zoom_range=0.1,
             horizontal_flip=False,
             fill_mode='nearest')
+
         dirs = [(base_dir + r'/pics/PP_old/', r'/card_training/'),
                 (base_dir + r'/pics/SN/', r'/card_training/'),
                 (base_dir + r'/pics/PS/', r'/card_training/'),
-                (r'c:/temp/', r'/card_testing/')]
+                (base_dir + r'/pics/PS/', r'/card_testing/'),
+                             (r'tests/', r'/card_testing/')]
 
         for d in dirs:
             source_folder = d[0]
@@ -90,7 +97,7 @@ class CardNeuralNetwork():
                                               save_format='png',
                                               ):
                         i += 1
-                        if i > 30:
+                        if i > 50:
                             break  # otherwise the generator would loop indefinitely
                 except:
                     print("skipping: " + name)
@@ -146,7 +153,7 @@ class CardNeuralNetwork():
         train_generator, validation_generator, test_datagen = self.prepare_data()
         num_classes = 53
         input_shape = (50, 15, 3)
-        epochs = 18
+        epochs = 17
 
         model = Sequential()
         model.add(Conv2D(64, (3, 3), input_shape=input_shape, activation='relu', padding='same'))
@@ -175,7 +182,7 @@ class CardNeuralNetwork():
 
         early_stop = keras.callbacks.EarlyStopping(monitor='val_loss',
                                                    min_delta=0,
-                                                   patience=30,
+                                                   patience=1,
                                                    verbose=1, mode='auto')
         tb = TensorBoard(log_dir='c:/tensorboard/pb',
                          histogram_freq=1,
@@ -239,13 +246,13 @@ class CardNeuralNetwork():
 
 if __name__ == '__main__':
     n = CardNeuralNetwork()
-    # n.create_test_images()
-    #
-    #
-    # n.train_neural_network()
+    n.create_test_images()
+
+    n.train_neural_network()
 
     n.load_model()
-    print(n.recognize_card(r'c:\temp\5c.png'))
-    print(n.recognize_card(r'c:\temp\7h.png'))
-    print(n.recognize_card(r'c:\temp\ah.png'))
-    print(n.recognize_card(r'c:\temp\ts.png'))
+    print(n.recognize_card(r'tests/5c.png'))
+    print(n.recognize_card(r'tests/7h.png'))
+    print(n.recognize_card(r'tests/ah.png'))
+    print(n.recognize_card(r'tests/ts.png'))
+    print(n.recognize_card(r'tests/qs.png'))
