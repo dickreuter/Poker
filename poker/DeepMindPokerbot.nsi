@@ -64,7 +64,7 @@ SectionIn RO
 
    SetOutPath "$INSTDIR"
    File /r "C:\Program Files (x86)\Tesseract-OCR\*"
-   File /r "C:\Users\Nicolas\Dropbox\PythonProjects\Poker\poker\dist\*"
+   File /r "C:\Users\Nicolas\Dropbox\PythonProjects\Poker\poker\dist\main\*"
 
   
   ;Store installation folder

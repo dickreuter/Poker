@@ -142,24 +142,24 @@ class CardNeuralNetwork():
 
         return train_generator, validation_generator, test_generator
 
-    def train_neural_network(self, train_generator, validation_generator, test_datagen):
+    def train_neural_network(self):
         train_generator, validation_generator, test_datagen = self.prepare_data()
         num_classes = 53
         input_shape = (50, 15, 3)
-        epochs = 20
+        epochs = 18
 
         model = Sequential()
-        model.add(Conv2D(64, (2, 2), input_shape=input_shape, activation='relu', padding='same'))
+        model.add(Conv2D(64, (3, 3), input_shape=input_shape, activation='relu', padding='same'))
         model.add(Dropout(0.2))
         model.add(Conv2D(64, (2, 2), activation='relu', padding='same'))
         model.add(MaxPooling2D(pool_size=(2, 2)))
-        model.add(Conv2D(128, (2, 2), activation='relu', padding='same'))
+        model.add(Conv2D(128, (3, 3), activation='relu', padding='same'))
         model.add(Dropout(0.2))
-        model.add(Conv2D(128, (2, 2), activation='relu', padding='same'))
+        model.add(Conv2D(128, (3, 3), activation='relu', padding='same'))
         model.add(MaxPooling2D(pool_size=(2, 2)))
-        model.add(Conv2D(256, (2, 2), activation='relu', padding='same'))
+        model.add(Conv2D(256, (3, 3), activation='relu', padding='same'))
         model.add(Dropout(0.2))
-        model.add(Conv2D(256, (2, 2), activation='relu', padding='same'))
+        model.add(Conv2D(256, (3, 3), activation='relu', padding='same'))
         model.add(MaxPooling2D(pool_size=(2, 2)))
         model.add(Flatten())
         model.add(Dropout(0.2))
@@ -217,7 +217,6 @@ class CardNeuralNetwork():
         self.loaded_model = model_from_json(loaded_model_json)
         # load weights into new model
         self.loaded_model.load_weights(dir_path+"/model.h5")
-        print("Loaded model from disk")
         with open(dir_path+"/model_classes.json") as json_file:
             self.class_mapping = json.load(json_file)
 
@@ -230,6 +229,7 @@ class CardNeuralNetwork():
             image = file
         image = misc.imresize(image, (50, 15))
         image = adjust_colors(image)
+
         image = image.reshape((1, 50, 15, 3))
 
         prediction = self.loaded_model.predict(image)
@@ -240,11 +240,12 @@ class CardNeuralNetwork():
 if __name__ == '__main__':
     n = CardNeuralNetwork()
     # n.create_test_images()
-
-
+    #
+    #
     # n.train_neural_network()
 
     n.load_model()
     print(n.recognize_card(r'c:\temp\5c.png'))
     print(n.recognize_card(r'c:\temp\7h.png'))
     print(n.recognize_card(r'c:\temp\ah.png'))
+    print(n.recognize_card(r'c:\temp\ts.png'))

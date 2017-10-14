@@ -23,7 +23,7 @@ from poker.decisionmaker.decisionmaker import Decision
 from poker.tools.mouse_mover import MouseMoverTableBased
 
 
-version = 3.00
+version = 3.01
 
 
 class ThreadManager(threading.Thread):

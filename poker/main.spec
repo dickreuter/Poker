@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['main.py'],
-             pathex=['C:\\Users\\Nicolas\\dropbox\\pythonprojects\\poker\poker'],
+             pathex=['C:\\Users\\Nicolas\\Dropbox\\PythonProjects\\Poker\\poker'],
              binaries=[],
              datas=[],
              hiddenimports=[],
@@ -18,11 +18,17 @@ pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 exe = EXE(pyz,
           a.scripts,
-          a.binaries,
-          a.zipfiles,
-          a.datas,
+          exclude_binaries=True,
           name='main',
           debug=False,
           strip=False,
           upx=True,
-          console=True , icon='icon.ico')
+          console=True,
+          icon='icon.ico')
+coll = COLLECT(exe,
+               a.binaries,
+               a.zipfiles,
+               a.datas,
+               strip=False,
+               upx=True,
+               name='main')
