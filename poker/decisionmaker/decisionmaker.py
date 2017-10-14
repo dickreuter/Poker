@@ -336,11 +336,11 @@ class Decision(DecisionBase):
     def betting(self, t, p, h):
         # preflop
         if t.gameStage == GameStages.PreFlop.value:
-            if self.finalBetLimit > float(t.totalPotValue) / 2:
+            if self.finalBetLimit > float(t.minBet):
                 self.logger.info("Bet3 condition met")
                 self.decision = DecisionTypes.bet3
 
-            if (self.finalBetLimit > float(t.totalPotValue)) and \
+            if (self.finalBetLimit > float(t.minBet)) and \
                     (t.first_raiser_utg >= 0 or t.first_caller_utg >= 0):
                 self.logger.info("Bet4 condition met")
                 self.decision = DecisionTypes.bet4

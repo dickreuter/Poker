@@ -305,10 +305,10 @@ class GameLogger(object):
             collusion_cards = ''
         return collusion_cards, player_dropped_out
 
-    def get_neural_training_data(self, p_name, p_value, game_stage, decision):
+    def get_neural_training_data(self):
         cursor = self.mongodb.games.aggregate([
             {"$unwind": "$rounds"},
-            {"$match": {"Template": {"$regex": "snowie1"},
+            {"$match": {"Template": {"$regex": ".*"},
                         "software_version": {"$gte": 1.85}
                         }},
             {"$project":
@@ -675,5 +675,7 @@ if __name__ == '__main__':
     #
     # worst_games=L.get_worst_games('.(')
 
-    strategy_return = L.get_strategy_return('.*', 500)
-    print("Return: " + str(strategy_return))
+    # strategy_return = L.get_strategy_return('.*', 500)
+    # print("Return: " + str(strategy_return))
+
+    print(L.get_neural_training_data())

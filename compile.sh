@@ -14,5 +14,4 @@ cp decisionmaker/preflop.xlsx dist/main/decisionmaker/
 cp card_recognition/model.h5 dist/main/card_recognition/
 cp card_recognition/model.json dist/main/card_recognition/
 cp card_recognition/model_classes.json dist/main/card_recognition/
-cp config.ini dist/main
 makensis -V3 DeepMindPokerbot.nsi

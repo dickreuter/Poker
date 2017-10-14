@@ -4,6 +4,8 @@ import time
 import numpy as np
 
 matplotlib.use('Qt5Agg')
+import os
+# os.environ['KERAS_BACKEND']='theano'
 import logging.handlers
 import pytesseract
 import threading
@@ -12,7 +14,6 @@ import sys
 from PIL import Image
 from PyQt5 import QtWidgets, QtGui
 from configobj import ConfigObj
-
 from poker.gui.gui_qt_ui import Ui_Pokerbot
 from poker.gui.gui_qt_logic import UIActionAndSignals
 from poker.tools.mongo_manager import StrategyHandler, UpdateChecker, GameLogger
@@ -24,6 +25,8 @@ from poker.tools.mouse_mover import MouseMoverTableBased
 
 
 version = 3.01
+
+
 
 
 class ThreadManager(threading.Thread):
