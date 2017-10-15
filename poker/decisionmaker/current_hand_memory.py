@@ -3,7 +3,7 @@ from copy import copy, deepcopy
 
 import numpy as np
 
-from poker.card_recognition.card_neural_network import CardNeuralNetwork
+# from poker.card_recognition.card_neural_network import CardNeuralNetwork
 
 
 class History:
@@ -32,8 +32,8 @@ class History:
         self.uploader = {}
 
         # initialize the card regognition neural network
-        self.n = CardNeuralNetwork()
-        self.n.load_model()
+        # self.n = CardNeuralNetwork()
+        # self.n.load_model()
 
 
 class CurrentHandPreflopState:

@@ -2,6 +2,7 @@ import logging
 import re
 import sys
 import time
+import os
 
 import cv2  # opencv 3.0
 import numpy as np
@@ -26,8 +27,29 @@ class Table(object):
         self.game_logger = game_logger
 
     def load_templates(self, p):
+        self.cardImages = dict()
         self.img = dict()
         self.tbl = p.selected_strategy['pokerSite']
+        values = "23456789TJQKA"
+        suites = "CDHS"
+        if self.tbl == 'SN': suites = suites.lower()
+
+        for x in values:
+            for y in suites:
+                name = "pics/" + self.tbl[0:2] + "/" + x + y + ".png"
+                if os.path.exists(name):
+                    self.img[x + y.upper()] = Image.open(name)
+                    # if self.tbl=='SN':
+                    #     self.img[x + y.upper()]=self.crop_image(self.img[x + y.upper()], 5,5,20,45)
+
+                    self.cardImages[x + y.upper()] = cv2.cvtColor(np.array(self.img[x + y.upper()]), cv2.COLOR_BGR2RGB)
+
+
+                    # (thresh, self.cardImages[x + y]) =
+                    # cv2.threshold(self.cardImages[x + y], 128, 255,
+                    # cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+                else:
+                    self.logger.critical("Card template File not found: " + str(x) + str(y) + ".png")
 
         name = "pics/" + self.tbl[0:2] + "/button.png"
         template = Image.open(name)
@@ -70,11 +92,11 @@ class Table(object):
         template = Image.open(name)
         self.smallDollarSign1 = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + self.tbl[0:2] + "/allincallbutton.png" #
+        name = "pics/" + self.tbl[0:2] + "/allincallbutton.png"
         template = Image.open(name)
         self.allInCallButton = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
-        name = "pics/" + self.tbl[0:2] + "/lostEverything.png" #
+        name = "pics/" + self.tbl[0:2] + "/lostEverything.png"
         template = Image.open(name)
         self.lostEverything = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 

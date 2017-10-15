@@ -340,10 +340,10 @@ class Decision(DecisionBase):
                 self.logger.info("Bet3 condition met")
                 self.decision = DecisionTypes.bet3
 
-            if (self.finalBetLimit > float(t.minBet)) and \
-                    (t.first_raiser_utg >= 0 or t.first_caller_utg >= 0):
-                self.logger.info("Bet4 condition met")
-                self.decision = DecisionTypes.bet4
+            # if (self.finalBetLimit > float(t.minBet)) and \
+            #         (t.first_raiser_utg >= 0 or t.first_caller_utg >= 0):
+            #     self.logger.info("Bet4 condition met")
+            #     self.decision = DecisionTypes.bet4
 
         stage = t.gameStage.lower()
         # flop turn river

@@ -24,7 +24,7 @@ from poker.decisionmaker.decisionmaker import Decision
 from poker.tools.mouse_mover import MouseMoverTableBased
 
 
-version = 3.01
+version = 3.02
 
 
 
@@ -138,9 +138,9 @@ class ThreadManager(threading.Thread):
                         t.check_for_captcha(mouse) and \
                         t.get_lost_everything(h, t, p, gui_signals) and \
                         t.check_for_imback(mouse) and \
-                        t.get_my_cards_nn(h) and \
+                        t.get_my_cards(h) and \
                         t.get_new_hand(mouse, h, p) and \
-                        t.get_table_cards_nn(h) and \
+                        t.get_table_cards(h) and \
                         t.upload_collusion_wrapper(p, h) and \
                         t.get_dealer_position() and \
                         t.get_snowie_advice(p, h) and \
