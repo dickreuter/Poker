@@ -2,6 +2,9 @@
 Assesses the log file and checks how the parameters in strategies.xml need to be adjusted to optimize playing
 '''
 
+import logging
+from configobj import ConfigObj
+from poker.tools.mongo_manager import GameLogger,StrategyHandler
 
 class GeneticAlgorithm(object):
     def __init__(self, write_update, L):
