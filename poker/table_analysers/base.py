@@ -269,7 +269,11 @@ class Table(object):
         try:
             final_value = ''
             for i, j in enumerate(lst):
-                self.logger.debug("OCR of " + name + " method " + str(i) + ": " + str(j))
+                try:
+                    self.logger.debug("OCR of " + name + " method {}: {} ".format(i, j))
+                except:
+                    self.logger.warning("OCR of " + name + " method failed")
+
                 lst[i] = fix_number(lst[i], force_method) if lst[i] != '' else lst[i]
                 final_value = lst[i] if final_value == '' else final_value
 
@@ -301,7 +305,7 @@ class Table(object):
         winnings_per_bb_100 = total_winnings / p.selected_strategy['bigBlind'] / n * 100 if n > 0 else 0
 
         self.logger.info("Total Strategy winnings: %s", total_winnings)
-        self.logger.info("Winnings in BB per 100 hands: %s", np.round(winnings_per_bb_100,2))
+        self.logger.info("Winnings in BB per 100 hands: %s", np.round(winnings_per_bb_100, 2))
         self.gui_signals.signal_label_number_update.emit('winnings', str(np.round(winnings_per_bb_100, 2)))
 
         self.logger.info("Game #" + str(n) + " - Last " + str(lg) + ": $" + str(f))

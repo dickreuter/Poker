@@ -19,7 +19,7 @@ class TableScreenBased(Table):
     def get_top_left_corner(self, p):
         self.current_strategy = p.current_strategy  # needed for mongo manager
         img = cv2.cvtColor(np.array(self.entireScreenPIL), cv2.COLOR_BGR2RGB)
-        count, points, bestfit, _ = self.find_template_on_screen(self.topLeftCorner, img, 0.01)
+        count, points, bestfit, minimum_value = self.find_template_on_screen(self.topLeftCorner, img, 0.01)
         try:
             count2, points2, bestfit2, _ = self.find_template_on_screen(self.topLeftCorner2, img, 0.01)
             if count2 == 1:

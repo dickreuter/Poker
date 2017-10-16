@@ -24,7 +24,7 @@ from poker.decisionmaker.decisionmaker import Decision
 from poker.tools.mouse_mover import MouseMoverTableBased
 
 
-version = 3.02
+version = 3.03
 
 
 
@@ -226,7 +226,7 @@ def run_poker():
     er = logging.handlers.RotatingFileHandler('log/errors.log', maxBytes=2000000, backupCount=2)
     er.setLevel(logging.WARNING)
     ch = logging.StreamHandler(sys.stdout)
-    ch.setLevel(logging.DEBUG)
+    ch.setLevel(logging.WARNING)
     fh.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
     fh2.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
     er.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
