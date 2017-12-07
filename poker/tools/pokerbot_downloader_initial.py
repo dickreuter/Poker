@@ -6,7 +6,7 @@ from pymongo import MongoClient
 
 class UpdateChecker():
     def __init__(self):
-        self.mongoclient = MongoClient('mongodb://guest:donald@52.201.173.151:27017/POKER')
+        self.mongoclient = MongoClient('mongodb://guest:donald@dickreuter.com:27017/POKER')
         self.mongodb = self.mongoclient.POKER
 
     def downloader(self):
