@@ -1,6 +1,7 @@
 import logging
 import random
 
+import json
 import numpy as np
 from poker.captcha.key_press_vbox import *
 from configobj import ConfigObj
@@ -102,8 +103,8 @@ class MouseMoverTableBased(MouseMover):
         super().__init__(self.vbox_mode)
 
         # amount,pre-delay,x1,xy,x1tolerance,x2tolerance
-        with open('coordinates.txt','r') as inf:
-            c = eval(inf.read())
+        with open(coordinates_file) as inf:
+            c = json.load(inf)
             coo=c['mouse_mover']
 
         self.coo=coo[pokersite[0:2]]
