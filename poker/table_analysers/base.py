@@ -5,6 +5,7 @@ import time
 import os
 
 import cv2  # opencv 3.0
+import json
 import numpy as np
 import pytesseract
 from PIL import Image, ImageFilter, ImageGrab
@@ -109,8 +110,8 @@ class Table(object):
         self.betbutton = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
     def load_coordinates(self):
-        with open('coordinates.txt', 'r') as inf:
-            c = eval(inf.read())
+        with open('coordinates.txt') as inf:
+            c = json.load(inf)
             self.coo = c['screen_scraping']
 
     def take_screenshot(self, initial, p):
