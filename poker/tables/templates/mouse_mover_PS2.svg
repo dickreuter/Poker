@@ -1,2 +1,368 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<svg baseProfile="full" height="720px" version="1.1" width="1280px" xmlns="http://www.w3.org/2000/svg" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xlink="http://www.w3.org/1999/xlink"><defs /><g id="background"><image height="720px" width="1280px" x="0" xlink:href="../backgrounds/PS2.png" y="0" /></g><g id="squareGroup" /></svg>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   height="720px"
+   version="1.1"
+   width="1280px"
+   id="svg331"
+   sodipodi:docname="mouse_mover_PS2.svg"
+   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)">
+  <metadata
+     id="metadata335">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1058"
+     id="namedview333"
+     showgrid="false"
+     inkscape:zoom="1.5733126"
+     inkscape:cx="612.85797"
+     inkscape:cy="229.47384"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="squareGroup" />
+  <defs
+     id="defs229" />
+  <g
+     id="background">
+    <image
+       sodipodi:absref="C:\Users\JEAN-KLAUD\Documents\Poker\poker\tables\templates\../backgrounds/PS2.png"
+       xlink:href="../backgrounds/PS2.png"
+       id="image231"
+       y="0"
+       x="0"
+       width="1280px"
+       height="720px" />
+  </g>
+  <g
+     id="squareGroup">
+    <g
+       id="Fold"
+       transform="matrix(1.4944044,0,0,2.1013627,-425.91891,-550.82776)">
+      <rect
+         class="mouse_mover|PS2|Fold|0"
+         height="27"
+         width="100"
+         x="591"
+         y="553"
+         id="rect234"
+         style="fill:#4c94a5;fill-opacity:0.45;stroke:#000000" />
+      <text
+         x="591"
+         y="572"
+         id="text236"
+         style="fill:#4c94a5;stroke:#ffffff;stroke-width:0.5px">Fold</text>
+    </g>
+    <g
+       id="Imback"
+       transform="translate(28.602072,-7.6272192)">
+      <rect
+         class="mouse_mover|PS2|Imback|0"
+         height="31"
+         width="150"
+         x="914"
+         y="537"
+         id="rect239"
+         style="fill:#884ac4;fill-opacity:0.45;stroke:#000000" />
+      <text
+         x="914"
+         y="558"
+         id="text241"
+         style="fill:#884ac4;stroke:#ffffff;stroke-width:0.5px">Imback</text>
+    </g>
+    <g
+       id="Call"
+       transform="matrix(1.5124907,0,0,2.3126649,-479.04977,-659.20013)">
+      <rect
+         class="mouse_mover|PS2|Call|0"
+         height="25"
+         width="100"
+         x="726"
+         y="549"
+         id="rect244"
+         style="fill:#5e9395;fill-opacity:0.45;stroke:#000000" />
+      <text
+         x="726"
+         y="567"
+         id="text246"
+         style="fill:#5e9395;stroke:#ffffff;stroke-width:0.5px">Call</text>
+    </g>
+    <g
+       id="Call2"
+       transform="translate(-167.79882,20.33925)">
+      <rect
+         class="mouse_mover|PS2|Call2|0"
+         height="25"
+         width="100"
+         x="863"
+         y="549"
+         id="rect249"
+         style="fill:#b7d4d3;fill-opacity:0.45;stroke:#000000" />
+      <text
+         x="863"
+         y="567"
+         id="text251"
+         style="fill:#b7d4d3;stroke:#ffffff;stroke-width:0.5px">Call2</text>
+    </g>
+    <g
+       id="Check"
+       transform="matrix(1.5124907,0,0,2.3126649,-479.04976,-659.20013)">
+      <rect
+         class="mouse_mover|PS2|Check|0"
+         height="25"
+         width="100"
+         x="726"
+         y="549"
+         id="rect254"
+         style="fill:#ebfc67;fill-opacity:0.45;stroke:#000000" />
+      <text
+         x="726"
+         y="567"
+         id="text256"
+         style="fill:#ebfc67;stroke:#ffffff;stroke-width:0.5px">Check</text>
+    </g>
+    <g
+       id="Bet"
+       transform="matrix(0.61845828,0,0,1.0190839,272.71097,5.8100801)">
+      <rect
+         class="mouse_mover|PS2|Bet|0"
+         height="25"
+         width="100"
+         x="863"
+         y="549"
+         id="rect259"
+         style="fill:#c9cece;fill-opacity:0.45;stroke:#000000" />
+      <text
+         x="863"
+         y="567"
+         id="text261"
+         style="fill:#c9cece;stroke:#ffffff;stroke-width:0.5px">Bet</text>
+    </g>
+    <g
+       id="BetPlus_old"
+       transform="matrix(1.5555928,0,0,4.1933762,-456.79732,-1544.7871)">
+      <rect
+         class="mouse_mover|PS2|BetPlus_old|0"
+         height="5"
+         width="30"
+         x="750"
+         y="477"
+         id="rect264"
+         style="fill:#53b11d;fill-opacity:0.45;stroke:#000000" />
+      <text
+         x="750"
+         y="485"
+         id="text266"
+         style="fill:#53b11d;stroke:#ffffff;stroke-width:0.5px">BetPlus_old</text>
+    </g>
+    <g
+       id="g273"
+       transform="translate(83.26381,70.551778)">
+      <rect
+         class="mouse_mover|PS2|BetPlus_old|1"
+         height="30"
+         width="100"
+         x="863"
+         y="559"
+         id="rect269"
+         style="fill:#53b11d;fill-opacity:0.45;stroke:#000000" />
+      <text
+         x="863"
+         y="580"
+         id="text271"
+         style="fill:#53b11d;stroke:#ffffff;stroke-width:0.5px">BetPlus_old</text>
+    </g>
+    <g
+       id="BetPlus"
+       transform="matrix(1.5595434,0,0,2.6530885,-228.32279,-720.84308)">
+      <rect
+         class="mouse_mover|PS2|BetPlus|0"
+         height="12"
+         width="30"
+         x="652"
+         y="460"
+         id="rect275"
+         style="fill:#313339;fill-opacity:0.45;stroke:#000000" />
+      <text
+         x="652"
+         y="472"
+         id="text277"
+         style="fill:#313339;stroke:#ffffff;stroke-width:0.5px">BetPlus</text>
+    </g>
+    <g
+       id="g284"
+       transform="translate(-74.500495,-19.585307)">
+      <rect
+         class="mouse_mover|PS2|BetPlus|1"
+         height="26"
+         width="100"
+         x="863"
+         y="551"
+         id="rect280"
+         style="fill:#313339;fill-opacity:0.45;stroke:#000000" />
+      <text
+         x="863"
+         y="570"
+         id="text282"
+         style="fill:#313339;stroke:#ffffff;stroke-width:0.5px">BetPlus</text>
+    </g>
+    <g
+       id="Bet__Bluff"
+       transform="matrix(1.295868,0,0,2.3212875,-229.45098,-547.075)">
+      <rect
+         class="mouse_mover|PS2|Bet Bluff|0"
+         height="12"
+         width="30"
+         x="652"
+         y="460"
+         id="rect286"
+         style="fill:#2872f0;fill-opacity:0.45;stroke:#000000" />
+      <text
+         x="652"
+         y="472"
+         id="text288"
+         style="fill:#2872f0;stroke:#ffffff;stroke-width:0.5px">Bet Bluff</text>
+    </g>
+    <g
+       id="g295"
+       transform="translate(97.882647,45.127714)">
+      <rect
+         class="mouse_mover|PS2|Bet Bluff|1"
+         height="26"
+         width="100"
+         x="863"
+         y="551"
+         id="rect291"
+         style="fill:#2872f0;fill-opacity:0.45;stroke:#000000" />
+      <text
+         x="863"
+         y="570"
+         id="text293"
+         style="fill:#2872f0;stroke:#ffffff;stroke-width:0.5px">Bet Bluff</text>
+    </g>
+    <g
+       id="Bet__half__pot"
+       transform="matrix(1.3553041,0,0,2.405256,-205.88773,-581.74429)">
+      <rect
+         class="mouse_mover|PS2|Bet half pot|0"
+         height="12"
+         width="30"
+         x="652"
+         y="460"
+         id="rect297"
+         style="fill:#5bf58f;fill-opacity:0.45;stroke:#000000" />
+      <text
+         x="652"
+         y="472"
+         id="text299"
+         style="fill:#5bf58f;stroke:#ffffff;stroke-width:0.5px">Bet half pot</text>
+    </g>
+    <g
+       id="g306"
+       transform="translate(84.535013,-84.535013)">
+      <rect
+         class="mouse_mover|PS2|Bet half pot|1"
+         height="26"
+         width="100"
+         x="863"
+         y="551"
+         id="rect302"
+         style="fill:#5bf58f;fill-opacity:0.45;stroke:#000000" />
+      <text
+         x="863"
+         y="570"
+         id="text304"
+         style="fill:#5bf58f;stroke:#ffffff;stroke-width:0.5px">Bet half pot</text>
+    </g>
+    <g
+       id="Bet__pot">
+      <rect
+         class="mouse_mover|PS2|Bet pot|0"
+         height="580"
+         width="629"
+         x="1844"
+         y="1720"
+         id="rect308"
+         style="fill:#5bdfc8;fill-opacity:0.45;stroke:#000000" />
+      <text
+         x="1844"
+         y="2016"
+         id="text310"
+         style="fill:#5bdfc8;stroke:#ffffff;stroke-width:0.5px">Bet pot</text>
+    </g>
+    <g
+       id="g317"
+       transform="matrix(0.36252418,0,0,0.83995875,432.26656,67.985328)">
+      <rect
+         class="mouse_mover|PS2|Bet pot|1"
+         height="25"
+         width="100"
+         x="863"
+         y="549"
+         id="rect313"
+         style="fill:#5bdfc8;fill-opacity:0.45;stroke:#000000" />
+      <text
+         x="863"
+         y="567"
+         id="text315"
+         style="fill:#5bdfc8;stroke:#ffffff;stroke-width:0.5px">Bet pot</text>
+    </g>
+    <g
+       id="Bet__max">
+      <rect
+         class="mouse_mover|PS2|Bet max|0"
+         height="580"
+         width="681"
+         x="2000"
+         y="1720"
+         id="rect319"
+         style="fill:#d7f8ba;fill-opacity:0.45;stroke:#000000" />
+      <text
+         x="2000"
+         y="2016"
+         id="text321"
+         style="fill:#d7f8ba;stroke:#ffffff;stroke-width:0.5px">Bet max</text>
+    </g>
+    <g
+       id="g328"
+       transform="translate(6.9916178,-22.881657)">
+      <rect
+         class="mouse_mover|PS2|Bet max|1"
+         height="25"
+         width="100"
+         x="863"
+         y="549"
+         id="rect324"
+         style="fill:#d7f8ba;fill-opacity:0.45;stroke:#000000" />
+      <text
+         x="863"
+         y="567"
+         id="text326"
+         style="fill:#d7f8ba;stroke:#ffffff;stroke-width:0.5px">Bet max</text>
+    </g>
+  </g>
+</svg>

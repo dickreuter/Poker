@@ -2,7 +2,7 @@
 
 import cv2
 import svgwrite
-from random import randint
+from random import randint, seed
 import argparse 
 import json 
 
@@ -11,6 +11,7 @@ import json
 class SVGCreator():
     
     def __init__(self, coordinates_file):
+        seed(654321)
         # get scraping/mouse data
         with open(coordinates_file) as inf:
             self.coordinates = json.load(inf)
@@ -31,7 +32,7 @@ class SVGCreator():
 
         group = dwg.g(id=name.replace(" ", "__"))
         rect = dwg.rect(insert=self.toPix([x1, y1]), size=self.toPix([width, height]), fill=color, stroke='black')
-        rect.update({'class':dataPath, 'fill-opacity':0.6})
+        rect.update({'class':dataPath, 'fill-opacity':0.45})
         x, y = self.toPix([x1, y1+height/2+fontHeight/2])
         txt = dwg.text(name, insert=(x,y), fill=color)
         txt.update({'stroke':'rgb(255,255,255)', 'stroke-width': '0.5px'})
@@ -60,29 +61,29 @@ class SVGCreator():
 
 
     # creates a square element for each [x,y,x2,y2] leaf element
-    def nested_data(self, dwg, path, data, group, color):
+    def nested_data(self, dwg, path, data, group, color,text):
         if isinstance(data, dict) and len(data) > 0:
             values = list(data.values())
             
             # add dict leaf
             if isinstance(values[0], int) and len(values) >= 4:
-                group.add(self.beautifulRectangleElementWithNiceTextAtTheMiddle(dwg, values[:4], path.split('|')[1], color, path))
+                group.add(self.beautifulRectangleElementWithNiceTextAtTheMiddle(dwg, values[:4], text, color, path))
             else:
                 # thing nested in dict
                 for key, val in data.items():
-                    self.nested_data(dwg, '|'.join([path, key]), val, group, color)
+                    self.nested_data(dwg, '|'.join([path, key]), val, group, color, text)
 
 
         if isinstance(data, list) and len(data) > 0:
             # add list leaf
             if len(data) >= 4 and isinstance(data[0], int):
-                group.add(self.beautifulRectangleElementWithNiceTextAtTheMiddle(dwg, data[:4], path.split('|')[1], color, path))
+                group.add(self.beautifulRectangleElementWithNiceTextAtTheMiddle(dwg, data[:4], text, color, path))
 
             # (dict or list) nested in list
             elif isinstance(data[0], list) or isinstance(data[0], dict):
                 i = 0
                 for item in data:
-                    self.nested_data(dwg, '|'.join([path, str(i)]), item, group, color)
+                    self.nested_data(dwg, '|'.join([path, str(i)]), item, group, color, text)
                     i+=1
 
 
@@ -93,21 +94,21 @@ class SVGCreator():
         for zoneName, zone in self.coordinates[data_type].items():
             randomColor = "rgb({},{},{})".format(randint(0,255), randint(0,255), randint(0,255))
             if table_name in zone:
-                self.nested_data(dwg, '|'.join([data_type, zoneName, table_name]), zone[table_name], squareGroup, randomColor)
+                self.nested_data(dwg, '|'.join([data_type, zoneName, table_name]), zone[table_name], squareGroup, randomColor, zoneName)
                     
         dwg.add(squareGroup)
+
 
     def add_squares_for_mouse_tracking(self, dwg, data_type, table_name):
          # *** squares ***
         squareGroup = dwg.g(id='squareGroup') 
-        for zonesName, zones in self.coordinates[data_type][table_name].items():
+        for zoneName, zones in self.coordinates[data_type][table_name].items():
             randomColor = "rgb({},{},{})".format(randint(0,255), randint(0,255), randint(0,255))
             i = 0
-            for tableZone in zones:
-                if len(tableZone) > 5 and isinstance(tableZone[2], int):
-                    tableZone[4:6] = [(x + y) for (x, y) in zip(tableZone[2:4], tableZone[4:6])]
-                    squareGroup.add(self.beautifulRectangleElementWithNiceTextAtTheMiddle(dwg, tableZone[2:6], zonesName, randomColor, '|'.join([data_type, table_name, zonesName, str(i)])))
-                    i += 1
+            for zone in zones:
+                self.nested_data(dwg, '|'.join([data_type, table_name, zoneName, str(i)]), zone, squareGroup, randomColor, zoneName)
+                i+=1
+                # squareGroup.add(self.beautifulRectangleElementWithNiceTextAtTheMiddle(dwg, zoneName[2:6], zonesName, randomColor, '|'.join([data_type, table_name, zonesName, str(i)])))
         dwg.add(squareGroup)
 
 
