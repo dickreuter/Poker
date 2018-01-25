@@ -5,12 +5,14 @@ import cv2
 from PIL import Image
 import numpy as np
 import sys
-from random import randint
+from random import randint, seed
 
 sys.setrecursionlimit(10 ** 9)
 
 class Setup():
     def __init__(self, topleftcorner_file: object, screenshot_file: object, output_file: object) -> object:
+        seed(654321)
+
         self.topLeftCorner = cv2.cvtColor(np.array(Image.open(topleftcorner_file)), cv2.COLOR_BGR2RGB)
         #screenshot = cv2.cvtColor(np.array(Image.open(screenshot_file)), cv2.COLOR_BGR2RGB)
         screenshot = cv2.imread(screenshot_file)
@@ -82,10 +84,10 @@ class Setup():
         return cropped_example
 
 if __name__=='__main__':
-    screenshot_file = 'poker/tables/backgrounds/PS2.png'
-    output_file = 'poker/log/table_setup_output.png'
-    top_left_corner_file = 'poker/pics/PS/topleft.png'
-    coordinates_file = 'poker/coordinates.txt'
+    screenshot_file = 'backgrounds/PS2.png'
+    output_file = '../log/table_setup_output.png'
+    top_left_corner_file = '../pics/PS/topleft.png'
+    coordinates_file = '../coordinates.txt'
     tableNames = ['PP', 'SN', 'PS', 'PS2']
     table = 'PS2'
 

@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import matplotlib
 import pandas as pd
 import time
@@ -11,6 +13,9 @@ import pytesseract
 import threading
 import datetime
 import sys
+
+# if main.py is called manually, set poker folder as root package
+sys.path.insert(0, os.path.abspath('..'))
 from PIL import Image
 from PyQt5 import QtWidgets, QtGui
 from configobj import ConfigObj
