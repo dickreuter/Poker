@@ -2,7 +2,6 @@
 
 import cv2
 import svgwrite
-from svgwrite import cm, mm, rgb, deg
 from random import randint
 import argparse 
 import json 
@@ -45,11 +44,12 @@ class SVGCreator():
     # adds a background to SVG file if exists
     def addBackground(self, dwg, table_name):
         backgroundImage = 'backgrounds/'+table_name+'.png'
+        pathRelativeToFile = '../'+backgroundImage
         img = cv2.imread(backgroundImage, 0)
         if img is not None:
             height, width = (str(s)+'px' for s in img.shape[:2])
             dwg.update({'height':height, 'width':width})
-            background = svgwrite.image.Image(backgroundImage, insert=(0,0), size=(width, height))
+            background = svgwrite.image.Image(pathRelativeToFile, insert=(0,0), size=(width, height))
 
             group = dwg.g(id='background')
             group.add(background)
@@ -68,7 +68,6 @@ class SVGCreator():
             if isinstance(values[0], int) and len(values) >= 4:
                 group.add(self.beautifulRectangleElementWithNiceTextAtTheMiddle(dwg, values[:4], path.split('|')[1], color, path))
             else:
-                print(data)
                 # thing nested in dict
                 for key, val in data.items():
                     self.nested_data(dwg, '|'.join([path, key]), val, group, color)
@@ -114,13 +113,13 @@ class SVGCreator():
 
     def table_to_file(self, table_name, data_type):
         height, width = (str(s)+'px' for s in [100,100])
-        file = data_type+'_'+table_name+'.svg'
+        file = 'templates/'+data_type+'_'+table_name+'.svg'
         dwg = svgwrite.Drawing(filename=file, size=(width, height))
         self.addBackground(dwg, table_name)
 
         if data_type == 'screen_scraping':
             self.add_squares(dwg, table_name, data_type)
-        else:
+        elif data_type == 'mouse_mover':
             self.add_squares_for_mouse_tracking(dwg, data_type, table_name)
         
         dwg.save()
