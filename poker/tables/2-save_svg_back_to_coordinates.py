@@ -29,6 +29,10 @@ class CoordinatesSaver():
         attributes = dict(rectangle.attributes.items())
         coordinates = [float(rectangle.getAttribute(t).split('px')[0]) for t in ['x','y','width', 'height']]
 
+        # gets x2, y2 rather than width, height
+        coordinates[2] += coordinates[0]
+        coordinates[3] += coordinates[1]
+
         for groupNode in self.parents(rectangle, 'g'):
             groupNodeAttrs = dict(groupNode.attributes.items())
             if 'transform' in groupNodeAttrs.keys():
@@ -43,21 +47,25 @@ class CoordinatesSaver():
                     arrayBottom.shape = (1,3)
 
                     transformMatrix = np.append(np.matrix(transformMatrix).getT(), arrayBottom, axis=0)
-                    print(transformMatrix)
                     
-                    coordsCpy = np.append(coordinates[:2], [1])
-                    print('x')
-                    print(coordsCpy)
-                    print('=')
-                    # print(np.dot(transformMatrix, coordsCpy))
-                    res = np.dot(transformMatrix, coordsCpy)
-                    print(np.array(res).reshape(-1,).tolist())
-                    coordinates[:2] = np.array(res).reshape(-1,).tolist()[:2]
+                    x1y1 = np.append(coordinates[:2], [1])
+                    x2y2 = np.append(coordinates[2:4], [1])
 
-                if 'translate' in groupNodeAttrs['transform']:
+                    x1y1 = np.dot(transformMatrix, x1y1)
+                    x2y2 = np.dot(transformMatrix, x2y2)
+
+                    coordinates[:2] = np.array(x1y1).reshape(-1,).tolist()[:2]
+                    coordinates[2:4] = np.array(x2y2).reshape(-1,).tolist()[:2]
+
+                elif 'translate' in groupNodeAttrs['transform']:
                     translate = np.array(groupNode.getAttribute('transform').split('translate(')[1].split(')')[0].split(','), dtype='float')
                     coordinates[0] += translate[0]
-                    coordinates[1] += translate[1]
+                    coordinates[2] += translate[0]
+                    if len(translate) > 1:
+                        coordinates[1] += translate[1]
+                        coordinates[3] += translate[1]
+                else:
+                    print('DONT ROTATE OR *** THINGS, THAT\'S BAD')
         
         return [int(i) for i in coordinates]
 
@@ -67,10 +75,6 @@ class CoordinatesSaver():
         
         # apply transformation matrixes
         coordinates = self.matrixTransform(rectangle)
-        
-        # gets x2, y2 rather than width, height
-        coordinates[2] += coordinates[0]
-        coordinates[3] += coordinates[1]
         
         # return a dict with these coords
         var = {}
@@ -85,10 +89,7 @@ class CoordinatesSaver():
             return data
         else:
             # last recursion execution
-            if isinstance(data, list):
-                return newValue.values()
-            else:
-                return newValue
+            return newValue
             
 
 
@@ -96,7 +97,6 @@ class CoordinatesSaver():
         dataPath = rectangle.getAttribute('class').split('|')
         dataPath = [int(dp) if all(i.isdigit() for i in dp) else dp for dp in dataPath]
         newValue = self.computeNewValue(rectangle)
-        
         self.coordinates = self.setCoordinatesValue(dataPath, self.coordinates, newValue, 0)
 
 
@@ -112,7 +112,6 @@ class CoordinatesSaver():
 
     # save edited var into it's file
     def save(self):
-        # pprint.pprint(self.coordinates)
         with open(self.coordinates_file, 'w+') as file:
             file.write(json.dumps(self.coordinates, indent=4))
 
@@ -121,8 +120,8 @@ if __name__=='__main__':
     parser = argparse.ArgumentParser(description='creates coordinates.txt file from user edited .svg data.')
     
     args = vars(parser.parse_args())
-
-    cs = CoordinatesSaver('../coordinates.txt')
-    cs.gather('./*.svg')
+    coordinates_path = '../coordinates.txt'
+    cs = CoordinatesSaver(coordinates_path)
+    cs.gather('./templates/*.svg')
     cs.save()
-    print('file saved !')
+    print('SVG data saved to {} !'.format(coordinates_path))
