@@ -61,7 +61,7 @@ class UpdateChecker():
         cursor = self.mongodb.internal.find()
         c = cursor.next()
         self.preflop_url = c['preflop_url']
-        self.preflop_url_backup='decisionmaker/preflop.xlsx'
+        self.preflop_url_backup = 'decisionmaker/preflop.xlsx'
         return self.preflop_url, self.preflop_url_backup
 
 
@@ -75,12 +75,16 @@ class StrategyHandler(object):
         return l
 
     def check_defaults(self):
-        if not 'initialFunds2' in self.selected_strategy: self.selected_strategy['initialFunds2'] =  self.selected_strategy['initialFunds']
+        if not 'initialFunds2' in self.selected_strategy: self.selected_strategy['initialFunds2'] = \
+        self.selected_strategy['initialFunds']
         if not 'use_relative_equity' in self.selected_strategy: self.selected_strategy['use_relative_equity'] = 0
         if not 'use_pot_multiples' in self.selected_strategy: self.selected_strategy['use_pot_multiples'] = 0
-        if not 'opponent_raised_without_initiative_flop' in self.selected_strategy: self.selected_strategy['opponent_raised_without_initiative_flop'] = 1
-        if not 'opponent_raised_without_initiative_turn' in self.selected_strategy: self.selected_strategy['opponent_raised_without_initiative_turn'] = 1
-        if not 'opponent_raised_without_initiative_river' in self.selected_strategy: self.selected_strategy['opponent_raised_without_initiative_river'] = 1
+        if not 'opponent_raised_without_initiative_flop' in self.selected_strategy: self.selected_strategy[
+            'opponent_raised_without_initiative_flop'] = 1
+        if not 'opponent_raised_without_initiative_turn' in self.selected_strategy: self.selected_strategy[
+            'opponent_raised_without_initiative_turn'] = 1
+        if not 'opponent_raised_without_initiative_river' in self.selected_strategy: self.selected_strategy[
+            'opponent_raised_without_initiative_river'] = 1
         if not 'always_call_low_stack_multiplier' in self.selected_strategy: self.selected_strategy[
             'always_call_low_stack_multiplier'] = 8
         if not 'differentiate_reverse_sheet' in self.selected_strategy: self.selected_strategy[
@@ -178,7 +182,18 @@ class StrategyHandler(object):
         self.modified = True
 
 
-class GameLogger(object):
+class Singleton(type):
+    def __init__(cls, name, bases, dict):
+        super(Singleton, cls).__init__(name, bases, dict)
+        cls.instance = None
+
+    def __call__(cls, *args, **kw):
+        if cls.instance is None:
+            cls.instance = super(Singleton, cls).__call__(*args, **kw)
+        return cls.instance
+
+
+class GameLogger(object, metaclass=Singleton):
     def __init__(self, connection='mongodb://guest:donald@dickreuter.com:27017/POKER'):
         self.mongoclient = MongoClient('mongodb://guest:donald@dickreuter.com:27017/POKER')
         self.mongodb = self.mongoclient.POKER
