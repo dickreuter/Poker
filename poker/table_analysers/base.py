@@ -110,7 +110,7 @@ class Table(object):
         self.betbutton = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
 
     def load_coordinates(self):
-        with open('coordinates.txt') as inf:
+        with open('coordinates.json') as inf:
             c = json.load(inf)
             self.coo = c['screen_scraping']
 
