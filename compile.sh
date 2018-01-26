@@ -1,5 +1,5 @@
 cd poker
-source activate poker_venv
+source activate poker
 pyinstaller main.spec
 mkdir dist
 mkdir dist/main/

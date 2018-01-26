@@ -29,7 +29,7 @@ from poker.decisionmaker.decisionmaker import Decision
 from poker.tools.mouse_mover import MouseMoverTableBased
 
 
-version = 3.04
+version = 3.05
 
 
 
