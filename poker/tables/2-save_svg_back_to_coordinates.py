@@ -2,9 +2,10 @@
 
 import xml.dom.minidom as minidom
 import argparse 
-import glob
 import json
+from cornerFinder import CornerFinder
 import numpy as np
+import os
 
 
 class CoordinatesSaver():
@@ -13,6 +14,10 @@ class CoordinatesSaver():
         self.coordinates_file = coordinates_file
         with open(coordinates_file) as inf:
             self.coordinates = json.load(inf)
+
+
+    def setCorner(self,corner):
+        self.topLeftCornerOffset = corner
 
 
     def parents(self, node, parentType):
@@ -25,6 +30,7 @@ class CoordinatesSaver():
         return foundNodes
 
 
+    # apply transformation matrixes, & translation if exists 
     def matrixTransform(self, rectangle):
         attributes = dict(rectangle.attributes.items())
         coordinates = [float(rectangle.getAttribute(t).split('px')[0]) for t in ['x','y','width', 'height']]
@@ -67,20 +73,17 @@ class CoordinatesSaver():
                 else:
                     print('DONT ROTATE OR *** THINGS, THAT\'S BAD')
         
-        return [int(i) for i in coordinates]
+        return coordinates
 
 
-    def computeNewValue(self, rectangle):
-        # get rect coordinates
-        
-        # apply transformation matrixes
-        coordinates = self.matrixTransform(rectangle)
-        
-        # return a dict with these coords
-        var = {}
-        var['x1'], var['y1'], var['x2'], var['y2'] = coordinates
+    def substract_top_left_corner_offset(self, coordinates):
+        return  [
+            coordinates[0] - self.topLeftCornerOffset[0],
+            coordinates[1] - self.topLeftCornerOffset[1],
+            coordinates[2] - self.topLeftCornerOffset[0],
+            coordinates[3] - self.topLeftCornerOffset[1]
+        ]
 
-        return var
 
     # browse data and sets a new leaf value
     def setCoordinatesValue(self, path, data, newValue, recursion):
@@ -89,26 +92,49 @@ class CoordinatesSaver():
             return data
         else:
             # last recursion execution
-            return newValue
+            data.update({
+                'x1' : newValue[0],
+                'y1' : newValue[1],
+                'x2' : newValue[2],
+                'y2' : newValue[3]
+            })
+            return data
             
 
 
     def saveRectangleInCoordinates(self, rectangle):
         dataPath = rectangle.getAttribute('class').split('|')
         dataPath = [int(dp) if all(i.isdigit() for i in dp) else dp for dp in dataPath]
-        newValue = self.computeNewValue(rectangle)
-        self.coordinates = self.setCoordinatesValue(dataPath, self.coordinates, newValue, 0)
+        
+        coo = self.matrixTransform(rectangle)
+        if 'top_left_corner' not in dataPath:
+            coo = self.substract_top_left_corner_offset(coo)
+
+        self.coordinates = self.setCoordinatesValue(dataPath, self.coordinates, coo, 0)
 
 
-    def gather(self, path):
-        svgFiles = glob.glob(path)
+    def parseFiles(self):
+        for table_name in ['PP','SN','PS','PS2']:
+            for svg_file_type in ['screen_scraping', 'mouse_mover']:
+                template = 'templates/'+svg_file_type+'_'+table_name+'.svg'
+               
+                if os.path.exists(template):
+                    daDom = minidom.parse(template)
+                    corner = CornerFinder.findTopLeftCorner('../pics/'+table_name+'/topleft.png', 'backgrounds/'+table_name+'.png')
+                    
+                    if corner:
+                        self.setCorner(corner)
 
-        for file in svgFiles:
-            daDom = minidom.parse(file)
-            rectangles = daDom.getElementsByTagName("rect")
+                        for rectangle in daDom.getElementsByTagName("rect"):
+                            self.saveRectangleInCoordinates(rectangle)
 
-            for rectangle in rectangles:
-                self.saveRectangleInCoordinates(rectangle)
+
+                        print (template+' coordinates appended to '+self.coordinates_file)
+                    else:
+                        print ('corner not found in '+template)
+                else:
+                    print(template+' doesn\'t exist and won\'t be appended to coordinates file')
+
 
     # save edited var into it's file
     def save(self):
@@ -117,11 +143,10 @@ class CoordinatesSaver():
 
 
 if __name__=='__main__':
-    parser = argparse.ArgumentParser(description='creates coordinates.txt file from user edited .svg data.')
+    parser = argparse.ArgumentParser(description='creates coordinates.json file from user edited .svg data.')
     
     args = vars(parser.parse_args())
-    coordinates_path = '../coordinates.txt'
+    coordinates_path = '../coordinates.json'
     cs = CoordinatesSaver(coordinates_path)
-    cs.gather('./templates/*.svg')
+    cs.parseFiles()
     cs.save()
-    print('SVG data saved to {} !'.format(coordinates_path))

@@ -87,7 +87,7 @@ if __name__=='__main__':
     screenshot_file = 'backgrounds/PS2.png'
     output_file = '../log/table_setup_output.png'
     top_left_corner_file = '../pics/PS/topleft.png'
-    coordinates_file = '../coordinates.txt'
+    coordinates_file = '../coordinates.json'
     tableNames = ['PP', 'SN', 'PS', 'PS2']
     table = 'PS2'
 
