@@ -4,6 +4,7 @@ import re
 import sys
 import threading
 import time
+import operator
 from copy import copy
 
 import cv2  # opencv 3.0
@@ -356,10 +357,10 @@ class TableScreenBased(Table):
         self.mycards = []
         width = self.coo['card_sizes'][self.tbl][0]
         height = self.coo['card_sizes'][self.tbl][1]
-        pil_image1 = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict[0], self.tlc[1] + func_dict[1],
-                                     self.tlc[0] + func_dict[0] + width, self.tlc[1] + func_dict[1] + height)
-        pil_image2 = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict[2], self.tlc[1] + func_dict[3],
-                                     self.tlc[0] + func_dict[2] + width, self.tlc[1] + func_dict[3] + height)
+        pil_image1 = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
+                                     self.tlc[0] + func_dict['x1'] + width, self.tlc[1] + func_dict['y1'] + height)
+        pil_image2 = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'],
+                                     self.tlc[0] + func_dict['x2'] + width, self.tlc[1] + func_dict['y2'] + height)
 
         card1 = h.n.recognize_card(pil_image1)
         card2 = h.n.recognize_card(pil_image2)
@@ -409,8 +410,8 @@ class TableScreenBased(Table):
 
             for i, fd in enumerate(func_dict):
                 self.gui_signals.signal_progressbar_increase.emit(2)
-                pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1],
-                                            self.tlc[0] + fd[2], self.tlc[1] + fd[3])
+                pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd['x1'], self.tlc[1] + fd['y1'],
+                                            self.tlc[0] + fd['x2'], self.tlc[1] + fd['y2'])
                 basewidth = 500
                 wpercent = (basewidth / float(pil_image.size[0]))
                 hsize = int((float(pil_image.size[1]) * float(wpercent)))
@@ -430,8 +431,8 @@ class TableScreenBased(Table):
             self.gui_signals.signal_status.emit("Get player funds")
             for i, fd in enumerate(func_dict, start=0):
                 self.gui_signals.signal_progressbar_increase.emit(1)
-                pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1],
-                                            self.tlc[0] + fd[2], self.tlc[1] + fd[3])
+                pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd['x1'], self.tlc[1] + fd['y1'],
+                                            self.tlc[0] + fd['x2'], self.tlc[1] + fd['y2'])
                 # pil_image.show()
                 value = self.get_ocr_float(pil_image, str(inspect.stack()[0][3]))
                 value = float(value) if value != '' else ''
@@ -444,15 +445,15 @@ class TableScreenBased(Table):
         for n in range(5):
             fd = func_dict[n]
             self.gui_signals.signal_progressbar_increase.emit(1)
-            pot_area_image = self.crop_image(self.entireScreenPIL, self.tlc[0] - 20 + fd[0], self.tlc[1] + fd[1] - 20,
-                                             self.tlc[0] + fd[2] + 20, self.tlc[1] + fd[3] + 20)
+            pot_area_image = self.crop_image(self.entireScreenPIL, self.tlc[0] - 20 + fd['x1'], self.tlc[1] + fd['y1'] - 20,
+                                             self.tlc[0] + fd['x2'] + 20, self.tlc[1] + fd['y2'] + 20)
             img = cv2.cvtColor(np.array(pot_area_image), cv2.COLOR_BGR2RGB)
             count, points, bestfit, minvalue = self.find_template_on_screen(self.smallDollarSign1, img,
                                                                             float(func_dict[5]))
             has_small_dollarsign = count > 0
             if has_small_dollarsign:
-                pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1],
-                                            self.tlc[0] + fd[2], self.tlc[1] + fd[3])
+                pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd['x1'], self.tlc[1] + fd['y1'],
+                                            self.tlc[0] + fd['x2'], self.tlc[1] + fd['y2'])
                 method = func_dict[6]
                 value = self.get_ocr_float(pil_image, str(inspect.stack()[0][3]), force_method=method)
                 try:
@@ -468,8 +469,8 @@ class TableScreenBased(Table):
 
     def get_bot_pot(self, p):
         fd = self.coo[inspect.stack()[0][3]][self.tbl]
-        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1], self.tlc[0] + fd[2],
-                                    self.tlc[1] + fd[3])
+        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd['x1'], self.tlc[1] + fd['y1'], self.tlc[0] + fd['x2'],
+                                    self.tlc[1] + fd['y2'])
         value = self.get_ocr_float(pil_image, str(inspect.stack()[0][3]), force_method=1)
         try:
             value = float(re.findall(r'\d{1}\.\d{1,2}', str(value))[0])
@@ -486,8 +487,8 @@ class TableScreenBased(Table):
         self.covered_players = 0
         for i, fd in enumerate(func_dict, start=0):
             self.gui_signals.signal_progressbar_increase.emit(1)
-            pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1],
-                                        self.tlc[0] + fd[2], self.tlc[1] + fd[3])
+            pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd['x1'], self.tlc[1] + fd['y1'],
+                                        self.tlc[0] + fd['x2'], self.tlc[1] + fd['y2'])
             img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
             count, points, bestfit, minvalue = self.find_template_on_screen(self.coveredCardHolder, img, 0.01)
             self.logger.debug("Player status: " + str(i) + ": " + str(count))
@@ -561,7 +562,7 @@ class TableScreenBased(Table):
 
         self.position_utg_plus = ''
         for n, fd in enumerate(func_dict, start=0):
-            if point[0] > fd[0] and point[1] > fd[1] and point[0] < fd[2] and point[1] < fd[3]:
+            if point[0] > fd['x1'] and point[1] > fd['y1'] and point[0] < fd['x2'] and point[1] < fd['y2']:
                 self.position_utg_plus = n
                 self.dealer_position = (9 - n) % 6  # 0 is myself, 1 is player to the left
                 self.logger.info('Bot position is UTG+' + str(self.position_utg_plus))  # 0 mean bot is UTG
@@ -755,7 +756,10 @@ class TableScreenBased(Table):
         count, points, bestfit, _ = self.find_template_on_screen(self.lostEverything, img, 0.001)
         if count > 0:
             h.lastGameID = str(h.GameID)
-            self.myFundsChange = float(0) - float(h.myFundsHistory[-1])
+            self.myFundsChange = float(0)
+            if len(h.myFundsHistory):
+                self.myFundsChange -= float(h.myFundsHistory[-1])
+
             self.game_logger.mark_last_game(t, h, p)
             self.gui_signals.signal_status.emit("Everything is lost. Last game has been marked.")
             self.gui_signals.signal_progressbar_reset.emit()
