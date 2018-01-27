@@ -93,10 +93,10 @@ class CoordinatesSaver():
         else:
             # last recursion execution
             data.update({
-                'x1' : newValue[0],
-                'y1' : newValue[1],
-                'x2' : newValue[2],
-                'y2' : newValue[3]
+                'x1' : int(round(newValue[0])),
+                'y1' : int(round(newValue[1])),
+                'x2' : int(round(newValue[2])),
+                'y2' : int(round(newValue[3]))
             })
             return data
             
