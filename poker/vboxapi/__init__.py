@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
-# $Id: vboxapi.py 106598 2016-04-14 13:43:08Z fmehnert $
+# $Id$
 """
 VirtualBox Python API Glue.
 """
 
 __copyright__ = \
     """
-    Copyright (C) 2009-2015 Oracle Corporation
-
+    Copyright (C) 2009-2016 Oracle Corporation
     This file is part of VirtualBox Open Source Edition (OSE), as
     available from http://www.virtualbox.org. This file is free software;
     you can redistribute it and/or modify it under the terms of the GNU
@@ -15,17 +14,15 @@ __copyright__ = \
     Foundation, in version 2 as it comes in the "COPYING" file of the
     VirtualBox OSE distribution. VirtualBox OSE is distributed in the
     hope that it will be useful, but WITHOUT ANY WARRANTY of any kind.
-
     The contents of this file may alternatively be used under the terms
     of the Common Development and Distribution License Version 1.0
     (CDDL) only, as it comes in the "COPYING.CDDL" file of the
     VirtualBox OSE distribution, in which case the provisions of the
     CDDL are applicable instead of those of the GPL.
-
     You may elect to license modified versions of this file under the
     terms and conditions of either the GPL or the CDDL or both.
     """
-__version__ = "$Revision: 106598 $"
+__version__ = "$Revision$"
 
 
 # Note! To set Python bitness on OSX use 'export VERSIONER_PYTHON_PREFER_32_BIT=yes'
@@ -40,64 +37,6 @@ import traceback
 if sys.version_info >= (3, 0):
     xrange = range
     long = int
-    import builtins
-    print_ = getattr(builtins, 'print', None)
-elif sys.version_info >= (2, 6):
-    import __builtin__
-    print_ = getattr(__builtin__, 'print', None)
-else:
-    def print_(*args, **kwargs):
-        """The new-style print function for Python 2.4 and 2.5."""
-        fp = kwargs.pop("file", sys.stdout)
-        if fp is None:
-            return
-
-        def write(data):
-            if not isinstance(data, basestring):
-                data = str(data)
-            # If the file has an encoding, encode unicode with it.
-            if isinstance(fp, file) and isinstance(data, unicode) and fp.encoding is not None:
-                errors = getattr(fp, "errors", None)
-                if errors is None:
-                    errors = "strict"
-                data = data.encode(fp.encoding, errors)
-            fp.write(data)
-
-        want_unicode = False
-        sep = kwargs.pop("sep", None)
-        if sep is not None:
-            if isinstance(sep, unicode):
-                want_unicode = True
-            elif not isinstance(sep, str):
-                raise TypeError("sep must be None or a string")
-        end = kwargs.pop("end", None)
-        if end is not None:
-            if isinstance(end, unicode):
-                want_unicode = True
-            elif not isinstance(end, str):
-                raise TypeError("end must be None or a string")
-        if kwargs:
-            raise TypeError("invalid keyword arguments to print()")
-        if not want_unicode:
-            for arg in args:
-                if isinstance(arg, unicode):
-                    want_unicode = True
-                    break
-        if want_unicode:
-            newline = unicode("\n")
-            space = unicode(" ")
-        else:
-            newline = "\n"
-            space = " "
-        if sep is None:
-            sep = space
-        if end is None:
-            end = newline
-        for i, arg in enumerate(args):
-            if i:
-                write(sep)
-            write(arg)
-        write(end)
 
 #
 # Globals, environment and sys.path changes.
@@ -136,11 +75,8 @@ from .VirtualBox_constants import VirtualBoxReflectionInfo
 class PerfCollector(object):
     """ This class provides a wrapper over IPerformanceCollector in order to
     get more 'pythonic' interface.
-
     To begin collection of metrics use setup() method.
-
     To get collected data use query() method.
-
     It is possible to disable metric collection without changing collection
     parameters with disable() method. The enable() method resumes metric
     collection.
@@ -148,7 +84,6 @@ class PerfCollector(object):
 
     def __init__(self, mgr, vbox):
         """ Initializes the instance.
-
         """
         self.mgr = mgr
         self.isMscom = (mgr.type == 'MSCOM')
@@ -233,7 +168,7 @@ def _CustomGetAttr(self, sAttr):
 
     # Try case-insensitivity workaround for class attributes (COM methods).
     sAttrLower = sAttr.lower()
-    for k in self.__class__.__dict__.keys():
+    for k in list(self.__class__.__dict__.keys()):
         if k.lower() == sAttrLower:
             setattr(self.__class__, sAttr, self.__class__.__dict__[k])
             return getattr(self, k)
@@ -270,10 +205,8 @@ class PlatformBase(object):
     def getSessionObject(self, oIVBox):
         """
         Get a session object that can be used for opening machine sessions.
-
         The oIVBox parameter is an getVirtualBox() return value, i.e. an
         IVirtualBox reference.
-
         See also openMachineSession.
         """
         _ = oIVBox
@@ -293,7 +226,6 @@ class PlatformBase(object):
         """
         Retrives the value of the array attribute 'sAttrib' from
         interface 'oInterface'.
-
         This is for hiding platform specific differences in attributes
         returning arrays.
         """
@@ -305,7 +237,6 @@ class PlatformBase(object):
         """
         Sets the value (aoArray) of the array attribute 'sAttrib' in
         interface 'oInterface'.
-
         This is for hiding platform specific differences in attributes
         setting arrays.
         """
@@ -330,14 +261,11 @@ class PlatformBase(object):
         """
         Instantiates and wraps an active event listener class so it can be
         passed to an event source for registration.
-
         oImplClass is a class (type, not instance) which implements
         IEventListener.
-
         dArgs is a dictionary with string indexed variables.  This may be
         modified by the method to pass platform specific parameters. Can
         be None.
-
         This currently only works on XPCOM.  COM support is not possible due to
         shortcuts taken in the COM bridge code, which is not under our control.
         Use passive listeners for COM and web services.
@@ -349,15 +277,12 @@ class PlatformBase(object):
     def waitForEvents(self, cMsTimeout):
         """
         Wait for events to arrive and process them.
-
         The timeout (cMsTimeout) is in milliseconds for how long to wait for
         events to arrive.  A negative value means waiting for ever, while 0
         does not wait at all.
-
         Returns 0 if events was processed.
         Returns 1 if timed out or interrupted in some way.
         Returns 2 on error (like not supported for web services).
-
         Raises an exception if the calling thread is not the main thread (the one
         that initialized VirtualBoxManager) or if the time isn't an integer.
         """
@@ -368,7 +293,6 @@ class PlatformBase(object):
         """
         Interrupt a waitForEvents call.
         This is normally called from a worker thread to wake up the main thread.
-
         Returns True on success, False on failure.
         """
         return False
@@ -382,7 +306,6 @@ class PlatformBase(object):
     def queryInterface(self, oIUnknown, sClassName):
         """
         IUnknown::QueryInterface wrapper.
-
         oIUnknown is who to ask.
         sClassName is the name of the interface we're asking for.
         """
@@ -408,10 +331,8 @@ class PlatformBase(object):
         """
         Checks if the exception oXcpt is equal to the COM/XPCOM status code
         hrStatus.
-
         The oXcpt parameter can be any kind of object, we'll just return True
         if it doesn't behave like a our exception class.
-
         Will not raise any exception as long as hrStatus and self are not bad.
         """
         try:
@@ -521,6 +442,7 @@ class PlatformMSCOM(PlatformBase):
         self.flushGenPyCache(win32com.client.gencache)
         win32com.client.gencache.EnsureDispatch('VirtualBox.Session')
         win32com.client.gencache.EnsureDispatch('VirtualBox.VirtualBox')
+        win32com.client.gencache.EnsureDispatch('VirtualBox.VirtualBoxClient')
 
         self.oIntCv = threading.Condition()
         self.fInterrupted = False
@@ -530,7 +452,6 @@ class PlatformMSCOM(PlatformBase):
     def flushGenPyCache(self, oGenCache):
         """
         Flushes VBox related files in the win32com gen_py cache.
-
         This is necessary since we don't follow the typelib versioning rules
         that everyeone else seems to subscribe to.
         """
@@ -564,7 +485,8 @@ class PlatformMSCOM(PlatformBase):
     def getVirtualBox(self):
         import win32com
         from win32com.client import Dispatch
-        return win32com.client.Dispatch("VirtualBox.VirtualBox")
+        client = win32com.client.Dispatch("VirtualBox.VirtualBoxClient")
+        return client.virtualBox
 
     def getType(self):
         return 'MSCOM'
@@ -680,10 +602,8 @@ class PlatformMSCOM(PlatformBase):
     def interruptWaitEvents(self):
         """
         Basically a python implementation of NativeEventQueue::postEvent().
-
         The magic value must be in sync with the C++ implementation or this
         won't work.
-
         Note that because of this method we cannot easily make use of a
         non-visible Window to handle the message like we would like to do.
         """
@@ -795,7 +715,8 @@ class PlatformXPCOM(PlatformBase):
 
     def getVirtualBox(self):
         import xpcom.components
-        return xpcom.components.classes["@virtualbox.org/VirtualBox;1"].createInstance()
+        client = xpcom.components.classes["@virtualbox.org/VirtualBoxClient;1"].createInstance()
+        return client.virtualBox
 
     def getType(self):
         return 'XPCOM'
@@ -1001,12 +922,10 @@ CurXctpClass = None
 class VirtualBoxManager(object):
     """
     VirtualBox API manager class.
-
     The API users will have to instantiate this.  If no parameters are given,
     it will default to interface with the VirtualBox running on the local
     machine.  sStyle can be None (default), MSCOM, XPCOM or WEBSERVICES.  Most
     users will either be specifying None or WEBSERVICES.
-
     The dPlatformParams is an optional dictionary for passing parameters to the
     WEBSERVICE backend.
     """
@@ -1050,12 +969,12 @@ class VirtualBoxManager(object):
         try:
             self.vbox = self.platform.getVirtualBox()
         except NameError:
-            print_("Installation problem: check that appropriate libs in place")
+            print("Installation problem: check that appropriate libs in place")
             traceback.print_exc()
             raise
         except Exception:
             _, e, _ = sys.exc_info()
-            print_("init exception: ", e)
+            print("init exception: ", e)
             traceback.print_exc()
             if self.remote:
                 self.vbox = None
@@ -1131,10 +1050,10 @@ class VirtualBoxManager(object):
         For unitializing the manager.
         Do not access it after calling this method.
         """
-        if hasattr(self, "vbox"):
+        if hasattr(self, "vbox") and self.vbox is not None:
             del self.vbox
             self.vbox = None
-        if hasattr(self, "platform"):
+        if hasattr(self, "platform") and self.platform is not None:
             self.platform.deinit()
             self.platform = None
         return True
@@ -1150,10 +1069,10 @@ class VirtualBoxManager(object):
         """
         oSession = self.getSessionObject(self.vbox);
         if fPermitSharing:
-            type_ = self.constants.LockType_Shared
+            eType = self.constants.LockType_Shared
         else:
-            type_ = self.constants.LockType_Write
-        oIMachine.lockMachine(oSession, type_)
+            eType = self.constants.LockType_Write
+        oIMachine.lockMachine(oSession, eType)
         return oSession
 
     def closeMachineSession(self, oSession):
@@ -1225,11 +1144,9 @@ class VirtualBoxManager(object):
         """
         Checks if the exception oXcpt is equal to the COM/XPCOM status code
         hrStatus.
-
         The oXcpt parameter can be any kind of object, we'll just return True
         if it doesn't behave like a our exception class.  If it's None, we'll
         query the current exception and examine that.
-
         Will not raise any exception as long as hrStatus and self are not bad.
         """
         if oXcpt is None:
@@ -1290,4 +1207,3 @@ class VirtualBoxManager(object):
     errIsDeadInterface = xcptIsDeadInterface
     errIsOurXcptKind = xcptIsOurXcptKind
     errGetMessage = xcptGetMessage
-
