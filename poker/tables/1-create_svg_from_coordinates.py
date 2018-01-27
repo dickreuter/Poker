@@ -4,6 +4,7 @@ import svgwrite
 from random import randint, seed
 import argparse 
 import json 
+import os 
 from PIL import Image
 from cornerFinder import CornerFinder
 
@@ -153,12 +154,10 @@ if __name__=='__main__':
     svgCreator = SVGCreator('../coordinates.json')
 
     for table_name in ['PP','SN','PS','PS2']:
+        if os.path.isfile('backgrounds/'+table_name+'.png'):
+            corner = CornerFinder.findTopLeftCorner('../pics/'+table_name+'/topleft.png', 'backgrounds/'+table_name+'.png')
+            if corner:
+                svgCreator.setCorner(corner)
 
-        corner = CornerFinder.findTopLeftCorner('../pics/'+table_name+'/topleft.png', 'backgrounds/'+table_name+'.png')
-        if corner:
-            svgCreator.setCorner(corner)
-
-            for svg_file_type in ['screen_scraping', 'mouse_mover']:
-                svgCreator.table_to_file(table_name, svg_file_type)
-        else:
-            print('corner not found for table '+table_name)
+                for svg_file_type in ['screen_scraping', 'mouse_mover']:
+                    svgCreator.table_to_file(table_name, svg_file_type)
