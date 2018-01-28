@@ -39,14 +39,13 @@ class MyTableScreenBased(TableScreenBased):
                 points = points2
         except:
             pass
-        cv2.imshow(inspect.stack()[0][3], cv2.cvtColor(np.array(self.topLeftCorner), cv2.COLOR_RGB2BGR))
+
         if count == 1:
             self.tlc = points[0]
             print("debug : Top left corner found")
             return True
         else:
-
-            print("debug : Top left corner NOT found")
+            print("debug : Top left corner NOT found -> stop")
             return False
 
     def check_for_button(self):
@@ -248,6 +247,9 @@ class MyTableScreenBased(TableScreenBased):
         return True
 
     def check_fast_fold(self, p):
+        if not len(self.mycards):
+            print('NO card found')
+            return False
         if self.gameStage == "PreFlop":
             m = MonteCarlo()
             crd1, crd2 = m.get_two_short_notation(self.mycards)
@@ -459,8 +461,7 @@ class MyTableScreenBased(TableScreenBased):
                                         self.tlc[0] + fd['x2'], self.tlc[1] + fd['y2'])
             img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
             cv2.imshow(inspect.stack()[0][3], cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR))
-            cv2.waitKey()
-            cv2.destroyAllWindows()
+
             count, points, bestfit, minvalue = self.find_template_on_screen(self.coveredCardHolder, img, 0.01)
             print("debug : Player status: " + str(i) + ": " + str(count))
             if count > 0:
@@ -750,7 +751,6 @@ class ScrapingTester():
             t.check_for_imback : {},
             t.get_my_cards : {},
             t.get_table_cards : {},
-            t.get_dealer_position : {},
             t.check_fast_fold : {'p':p},
             t.check_for_button : {},
             t.get_round_number : {},
@@ -760,13 +760,14 @@ class ScrapingTester():
             t.get_other_player_pots : {},
             t.get_total_pot_value : {},
             t.get_round_pot_value : {},
-            t.check_for_checkbutton : {},
             t.get_other_player_status : {'p':p},
+            t.check_for_checkbutton : {},
             t.check_for_call : {},
             t.check_for_betbutton : {},
             t.check_for_allincall : {},
             t.get_current_call_value : {'p':p},
             t.get_current_bet_value : {'p':p},
+            t.get_dealer_position : {},
         }
 
         for f, parameters in testFunctions.items():
