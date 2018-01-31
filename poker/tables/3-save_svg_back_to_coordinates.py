@@ -13,3 +13,5 @@ if __name__=='__main__':
 
     cm = CoordinatesMerger('../coordinates.json', './templates/')
     cm.save()
+
+    print('coordinates.json saved')

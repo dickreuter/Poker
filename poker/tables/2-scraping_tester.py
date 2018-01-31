@@ -18,7 +18,8 @@ class ScrapingTester():
         p = StrategyHandler()
         p.read_strategy('pokerstars')
 
-        t = MyTableScreenBased(cm.getCoordinates()['screen_scraping'], p)
+        t = MyTableScreenBased(p)
+        t.setCoordinates(cm.getCoordinates()['screen_scraping'])
         t.set_screenshot(table)
 
         testFunctions = {
@@ -47,8 +48,9 @@ class ScrapingTester():
         }
 
         for f, parameters in testFunctions.items():
+            print('|============> '+f.__name__+' <============ : ')
             result = f(**parameters)
-            print('|============> '+f.__name__+' <============ : ' +str(result))
+            print('result ==> '+str(result))
             cv2.waitKey()
             cv2.destroyAllWindows()
 
@@ -57,4 +59,8 @@ class ScrapingTester():
 
 
 if __name__=='__main__':
-    sc = ScrapingTester('PS2')
+    table = 'PS2'
+    userTable = input("Which table do you want to test ? (PS2)")
+    if len(userTable):
+        table = userTable
+    sc = ScrapingTester(table)

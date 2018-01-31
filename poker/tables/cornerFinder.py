@@ -38,7 +38,7 @@ class CornerFinder():
         count, points, bestfit, _ = CornerFinder.find_template_on_screen(topLeftCorner, screenshot, 0.01)
 
         if count == 1:
-            print ("top left corner: "+str(points[0]))
+            print ("top left corner found : "+str(points[0]))
             return points[0]
         else:
             print("Top left corner NOT found in "+screenshot_file)

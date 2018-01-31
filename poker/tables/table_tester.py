@@ -12,14 +12,16 @@ from poker.tools.mongo_manager import GameLogger, re
 
 
 class MyTableScreenBased(TableScreenBased):
-    def __init__(self, coordinates, p):
-        self.coo = coordinates
+    def __init__(self, p):
         self.dealer_position = -1
         self.big_blind_position_abs_op = -1
         self.position_utg_plus = -1
         game_logger = GameLogger()
         gui_signals = []
         super(TableScreenBased, self).__init__(p, gui_signals, game_logger, '3.05')
+
+    def setCoordinates(self, coordinates):
+        self.coo = coordinates
 
     def set_screenshot(self, table):
         config = ConfigObj("config.ini")
@@ -364,29 +366,52 @@ class MyTableScreenBased(TableScreenBased):
 
         return True
 
+    def pre_process_text_image(self, pil_image):
+        # re scale
+        basewidth = 500
+        wpercent = (basewidth / float(pil_image.size[0]))
+        hsize = int((float(pil_image.size[1]) * float(wpercent)))
+        pil_image = pil_image.resize((basewidth, hsize), Image.ANTIALIAS)
+
+
+        # to improve this, the variation should be used on HSV value component, image should be converted in HSV.
+        # variation = 20
+        # adds slight variation
+        # textColorRange = [max(textColor - variation, 0), min(textColor + variation, 255)]
+        # print('range : '+str(textColorRange))
+        # textImage = cv2.inRange(opencvGrayscale, textColorRange[0], textColorRange[1])
+
+        # remove noise
+        opencvGrayscale = cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2GRAY)
+        kernel = np.ones((1, 1), np.uint8)
+        opencvGrayscale = cv2.erode(opencvGrayscale, kernel, iterations=2)
+
+        # textImage = cv2.GaussianBlur(opencvGrayscale, (5,5),0)
+        ret3, textImage = cv2.threshold(opencvGrayscale, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+        # textImage = cv2.adaptiveThreshold(opencvGrayscale, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY,11,2)
+
+        return textImage
+
     def get_other_player_names(self, p):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
 
         for i, fd in enumerate(func_dict):
             pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd['x1'], self.tlc[1] + fd['y1'],
                                         self.tlc[0] + fd['x2'], self.tlc[1] + fd['y2'])
-            basewidth = 500
-            cv2.imshow(inspect.stack()[0][3], cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR))
+
+            pre_processed = self.pre_process_text_image(pil_image)
+
+            cv2.imshow(inspect.stack()[0][3], pre_processed)
             cv2.waitKey()
-            cv2.destroyAllWindows()
-            wpercent = (basewidth / float(pil_image.size[0]))
-            hsize = int((float(pil_image.size[1]) * float(wpercent)))
-            pil_image = pil_image.resize((basewidth, hsize), Image.ANTIALIAS)
+
             try:
-                recognizedText = (pytesseract.image_to_string(pil_image, None, False, "-psm 6"))
-                cv2.imshow(inspect.stack()[0][3], cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR))
-                cv2.waitKey()
-                cv2.destroyAllWindows()
+                recognizedText = (pytesseract.image_to_string(Image.fromarray(pre_processed), None, False, "-psm 13"))
                 recognizedText = re.sub(r'[\W+]', '', recognizedText)
                 print("debug : Player name: " + recognizedText)
                 self.other_players[i]['name'] = recognizedText
             except Exception as e:
                 print("debug : Pyteseract error in player name recognition: " + str(e))
+
         return True
 
     def get_other_player_funds(self, p):
@@ -394,15 +419,12 @@ class MyTableScreenBased(TableScreenBased):
         for i, fd in enumerate(func_dict, start=0):
             pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd['x1'], self.tlc[1] + fd['y1'],
                                         self.tlc[0] + fd['x2'], self.tlc[1] + fd['y2'])
-            # cv2.imshow(inspect.stack()[0][3], cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR))
-            cv2.waitKey()
-            cv2.destroyAllWindows()
             cv2.imshow(inspect.stack()[0][3], cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR))
-            cv2.waitKey()
-            cv2.destroyAllWindows()
             value = self.get_ocr_float(pil_image, str(inspect.stack()[0][3]))
             value = float(value) if value != '' else ''
             self.other_players[i]['funds'] = value
+            print(value)
+            cv2.waitKey()
         return True
 
     def get_other_player_pots(self):
@@ -419,10 +441,10 @@ class MyTableScreenBased(TableScreenBased):
                 pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd['x1'], self.tlc[1] + fd['y1'],
                                             self.tlc[0] + fd['x2'], self.tlc[1] + fd['y2'])
                 method = func_dict[6]
-                cv2.imshow(inspect.stack()[0][3], cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR))
-                cv2.waitKey()
-                cv2.destroyAllWindows()
                 value = self.get_ocr_float(pil_image, str(inspect.stack()[0][3]), force_method=method)
+                print(value)
+                cv2.imshow(inspect.stack()[0][3], cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR))
+
                 try:
                     if not str(value) == '':
                         value = re.findall(r'\d{1}\.\d{1,2}', str(value))[0]
@@ -507,9 +529,9 @@ class MyTableScreenBased(TableScreenBased):
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + 0, self.tlc[1] + 0,
                                     self.tlc[0] + 950, self.tlc[1] + 700)
 
-        cv2.imshow(inspect.stack()[0][3], cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR))
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
         count, points, bestfit, _ = self.find_template_on_screen(self.dealer, img, 0.05)
+        cv2.imshow(inspect.stack()[0][3], cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR))
         try:
             point = points[0]
         except:
@@ -541,8 +563,10 @@ class MyTableScreenBased(TableScreenBased):
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
 
-        cv2.imshow(inspect.stack()[0][3], cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR))
-        value = self.get_ocr_float(pil_image, 'TotalPotValue', force_method=1)
+        pot_image = self.pre_process_text_image(pil_image)
+
+        cv2.imshow(inspect.stack()[0][3], pot_image)
+        value = float(pytesseract.image_to_string(Image.fromarray(pot_image), None, False, "-psm 6"))
 
         try:
             if not str(value) == '':
