@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 
+import os
+
+import argparse
+import json
 import svgwrite
-from random import randint, seed
-import argparse 
-import json 
-import os 
 from PIL import Image
 from cornerFinder import CornerFinder
+from random import randint, seed
+
 
 class SVGCreator():
     
@@ -155,6 +157,7 @@ if __name__=='__main__':
 
     for table_name in ['PP','SN','PS','PS2']:
         if os.path.isfile('backgrounds/'+table_name+'.png'):
+            print('backgrounds/'+table_name+'.png found')
             corner = CornerFinder.findTopLeftCorner('../pics/'+table_name+'/topleft.png', 'backgrounds/'+table_name+'.png')
             if corner:
                 svgCreator.setCorner(corner)
