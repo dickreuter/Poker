@@ -1,19 +1,53 @@
 #!/usr/bin/env python
 
-import xml.dom.minidom as minidom
-import argparse 
-import json
-from cornerFinder import CornerFinder
-import numpy as np
 import os
+import sys
+
+import xml.dom.minidom as minidom
+import numpy as np
+from cornerFinder import CornerFinder
 
 
-class CoordinatesSaver():
-    def __init__(self, coordinates_file):
+sys.path.insert(0, os.path.abspath('../..'))
+from poker.tools.mouse_mover import json
+
+
+class CoordinatesMerger():
+    def __init__(self, coordinates_file='../coordinates.json', templatesDir = 'templates/'):
+        print(os.getcwd())
         # get scraping/mouse data
         self.coordinates_file = coordinates_file
+        self.templatesDir = templatesDir
+        print(os.getcwd())
         with open(coordinates_file) as inf:
             self.coordinates = json.load(inf)
+
+        self.merge()
+
+
+    # merges data from coordinates.json file and svg files
+    def merge(self):
+        for table_name in ['PP','SN','PS','PS2']:
+            for svg_file_type in ['screen_scraping', 'mouse_mover']:
+                template = self.templatesDir+svg_file_type+'_'+table_name+'.svg'
+               
+                if os.path.exists(template):
+                    daDom = minidom.parse(template)
+                    corner = CornerFinder.findTopLeftCorner('../pics/'+table_name+'/topleft.png', 'backgrounds/'+table_name+'.png')
+                    
+                    if corner:
+                        self.setCorner(corner)
+
+                        for rectangle in daDom.getElementsByTagName("rect"):
+                            self.saveRectangleInCoordinates(rectangle)
+
+
+                        print (template+' coordinates parsed')
+                    else:
+                        print ('corner not found in '+template)
+                else:
+                    print(template+' doesn\'t exist')
+
 
 
     def setCorner(self,corner):
@@ -112,41 +146,10 @@ class CoordinatesSaver():
 
         self.coordinates = self.setCoordinatesValue(dataPath, self.coordinates, coo, 0)
 
-
-    def parseFiles(self):
-        for table_name in ['PP','SN','PS','PS2']:
-            for svg_file_type in ['screen_scraping', 'mouse_mover']:
-                template = 'templates/'+svg_file_type+'_'+table_name+'.svg'
-               
-                if os.path.exists(template):
-                    daDom = minidom.parse(template)
-                    corner = CornerFinder.findTopLeftCorner('../pics/'+table_name+'/topleft.png', 'backgrounds/'+table_name+'.png')
-                    
-                    if corner:
-                        self.setCorner(corner)
-
-                        for rectangle in daDom.getElementsByTagName("rect"):
-                            self.saveRectangleInCoordinates(rectangle)
-
-
-                        print (template+' coordinates appended to '+self.coordinates_file)
-                    else:
-                        print ('corner not found in '+template)
-                else:
-                    print(template+' doesn\'t exist and won\'t be appended to coordinates file')
-
+    def getCoordinates(self):
+        return self.coordinates
 
     # save edited var into it's file
     def save(self):
         with open(self.coordinates_file, 'w+') as file:
             file.write(json.dumps(self.coordinates, indent=4))
-
-
-if __name__=='__main__':
-    parser = argparse.ArgumentParser(description='creates coordinates.json file from user edited .svg data.')
-    
-    args = vars(parser.parse_args())
-    coordinates_path = '../coordinates.json'
-    cs = CoordinatesSaver(coordinates_path)
-    cs.parseFiles()
-    cs.save()
