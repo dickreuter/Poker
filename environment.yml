@@ -19,37 +19,41 @@ dependencies:
 - icu
 - idna
 - jpeg
+- libflang
 - libiconv
+- libpng
 - libxcb
 - libxml2
 - lmfit
 - lockfile
 - markdown
+- matplotlib
 - mock
 - msgpack-python
-- numpy
 - openblas
 - openssl
 - packaging
 - pandas
 - pbr
 - pcre
-- progress=1.3=py35_0
+- progress
 - protobuf
-- pycparser=2.18=py35_0
-- pyopenssl=17.2.0=py35_0
-- pyparsing=2.2.0=py35_0
+- pycparser
+- pyopenssl
+- pyparsing
+- pyqt5
 - pysocks=1.6.7=py35_0
 - python=3.5.4=3
 - python-dateutil=2.6.1=py35_0
 - pytz=2017.2=py35_0
-- qt
+- qt=5.6.2
 - requests=2.18.4=py35_1
-- scipy
+- setuptools=38.4.0=py35_0
+- sip=4.18=py35_1
 - six=1.10.0=py35_1
-- sqlite
+- sqlite=3.20.1=vc14_2
 - tensorflow=1.3.0=py35_0
-- tk
+- tk=8.6.7=vc14_0
 - tornado=4.5.2=py35_0
 - urllib3=1.22=py35_0
 - werkzeug=0.12.2=py_1
@@ -58,30 +62,19 @@ dependencies:
 - zlib
 - cachecontrol=0.12.3=py35_0
 - configobj=5.0.6=py35_0
-- intel-openmp
-- libpng
-- matplotlib
-- mkl
-- pip=9.0.1=py35_0
-- pyqt
-- sip
-- webencodings
+- numpy
+- pip
+- scipy=1.0.0=py35h75710e8_0
 - pip:
-  - altgraph==0.14
-  - future==0.16.0
-  - h5py==2.7.1
-  - keras==2.0.8
-  - macholib==1.8
-  - olefile==0.44
-  - opencv-python==3.3.0.10
-  - pefile==2017.9.3
-  - pillow==4.3.0
-  - pyinstaller==3.3
-  - pymongo==3.5.1
-  - pyqt5==5.9
-  - pytesseract==0.1.7
-  - pyvbox==1.2.0
-  - pyyaml==3.12
-  - win-inet-pton==1.0.1
-  - xlrd==1.1.0
+  - backports.functools-lru-cache==1.4
+  - opencv-python==3.4.0.12
+  - pillow
+  - pymongo
+  - pypiwin32
+  - pyqt5
+  - pytesseract
+  - pyvbox
+  - tesseract
+  - win-inet-pton
+  - xlrd
 
