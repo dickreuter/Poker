@@ -3,9 +3,10 @@ import sys
 
 import cv2
 import numpy as np
+import pytesseract
 from PIL import Image
 from poker.decisionmaker.montecarlo_python import MonteCarlo
-from poker.main import ConfigObj, pytesseract
+from poker.main import ConfigObj
 from poker.table_analysers.table_screen_based import (ImageFilter,
     TableScreenBased, copy, inspect)
 from poker.tools.mongo_manager import GameLogger, re
@@ -398,14 +399,18 @@ class MyTableScreenBased(TableScreenBased):
         for i, fd in enumerate(func_dict):
             pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd['x1'], self.tlc[1] + fd['y1'],
                                         self.tlc[0] + fd['x2'], self.tlc[1] + fd['y2'])
+            basewidth = 500
+            wpercent = (basewidth / float(pil_image.size[0]))
+            hsize = int((float(pil_image.size[1]) * float(wpercent)))
+            pil_image = pil_image.resize((basewidth, hsize), Image.ANTIALIAS)
+            #pre_processed = self.pre_process_text_image(pil_image)
 
-            pre_processed = self.pre_process_text_image(pil_image)
 
-            cv2.imshow(inspect.stack()[0][3], pre_processed)
+            #cv2.imshow(inspect.stack()[0][3], cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR))
             cv2.waitKey()
 
             try:
-                recognizedText = (pytesseract.image_to_string(Image.fromarray(pre_processed), None, False, "-psm 13"))
+                recognizedText = (pytesseract.image_to_string(pil_image))
                 recognizedText = re.sub(r'[\W+]', '', recognizedText)
                 print("debug : Player name: " + recognizedText)
                 self.other_players[i]['name'] = recognizedText
