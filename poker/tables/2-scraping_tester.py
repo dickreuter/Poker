@@ -22,34 +22,35 @@ class ScrapingTester():
         t.setCoordinates(cm.getCoordinates()['screen_scraping'])
         t.set_screenshot(table)
 
-        testFunctions = {
-            t.get_top_left_corner : {'p':p},
-            t.get_lost_everything : {'p':p},
-            t.check_for_imback : {},
-            t.get_my_cards : {},
-            t.get_table_cards : {},
-            t.check_fast_fold : {'p':p},
-            t.check_for_button : {},
-            t.get_round_number : {},
-            t.init_get_other_players_info : {},
-            t.get_other_player_names : {'p':p},
-            t.get_other_player_funds : {'p':p},
-            t.get_other_player_pots : {},
-            t.get_total_pot_value : {},
-            t.get_round_pot_value : {},
-            t.get_other_player_status : {'p':p},
-            t.check_for_checkbutton : {},
-            t.check_for_call : {},
-            t.check_for_betbutton : {},
-            t.check_for_allincall : {},
-            t.get_current_call_value : {'p':p},
-            t.get_current_bet_value : {'p':p},
-            t.get_dealer_position : {},
-        }
+        testFunctions = [
+            {'func':t.get_top_left_corner, 'params':{'p':p}},
+            {'func':t.get_lost_everything, 'params':{'p':p}},
+            {'func':t.check_for_imback, 'params':{}},
+            {'func':t.get_my_cards, 'params':{}},
+            {'func':t.get_table_cards, 'params':{}},
+            {'func':t.check_fast_fold, 'params':{'p':p}},
+            {'func':t.check_for_button, 'params':{}},
+            {'func':t.get_round_number, 'params':{}},
+            {'func':t.init_get_other_players_info, 'params':{}},
+            {'func':t.get_other_player_names, 'params':{'p':p}},
+            {'func':t.get_other_player_funds, 'params':{'p':p}},
+            {'func':t.get_other_player_pots, 'params':{}},
+            {'func':t.get_total_pot_value, 'params':{}},
+            {'func':t.get_round_pot_value, 'params':{}},
+            {'func':t.get_other_player_status, 'params':{'p':p}},
+            {'func':t.check_for_checkbutton, 'params':{}},
+            {'func':t.check_for_call, 'params':{}},
+            {'func':t.check_for_betbutton, 'params':{}},
+            {'func':t.check_for_allincall, 'params':{}},
+            {'func':t.get_current_call_value, 'params':{'p':p}},
+            {'func':t.get_current_bet_value, 'params':{'p':p}},
+            {'func':t.get_dealer_position, 'params':{}},
+        ]
 
-        for f, parameters in testFunctions.items():
-            print('|============> '+f.__name__+' <============ : ')
-            result = f(**parameters)
+
+        for f in testFunctions:
+            print('|============> '+f['func'].__name__+' <============ : ')
+            result = f['func'](**f['params'])
             print('result ==> '+str(result))
             cv2.waitKey()
             cv2.destroyAllWindows()
