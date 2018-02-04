@@ -571,7 +571,7 @@ class MyTableScreenBased(TableScreenBased):
         pot_image = self.pre_process_text_image(pil_image)
 
         cv2.imshow(inspect.stack()[0][3], pot_image)
-        value = float(pytesseract.image_to_string(Image.fromarray(pot_image), None, False, "-psm 6"))
+        value = float(pytesseract.image_to_string(Image.fromarray(pot_image), config="-psm 6"))
 
         try:
             if not str(value) == '':
