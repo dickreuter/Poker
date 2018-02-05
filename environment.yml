@@ -1,80 +1,70 @@
 name: poker_venv
 channels:
-- conda-forge
 - defaults
 dependencies:
-- backports=1.0=py35_1
-- backports.weakref=1.0rc1=py35_1
-- bleach=1.5.0=py35_0
-- ca-certificates=2017.11.5=0
-- certifi=2017.11.5=py35_0
-- cffi=1.11.2=py35_0
-- chardet=3.0.4=py35_0
-- colorama=0.3.9=py35_0
-- cryptography=2.1.4=py35_0
-- cycler=0.10.0=py35_0
-- expat
-- freetype
-- html5lib
-- icu
-- idna
-- jpeg
-- libflang
-- libiconv
-- libpng
-- libxcb
-- libxml2
-- lmfit
-- lockfile
-- markdown
-- matplotlib
-- mock
-- msgpack-python
-- openblas
-- openssl
-- packaging
-- pandas
-- pbr
-- pcre
-- progress
-- protobuf
-- pycparser
-- pyopenssl
-- pyparsing
-- pyqt5
-- pysocks=1.6.7=py35_0
-- python=3.5.4=3
-- python-dateutil=2.6.1=py35_0
-- pytz=2017.2=py35_0
+- backports=1.0
+- bleach=2.1.2
+- configobj=5.0.6
+- cycler=0.10.0
+- freetype=2.8
+- intel-openmp=2018.0.0
+- jpeg=9b
+- libpng=1.6.34
+- libprotobuf=3.4.1
+- libxml2=2.9.7
+- lockfile=0.12.2
+- markdown=2.6.9
+- matplotlib=2.1.2
+- mkl=2018.0.1
+- mock=2.0.0
+- msgpack-python=0.5.1
+- numpy=1.12.1
+- openssl=1.0.2n
+- packaging=16.8
+- pandas=0.22.0
+- pbr=3.1.1
+- pcre=8.41
+- pip=9.0.1
+- progress=1.3
+- protobuf=3.4.1
+- pycparser=2.18
+- pyopenssl=17.5.0
+- pyparsing=2.2.0
+- pyqt=5.6.0
+- pysocks=1.6.7
+- python=3.6.4
+- python-dateutil=2.6.1
+- pytz=2017.3
 - qt=5.6.2
-- requests=2.18.4=py35_1
-- setuptools=38.4.0=py35_0
-- sip=4.18=py35_1
-- six=1.10.0=py35_1
-- sqlite=3.20.1=vc14_2
-- tensorflow=1.3.0=py35_0
-- tk=8.6.7=vc14_0
-- tornado=4.5.2=py35_0
-- urllib3=1.22=py35_0
-- werkzeug=0.12.2=py_1
-- wheel=0.29.0=py35_0
-- xz=5.2.3=0
-- zlib
-- cachecontrol=0.12.3=py35_0
-- configobj=5.0.6=py35_0
-- numpy
-- pip
-- scipy=1.0.0=py35h75710e8_0
+- requests=2.18.4
+- scipy=1.0.0
+- setuptools=38.4.0
+- sip=4.18.1
+- six=1.11.0
+- sqlite=3.22.0
+- tensorflow=1.1.0
+- tk=8.6.7
+- tornado=4.5.3
+- urllib3=1.22
+- vc=14
+- vs2015_runtime=14.0.25420
+- webencodings=0.5.1
+- werkzeug=0.14.1
+- wheel=0.30.0
+- win_inet_pton=1.0.1
+- wincertstore=0.2
+- xz=5.2.3
+- zlib=1.2.11
 - pip:
-  - backports.functools-lru-cache==1.4
+  - lmfit==0.9.7
   - opencv-python==3.4.0.12
-  - pillow
-  - pymongo
+  - pillow==5.0
+  - pymongo==3.6
   - pypiwin32
-  - pyqt5
-  - pytesseract
-  - pyvbox
-  - tesseract
-  - win-inet-pton
-  - xlrd
+  - pytesseract==0.2
+  - pyvbox==1.2
+  - svgwrite==1.1.12
+  - tesseract==0.1.3
+  - win-inet-pton==1.0
+  - xlrd==1.1
 
