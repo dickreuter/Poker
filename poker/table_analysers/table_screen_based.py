@@ -4,7 +4,6 @@ import re
 import sys
 import threading
 import time
-import operator
 from copy import copy
 
 import cv2  # opencv 3.0
