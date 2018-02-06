@@ -93,7 +93,7 @@ class TableScreenBased(Table):
         #     # ChatWindow.show()
         #     try:
         #         t.chatText = (pytesseract.image_to_string(ChatWindow, None,
-        #         False, config="-psm 6"))
+        #         False, config="-psm 13"))
         #         t.chatText = re.sub("[^abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\.]",
         #         "", t.chatText)
         #         keyword1 = 'disp'
@@ -417,7 +417,7 @@ class TableScreenBased(Table):
                 hsize = int((float(pil_image.size[1]) * float(wpercent)))
                 pil_image = pil_image.resize((basewidth, hsize), Image.ANTIALIAS)
                 try:
-                    recognizedText = (pytesseract.image_to_string(pil_image, config="-psm 6"))
+                    recognizedText = (pytesseract.image_to_string(pil_image, config="-psm 13"))
                     recognizedText = re.sub(r'[\W+]', '', recognizedText)
                     self.logger.debug("Player name: " + recognizedText)
                     self.other_players[i]['name'] = recognizedText
