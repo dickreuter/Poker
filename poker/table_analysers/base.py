@@ -269,10 +269,9 @@ class Table(object):
             final_value = ''
             for i, j in enumerate(lst):
                 try:
-                    self.logger.debug("OCR of " + name + " method {}: {} ".format(i, j))
+                    self.logger.debug("OCR of " + str(name) + " method {}: {} ".format(i, j))
                 except:
-                    self.logger.warning("OCR of " + name + " method failed")
-
+                    self.logger.warning("OCR of " + str(name) + " method failed")
                 lst[i] = fix_number(lst[i], force_method) if lst[i] != '' else lst[i]
                 final_value = lst[i] if final_value == '' else final_value
 
