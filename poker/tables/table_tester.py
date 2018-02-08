@@ -400,7 +400,7 @@ class MyTableScreenBased(TableScreenBased):
             value = self.get_ocr_float(pil_image, str(inspect.stack()[0][3]))
             value = float(value) if value != '' else ''
             self.other_players[i]['funds'] = value
-            print(value)
+            print('get '+self.other_players[i]['name']+' funds: '+str(value))
             cv2.waitKey()
         return True
 
