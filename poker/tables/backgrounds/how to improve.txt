@@ -1,2 +1,0 @@
-check_for_allincall : better add a all-in screen to move the check_for_allincall correctly
-get_played_players : ???
