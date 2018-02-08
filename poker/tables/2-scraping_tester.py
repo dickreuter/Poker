@@ -4,8 +4,10 @@ import os
 
 import cv2
 import numpy as np
+import pandas as pd
 from coordinates_merger import CoordinatesMerger
-from poker.tools.mongo_manager import StrategyHandler
+from poker.tools.mongo_manager import (StrategyHandler, UpdateChecker)
+from poker import main
 from table_tester import MyTableScreenBased
 
 
@@ -14,6 +16,13 @@ class ScrapingTester():
         cm = CoordinatesMerger('../coordinates.json', 'templates/')
 
         os.chdir('..')
+
+        h = main.History()
+        u = UpdateChecker()
+        cursor = u.mongodb.internal.find()
+        c = cursor.next()
+        preflop_url = c['preflop_url']
+        h.preflop_sheet = pd.read_excel(preflop_url, sheet_name=None)
 
         p = StrategyHandler()
         p.read_strategy('pokerstars')
@@ -27,8 +36,9 @@ class ScrapingTester():
             {'func':t.get_lost_everything, 'params':{'p':p}},
             {'func':t.check_for_imback, 'params':{}},
             {'func':t.get_my_cards, 'params':{}},
+            {'func':t.get_my_funds, 'params':{'p':p}},
             {'func':t.get_table_cards, 'params':{}},
-            {'func':t.check_fast_fold, 'params':{'p':p}},
+            # {'func':t.check_fast_fold, 'params':{'p':p, 'h':h}},
             {'func':t.check_for_button, 'params':{}},
             {'func':t.get_round_number, 'params':{}},
             {'func':t.init_get_other_players_info, 'params':{}},
@@ -49,6 +59,7 @@ class ScrapingTester():
 
 
         for f in testFunctions:
+            print()
             print('|============> '+f['func'].__name__+' <============ : ')
             result = f['func'](**f['params'])
             print('result ==> '+str(result))
