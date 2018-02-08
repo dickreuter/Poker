@@ -207,12 +207,10 @@ class Table(object):
                 pass
             if force_method == 1:
                 try:
-                    t = re.findall(r'\d{1,3}\.\d{1,2}', str(t))[0]
+                    t = re.findall(r'\d{1,5}\.\d{1,2}', str(t))[0]
                 except:
-                    t = ''
-                if t == '':
                     try:
-                        t = re.findall(r'\d{1,3}', str(t))[0]
+                        t = re.findall(r'\d{1,5}', str(t))[0]
                     except:
                         t = ''
 
@@ -236,13 +234,13 @@ class Table(object):
 
         lst = []
         # try:
-        #    lst.append(pytesseract.image_to_string(img_orig, none, false,"-psm 6"))
+        #    lst.append(pytesseract.image_to_string(img_orig, config="-psm 13"))
         # except exception as e:
         #    self.logger.error(str(e))
 
         if force_method == 0:
             try:
-                lst.append(pytesseract.image_to_string(img_min, None, False, "-psm 6"))
+                lst.append(pytesseract.image_to_string(img_min, config="-psm 13"))
             except Exception as e:
                 self.logger.warning(str(e))
                 try:
@@ -250,14 +248,14 @@ class Table(object):
                 except:
                     self.logger.warning("Coulnd't safe debugging png file for ocr")
                     # try:
-                    #    lst.append(pytesseract.image_to_string(img_med, None, False, "-psm 6"))
+                    #    lst.append(pytesseract.image_to_string(img_med, config="-psm 13"))
                     # except Exception as e:
                     #    self.logger.error(str(e))
 
         try:
             if force_method == 1 or fix_number(lst[0], force_method=0) == '':
-                lst.append(pytesseract.image_to_string(img_mod, None, False, "-psm 6"))
-                lst.append(pytesseract.image_to_string(img_min, None, False, "-psm 6"))
+                lst.append(pytesseract.image_to_string(img_mod, config="-psm 13"))
+                lst.append(pytesseract.image_to_string(img_min, config="-psm 13"))
         except UnicodeDecodeError:
             pass
         except Exception as e:
@@ -271,10 +269,9 @@ class Table(object):
             final_value = ''
             for i, j in enumerate(lst):
                 try:
-                    self.logger.debug("OCR of " + name + " method {}: {} ".format(i, j))
+                    self.logger.debug("OCR of " + str(name) + " method {}: {} ".format(i, j))
                 except:
-                    self.logger.warning("OCR of " + name + " method failed")
-
+                    self.logger.warning("OCR of " + str(name) + " method failed")
                 lst[i] = fix_number(lst[i], force_method) if lst[i] != '' else lst[i]
                 final_value = lst[i] if final_value == '' else final_value
 

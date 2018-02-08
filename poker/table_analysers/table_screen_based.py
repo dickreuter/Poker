@@ -4,7 +4,6 @@ import re
 import sys
 import threading
 import time
-import operator
 from copy import copy
 
 import cv2  # opencv 3.0
@@ -93,7 +92,7 @@ class TableScreenBased(Table):
         #     # ChatWindow.show()
         #     try:
         #         t.chatText = (pytesseract.image_to_string(ChatWindow, None,
-        #         False, "-psm 6"))
+        #         False, config="-psm 13"))
         #         t.chatText = re.sub("[^abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\.]",
         #         "", t.chatText)
         #         keyword1 = 'disp'
@@ -417,7 +416,7 @@ class TableScreenBased(Table):
                 hsize = int((float(pil_image.size[1]) * float(wpercent)))
                 pil_image = pil_image.resize((basewidth, hsize), Image.ANTIALIAS)
                 try:
-                    recognizedText = (pytesseract.image_to_string(pil_image, None, False, "-psm 6"))
+                    recognizedText = (pytesseract.image_to_string(pil_image, config="-psm 13"))
                     recognizedText = re.sub(r'[\W+]', '', recognizedText)
                     self.logger.debug("Player name: " + recognizedText)
                     self.other_players[i]['name'] = recognizedText
@@ -589,10 +588,7 @@ class TableScreenBased(Table):
 
         value = self.get_ocr_float(pil_image, 'TotalPotValue', force_method=1)
 
-        try:
-            if not str(value) == '':
-                value = float(re.findall(r'\d{1,2}\.\d{1,2}', str(value))[0])
-        except:
+        if not isinstance(value, float) or value == 0:
             self.logger.warning("Total pot regex problem: " + str(value))
             value = ''
             self.logger.warning("unable to get pot value")
@@ -618,10 +614,7 @@ class TableScreenBased(Table):
 
         value = self.get_ocr_float(pil_image, 'TotalPotValue', force_method=1)
 
-        try:
-            if not str(value) == '':
-                value = float(re.findall(r'\d{1,2}\.\d{1,2}', str(value))[0])
-        except:
+        if not isinstance(value, float) or value == 0:
             self.logger.warning("Round pot regex problem: " + str(value))
             value = ''
             self.logger.warning("unable to get round pot value")
@@ -842,7 +835,7 @@ class TableScreenBased(Table):
         img_mod = img_resized.filter(ImageFilter.ModeFilter).filter(ImageFilter.SHARPEN)
 
         try:
-            h.game_number_on_screen = re.sub("[^0-9]", "", pytesseract.image_to_string(img_mod, None, False, "-psm 6"))
+            h.game_number_on_screen = re.sub("[^0-9]", "", pytesseract.image_to_string(img_mod, config="-psm 6"))
         except:
             self.logger.warning("Failed to get game number from screen")
             h.game_number_on_screen = ''

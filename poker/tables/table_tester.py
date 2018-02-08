@@ -3,9 +3,11 @@ import sys
 
 import cv2
 import numpy as np
+import pytesseract
 from PIL import Image
+from unittest.mock import MagicMock
 from poker.decisionmaker.montecarlo_python import MonteCarlo
-from poker.main import ConfigObj, pytesseract
+from poker.main import ConfigObj
 from poker.table_analysers.table_screen_based import (ImageFilter,
     TableScreenBased, copy, inspect)
 from poker.tools.mongo_manager import GameLogger, re
@@ -17,7 +19,8 @@ class MyTableScreenBased(TableScreenBased):
         self.big_blind_position_abs_op = -1
         self.position_utg_plus = -1
         game_logger = GameLogger()
-        gui_signals = []
+        gui_signals = MagicMock()
+
         super(TableScreenBased, self).__init__(p, gui_signals, game_logger, '3.05')
 
     def setCoordinates(self, coordinates):
@@ -246,36 +249,6 @@ class MyTableScreenBased(TableScreenBased):
 
         return True
 
-    def check_fast_fold(self, p):
-        if not len(self.mycards):
-            print('NO card found')
-            return False
-        if self.gameStage == "PreFlop":
-            m = MonteCarlo()
-            crd1, crd2 = m.get_two_short_notation(self.mycards)
-            crd1 = crd1.upper()
-            crd2 = crd2.upper()
-            sheet_name = str(self.position_utg_plus + 1)
-            if sheet_name == '6': return True
-            sheet['Hand'] = sheet['Hand'].apply(lambda x: str(x).upper())
-            handlist = set(sheet['Hand'].tolist())
-
-            found_card = ''
-
-            if crd1 in handlist:
-                found_card = crd1
-            elif crd2 in handlist:
-                found_card = crd2
-            elif crd1[0:2] in handlist:
-                found_card = crd1[0:2]
-
-            if found_card == '':
-                mouse_target = "Fold"
-                print("info : -------- FAST FOLD -------")
-                return False
-
-        return True
-
     def get_my_cards(self):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
 
@@ -398,14 +371,18 @@ class MyTableScreenBased(TableScreenBased):
         for i, fd in enumerate(func_dict):
             pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd['x1'], self.tlc[1] + fd['y1'],
                                         self.tlc[0] + fd['x2'], self.tlc[1] + fd['y2'])
+            basewidth = 500
+            wpercent = (basewidth / float(pil_image.size[0]))
+            hsize = int((float(pil_image.size[1]) * float(wpercent)))
+            pil_image = pil_image.resize((basewidth, hsize), Image.ANTIALIAS)
+            #pre_processed = self.pre_process_text_image(pil_image)
 
-            pre_processed = self.pre_process_text_image(pil_image)
 
-            cv2.imshow(inspect.stack()[0][3], pre_processed)
+            #cv2.imshow(inspect.stack()[0][3], cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR))
             cv2.waitKey()
 
             try:
-                recognizedText = (pytesseract.image_to_string(Image.fromarray(pre_processed), None, False, "-psm 13"))
+                recognizedText = (pytesseract.image_to_string(pil_image))
                 recognizedText = re.sub(r'[\W+]', '', recognizedText)
                 print("debug : Player name: " + recognizedText)
                 self.other_players[i]['name'] = recognizedText
@@ -423,7 +400,7 @@ class MyTableScreenBased(TableScreenBased):
             value = self.get_ocr_float(pil_image, str(inspect.stack()[0][3]))
             value = float(value) if value != '' else ''
             self.other_players[i]['funds'] = value
-            print(value)
+            print('get '+self.other_players[i]['name']+' funds: '+str(value))
             cv2.waitKey()
         return True
 
@@ -563,15 +540,12 @@ class MyTableScreenBased(TableScreenBased):
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
 
-        pot_image = self.pre_process_text_image(pil_image)
+        # pot_image = self.pre_process_text_image(pil_image)
 
-        cv2.imshow(inspect.stack()[0][3], pot_image)
-        value = float(pytesseract.image_to_string(Image.fromarray(pot_image), None, False, "-psm 6"))
+        cv2.imshow(inspect.stack()[0][3],  cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR))
+        value = self.get_ocr_float(pil_image, 'TotalPotValue', force_method=1)
 
-        try:
-            if not str(value) == '':
-                value = float(re.findall(r'\d{1,2}\.\d{1,2}', str(value))[0])
-        except:
+        if not isinstance(value, float) or value == 0:
             print("warning : Total pot regex problem: " + str(value))
             value = ''
             print("warning : unable to get pot value")
@@ -594,10 +568,7 @@ class MyTableScreenBased(TableScreenBased):
         cv2.imshow(inspect.stack()[0][3], cv2.cvtColor(np.array(pil_image), cv2.COLOR_RGB2BGR))
         value = self.get_ocr_float(pil_image, 'TotalPotValue', force_method=1)
 
-        try:
-            if not str(value) == '':
-                value = float(re.findall(r'\d{1,2}\.\d{1,2}', str(value))[0])
-        except:
+        if not isinstance(value, float) or value == 0:
             print("warning : Round pot regex problem: " + str(value))
             value = ''
             print("warning : unable to get round pot value")

@@ -1,13 +1,8 @@
-﻿################################################################################
-# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
-################################################################################
-
-/.idea
+﻿/.idea
 *.log
 *.xml
 /.vs/Poker/v14
 *.
-/poker/pics/*.png
 **/__pycache__
 *.pyc
 /poker/log/screenshots/*
@@ -16,21 +11,9 @@ sheet_not_found.png
 /poker/log/*.png
 *.log.*
 /poker/pics/*
-/poker/pics/debug_nocall.png
-/poker/pics/err_debug_fullscreen.png
-/poker/pics/ErrCallValue.png
-/poker/pics/myFunds.png
-/poker/pics/ocr_debug_BetValue.png
-/poker/pics/ocr_debug_CallValue.png
-/poker/pics/ocr_debug_get_bot_pot.png
-/poker/pics/ocr_debug_get_other_player_pots (Nicolas-vaio's conflicted copy 2017-04-09).png
-/poker/pics/ocr_debug_get_other_player_pots.png
-/poker/pics/ocr_debug_MyFunds.png
-/poker/pics/ocr_debug_TotalPotValue.png
-/poker/pics/7h.png
-/poker/pics/AS.png
-/poker/pics/BetValueError.png
 
 poker/config.ini
 
 *importmagic.idx
+
+poker/tables/templates/
