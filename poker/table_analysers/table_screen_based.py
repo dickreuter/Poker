@@ -588,10 +588,7 @@ class TableScreenBased(Table):
 
         value = self.get_ocr_float(pil_image, 'TotalPotValue', force_method=1)
 
-        try:
-            if not str(value) == '':
-                value = float(re.findall(r'\d{1,2}\.\d{1,2}', str(value))[0])
-        except:
+        if not isinstance(value, float) or value == 0:
             self.logger.warning("Total pot regex problem: " + str(value))
             value = ''
             self.logger.warning("unable to get pot value")
@@ -617,10 +614,7 @@ class TableScreenBased(Table):
 
         value = self.get_ocr_float(pil_image, 'TotalPotValue', force_method=1)
 
-        try:
-            if not str(value) == '':
-                value = float(re.findall(r'\d{1,2}\.\d{1,2}', str(value))[0])
-        except:
+        if not isinstance(value, float) or value == 0:
             self.logger.warning("Round pot regex problem: " + str(value))
             value = ''
             self.logger.warning("unable to get round pot value")
