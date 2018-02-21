@@ -1,22 +1,44 @@
+#!/usr/bin/env python
+
+import json
 import cv2
 from PIL import Image
 import numpy as np
-import cv2
+import sys
+from random import randint, seed
+
+sys.setrecursionlimit(10 ** 9)
 
 class Setup():
-    def __init__(self, topleftcorner_file: object, screenshot_file: object, output_file: object) -> object:
-        self.topLeftCorner = cv2.cvtColor(np.array(Image.open(topleftcorner_file)), cv2.COLOR_BGR2RGB)
-        #screenshot = cv2.cvtColor(np.array(Image.open(screenshot_file)), cv2.COLOR_BGR2RGB)
-        screenshot = cv2.imread(screenshot_file)
+    def __init__(self, topleftcorner_file:object, screenshot_file:object, output_file:object) -> object:
+        seed(654321)
 
-        count, points, bestfit = self.find_template_on_screen(self.topLeftCorner, screenshot, 0.05)
-        #Image.open(screenshot_file).show()
+        # cv2.imshow('img', screenshot)
+        # cv2.waitKey()
+        # cv2.imshow('img', cv2.imread(topleftcorner_file, 0))
+        # cv2.waitKey()
+        try:
+            screenshot = cv2.cvtColor(np.array(Image.open(screenshot_file)), cv2.COLOR_BGR2RGB)
+        except:
+            raise Exception(screenshot+' file is not available')
+        topLeftCorner = cv2.cvtColor(np.array(Image.open(topleftcorner_file)), cv2.COLOR_BGR2RGB)
+
+        count, points, bestfit, _ = self.find_template_on_screen(topLeftCorner, screenshot, 0.01)
+
+        if count == 1:
+            print("Top left corner found")
+            self.tlc = points[0]
+        else:
+            print("Top left corner NOT found")
+            return
+
+        # Image.open(screenshot_file).show()
         # cv2.imshow("Image",screenshot)
         # cv2.waitKey(0)
         # cv2.destroyAllWindows()
-        self.tlc = points[0]
-        print ("TLC: "+str(self.tlc))
-        cropped_screenshoht=self.crop_image(Image.open(screenshot_file),self.tlc[0],self.tlc[1],self.tlc[0]+1000,self.tlc[1]+900)
+
+        print ("Top left corner: "+str(self.tlc))
+        cropped_screenshoht=self.crop_image(Image.open(screenshot_file), self.tlc[0], self.tlc[1], self.tlc[0]+1000, self.tlc[1]+900)
         cropped_screenshoht.save(output_file)
 
         #
@@ -32,6 +54,7 @@ class Setup():
         #
         # print(findTemplate + " Relative: ")
         # print(str(tuple(map(sum, zip(points[0], rel)))))
+
 
     def find_template_on_screen(self, template, screenshot, threshold):
         # 'cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR',
@@ -55,13 +78,12 @@ class Setup():
             # cv2.rectangle(img, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
             count += 1
             points.append(pt)
-
         # plt.subplot(121),plt.imshow(res)
         # plt.subplot(122),plt.imshow(img,cmap = 'jet')
         # plt.imshow(img, cmap = 'gray', interpolation = 'bicubic')
         # plt.show()
+        return count, points, bestFit, min_val
 
-        return count, points, bestFit
 
     def crop_image(self, original, left, top, right, bottom):
         # original.show()
@@ -71,37 +93,44 @@ class Setup():
         return cropped_example
 
 if __name__=='__main__':
-    screenshot_file = "C:/temp/ps.png"
-    output_file = 'poker/log/table_setup_output.png'
-    top_left_corner_file="poker/pics/PS/topleft.png"
-    coordinates_file='coordinates.txt'
+    screenshot_file = 'backgrounds/PS2.png'
+    output_file = '../log/table_setup_output.png'
+    top_left_corner_file = '../pics/PS/topleft.png'
+    coordinates_file = '../coordinates.json'
+    tableNames = ['PP', 'SN', 'PS', 'PS2']
     table = 'PS2'
 
-    s = Setup(topleftcorner_file=top_left_corner_file,
-              screenshot_file=screenshot_file,
-              output_file=output_file)
+    s = Setup(top_left_corner_file,
+              screenshot_file,
+              output_file)
 
-    with open(coordinates_file, 'r') as inf:
-        c = eval(inf.read())
+    with open(coordinates_file) as inf:
+        c = json.load(inf)
         coo = c['screen_scraping']
 
-    img = cv2.imread(output_file, 0)
+
+    userTable = input("Choose a table to edit :{} (default : {})".format(tableNames, table))
+    if userTable and userTable in tableNames:
+        table = userTable
+
+    img = cv2.imread(output_file)
 
     for key, item in coo.items():
+        randomColor = [randint(0,255), randint(0, 255), randint(0, 255)]
         try:
             for c in item[table]:
                 try:
-                    print(c)
-                    cv2.rectangle(img, (c[0], c[1]), (c[2], c[3]), 200)
+                    cv2.rectangle(img, (c[0], c[1]), (c[2], c[3]), randomColor)
                 except:
                     pass
         except:
             pass
         try:
-            cv2.rectangle(img, (int(item[table]['x1']), int(item[table]['y1'])), (int(item[table]['x2']), int(item[table]['y2'])), 200)
+            cv2.rectangle(img, (int(item[table]['x1']), int(item[table]['y1'])), (int(item[table]['x2']), int(item[table]['y2'])), randomColor)
         except Exception as e:
             pass
 
+    windowName = 'display results'
 
-    cv2.imshow('img', img)
+    cv2.imshow(windowName, img)
     cv2.waitKey()

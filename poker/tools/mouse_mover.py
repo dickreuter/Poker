@@ -1,6 +1,7 @@
 import logging
 import random
 
+import json
 import numpy as np
 from poker.captcha.key_press_vbox import *
 from configobj import ConfigObj
@@ -102,8 +103,8 @@ class MouseMoverTableBased(MouseMover):
         super().__init__(self.vbox_mode)
 
         # amount,pre-delay,x1,xy,x1tolerance,x2tolerance
-        with open('coordinates.txt','r') as inf:
-            c = eval(inf.read())
+        with open('coordinates.json') as inf:
+            c = json.load(inf)
             coo=c['mouse_mover']
 
         self.coo=coo[pokersite[0:2]]
@@ -167,8 +168,8 @@ class MouseMoverTableBased(MouseMover):
 
         self.logger.info("Mouse moving to: "+decision)
         for action in self.coo[decision]:
-            for i in range (int(action[0])):
-                time.sleep(np.random.uniform(0, action[1], 1)[0])
+            for i in range(action['count']):
+                time.sleep(np.random.uniform(0, action['sleep'], 1)[0])
                 self.logger.debug("Mouse action:"+str(action))
                 if not self.vbox_mode:
                     (x1, y1) = self.mouse.position()
@@ -176,8 +177,8 @@ class MouseMoverTableBased(MouseMover):
                     x1 = self.old_x
                     y1 = self.old_y
                 x2 = 30 + tlx
-                self.mouse_mover(x1, y1, action[2]+ tlx, action[3]+ tly)
-                self.mouse_clicker(action[2]+ tlx, action[3]+ tly,action[4], action[5])
+                self.mouse_mover(x1, y1, action['x1']+ tlx, action['y1']+ tly)
+                self.mouse_clicker(action['x1']+tlx, action['y1']+tly, action['x2']-action['x1'], action['y2']-action['y1'])
 
         time.sleep(0.2)
         self.move_mouse_away_from_buttons()

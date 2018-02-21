@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import matplotlib
 import pandas as pd
 import time
@@ -11,6 +13,9 @@ import pytesseract
 import threading
 import datetime
 import sys
+
+# if main.py is called manually, set poker folder as root package
+sys.path.insert(0, os.path.abspath('..'))
 from PIL import Image
 from PyQt5 import QtWidgets, QtGui
 from configobj import ConfigObj
@@ -109,9 +114,9 @@ class ThreadManager(threading.Thread):
         h = History()
         preflop_url, preflop_url_backup = u.get_preflop_sheet_url()
         try:
-            h.preflop_sheet = pd.read_excel(preflop_url, sheetname=None)
+            h.preflop_sheet = pd.read_excel(preflop_url, sheet_name=None)
         except:
-            h.preflop_sheet = pd.read_excel(preflop_url_backup, sheetname=None)
+            h.preflop_sheet = pd.read_excel(preflop_url_backup, sheet_name=None)
 
         self.game_logger.clean_database()
 
