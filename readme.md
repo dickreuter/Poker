@@ -4,6 +4,11 @@
 
 Welcome to Nicolas Dickreuter's Python Pokerbot
 
+Please note that the table scraping needs updating as the layouts have 
+changed on both pokerstars and partypoker. Also, to train the bot I have started a new project here:
+https://github.com/dickreuter/neuron_poker. The goal is to train agents by
+playing against each other. Please contribute by creating a new Agent.
+
 ![alt text](https://github.com/dickreuter/Poker/raw/master/wiki/fullscreen1.png?raw=True)
 
 This pokerbot plays automatically on Pokerstars and Partypoker. 
