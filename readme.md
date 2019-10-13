@@ -1,5 +1,9 @@
 # Deep mind pokerbot for pokerstars and partypoker
 
+Hi,
+I will try to improve the reading of the values. It will no longer be necessary to define coordinates.txt exactly. It is enough a generous range around the value. For this, I have extracted the numbers individually for cv2 as .png. The whole thing I have adapted only for PartyPoker.
+
+
 
 
 Welcome to Nicolas Dickreuter's Python Pokerbot
