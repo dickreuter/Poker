@@ -444,40 +444,36 @@ class TableScreenBased(Table):
         for n in range(5):
             fd = func_dict[n]
             self.gui_signals.signal_progressbar_increase.emit(1)
-            pot_area_image = self.crop_image(self.entireScreenPIL, self.tlc[0] - 20 + fd[0], self.tlc[1] + fd[1] - 20,
+            screenshot_pilImage = self.crop_image(self.entireScreenPIL, self.tlc[0] - 20 + fd[0], self.tlc[1] + fd[1] - 20,
                                              self.tlc[0] + fd[2] + 20, self.tlc[1] + fd[3] + 20)
-            img = cv2.cvtColor(np.array(pot_area_image), cv2.COLOR_BGR2RGB)
-            count, points, bestfit, minvalue = self.find_template_on_screen(self.smallDollarSign1, img,
-                                                                            float(func_dict[5]))
-            has_small_dollarsign = count > 0
-            if has_small_dollarsign:
-                pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1],
-                                            self.tlc[0] + fd[2], self.tlc[1] + fd[3])
-                method = func_dict[6]
-                value = self.get_ocr_float(pil_image, str(inspect.stack()[0][3]), force_method=method)
-                try:
-                    if not str(value) == '':
-                        value = re.findall(r'\d{1}\.\d{1,2}', str(value))[0]
-                except:
-                    self.logger.warning("Player pot regex problem: " + str(value))
-                    value = ''
-                value = float(value) if value != '' else ''
+
+            value = self.find_value("other_player_pots", screenshot_pilImage, 0.06) 
+
+            if value != "":
+                self.other_players[n]['pot'] = float(value)
                 self.logger.debug("FINAL POT after regex: " + str(value))
-                self.other_players[n]['pot'] = value
+
+            if value == "":
+                value = ""
+
         return True
 
     def get_bot_pot(self, p):
         fd = self.coo[inspect.stack()[0][3]][self.tbl]
-        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1], self.tlc[0] + fd[2],
+        screenshot_pilImage = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1], self.tlc[0] + fd[2],
                                     self.tlc[1] + fd[3])
-        value = self.get_ocr_float(pil_image, str(inspect.stack()[0][3]), force_method=1)
-        try:
-            value = float(re.findall(r'\d{1}\.\d{1,2}', str(value))[0])
-        except:
+
+        value = self.find_value("other_player_pots", screenshot_pilImage, 0.0112)                                            
+
+        if value != "":
+            self.bot_pot = float(value) 
+            self.value = float(value)
+
+        if value == "":
+            self.bot_pot = 0
             self.logger.debug("Assuming bot pot is 0")
-            value = 0
-        self.bot_pot = value
-        return value
+
+        return True
 
     def get_other_player_status(self, p, h):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
@@ -583,26 +579,20 @@ class TableScreenBased(Table):
         self.gui_signals.signal_progressbar_increase.emit(5)
         self.gui_signals.signal_status.emit("Get Pot Value")
         self.logger.debug("Get TotalPot value")
-        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
+        screenshot_pilImage = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
 
-        value = self.get_ocr_float(pil_image, 'TotalPotValue', force_method=1)
+        self.totalPotValue  = self.find_value("total_pot_value", screenshot_pilImage, 0.01)    
 
-        try:
-            if not str(value) == '':
-                value = float(re.findall(r'\d{1,2}\.\d{1,2}', str(value))[0])
-        except:
-            self.logger.warning("Total pot regex problem: " + str(value))
-            value = ''
-            self.logger.warning("unable to get pot value")
-            self.gui_signals.signal_status.emit("Unable to get pot value")
-            pil_image.save("pics/ErrPotValue.png")
-            self.totalPotValue = h.previousPot
+        if self.totalPotValue != "":
+            self.totalPotValue = float(self.totalPotValue)
 
-        if value == '':
+        if self.totalPotValue == "":           
             self.totalPotValue = 0
-        else:
-            self.totalPotValue = value
+            self.logger.warning("Total pot regex problem: " + str(value))
+            self.gui_signals.signal_status.emit("Unable to get pot value")
+            screenshot_pilImage.save("pics/ErrPotValue.png")
+            self.totalPotValue = h.previousPot
 
         self.logger.info("Final Total Pot Value: " + str(self.totalPotValue))
         return True
@@ -615,56 +605,32 @@ class TableScreenBased(Table):
         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
 
-        value = self.get_ocr_float(pil_image, 'TotalPotValue', force_method=1)
+        self.round_pot_value = self.find_value("round_pot_value", screenshot_pilImage, 0.06) 
 
-        try:
-            if not str(value) == '':
-                value = float(re.findall(r'\d{1,2}\.\d{1,2}', str(value))[0])
-        except:
-            self.logger.warning("Round pot regex problem: " + str(value))
-            value = ''
-            self.logger.warning("unable to get round pot value")
-            self.gui_signals.signal_status.emit("Unable to get round pot value")
-            pil_image.save("pics/ErrRoundPotValue.png")
-            self.round_pot_value = h.previous_round_pot_value
+        if self.round_pot_value != "":
+            self.round_pot_value = float(self.round_pot_value)
 
-        if value == '':
+        if self.round_pot_value == "":
             self.round_pot_value = 0
-        else:
-            self.round_pot_value = value
-
-        self.logger.info("Final round pot Value: " + str(self.round_pot_value))
+            self.gui_signals.signal_status.emit("Unable to get round pot value")
+            self.logger.warning("unable to get round pot value")
+            self.round_pot_value = h.previous_round_pot_value
+            pil_image.save("pics/ErrRoundPotValue.png")
         return True
 
     def get_my_funds(self, h, p):
         func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
         self.gui_signals.signal_progressbar_increase.emit(5)
         self.logger.debug("Get my funds")
-        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
+        screenshot_pilImage = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
 
-        if p.selected_strategy['pokerSite'][0:2] == 'PP':
-            basewidth = 200
-            wpercent = (basewidth / float(pil_image.size[0]))
-            hsize = int((float(pil_image.size[1]) * float(wpercent)))
-            pil_image = pil_image.resize((basewidth, hsize), Image.ANTIALIAS)
+        self.myFunds = self.find_value("my_funds", screenshot_pilImage, 0.01) 
 
-        pil_image_filtered = pil_image.filter(ImageFilter.ModeFilter)
-        pil_image_filtered2 = pil_image.filter(ImageFilter.MedianFilter)
+        if self.myFunds != "":
+            self.myFunds = float(self.myFunds)
 
-        self.myFundsError = False
-        try:
-            pil_image.save("pics/myFunds.png")
-        except:
-            self.logger.info("Could not save myFunds.png")
-
-        self.myFunds = self.get_ocr_float(pil_image, 'MyFunds')
-        if self.myFunds == '':
-            self.myFunds = self.get_ocr_float(pil_image_filtered, 'MyFunds')
-        if self.myFunds == '':
-            self.myFunds = self.get_ocr_float(pil_image_filtered2, 'MyFunds')
-
-        if self.myFunds == '':
+        if self.myFunds == "":
             self.myFundsError = True
             self.myFunds = float(h.myFundsHistory[-1])
             self.logger.info("myFunds not regognised!")
@@ -672,7 +638,8 @@ class TableScreenBased(Table):
             self.logger.warning("Funds NOT recognised. See pics/FundsError.png to see why.")
             self.entireScreenPIL.save("pics/FundsError.png")
             time.sleep(0.5)
-        self.logger.debug("Funds: " + str(self.myFunds))
+
+        self.logger.debug("my_funds: " + str(self.myFunds))
         return True
 
     def get_current_call_value(self, p):
@@ -680,24 +647,21 @@ class TableScreenBased(Table):
         self.gui_signals.signal_status.emit("Get Call value")
         self.gui_signals.signal_progressbar_increase.emit(5)
 
-        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
+        screenshot_pilImage = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
 
         if not self.checkButton:
-            self.currentCallValue = self.get_ocr_float(pil_image, 'CallValue')
+
+            self.currentCallValue = self.find_value("call_and_raise", screenshot_pilImage, 0.01)     
+
         elif self.checkButton:
             self.currentCallValue = 0
 
-        if self.currentCallValue != '':
+        if self.currentCallValue != "":
             self.getCallButtonValueSuccess = True
         else:
             self.checkButton = True
             self.logger.debug("Assuming check button as call value is zero")
-            try:
-                pil_image.save("pics/ErrCallValue.png")
-            except:
-                pass
-
         return True
 
     def get_current_bet_value(self, p):
@@ -706,10 +670,10 @@ class TableScreenBased(Table):
         self.gui_signals.signal_status.emit("Get Bet Value")
         self.logger.debug("Get bet value")
 
-        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
+        screenshot_pilImage = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
 
-        self.currentBetValue = self.get_ocr_float(pil_image, 'BetValue')
+        self.currentBetValue = self.find_value("call_and_raise", screenshot_pilImage, 0.01) 
 
         if self.currentCallValue == '' and p.selected_strategy['pokerSite'][0:2] == "PS" and self.allInCallButton:
             self.logger.warning("Taking call value from button on the right")
