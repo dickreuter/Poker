@@ -171,6 +171,65 @@ class Table(object):
         # plt.show()
         return count, points, bestFit, min_val
 
+    # New function  
+    def find_value(self, fund, pil_image, threshold_each ):
+        numberImages = dict()
+        img = dict()
+        values ="0123456789."
+        keyList = []
+        x_value = []   
+
+        for x in values:
+            name = "pics/PP/"+ fund + "/" + x + ".png"
+            img[x] = Image.open(name)
+            numberImages[x] = cv2.cvtColor(np.array(img[x]), cv2.COLOR_BGR2RGB)
+
+        def go_through_value(img_cv2, which_number):            
+            if which_number == "all":
+                for key, value in numberImages.items():
+                    template_cv2 = value
+                    res = cv2.matchTemplate(img_cv2 ,template_cv2 ,cv2.TM_CCOEFF_NORMED)
+
+                    threshold = 0.9
+                    loc = np.where( res >= threshold)
+
+                    for pt in zip(*loc[::-1]):
+                        x_value.append(pt[0])
+                x_value.sort()
+
+                return x_value
+
+            if which_number == "each_one":
+                for key, value in numberImages.items():
+                    template_cv2 = value
+                    method = eval('cv2.TM_SQDIFF_NORMED')
+                    res_1 = cv2.matchTemplate(img_cv2 ,template_cv2 , method)
+                    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res_1)
+
+                    if min_val < threshold_each:
+                        keyList.append(key)
+
+                return keyList
+
+        img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
+
+        value = go_through_value(img, "all")
+        
+        width, height = pil_image.size  # Get dimensions
+
+        for a, fd in enumerate(value):
+            image_cut = self.crop_image(pil_image, fd, 0, fd + 11 , height)
+            img = cv2.cvtColor(np.array(image_cut), cv2.COLOR_BGR2RGB)
+            liste = go_through_value(img, "each_one")
+        
+        try:       
+            Value = float(''.join(map(str, liste))) 
+
+        except:
+            Value = ""
+        
+        return Value
+
     def get_ocr_float(self, img_orig, name, force_method=0, binarize=False):
         def binarize_array(image, threshold=200):
             """Binarize a numpy array."""
