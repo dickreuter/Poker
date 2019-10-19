@@ -602,7 +602,7 @@ class TableScreenBased(Table):
         self.gui_signals.signal_progressbar_increase.emit(2)
         self.gui_signals.signal_status.emit("Get round pot value")
         self.logger.debug("Get round pot value")
-        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
+        screenshot_pilImage = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
 
         self.round_pot_value = self.find_value("round_pot_value", screenshot_pilImage, 0.06) 
@@ -614,8 +614,8 @@ class TableScreenBased(Table):
             self.round_pot_value = 0
             self.gui_signals.signal_status.emit("Unable to get round pot value")
             self.logger.warning("unable to get round pot value")
-            self.round_pot_value = h.previous_round_pot_value
-            pil_image.save("pics/ErrRoundPotValue.png")
+            #self.round_pot_value = h.previous_round_pot_value
+            screenshot_pilImage.save("pics/ErrRoundPotValue.png")
         return True
 
     def get_my_funds(self, h, p):
