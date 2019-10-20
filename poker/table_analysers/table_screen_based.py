@@ -797,7 +797,7 @@ class TableScreenBased(Table):
 
         h.game_number_on_screen = self.Game_Number
 
-        self.logger.info("Game Number: " + self.Game_Number)
+        self.logger.info("Game Number: " + str(self.Game_Number))
  
         return True
 
