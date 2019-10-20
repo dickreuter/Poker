@@ -784,29 +784,21 @@ class TableScreenBased(Table):
         return True
 
     def get_game_number_on_screen(self, h):
-        try:
-            func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
-        except KeyError:
-            h.game_number_on_screen = ''
-            return True
-
-        pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
+        func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        screenshot_pilImage = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict['x1'], self.tlc[1] + func_dict['y1'],
                                     self.tlc[0] + func_dict['x2'], self.tlc[1] + func_dict['y2'])
-        basewidth = 200
-        wpercent = (basewidth / float(pil_image.size[0]))
-        hsize = int((float(pil_image.size[1]) * float(wpercent)))
-        img_resized = pil_image.resize((basewidth, hsize), Image.ANTIALIAS)
 
-        img_min = img_resized.filter(ImageFilter.MinFilter)
-        # img_med = img_resized.filter(ImageFilter.MedianFilter)
-        img_mod = img_resized.filter(ImageFilter.ModeFilter).filter(ImageFilter.SHARPEN)
+        #Bild vergrößern
+        basewidth = 150
+        hsize = 40
+        screenshot_pilImage = screenshot_pilImage.resize((basewidth,hsize), Image.ANTIALIAS)
+ 
+        self.Game_Number = int(self.find_value("game_number", screenshot_pilImage, 0.01)) 
 
-        try:
-            h.game_number_on_screen = re.sub("[^0-9]", "", pytesseract.image_to_string(img_mod, None, False, "-psm 6"))
-        except:
-            self.logger.warning("Failed to get game number from screen")
-            h.game_number_on_screen = ''
+        h.game_number_on_screen = self.Game_Number
 
+        self.logger.info("Game Number: " + self.Game_Number)
+ 
         return True
 
     def get_snowie_advice(self, p, h):

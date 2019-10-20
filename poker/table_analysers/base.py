@@ -176,8 +176,12 @@ class Table(object):
         numberImages = dict()
         img = dict()
         values ="0123456789."
+        number_values = "0123456789"
         keyList = []
-        x_value = []   
+        x_value = []  
+
+        if Fund == "game_number": #Beim Game_Number auslesen stört der "." (Punkt), deshalb wird er hier weggelassen
+            values = number_values   
 
         for x in values:
             name = "pics/PP/"+ fund + "/" + x + ".png"
