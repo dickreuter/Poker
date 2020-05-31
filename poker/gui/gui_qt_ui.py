@@ -2,11 +2,13 @@
 
 # Form implementation generated from reading ui file 'GUI_QT_ui.ui'
 #
-# Created by: PyQt5 UI code generator 5.5.1
+# Created by: PyQt5 UI code generator 5.14.2
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_Pokerbot(object):
     def setupUi(self, Pokerbot):
@@ -101,6 +103,18 @@ class Ui_Pokerbot(object):
         self.gridLayout.addWidget(self.pushButton_help, 0, 5, 1, 1)
         self.gridLayout_2 = QtWidgets.QGridLayout()
         self.gridLayout_2.setObjectName("gridLayout_2")
+        self.progress_bar = QtWidgets.QProgressBar(self.centralwidget)
+        self.progress_bar.setProperty("value", 0)
+        self.progress_bar.setTextVisible(False)
+        self.progress_bar.setObjectName("progress_bar")
+        self.gridLayout_2.addWidget(self.progress_bar, 5, 0, 1, 1)
+        self.comboBox_current_strategy = QtWidgets.QComboBox(self.centralwidget)
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.comboBox_current_strategy.setFont(font)
+        self.comboBox_current_strategy.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
+        self.comboBox_current_strategy.setObjectName("comboBox_current_strategy")
+        self.gridLayout_2.addWidget(self.comboBox_current_strategy, 7, 0, 1, 1)
         self.last_decision = QtWidgets.QLabel(self.centralwidget)
         font = QtGui.QFont()
         font.setPointSize(12)
@@ -115,18 +129,6 @@ class Ui_Pokerbot(object):
         self.last_decision.setIndent(-1)
         self.last_decision.setObjectName("last_decision")
         self.gridLayout_2.addWidget(self.last_decision, 2, 0, 1, 1)
-        self.progress_bar = QtWidgets.QProgressBar(self.centralwidget)
-        self.progress_bar.setProperty("value", 0)
-        self.progress_bar.setTextVisible(False)
-        self.progress_bar.setObjectName("progress_bar")
-        self.gridLayout_2.addWidget(self.progress_bar, 5, 0, 1, 1)
-        self.comboBox_current_strategy = QtWidgets.QComboBox(self.centralwidget)
-        font = QtGui.QFont()
-        font.setPointSize(10)
-        self.comboBox_current_strategy.setFont(font)
-        self.comboBox_current_strategy.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
-        self.comboBox_current_strategy.setObjectName("comboBox_current_strategy")
-        self.gridLayout_2.addWidget(self.comboBox_current_strategy, 6, 0, 1, 1)
         self.status = QtWidgets.QLabel(self.centralwidget)
         font = QtGui.QFont()
         font.setPointSize(8)
@@ -136,6 +138,12 @@ class Ui_Pokerbot(object):
         self.status.setAlignment(QtCore.Qt.AlignCenter)
         self.status.setObjectName("status")
         self.gridLayout_2.addWidget(self.status, 4, 0, 1, 1)
+        self.table_selection = QtWidgets.QComboBox(self.centralwidget)
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.table_selection.setFont(font)
+        self.table_selection.setObjectName("table_selection")
+        self.gridLayout_2.addWidget(self.table_selection, 6, 0, 1, 1)
         self.gridLayout.addLayout(self.gridLayout_2, 5, 3, 1, 3)
         self.vLayout3 = QtWidgets.QVBoxLayout()
         self.vLayout3.setObjectName("vLayout3")
@@ -441,6 +449,12 @@ class Ui_Pokerbot(object):
         self.label.setObjectName("label")
         self.verticalLayout_4.addWidget(self.label)
         self.gridLayout.addLayout(self.verticalLayout_4, 3, 0, 1, 2)
+        self.button_table_setup = QtWidgets.QPushButton(self.centralwidget)
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.button_table_setup.setFont(font)
+        self.button_table_setup.setObjectName("button_table_setup")
+        self.gridLayout.addWidget(self.button_table_setup, 0, 1, 1, 1)
         Pokerbot.setCentralWidget(self.centralwidget)
         self.statusbar = QtWidgets.QStatusBar(Pokerbot)
         self.statusbar.setEnabled(True)
@@ -463,13 +477,14 @@ class Ui_Pokerbot(object):
         self.button_genetic_algorithm.setToolTip(_translate("Pokerbot", "<html><head/><body><p>An automatic algorithm that suggests what you need to change. It shows you at each stage whether you need to be more or less aggressive in calling, betting, bluffing etc.</p></body></html>"))
         self.button_genetic_algorithm.setText(_translate("Pokerbot", "Genetic Algorithm"))
         self.pushButton_setup.setToolTip(_translate("Pokerbot", "<html><head/><body><p>Setup which virtual machine the bot should access. You need to install Virtualbox to use this function (available for free). The pokerstars software will then run in the virtualbox and the pokerbot needs to run outside of the virtualbox.</p></body></html>"))
-        self.pushButton_setup.setText(_translate("Pokerbot", "Setup"))
+        self.pushButton_setup.setText(_translate("Pokerbot", "Settings"))
         self.pushButton_help.setText(_translate("Pokerbot", "Help"))
-        self.last_decision.setToolTip(_translate("Pokerbot", "Last made decision by the bot"))
-        self.last_decision.setText(_translate("Pokerbot", "Last Decision"))
         self.progress_bar.setToolTip(_translate("Pokerbot", "Shows progress when the buttons appear"))
         self.comboBox_current_strategy.setToolTip(_translate("Pokerbot", "Choose the strategy that the bot should use to play"))
+        self.last_decision.setToolTip(_translate("Pokerbot", "Last made decision by the bot"))
+        self.last_decision.setText(_translate("Pokerbot", "Last Decision"))
         self.status.setText(_translate("Pokerbot", "I\'m ready!"))
+        self.table_selection.setToolTip(_translate("Pokerbot", "Change the table interpratation. Restart required to take effect."))
         self.label_10.setText(_translate("Pokerbot", "BB wins per 100 hands"))
         self.label_6.setText(_translate("Pokerbot", "Assumed players"))
         self.label1.setText(_translate("Pokerbot", "Minimum call equity after adj"))
@@ -492,6 +507,8 @@ class Ui_Pokerbot(object):
         self.label_15.setText(_translate("Pokerbot", "Montecarlo runs"))
         self.label_18.setText(_translate("Pokerbot", "Other player has initiative"))
         self.label.setText(_translate("Pokerbot", "Hand number"))
+        self.button_table_setup.setToolTip(_translate("Pokerbot", "Learn to recognize a different table"))
+        self.button_table_setup.setText(_translate("Pokerbot", "Table Setup"))
 
 
 if __name__ == "__main__":
@@ -502,4 +519,3 @@ if __name__ == "__main__":
     ui.setupUi(Pokerbot)
     Pokerbot.show()
     sys.exit(app.exec_())
-

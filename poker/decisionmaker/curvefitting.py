@@ -3,33 +3,36 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from copy import copy
+
 '''
 Helps to fit curves when two points and a curvature are given.
 '''
+
 
 class Curvefitting_scipy():
     def __init__(self, xf, smallBlind, bigBlind, maxValue, minEquity, maxEquity, pw, pl=False):
         x = [minEquity, 1]
         y = [bigBlind, maxValue]
-        self.pw=pw
-        popt, pcov = curve_fit(self.func, x, y,maxfev=10000)
+        self.pw = pw
+        popt, pcov = curve_fit(self.func, x, y, maxfev=10000)
 
-        yf=self.func(xf, *popt)
-        yf2=copy(yf)
-        yf2=[x + smallBlind for x in yf2]
-        yf2=np.array(yf)
-        #print (yf)
+        yf = self.func(xf, *popt)
+        yf2 = copy(yf)
+        yf2 = [x + smallBlind for x in yf2]
+        yf2 = np.array(yf)
+        # print (yf)
         yf2[yf2 > maxEquity] = 0
         yf2[yf2 < minEquity] = smallBlind
-        self.x=xf
-        self.y=yf2
+        self.x = xf
+        self.y = yf2
         if pl:
             plt.figure()
             plt.plot(xf, yf, 'r-', label="Fitted Curve")
             plt.show()
 
-    def func(self,x, adj1, adj2):
+    def func(self, x, adj1, adj2):
         return ((x + adj1) ** self.pw) * adj2
+
 
 class Curvefitting(object):
     def __init__(self, x, smallBlind, bigBlind, maxValue, minEquity, maxEquity, max_X, pw, pl=False):
@@ -82,10 +85,7 @@ if __name__ == '__main__':
     minEquity = 0.75
     maxEquity = 0.9
     pw = 16
-    max_X=1
+    max_X = 1
 
     xf = np.linspace(0, 1, 50)
-    d=Curvefitting(xf, smallBlind, bigBlind, maxValue, minEquity, maxEquity, max_X, pw, pl=False)
-
-
-
+    d = Curvefitting(xf, smallBlind, bigBlind, maxValue, minEquity, maxEquity, max_X, pw, pl=False)

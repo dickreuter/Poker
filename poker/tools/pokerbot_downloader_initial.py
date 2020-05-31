@@ -1,13 +1,14 @@
-import requests
-import sys
 import subprocess
+import sys
+
+import requests
 from pymongo import MongoClient
 
 
 class UpdateChecker():
     def __init__(self):
-        self.mongoclient = MongoClient('mongodb://guest:donald@dickreuter.com:27017/POKER')
-        self.mongodb = self.mongoclient.POKER
+        self.mongoclient = MongoClient(f'mongodb://neuron_poker:donald@dickreuter.com/neuron_poker')
+        self.mongodb = self.mongoclient.neuron_poker
 
     def downloader(self):
         self.file_name = "Pokerbot_installer.exe"
@@ -46,6 +47,7 @@ class UpdateChecker():
             self.mongodb.close()
             sys.exit()
 
+
 if __name__ == '__main__':
-    u=UpdateChecker()
+    u = UpdateChecker()
     u.check_update(0)

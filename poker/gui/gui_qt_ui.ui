@@ -172,7 +172,7 @@
        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Setup which virtual machine the bot should access. You need to install Virtualbox to use this function (available for free). The pokerstars software will then run in the virtualbox and the pokerbot needs to run outside of the virtualbox.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="text">
-       <string>Setup</string>
+       <string>Settings</string>
       </property>
      </widget>
     </item>
@@ -190,6 +190,34 @@
     </item>
     <item row="5" column="3" colspan="3">
      <layout class="QGridLayout" name="gridLayout_2">
+      <item row="5" column="0">
+       <widget class="QProgressBar" name="progress_bar">
+        <property name="toolTip">
+         <string>Shows progress when the buttons appear</string>
+        </property>
+        <property name="value">
+         <number>0</number>
+        </property>
+        <property name="textVisible">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="7" column="0">
+       <widget class="QComboBox" name="comboBox_current_strategy">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="toolTip">
+         <string>Choose the strategy that the bot should use to play</string>
+        </property>
+        <property name="sizeAdjustPolicy">
+         <enum>QComboBox::AdjustToContents</enum>
+        </property>
+       </widget>
+      </item>
       <item row="2" column="0">
        <widget class="QLabel" name="last_decision">
         <property name="font">
@@ -228,34 +256,6 @@
         </property>
        </widget>
       </item>
-      <item row="5" column="0">
-       <widget class="QProgressBar" name="progress_bar">
-        <property name="toolTip">
-         <string>Shows progress when the buttons appear</string>
-        </property>
-        <property name="value">
-         <number>0</number>
-        </property>
-        <property name="textVisible">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="0">
-       <widget class="QComboBox" name="comboBox_current_strategy">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="toolTip">
-         <string>Choose the strategy that the bot should use to play</string>
-        </property>
-        <property name="sizeAdjustPolicy">
-         <enum>QComboBox::AdjustToContents</enum>
-        </property>
-       </widget>
-      </item>
       <item row="4" column="0">
        <widget class="QLabel" name="status">
         <property name="font">
@@ -274,6 +274,18 @@
         </property>
         <property name="alignment">
          <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0">
+       <widget class="QComboBox" name="table_selection">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="toolTip">
+         <string>Change the table interpratation. Restart required to take effect.</string>
         </property>
        </widget>
       </item>
@@ -829,6 +841,21 @@
        </widget>
       </item>
      </layout>
+    </item>
+    <item row="0" column="1">
+     <widget class="QPushButton" name="button_table_setup">
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="toolTip">
+       <string>Learn to recognize a different table</string>
+      </property>
+      <property name="text">
+       <string>Table Setup</string>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>

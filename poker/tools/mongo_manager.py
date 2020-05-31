@@ -2,6 +2,8 @@
 Functions that are used to log and analyse present and past pokergames
 '''
 import datetime
+import io
+import logging
 import os
 import re
 import subprocess
@@ -15,11 +17,13 @@ import requests
 from configobj import ConfigObj
 from pymongo import MongoClient
 
+from poker.tools.helper import COMPUTER_NAME
+
 
 class UpdateChecker():
     def __init__(self):
-        self.mongoclient = MongoClient('mongodb://guest:donald@dickreuter.com:27017/POKER')
-        self.mongodb = self.mongoclient.POKER
+        self.mongoclient = MongoClient(f'mongodb://neuron_poker:donald@dickreuter.com/neuron_poker')
+        self.mongodb = self.mongoclient.neuron_poker
 
     def downloader(self):
         self.file_name = "Pokerbot_installer.exe"
@@ -67,8 +71,8 @@ class UpdateChecker():
 
 class StrategyHandler(object):
     def __init__(self):
-        self.mongoclient = MongoClient('mongodb://guest:donald@dickreuter.com:27017/POKER')
-        self.mongodb = self.mongoclient.POKER
+        self.mongoclient = MongoClient(f'mongodb://neuron_poker:donald@dickreuter.com/neuron_poker')
+        self.mongodb = self.mongoclient.neuron_poker
 
     def get_playable_strategy_list(self):
         l = list(self.mongodb.strategies.distinct("Strategy"))[::-1]
@@ -76,7 +80,7 @@ class StrategyHandler(object):
 
     def check_defaults(self):
         if not 'initialFunds2' in self.selected_strategy: self.selected_strategy['initialFunds2'] = \
-        self.selected_strategy['initialFunds']
+            self.selected_strategy['initialFunds']
         if not 'use_relative_equity' in self.selected_strategy: self.selected_strategy['use_relative_equity'] = 0
         if not 'use_pot_multiples' in self.selected_strategy: self.selected_strategy['use_pot_multiples'] = 0
         if not 'opponent_raised_without_initiative_flop' in self.selected_strategy: self.selected_strategy[
@@ -136,7 +140,7 @@ class StrategyHandler(object):
 
     def read_strategy(self, strategy_override=''):
         config = ConfigObj("config.ini")
-        last_strategy = (config['last_strategy'])
+        last_strategy = config['last_strategy']
         self.current_strategy = last_strategy if strategy_override == '' else strategy_override
         try:
             cursor = self.mongodb.strategies.find({'Strategy': self.current_strategy})
@@ -194,9 +198,9 @@ class Singleton(type):
 
 
 class GameLogger(object, metaclass=Singleton):
-    def __init__(self, connection='mongodb://guest:donald@dickreuter.com:27017/POKER'):
-        self.mongoclient = MongoClient('mongodb://guest:donald@dickreuter.com:27017/POKER')
-        self.mongodb = self.mongoclient.POKER
+    def __init__(self, connection='mongodb://neuron_poker:donald@dickreuter.com/neuron_poker'):
+        self.mongoclient = MongoClient(f'mongodb://neuron_poker:donald@dickreuter.com/neuron_poker')
+        self.mongodb = self.mongoclient.neuron_poker
 
     def clean_database(self):
         if os.environ['COMPUTERNAME'] == 'NICOLAS-ASUS' or os.environ['COMPUTERNAME'] == 'Home-PC-ND':
@@ -300,7 +304,7 @@ class GameLogger(object, metaclass=Singleton):
         t_write_db.start()
 
     def get_collusion_cards(self, gamenumber, gamestage):
-        gamenumber_part = gamenumber[-7:]
+        gamenumber_part = gamenumber
         computername = os.environ['COMPUTERNAME']
         cursor = self.mongodb.collusion.find(
             {"gamenumber": {"$regex": gamenumber_part}, "computername": {"$ne": computername}})
@@ -594,10 +598,9 @@ class GameLogger(object, metaclass=Singleton):
         return pd.DataFrame(list(cursor))
 
     def optimize_preflop_call_parameters(self, p_name, p_value, game_stage, decision):
+        from poker.decisionmaker.curvefitting import Curvefitting
         L = GameLogger()
         df = L.get_neural_training_data(p_name, p_value, game_stage, decision)
-
-        from poker.decisionmaker import Curvefitting
 
         smallBlind = 0.02
         bigBlind = 0.04
@@ -662,6 +665,147 @@ class GameLogger(object, metaclass=Singleton):
         except:
             flop_presence = np.nan
         return flop_presence
+
+
+# config = get_config()
+tables_collection = 'tables'
+log = logging.getLogger(__name__)
+
+
+class MongoManager(metaclass=Singleton):
+    """Single class to manage interaction with mongodb"""
+
+    def __init__(self):
+        """Initialize connection as singleton"""
+        # login = config.get('Mongo', 'login')
+        # password = config.get('Mongo', 'password')
+        self.client = MongoClient(f'mongodb://neuron_poker:donald@dickreuter.com/neuron_poker')
+        self.db = self.client['neuron_poker']
+
+    def upload_dataframe(self, df, collection_name):
+        """updload df to mongodb"""
+        self.db[collection_name].insert_many(df.to_dict('records'))
+
+    def get_dataframe(self, collection_name, max_rows=0):
+        """download dict from mongodb and convert to dataframe"""
+        df = pd.DataFrame(list(self.db[collection_name].find().limit(max_rows)))
+        return df
+
+    def update_table_image(self, pil_image, label, table_name):
+        """update table image"""
+        img_byte_array = io.BytesIO()
+        pil_image.save(img_byte_array, format='PNG')
+        binary_image = img_byte_array.getvalue()
+        self.db[tables_collection].update({'table_name': table_name},
+                                          {'$set': {label: binary_image}}, upsert=True)
+
+    def get_table(self, table_name):
+        """
+        get full table structure, pictures, cards and coordinates
+
+        Args:
+            table_name: str
+
+        Returns: dict
+
+        """
+        try:
+            table = list(self.db[tables_collection].find({'table_name': table_name}, {"_id": 0}))[0]
+        except IndexError:
+            raise RuntimeError ("No table found for given name.")
+        return table
+
+    def get_table_owner(self, table_name):
+        """
+        get owner of a table
+
+        Args:
+            table_name: str
+
+        Returns: dict
+
+        """
+        table = list(self.db[tables_collection].find({'table_name': table_name}, {"_owner": 1}))
+        return table[0]['_owner']
+
+    def get_available_tables(self):
+        """
+        Get available tables
+
+        Returns: list
+
+        """
+        tables = list(self.db[tables_collection].distinct('table_name'))
+        return tables
+
+    def find(self, collection, search_dict):
+        """
+        Find entry in mongodb
+
+        Args:
+            collection: str
+            search_dict: dict
+
+        Returns:
+
+        """
+        output = self.db[collection].find(search_dict)
+        return output
+
+    def save_image(self, table_name, label, image):
+        """
+        save market image in mognodb
+
+        Args:
+            table_name: str
+            label: str
+            image: byte
+
+        """
+        self.db[tables_collection].update({'table_name': table_name},
+                                          {'$set': {label: image}}, upsert=True)
+
+    def create_new_table(self, table_name):
+        """
+        Create a new table entry
+
+        Args:
+            table_name: str
+
+        """
+        if table_name in self.available_tables():
+            return False
+        self.db[tables_collection].update({'table_name': table_name},
+                                          {'$set': {"_owner": COMPUTER_NAME}}, upsert=True)
+        return True
+
+    def create_new_table_from_old(self, table_name, old_table_name):
+        """
+        Create a new table entry
+
+        Args:
+            table_name: str
+            old_table_name: str
+
+        """
+        if table_name in self.available_tables():
+            return False
+        dic = self.get_table(old_table_name)
+        dic['_owner'] = COMPUTER_NAME
+        dic['table_name'] = table_name
+        self.db[tables_collection].insert_one(dic)
+        return True
+
+    def save_coordinates(self, table_name, label, coordinates_dict):
+        """Save coordinates for a given label for a given table"""
+        log.info(f"Saving to mongodb.... {coordinates_dict}")
+        self.db[tables_collection].update({'table_name': table_name},
+                                          {'$set': {label: coordinates_dict}}, upsert=True)
+        log.info("Coordinates saved")
+
+    def available_tables(self):
+        """Available tables"""
+        return self.db[tables_collection].distinct("table_name")
 
 
 if __name__ == '__main__':

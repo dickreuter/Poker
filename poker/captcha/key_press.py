@@ -348,7 +348,7 @@ def keyboard_stream(string):
 
 ################################################################################
 
-import time, sys
+import time
 
 
 def Write(text):

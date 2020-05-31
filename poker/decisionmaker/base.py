@@ -26,7 +26,7 @@ class DecisionBase(object):
         Step = 0.01
         MaxCall = 1000
         rng = int(np.round((1 * Step + MaxCall) / Step))
-        EV =[self.calc_bet_EV(E, P, S * Step, c, t) for S in range(rng)]
+        EV = [self.calc_bet_EV(E, P, S * Step, c, t) for S in range(rng)]
         X = range(rng)
 
         # plt.plot(X[1:200],EV[1:200])

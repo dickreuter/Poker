@@ -5,8 +5,8 @@ import numpy as np
 
 from poker.decisionmaker.decisionmaker import Decision
 from poker.decisionmaker.decisionmaker import DecisionTypes
-from poker.tools import StrategyHandler
-from . import init_table
+from poker.tests import init_table
+from poker.tools.mongo_manager import StrategyHandler
 
 
 class TestDecision(TestCase):
@@ -36,7 +36,7 @@ class TestDecision(TestCase):
 
     def test_position_adjustment(self):
         t, p, gui_signals, h, logger = init_table('tests/screenshots/467381034_PreFlop_0.png', strategy='Pokemon4')
-        t.gameStage="PreFlop"
+        t.gameStage = "PreFlop"
         p = StrategyHandler()
         p.read_strategy('Nickpick12')
         l = MagicMock()
@@ -143,7 +143,6 @@ class TestDecision(TestCase):
         self.assertEqual(t.first_raiser_utg, 4)
         self.assertEqual(np.isnan(t.second_raiser_utg), True)
         self.assertEqual(t.preflop_sheet_name, '6R5')
-
 
     def incorrect_preflop_table2(self):
         t, p, gui_signals, h, logger = init_table('tests/screenshots/3Ts.png', strategy='Snowie3')

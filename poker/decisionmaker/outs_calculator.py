@@ -1,4 +1,3 @@
-import numpy as np
 import itertools as iter
 import logging
 
@@ -7,7 +6,6 @@ class Outs_Calculator(object):
     def __init__(self):
         self.logger = logging.getLogger('out_calc')
         self.logger.setLevel(logging.DEBUG)
-
 
         self.gut_shot_straight = False  # get_gut_shot_straight_draw
         self.open_straight = False  # get_open_straight_draw
@@ -149,7 +147,7 @@ class Outs_Calculator(object):
             self.get_gut_shot_straight_draw
         ]
 
-        #print(len(outs_rank))
+        # print(len(outs_rank))
 
         for i in range(0, len(outs_rank)):
             outs = outs_list[i] = outs_rank[i](oc)
@@ -186,7 +184,7 @@ class Outs_Calculator(object):
 
         if straight_outs == 4:
             outs = 4
-            #if boardFlush: outs -= 1
+            # if boardFlush: outs -= 1
             self.gut_shot_straight = True
         else:
             self.gut_shot_straight = False
@@ -212,7 +210,7 @@ class Outs_Calculator(object):
         if straight_outs == 8:
             self.open_straight = True
             outs = 8
-            #if boardFlush: outs -= 1
+            # if boardFlush: outs -= 1
         else:
             outs = 0
             self.open_straight = False
@@ -230,14 +228,13 @@ class Outs_Calculator(object):
             suits.count(flushSuit)
             if suits.count(flushSuit) == 4:
                 outs = 9
-                #if boardFlush: outs -= 1
+                # if boardFlush: outs -= 1
                 self.flush_draw = True
                 break
             else:
                 outs = 0
                 self.flush_draw = False
         return outs
-
 
     # Inside Straight and Flush // Open Straight and Flush
     def get_straight_flush_draw(self, oc):
@@ -275,12 +272,12 @@ class Outs_Calculator(object):
         if self.flush_draw and straight_draw:
             if straight_outs == 4:
                 outs = 12
-                #if boardFlush: outs -= 1
+                # if boardFlush: outs -= 1
                 self.gut_shot_and_flush = True
                 self.open_straight_and_flush = False
             elif straight_outs == 8:
                 outs = 15
-                #if boardFlush: outs -= 1
+                # if boardFlush: outs -= 1
                 self.open_straight_and_flush = True
                 self.gut_shot_and_flush = False
             else:

@@ -2,11 +2,13 @@
 
 # Form implementation generated from reading ui file 'gui_qt_ui_strategy_manager.ui'
 #
-# Created by: PyQt5 UI code generator 5.5.1
+# Created by: PyQt5 UI code generator 5.14.2
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_editor_form(object):
     def setupUi(self, editor_form):
@@ -134,17 +136,6 @@ class Ui_editor_form(object):
         self.collusion.setChecked(True)
         self.collusion.setObjectName("collusion")
         self.gridLayout_51.addWidget(self.collusion, 3, 0, 1, 1)
-        self.layoutWidget = QtWidgets.QWidget(self.tab_5)
-        self.layoutWidget.setGeometry(QtCore.QRect(20, 10, 261, 51))
-        self.layoutWidget.setObjectName("layoutWidget")
-        self.verticalLayout_7 = QtWidgets.QVBoxLayout(self.layoutWidget)
-        self.verticalLayout_7.setObjectName("verticalLayout_7")
-        self.label_13 = QtWidgets.QLabel(self.layoutWidget)
-        self.label_13.setObjectName("label_13")
-        self.verticalLayout_7.addWidget(self.label_13)
-        self.pokerSite = QtWidgets.QComboBox(self.layoutWidget)
-        self.pokerSite.setObjectName("pokerSite")
-        self.verticalLayout_7.addWidget(self.pokerSite)
         self.tabWidget.addTab(self.tab_5, "")
         self.PreFlop = QtWidgets.QWidget()
         self.PreFlop.setObjectName("PreFlop")
@@ -1900,8 +1891,6 @@ class Ui_editor_form(object):
         self.label_43.setText(_translate("editor_form", "Don\'t log changes in my pot if the exceed this threshold (to avoid confusing the chart if the funds are not read correctly for a round)"))
         self.collusion.setToolTip(_translate("editor_form", "<html><head/><body><p>You can participate in collusion. This means your cards are shared with other players that are using the bot and if you happen to be on the same table both bots will know each others cards. If one of the bots drops out the remaining bot will be able to run a more accurate montecarlo simulation as he knows which 2 cards the remaining third party player does not hold for sure.</p></body></html>"))
         self.collusion.setText(_translate("editor_form", "Participate in collusion"))
-        self.label_13.setText(_translate("editor_form", "Poker Site (Party Poker or Poker Stars)"))
-        self.pokerSite.setToolTip(_translate("editor_form", "Currently Partypoker (PP) and Pokerstars (PS) are supported"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_5), _translate("editor_form", "Table Parameters"))
         self.preflop_override.setText(_translate("editor_form", "Override with Pokersnowie table"))
         self.groupBox_28.setTitle(_translate("editor_form", "Calling and betting curves: maximum sizes depending on equity"))
@@ -2111,4 +2100,3 @@ if __name__ == "__main__":
     ui.setupUi(editor_form)
     editor_form.show()
     sys.exit(app.exec_())
-

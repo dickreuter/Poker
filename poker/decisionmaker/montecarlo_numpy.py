@@ -6,6 +6,7 @@ This version is based purely on Numpy and is still work in progress
 '''
 
 import time
+
 import numpy as np
 
 strided = np.lib.stride_tricks.as_strided
@@ -38,7 +39,7 @@ class Evaluation(object):
 
         self.print_output()
 
-        print("Time Elapsed: "+str(time.time() - self.start))
+        print("Time Elapsed: " + str(time.time() - self.start))
 
     def distribute_cards(self, card1, card2, tablecards, iterations):
         self.iterations = iterations
@@ -178,10 +179,11 @@ class Evaluation(object):
         cards_stacked_suits_straightvariants_highest_card = cards_stacked_suits_straightvariants[..., 0, :]
         highest_straightflush_cards = np.sum(cards_stacked_suits_straightvariants_highest_card, axis=0)
 
-        straight_flushes_by_suit_and_variant = np.all(np.diff(cards_stacked_suits_straightvariants, axis=3) == -1, axis=3)
+        straight_flushes_by_suit_and_variant = np.all(np.diff(cards_stacked_suits_straightvariants, axis=3) == -1,
+                                                      axis=3)
         straightflush_by_suit = np.any(straight_flushes_by_suit_and_variant, axis=0)
         self.straightflush_score = np.sum(highest_straightflush_cards * straightflush_by_suit, axis=0)
-        self.straightflush=np.any(straightflush_by_suit, axis=0)
+        self.straightflush = np.any(straightflush_by_suit, axis=0)
 
     def get_highcard(self):
         self.highcard = np.all(np.stack((self.pair_amount == 0, self.threeofakind == False,
@@ -199,16 +201,11 @@ class Evaluation(object):
              self.straight_multiplier, self.flush_multiplier, self.fullhouse_multiplier, self.fourofakind_multiplier,
              self.straighflush_multiplier])
         detected_types = np.stack((self.highcard, self.pair, self.twopair, self.threeofakind,
-                                          self.straight, self.flush, self.fullhouse, self.fourofakind,
-                                          self.straightflush), axis=0)
+                                   self.straight, self.flush, self.fullhouse, self.fourofakind,
+                                   self.straightflush), axis=0)
         detected_types = detected_types * 1
-        active_multiplier = cardtype_multiplier[:,None,None] * detected_types
+        active_multiplier = cardtype_multiplier[:, None, None] * detected_types
         relevant_multiplier = np.argmax(active_multiplier, axis=0)
-
-
-
-
-
 
     def print_output(self):
         print("Decks")

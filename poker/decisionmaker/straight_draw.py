@@ -2,6 +2,7 @@ import numpy as np
 
 
 def straight_draw(cards):
+    """"""
     values = "23456789TJQKA"
     card_value_indices = []
     [card_value_indices.append(values.index(i)) for i in cards[0]]  # get indices of the card values

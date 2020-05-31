@@ -1,0 +1,1536 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>table_setup_form</class>
+ <widget class="QWidget" name="table_setup_form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>802</width>
+    <height>962</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <widget class="QScrollArea" name="scrollArea">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>590</y>
+     <width>761</width>
+     <height>341</height>
+    </rect>
+   </property>
+   <property name="widgetResizable">
+    <bool>true</bool>
+   </property>
+   <widget class="QWidget" name="scrollAreaWidgetContents">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>759</width>
+      <height>339</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="0">
+      <widget class="QLabel" name="screenshot_label">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QPushButton" name="crop">
+   <property name="geometry">
+    <rect>
+     <x>550</x>
+     <y>310</y>
+     <width>231</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>Crops the image to only show everything relative to the top left corner.</string>
+   </property>
+   <property name="text">
+    <string>Crop from top left corner</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="topleft_corner">
+   <property name="geometry">
+    <rect>
+     <x>600</x>
+     <y>280</y>
+     <width>181</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;After selecting the top left corner (usually the poker sign at the top left of the windows window). It is used as a refernece point to find the poker window. CAREFUL: If you change the top left corner, all subsequent locations need to entered again!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="text">
+    <string>Save newly selected top left corner</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="tesseract">
+   <property name="geometry">
+    <rect>
+     <x>530</x>
+     <y>400</y>
+     <width>141</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>Tries to use OCR on the last marked location to see if a number of name can be correctly recognized</string>
+   </property>
+   <property name="text">
+    <string>Recognize number</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="take_screenshot_button">
+   <property name="geometry">
+    <rect>
+     <x>550</x>
+     <y>180</y>
+     <width>231</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>MS Shell Dlg 2</family>
+     <pointsize>8</pointsize>
+     <weight>50</weight>
+     <italic>false</italic>
+     <bold>false</bold>
+    </font>
+   </property>
+   <property name="toolTip">
+    <string>Takes a screenshot of the entire screen. This is the first step you need to take</string>
+   </property>
+   <property name="text">
+    <string>Take screenshot</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_3">
+   <property name="geometry">
+    <rect>
+     <x>530</x>
+     <y>420</y>
+     <width>131</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Tesseract recognition</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="tesseract_label">
+   <property name="geometry">
+    <rect>
+     <x>670</x>
+     <y>420</y>
+     <width>47</width>
+     <height>14</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>na</string>
+   </property>
+  </widget>
+  <widget class="QTabWidget" name="tabWidget">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>40</y>
+     <width>511</width>
+     <height>401</height>
+    </rect>
+   </property>
+   <property name="currentIndex">
+    <number>0</number>
+   </property>
+   <widget class="QWidget" name="tab_2">
+    <attribute name="title">
+     <string>Buttons and search areas</string>
+    </attribute>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>227</width>
+       <height>321</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>Button Images and value areas</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_6">
+      <item row="0" column="0">
+       <layout class="QGridLayout" name="gridLayout_3">
+        <item row="2" column="0">
+         <widget class="QPushButton" name="raise_button">
+          <property name="toolTip">
+           <string>Only select the raise text, without the chainging element of the raise amount</string>
+          </property>
+          <property name="text">
+           <string>Raise Button</string>
+          </property>
+         </widget>
+        </item>
+        <item row="6" column="0">
+         <widget class="QPushButton" name="all_in_call_button">
+          <property name="toolTip">
+           <string>Ensure to only select the portion that never changes</string>
+          </property>
+          <property name="text">
+           <string>All in call Button</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QPushButton" name="buttons_search_area">
+          <property name="toolTip">
+           <string>Area where fold, call and raise buttons are located</string>
+          </property>
+          <property name="text">
+           <string>Buttons search area</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QPushButton" name="fold_button">
+          <property name="text">
+           <string>Fold Button</string>
+          </property>
+         </widget>
+        </item>
+        <item row="11" column="0">
+         <widget class="QPushButton" name="im_back">
+          <property name="toolTip">
+           <string>Image showing I'm back, in case of tha time out</string>
+          </property>
+          <property name="text">
+           <string>I'm back</string>
+          </property>
+         </widget>
+        </item>
+        <item row="10" column="0">
+         <widget class="QPushButton" name="lost_everything">
+          <property name="toolTip">
+           <string>An image showing no funds left: e.g. 0.00</string>
+          </property>
+          <property name="text">
+           <string>Lost everything image</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QPushButton" name="check_button">
+          <property name="text">
+           <string>Check Button</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0">
+         <widget class="QPushButton" name="call_button">
+          <property name="toolTip">
+           <string>Only select a small portion of the button (e.g. the call text), without the actual call amount</string>
+          </property>
+          <property name="text">
+           <string>Call Button</string>
+          </property>
+         </widget>
+        </item>
+        <item row="8" column="0">
+         <widget class="QPushButton" name="my_turn">
+          <property name="toolTip">
+           <string>Best select the top left corner of the call button, or any other element that is always identical for all situations when it's your turn</string>
+          </property>
+          <property name="text">
+           <string>&quot;My Turn&quot; image</string>
+          </property>
+         </widget>
+        </item>
+        <item row="7" column="0">
+         <widget class="QPushButton" name="my_turn_search_area">
+          <property name="toolTip">
+           <string>Select an area where to look for a single sign that it's your turn</string>
+          </property>
+          <property name="text">
+           <string>&quot;My turn&quot; search area</string>
+          </property>
+         </widget>
+        </item>
+        <item row="9" column="0">
+         <widget class="QPushButton" name="lost_everything_search_area">
+          <property name="toolTip">
+           <string>Select area to look for a sign that all funds are lost. This is usually the area of the player's left funds.</string>
+          </property>
+          <property name="text">
+           <string>Lost everything search area</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0">
+         <widget class="QPushButton" name="fast_fold_button">
+          <property name="text">
+           <string>Fast Fold Button</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QGroupBox" name="groupBox_6">
+     <property name="geometry">
+      <rect>
+       <x>260</x>
+       <y>30</y>
+       <width>223</width>
+       <height>201</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>Search Areas</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_4">
+      <item row="1" column="0">
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <item>
+         <widget class="QPushButton" name="my_cards_area">
+          <property name="toolTip">
+           <string>Area where the player holds his cards</string>
+          </property>
+          <property name="text">
+           <string>My Cards area</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="table_cards_area">
+          <property name="toolTip">
+           <string>Area where the cards appear on the table at flop, turn and river</string>
+          </property>
+          <property name="text">
+           <string>Table Cards Area</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="total_pot_area">
+          <property name="toolTip">
+           <string>Total pot. Make sure to only select the numbers very narrowly and test it by pressing the recognize number or text button</string>
+          </property>
+          <property name="text">
+           <string>Total Pot Area</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="current_round_pot">
+          <property name="toolTip">
+           <string>The pot of the current rount (e.g. flop). Select the area very narrowly and test it by pressing the recognize number button</string>
+          </property>
+          <property name="text">
+           <string>Current Round Pot</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QWidget" name="verticalLayoutWidget">
+     <property name="geometry">
+      <rect>
+       <x>270</x>
+       <y>230</y>
+       <width>201</width>
+       <height>112</height>
+      </rect>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <widget class="QPushButton" name="raise_value">
+        <property name="toolTip">
+         <string>The value on the raise button. Make sure to select very narrowly and then test with the recognize number button</string>
+        </property>
+        <property name="text">
+         <string>Raise Value</string>
+        </property>
+        <property name="flat">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="call_value">
+        <property name="toolTip">
+         <string>Value on the call button, make sure to select narrowly and then test by pressing the recognize number button</string>
+        </property>
+        <property name="text">
+         <string>Call value</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="all_in_call_value">
+        <property name="toolTip">
+         <string>The all in call value may be in a different place in case the all in call button appears. Make sure to select the value narrowly and test it with the recognize number button</string>
+        </property>
+        <property name="text">
+         <string>All in call value</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="game_number">
+        <property name="toolTip">
+         <string>Game number for collusion, in partypoker available on top right</string>
+        </property>
+        <property name="text">
+         <string>Game Number</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="players_tab">
+    <attribute name="title">
+     <string>Players</string>
+    </attribute>
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>40</y>
+       <width>371</width>
+       <height>151</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>Players</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_5">
+      <item row="0" column="0">
+       <widget class="QGroupBox" name="groupBox_3">
+        <property name="title">
+         <string>Table size</string>
+        </property>
+        <widget class="QComboBox" name="max_players">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>20</y>
+           <width>91</width>
+           <height>22</height>
+          </rect>
+         </property>
+         <property name="toolTip">
+          <string>Select the amount of players on the table</string>
+         </property>
+         <item>
+          <property name="text">
+           <string>6</string>
+          </property>
+         </item>
+        </widget>
+       </widget>
+      </item>
+      <item row="0" column="1" rowspan="2">
+       <layout class="QFormLayout" name="formLayout_2">
+        <item row="0" column="0">
+         <widget class="QPushButton" name="player_funds_area">
+          <property name="toolTip">
+           <string>area where the remaining player funds are shown. Use narrow selection and test it by pressing the Recognize number button</string>
+          </property>
+          <property name="text">
+           <string>Player funds area</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QPushButton" name="player_pot_area">
+          <property name="toolTip">
+           <string>Pot of the player</string>
+          </property>
+          <property name="text">
+           <string>Player pot area</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QPushButton" name="player_name_area">
+          <property name="text">
+           <string>Player name area</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QPushButton" name="covered_card_area">
+          <property name="contextMenuPolicy">
+           <enum>Qt::NoContextMenu</enum>
+          </property>
+          <property name="toolTip">
+           <string>Area where the player has the cards, so the bot can detect if he is still in the game</string>
+          </property>
+          <property name="toolTipDuration">
+           <number>9</number>
+          </property>
+          <property name="text">
+           <string>Covered card area</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
+         <widget class="QPushButton" name="button_search_area">
+          <property name="toolTip">
+           <string>Where the given player would have the button to indicate he is the dealer. </string>
+          </property>
+          <property name="text">
+           <string>Button search area</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="1" column="0">
+       <widget class="QGroupBox" name="groupBox_4">
+        <property name="title">
+         <string>Player (0=myself)</string>
+        </property>
+        <widget class="QComboBox" name="current_player">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>30</y>
+           <width>91</width>
+           <height>22</height>
+          </rect>
+         </property>
+         <property name="toolTip">
+          <string>0 is the bot, then counter clockwise the other players</string>
+         </property>
+         <item>
+          <property name="text">
+           <string>0</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>1</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>2</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>3</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>4</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>5</string>
+          </property>
+         </item>
+        </widget>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tab_4">
+    <attribute name="title">
+     <string>Cards</string>
+    </attribute>
+    <widget class="QGroupBox" name="groupBox_5">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>0</y>
+       <width>491</width>
+       <height>261</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Ensure to mark as narrowly as possible. Don't mark the full card, but only the number and the symbol.</string>
+     </property>
+     <property name="title">
+      <string>Images</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_10">
+          <item>
+           <widget class="QPushButton" name="card_ah">
+            <property name="text">
+             <string>AH</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_kh">
+            <property name="text">
+             <string>KH</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_qh">
+            <property name="text">
+             <string>QH</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_jh">
+            <property name="text">
+             <string>JH</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_th">
+            <property name="text">
+             <string>TH</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_9h">
+            <property name="text">
+             <string>9H</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_8h">
+            <property name="text">
+             <string>8H</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_7h">
+            <property name="text">
+             <string>7H</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_6h">
+            <property name="text">
+             <string>6H</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_5h">
+            <property name="text">
+             <string>5H</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_4h">
+            <property name="text">
+             <string>4H</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_3h">
+            <property name="text">
+             <string>3H</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_2h">
+            <property name="text">
+             <string>2H</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QPushButton" name="card_as">
+            <property name="text">
+             <string>AS</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_ks">
+            <property name="text">
+             <string>KS</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_qs">
+            <property name="text">
+             <string>QS</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_js">
+            <property name="text">
+             <string>JS</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_ts">
+            <property name="text">
+             <string>TS</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_9s">
+            <property name="text">
+             <string>9S</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_8s">
+            <property name="text">
+             <string>8S</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_7s">
+            <property name="text">
+             <string>7S</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_6s">
+            <property name="text">
+             <string>6S</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_5s">
+            <property name="text">
+             <string>5S</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_4s">
+            <property name="text">
+             <string>4S</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_3s">
+            <property name="text">
+             <string>3S</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_2s">
+            <property name="text">
+             <string>2S</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_9">
+          <item>
+           <widget class="QPushButton" name="card_ad">
+            <property name="text">
+             <string>AD</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_kd">
+            <property name="text">
+             <string>KD</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_qd">
+            <property name="text">
+             <string>QD</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_jd">
+            <property name="text">
+             <string>JD</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_td">
+            <property name="text">
+             <string>TD</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_9d">
+            <property name="text">
+             <string>9D</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_8d">
+            <property name="text">
+             <string>8D</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_7d">
+            <property name="text">
+             <string>7D</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_6d">
+            <property name="text">
+             <string>6D</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_5d">
+            <property name="text">
+             <string>5D</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_4d">
+            <property name="text">
+             <string>4D</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_3d">
+            <property name="text">
+             <string>3D</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_2d">
+            <property name="text">
+             <string>2D</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_8">
+          <item>
+           <widget class="QPushButton" name="card_ac">
+            <property name="text">
+             <string>AC</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_kc">
+            <property name="text">
+             <string>KC</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_qc">
+            <property name="text">
+             <string>QC</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_jc">
+            <property name="text">
+             <string>JC</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_tc">
+            <property name="text">
+             <string>TC</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_9c">
+            <property name="text">
+             <string>9C</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_8c">
+            <property name="text">
+             <string>8C</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_7c">
+            <property name="text">
+             <string>7C</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_6c">
+            <property name="text">
+             <string>6C</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_5c">
+            <property name="text">
+             <string>5C</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_4c">
+            <property name="text">
+             <string>4C</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_3c">
+            <property name="text">
+             <string>3C</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="card_2c">
+            <property name="text">
+             <string>2C</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QPushButton" name="dealer_button">
+          <property name="toolTip">
+           <string>The dealer button image. Make sure to select very narrowly and don't include any background that might change depending on it's location</string>
+          </property>
+          <property name="text">
+           <string>Dealer button</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="covered_card">
+          <property name="toolTip">
+           <string>Used to recognize which players are still in the game. Mark very narrowly to ensure it's the same for all players.</string>
+          </property>
+          <property name="text">
+           <string>Covered card</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tab_5">
+    <attribute name="title">
+     <string>Mouse Targets</string>
+    </attribute>
+    <widget class="QGroupBox" name="groupBox_8">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>401</width>
+       <height>121</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>Mouse Control</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_2">
+      <item row="1" column="2">
+       <widget class="QPushButton" name="mouse_fast_fold">
+        <property name="text">
+         <string>Fast Fold</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3">
+       <widget class="QPushButton" name="mouse_full_pot">
+        <property name="text">
+         <string>Full pot</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QPushButton" name="mouse_call">
+        <property name="text">
+         <string>Call</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QPushButton" name="mouse_raise">
+        <property name="text">
+         <string>Raise</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QPushButton" name="mouse_call2">
+        <property name="toolTip">
+         <string>Location of call button if no raise can be made (usally the same as normal call button, except for Pokerstars it is at the place of the raise button)</string>
+        </property>
+        <property name="text">
+         <string>Call2</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QPushButton" name="mouse_fold">
+        <property name="toolTip">
+         <string>Area of fold button to click</string>
+        </property>
+        <property name="text">
+         <string>Fold</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="QPushButton" name="mouse_all_in">
+        <property name="text">
+         <string>All In</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QPushButton" name="mouse_half_pot">
+        <property name="text">
+         <string>Half pot</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QPushButton" name="mouse_imback">
+        <property name="toolTip">
+         <string>Location of I'm back button</string>
+        </property>
+        <property name="text">
+         <string>I'm back</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QPushButton" name="mouse_check">
+        <property name="toolTip">
+         <string>Location of I'm back button</string>
+        </property>
+        <property name="text">
+         <string>Check</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2">
+       <widget class="QPushButton" name="mouse_increase">
+        <property name="text">
+         <string>Increase</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tab">
+    <attribute name="title">
+     <string>Test</string>
+    </attribute>
+    <widget class="QPushButton" name="test_all_button">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>80</y>
+       <width>371</width>
+       <height>81</height>
+      </rect>
+     </property>
+     <property name="toolTip">
+      <string>Reads the table as per taken screenshot (use take screenshot button) and displays the results in the below box. That way you can see if further changes are necessary.</string>
+     </property>
+     <property name="text">
+      <string>Test all</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_4">
+     <property name="geometry">
+      <rect>
+       <x>30</x>
+       <y>30</y>
+       <width>441</width>
+       <height>16</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Take a screenshot and press Test all. Then check the console output for error messages.</string>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QGroupBox" name="groupBox_7">
+   <property name="geometry">
+    <rect>
+     <x>520</x>
+     <y>0</y>
+     <width>271</width>
+     <height>91</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Load Template for editing</string>
+   </property>
+   <widget class="QPushButton" name="load">
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>60</y>
+      <width>91</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="toolTip">
+     <string>Load the template to show which items have already been learned. They can still be overwritten by simply marking the area or image and then pressing the corresponding butotn.</string>
+    </property>
+    <property name="text">
+     <string>Load template</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>10</y>
+      <width>61</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Table name</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="table_name">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>30</y>
+      <width>261</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="toolTip">
+     <string>Select a table to edit. You can only edit your own tables. To edit take a screenshot, crop it with the cop left corner, then select the area top left and bottom right and then choose the corresponding button</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QPushButton" name="load_topleft_corner">
+   <property name="geometry">
+    <rect>
+     <x>550</x>
+     <y>230</y>
+     <width>231</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>Loads a previously saved top left corner</string>
+   </property>
+   <property name="text">
+    <string>Load fop left corner</string>
+   </property>
+  </widget>
+  <widget class="QScrollArea" name="scrollArea_2">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>460</y>
+     <width>761</width>
+     <height>81</height>
+    </rect>
+   </property>
+   <property name="widgetResizable">
+    <bool>true</bool>
+   </property>
+   <widget class="QWidget" name="scrollAreaWidgetContents_2">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>759</width>
+      <height>79</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QLabel" name="preview_label">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QLabel" name="label_2">
+   <property name="geometry">
+    <rect>
+     <x>530</x>
+     <y>180</y>
+     <width>21</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
+   </property>
+   <property name="text">
+    <string>1</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_8">
+   <property name="geometry">
+    <rect>
+     <x>530</x>
+     <y>230</y>
+     <width>16</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
+   </property>
+   <property name="text">
+    <string>2</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_9">
+   <property name="geometry">
+    <rect>
+     <x>530</x>
+     <y>320</y>
+     <width>21</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
+   </property>
+   <property name="text">
+    <string>3</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_11">
+   <property name="geometry">
+    <rect>
+     <x>530</x>
+     <y>370</y>
+     <width>261</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>8</pointsize>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
+   </property>
+   <property name="text">
+    <string>Step 6 (only for numbers, optional)</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_10">
+   <property name="geometry">
+    <rect>
+     <x>150</x>
+     <y>20</y>
+     <width>231</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
+   </property>
+   <property name="text">
+    <string>Step 5. Assign selection to save it</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_13">
+   <property name="geometry">
+    <rect>
+     <x>530</x>
+     <y>160</y>
+     <width>51</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
+   </property>
+   <property name="text">
+    <string>Steps</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_14">
+   <property name="geometry">
+    <rect>
+     <x>600</x>
+     <y>160</y>
+     <width>141</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>8</pointsize>
+     <weight>50</weight>
+     <bold>false</bold>
+    </font>
+   </property>
+   <property name="text">
+    <string>Ensure poker table is visible</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_12">
+   <property name="geometry">
+    <rect>
+     <x>470</x>
+     <y>0</y>
+     <width>51</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
+   </property>
+   <property name="text">
+    <string>Step 0</string>
+   </property>
+  </widget>
+  <widget class="QGroupBox" name="groupBox_9">
+   <property name="geometry">
+    <rect>
+     <x>520</x>
+     <y>90</y>
+     <width>271</width>
+     <height>71</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Create a new template</string>
+   </property>
+   <widget class="QPushButton" name="blank_new">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>40</y>
+      <width>91</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="toolTip">
+     <string>Create a new blank template</string>
+    </property>
+    <property name="text">
+     <string>blank new</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="copy_to_new">
+    <property name="geometry">
+     <rect>
+      <x>100</x>
+      <y>40</y>
+      <width>91</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="toolTip">
+     <string>Take current template and create a new one that you can then edit</string>
+    </property>
+    <property name="text">
+     <string>copy to new</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="new_name">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>20</y>
+      <width>221</width>
+      <height>20</height>
+     </rect>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QLabel" name="label_15">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>570</y>
+     <width>131</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+     <weight>50</weight>
+     <bold>false</bold>
+    </font>
+   </property>
+   <property name="text">
+    <string>Full screenshot</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_16">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>440</y>
+     <width>491</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>8</pointsize>
+     <weight>50</weight>
+     <bold>false</bold>
+    </font>
+   </property>
+   <property name="text">
+    <string>Selection after clicking top left and bottom right of below screenshot</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_17">
+   <property name="geometry">
+    <rect>
+     <x>140</x>
+     <y>570</y>
+     <width>601</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
+   </property>
+   <property name="text">
+    <string>Step 4: click on top left and bottom right (2 separate clicks) of what you want to select</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_18">
+   <property name="geometry">
+    <rect>
+     <x>530</x>
+     <y>380</y>
+     <width>261</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>8</pointsize>
+     <weight>50</weight>
+     <bold>false</bold>
+    </font>
+   </property>
+   <property name="text">
+    <string>Check if recognition works correctly</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

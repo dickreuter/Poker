@@ -2,11 +2,13 @@
 
 # Form implementation generated from reading ui file 'help.ui'
 #
-# Created by: PyQt5 UI code generator 5.5.1
+# Created by: PyQt5 UI code generator 5.14.2
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_help_form(object):
     def setupUi(self, help_form):
@@ -47,4 +49,3 @@ if __name__ == "__main__":
     ui.setupUi(help_form)
     help_form.show()
     sys.exit(app.exec_())
-

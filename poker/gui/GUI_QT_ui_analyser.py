@@ -2,11 +2,13 @@
 
 # Form implementation generated from reading ui file 'GUI_QT_ui_analyser.ui'
 #
-# Created by: PyQt5 UI code generator 5.5.1
+# Created by: PyQt5 UI code generator 5.14.2
 #
 # WARNING! All changes made in this file will be lost!
 
+
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 
 class Ui_Form(object):
     def setupUi(self, Form):
@@ -72,6 +74,7 @@ class Ui_Form(object):
         self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 140, 261, 411))
         self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
         self.vLayout_bar = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
+        self.vLayout_bar.setContentsMargins(0, 0, 0, 0)
         self.vLayout_bar.setObjectName("vLayout_bar")
         self.widget_2 = QtWidgets.QWidget(self.verticalLayoutWidget)
         self.widget_2.setObjectName("widget_2")
@@ -80,6 +83,7 @@ class Ui_Form(object):
         self.horizontalLayoutWidget_3.setGeometry(QtCore.QRect(280, 140, 411, 411))
         self.horizontalLayoutWidget_3.setObjectName("horizontalLayoutWidget_3")
         self.horizontalLayout_3 = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget_3)
+        self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         self.widget_3 = QtWidgets.QWidget(self.horizontalLayoutWidget_3)
         self.widget_3.setObjectName("widget_3")
@@ -88,6 +92,7 @@ class Ui_Form(object):
         self.verticalLayoutWidget_2.setGeometry(QtCore.QRect(10, 10, 681, 121))
         self.verticalLayoutWidget_2.setObjectName("verticalLayoutWidget_2")
         self.vLayout_fundschange = QtWidgets.QVBoxLayout(self.verticalLayoutWidget_2)
+        self.vLayout_fundschange.setContentsMargins(0, 0, 0, 0)
         self.vLayout_fundschange.setObjectName("vLayout_fundschange")
         self.widget = QtWidgets.QWidget(self.verticalLayoutWidget_2)
         self.widget.setObjectName("widget")
@@ -143,4 +148,3 @@ if __name__ == "__main__":
     ui.setupUi(Form)
     Form.show()
     sys.exit(app.exec_())
-

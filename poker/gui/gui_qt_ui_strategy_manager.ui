@@ -287,32 +287,6 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="layoutWidget">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>10</y>
-         <width>261</width>
-         <height>51</height>
-        </rect>
-       </property>
-       <layout class="QVBoxLayout" name="verticalLayout_7">
-        <item>
-         <widget class="QLabel" name="label_13">
-          <property name="text">
-           <string>Poker Site (Party Poker or Poker Stars)</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QComboBox" name="pokerSite">
-          <property name="toolTip">
-           <string>Currently Partypoker (PP) and Pokerstars (PS) are supported</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
      </widget>
      <widget class="QWidget" name="PreFlop">
       <attribute name="title">
@@ -2609,7 +2583,6 @@
          <zorder>lcdNumber_61</zorder>
          <zorder>lcdNumber_5</zorder>
          <zorder></zorder>
-         <zorder>verticalLayoutWidget</zorder>
          <zorder>use_pot_multiples</zorder>
          <zorder></zorder>
         </widget>

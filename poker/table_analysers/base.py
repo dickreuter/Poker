@@ -2,116 +2,28 @@ import logging
 import re
 import sys
 import time
-import os
 
 import cv2  # opencv 3.0
 import numpy as np
+import pyscreenshot as ImageGrab
 import pytesseract
-from PIL import Image, ImageFilter, ImageGrab
+from PIL import Image, ImageFilter
 from configobj import ConfigObj
 
 from poker.decisionmaker.genetic_algorithm import GeneticAlgorithm
+from poker.scraper.recognize_table import TableScraper
 from poker.tools.vbox_manager import VirtualBoxController
 
 
-class Table(object):
+class Table(TableScraper):
     # General tools that are used to operate the pokerbot and are valid for all tables
     def __init__(self, p, gui_signals, game_logger, version):
         self.version = version
         self.ip = ''
-        self.load_templates(p)
-        self.load_coordinates()
         self.logger = logging.getLogger('table')
         self.logger.setLevel(logging.DEBUG)
         self.gui_signals = gui_signals
         self.game_logger = game_logger
-
-    def load_templates(self, p):
-        self.cardImages = dict()
-        self.img = dict()
-        self.tbl = p.selected_strategy['pokerSite']
-        values = "23456789TJQKA"
-        suites = "CDHS"
-        if self.tbl == 'SN': suites = suites.lower()
-
-        for x in values:
-            for y in suites:
-                name = "pics/" + self.tbl[0:2] + "/" + x + y + ".png"
-                if os.path.exists(name):
-                    self.img[x + y.upper()] = Image.open(name)
-                    # if self.tbl=='SN':
-                    #     self.img[x + y.upper()]=self.crop_image(self.img[x + y.upper()], 5,5,20,45)
-
-                    self.cardImages[x + y.upper()] = cv2.cvtColor(np.array(self.img[x + y.upper()]), cv2.COLOR_BGR2RGB)
-
-
-                    # (thresh, self.cardImages[x + y]) =
-                    # cv2.threshold(self.cardImages[x + y], 128, 255,
-                    # cv2.THRESH_BINARY | cv2.THRESH_OTSU)
-                else:
-                    self.logger.critical("Card template File not found: " + str(x) + str(y) + ".png")
-
-        name = "pics/" + self.tbl[0:2] + "/button.png"
-        template = Image.open(name)
-        self.button = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
-
-        name = "pics/" + self.tbl[0:2] + "/topleft.png"
-        template = Image.open(name)
-        self.topLeftCorner = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
-
-        if self.tbl[0:2] == 'SN':
-            name = "pics/" + self.tbl[0:2] + "/topleft2.png"
-            template = Image.open(name)
-            self.topLeftCorner2 = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
-
-            name = "pics/" + self.tbl[0:2] + "/topleft3.png"
-            template = Image.open(name)
-            self.topLeftCorner_snowieadvice1 = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
-
-            name = "pics/" + self.tbl[0:2] + "/topleftLA.png"
-            template = Image.open(name)
-            self.topLeftCorner_snowieadvice2 = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
-
-        name = "pics/" + self.tbl[0:2] + "/coveredcard.png"
-        template = Image.open(name)
-        self.coveredCardHolder = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
-
-        name = "pics/" + self.tbl[0:2] + "/imback.png"
-        template = Image.open(name)
-        self.ImBack = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
-
-        name = "pics/" + self.tbl[0:2] + "/check.png"
-        template = Image.open(name)
-        self.check = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
-
-        name = "pics/" + self.tbl[0:2] + "/call.png"
-        template = Image.open(name)
-        self.call = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
-
-        name = "pics/" + self.tbl[0:2] + "/smalldollarsign1.png"
-        template = Image.open(name)
-        self.smallDollarSign1 = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
-
-        name = "pics/" + self.tbl[0:2] + "/allincallbutton.png"
-        template = Image.open(name)
-        self.allInCallButton = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
-
-        name = "pics/" + self.tbl[0:2] + "/lostEverything.png"
-        template = Image.open(name)
-        self.lostEverything = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
-
-        name = "pics/" + self.tbl[0:2] + "/dealer.png"
-        template = Image.open(name)
-        self.dealer = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
-
-        name = "pics/" + self.tbl[0:2] + "/betbutton.png"
-        template = Image.open(name)
-        self.betbutton = cv2.cvtColor(np.array(template), cv2.COLOR_BGR2RGB)
-
-    def load_coordinates(self):
-        with open('coordinates.txt', 'r') as inf:
-            c = eval(inf.read())
-            self.coo = c['screen_scraping']
 
     def take_screenshot(self, initial, p):
         if initial:
@@ -127,7 +39,8 @@ class Table(object):
         config = ConfigObj("config.ini")
         control = config['control']
         if control == 'Direct mouse control':
-            self.entireScreenPIL = ImageGrab.grab()
+            self.take_screenshot2()
+            self.entireScreenPIL = self.screenshot
 
         else:
             try:
@@ -172,30 +85,30 @@ class Table(object):
         return count, points, bestFit, min_val
 
     # New function  
-    def find_value(self, fund, pil_image, threshold_each ):
+    def find_value(self, fund, pil_image, threshold_each):
         numberImages = dict()
         img = dict()
-        values ="0123456789."
+        values = "0123456789."
         number_values = "0123456789"
         keyList = []
-        x_value = []  
+        x_value = []
 
-        if Fund == "game_number": #Beim Game_Number auslesen stört der "." (Punkt), deshalb wird er hier weggelassen
-            values = number_values   
+        if Fund == "game_number":  # Beim Game_Number auslesen stört der "." (Punkt), deshalb wird er hier weggelassen
+            values = number_values
 
         for x in values:
-            name = "pics/PP/"+ fund + "/" + x + ".png"
+            name = "pics/PP/" + fund + "/" + x + ".png"
             img[x] = Image.open(name)
             numberImages[x] = cv2.cvtColor(np.array(img[x]), cv2.COLOR_BGR2RGB)
 
-        def go_through_value(img_cv2, which_number):            
+        def go_through_value(img_cv2, which_number):
             if which_number == "all":
                 for key, value in numberImages.items():
                     template_cv2 = value
-                    res = cv2.matchTemplate(img_cv2 ,template_cv2 ,cv2.TM_CCOEFF_NORMED)
+                    res = cv2.matchTemplate(img_cv2, template_cv2, cv2.TM_CCOEFF_NORMED)
 
                     threshold = 0.9
-                    loc = np.where( res >= threshold)
+                    loc = np.where(res >= threshold)
 
                     for pt in zip(*loc[::-1]):
                         x_value.append(pt[0])
@@ -207,7 +120,7 @@ class Table(object):
                 for key, value in numberImages.items():
                     template_cv2 = value
                     method = eval('cv2.TM_SQDIFF_NORMED')
-                    res_1 = cv2.matchTemplate(img_cv2 ,template_cv2 , method)
+                    res_1 = cv2.matchTemplate(img_cv2, template_cv2, method)
                     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res_1)
 
                     if min_val < threshold_each:
@@ -218,20 +131,20 @@ class Table(object):
         img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
 
         value = go_through_value(img, "all")
-        
+
         width, height = pil_image.size  # Get dimensions
 
         for a, fd in enumerate(value):
-            image_cut = self.crop_image(pil_image, fd, 0, fd + 11 , height)
+            image_cut = self.crop_image(pil_image, fd, 0, fd + 11, height)
             img = cv2.cvtColor(np.array(image_cut), cv2.COLOR_BGR2RGB)
             liste = go_through_value(img, "each_one")
-        
-        try:       
-            Value = float(''.join(map(str, liste))) 
+
+        try:
+            Value = float(''.join(map(str, liste)))
 
         except:
             Value = ""
-        
+
         return Value
 
     def get_ocr_float(self, img_orig, name, force_method=0, binarize=False):
@@ -407,7 +320,7 @@ class Table(object):
 
         for n in range(5):  # n is absolute position of other player, 0 is player after bot
             i = (
-                    self.dealer_position + n + 3 - 2) % 5  # less myself as 0 is now first other player to my left and no longer myself
+                        self.dealer_position + n + 3 - 2) % 5  # less myself as 0 is now first other player to my left and no longer myself
             self.logger.debug("Go through pots to find raiser abs: {0} {1}".format(i, self.other_players[i]['pot']))
             if self.other_players[i]['pot'] != '':  # check if not empty (otherwise can't convert string)
                 if self.other_players[i]['pot'] > reference_pot:
@@ -434,7 +347,7 @@ class Table(object):
             if self.other_players[n]['pot'] != '':  # check if not empty (otherwise can't convert string)
                 if (self.other_players[n]['pot'] == float(
                         p.selected_strategy['bigBlind']) and not n == self.big_blind_position_abs_op) or \
-                                self.other_players[n]['pot'] > float(p.selected_strategy['bigBlind']):
+                        self.other_players[n]['pot'] > float(p.selected_strategy['bigBlind']):
                     first_caller = int(n)
                     break
 

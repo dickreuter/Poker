@@ -2,9 +2,10 @@
 Assesses the log file and checks how the parameters in strategies.xml need to be adjusted to optimize playing
 '''
 
-import logging
 from configobj import ConfigObj
-from poker.tools.mongo_manager import GameLogger,StrategyHandler
+
+from poker.tools.mongo_manager import GameLogger, StrategyHandler
+
 
 class GeneticAlgorithm(object):
     def __init__(self, write_update, L):
@@ -14,11 +15,12 @@ class GeneticAlgorithm(object):
         p = StrategyHandler()
         p.read_strategy()
         p_name = p.current_strategy
-        self.logger.debug("Strategy to analyse: "+p_name)
+        self.logger.debug("Strategy to analyse: " + p_name)
         self.load_log(p_name, L)
         self.improve_strategy(L, p)
-        if (self.modified and write_update==True) or write_update=="Force":
+        if (self.modified and write_update == True) or write_update == "Force":
             p.save_strategy_genetic_algorithm()
+
             config = ConfigObj("config.ini")
             config['last_strategy'] = p.current_strategy
             config.write()
@@ -36,7 +38,7 @@ class GeneticAlgorithm(object):
         A = L.d[decision, stage, 'Won'] > L.d[decision, stage, 'Lost'] * coeff1  # Call won > call lost * c1
         B = L.d[decision, stage, 'Lost'] > L.d['Fold', stage, 'Lost'] * coeff2  # Call Lost > Fold lost
         C = L.d[decision, stage, 'Won'] + L.d['Bet', stage, 'Won'] < L.d[
-                                                                         'Fold', stage, 'Lost'] * coeff3  # Fold Lost*c3 > Call won + bet won
+            'Fold', stage, 'Lost'] * coeff3  # Fold Lost*c3 > Call won + bet won
         if A and B:
             self.recommendation[stage, decision] = "ok"
         elif A and B == False and C:
@@ -77,7 +79,7 @@ class GeneticAlgorithm(object):
         self.output += stage + " " + decision + ": " + self.recommendation[stage, decision] + '\n'
 
     def improve_strategy(self, L, p):
-        self.modified=False
+        self.modified = False
         self.changed = 0
         maxChanges = 2
         if self.changed <= maxChanges:
@@ -117,7 +119,7 @@ class GeneticAlgorithm(object):
             change = 0.03
             self.assess_call(p, L, decision, stage, coeff1, coeff2, coeff3, coeff4, change)
 
-        if self.changed>0: self.modified=True
+        if self.changed > 0: self.modified = True
         self.changed = 0
 
         if self.changed < maxChanges:

@@ -1,4 +1,4 @@
-from captcha import deathbycaptcha
+from poker.captcha import deathbycaptcha
 
 '''
 If a captcha pops up this class automatically sends a picture to deathbycaptcha and sends the necessary

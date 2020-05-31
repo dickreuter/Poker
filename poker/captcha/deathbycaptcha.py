@@ -72,15 +72,19 @@ import base64
 import binascii
 import errno
 import imghdr
-import random
 import os
+import random
 import select
 import socket
 import sys
 import threading
 import time
-import urllib.request, urllib.parse, urllib.error
-import urllib.request, urllib.error, urllib.parse
+import urllib.error
+import urllib.error
+import urllib.parse
+import urllib.parse
+import urllib.request
+import urllib.request
 
 try:
     from json import read as json_decode, write as json_encode

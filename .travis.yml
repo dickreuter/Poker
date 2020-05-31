@@ -1,0 +1,29 @@
+language: python
+
+
+python:
+  - "3.7"
+
+os:
+  - linux
+
+install:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then MINICONDA_OS=Linux; else MINICONDA_OS=MacOSX; fi
+  - wget https://repo.anaconda.com/miniconda/Miniconda3-latest-$MINICONDA_OS-x86_64.sh -O miniconda.sh
+  - bash miniconda.sh -b -p "$HOME"/miniconda
+  - source "$HOME"/miniconda/etc/profile.d/conda.sh
+  - conda config --set always_yes yes --set changeps1 no --set auto_update_conda false
+  - pip install requirements.txt
+  - yum install python3-pyqt5
+  - export LANG=en_US.UTF-8
+  - export COVERAGE_DIR=":$HOME/htmlcov"
+  - printenv | sort
+
+install:
+  - pip install -r requirements.txt
+# command to run tests
+script: pytest --log-cli-level=warning
+
+after_success:
+  - codecov
+
