@@ -6,6 +6,10 @@ It works with image recognition, montecarlo simulation and a basic genetic algor
 The mouse is moved automatically and the bot can potentially play for hours based on a large number of parameters.
 A new gui to help it recognize new tables ia available as well.
 
+You can download the binaries and run the executable directly from here:
+https://sourceforge.net/projects/partypoker-pokerstars-pokerbot/
+
+
 .. figure:: doc/fullscreen1.png
 
 
@@ -19,29 +23,31 @@ Usage:
 Run:
 
 - Install python 3.7 and create a virtual environment. You can use anaconda or pure python.
-- Create an environment with ``conda create -n poker python=3.7``
-- Activate the virtual environment with ``conda activate poker``
+- Download pycharm as an IDE
+- Create an environment with ``conda create -n poker python=3.7`` or use pycharm's functionality to create a new virtual environment. Chefck youtube for details.
 - Install all the packages with ``pip install -r requirements.txt``
-- Install tesseract from https://github.com/UB-Mannheim/tesseract/wiki which is needed for ORC of the numbers that are scraped
-- Run ``main.py``
+- Install tesseract from https://github.com/UB-Mannheim/tesseract/wiki which is needed for OCR of the numbers that are scraped
+- Install virtualbox and put the poker client into the virtual box. That way it can be controlled without having to use the mouse in your main window.
+- Run ``main.py`` froy pycharm
 
 For a start please make sure of the following:
 
-Use Partypoker standard setup. Currently, the bot only works on tables with 6 people and where the bot is always sat at the bottom right.
+Use Partypoker standard setup. Currently, the bot only works on tables with 6 people and where the bot is always sat at the bottom right. But more tables can be added.
 Put the partypoker client (inside the VM) and the bot outside the VM. Put them next to each other so that the bot can see the full table of Partypoker.
 In setup choose Direct Mouse Control. It will then take direct screenshots and move the mouse. If that works, you can try with direct VM control.
-Start with a table like Supersonic2 on Partypoker where the stakes are low ( In the strategy editor create a copy of a Supersonic2 strategy and edit it yourself so that you win.
-The bot may not work with play money as it's optimised on small stakes to read the numbers correctly.
+Start with a table like Fast Forward HOldem $1-$2 on Partypoker where the stakes are low ( In the strategy editor create a copy the corresponding strategy and edit it yourself so that you win.
+The bot may not work with play money as it's optimised on small stakes to read the numbers correctly. But this as well could be imporoved.
 
 
 Strategies
 ----------
-The decision is made by the Decision class in decisionmaker1.py. A variety of factors are taken into consideration:
+The decision is made by the Decision class in decisionmaker.py. A variety of factors are taken into consideration:
 
 - Equity (winning probability), which is calculated by Montecarlo_v3.py (will be replaced with a faster numpy-only version in Montecarlo_v4.py)
 - Equity and minimum call/bet value need to be on the left of the corresponding curve in order for the bot not to fold
-- Various other factors, such as behaviour in the previous round are taken into consideration
+- Various other factors, such as behaviour in the previous rounds are taken into consideration. Check out the strategy editor ffor more details.
 
+.. figure:: doc/strategy2.png
 .. figure:: doc/strategy_analyser1.jpg
 .. figure:: doc/strategy_analyser_scatter.jpg
 
@@ -77,8 +83,24 @@ poker.tests
 -  ``test_pylint.py``: pylint and pydoc tests to ensure pep8 standards and static code analysis
 
 
+
+Roadmap
+-------
+- [x] Build a framework that can play online
+- [x] Createa a tool that helps to map the tables and make maps shared over all users via mongodb
+- [x] Update the pokerbot to the new table format of partypoker
+- [ ] Update the pokerbot to the new table format of pokerstars
+- [ ] Fix pylint errors and imporve code quality
+- [ ] Update tests. Some are currently outdated. More tests are needed
+- [ ] Make travis to work. Windows support is currently limited, so most likely the bot needs to be made linux compatible (and also mac)
+- [ ] Add more strategies
+- [ ] The bot is using tesseract to recognize the numbers of how high the calls and bets are and how big the pot sizes are. Currently all images need to be rescaled and filtered before they are fed to tesseract. After that regular expressions are used to further filter the results. This is not a satisfactory method and can lead to errors. Ideally tesseract or any other OCR libary could be trained to recognize the numbers correctly.
+- [ ] Combine the bot with the neuron_poker project and have it play based on learned strategies via self-play based on reinforcement learning
+
+
+
 How to contribute
-~~~~~~~~~~~~~~~~~
+-----------------
 
 - The easiest way to contribute is by either:
     - adding new tables.
@@ -104,6 +126,10 @@ The setup to add new tables looks like this:
 - If you hover over the buttons, you will get a more detailed description of what you need to pay attention to.
 - Note that you will need to take many screenshots, crop them (don't select the top left corner again, as this you should only do once), instead load it and then crop the image. After that make your selection of the different images and save them by pressing on the corresponding button. You'll need to teach it every card and every button etc.
 
+
+
+Making fixes in the code
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 - Fixing code and making a pull request back into the origin/master:
 
@@ -131,17 +157,6 @@ To contribute do the following:
 - When your pull request is approved, it will be merged into the upstream/master.
 - Please make sure that all tests are passing, including the pylint test. You can either run them locally on your machine, or when you push check the travis log on github.
 
-
-Roadmap
--------
-- [x] Build a framework that can play online
-- [x] Createa a tool that helps to map the tables and make maps shared over all users via mongodb
-- [x] Update the pokerbot to the new table format of partypoker
-- [ ] Update the pokerbot to the new table format of pokerstars
-- [ ] Fix pylint errors and imporve code quality
-- [ ] Add more strategies
-- [ ] Combine the bot with the neuron_poker project and have it play based on learned strategies via self-play based on reinforcement learning
-- [ ] The bot is using tesseract to recognize the numbers of how high the calls and bets are and how big the pot sizes are. Currently all images need to be rescaled and filtered before they are fed to tesseract. After that regular expressions are used to further filter the results. This is not a satisfactory method and can lead to errors. Ideally tesseract or any other OCR libary could be trained to recognize the numbers correctly.
 
 
 
