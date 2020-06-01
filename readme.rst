@@ -28,7 +28,7 @@ Run:
 - Install all the packages with ``pip install -r requirements.txt``
 - Install tesseract from https://github.com/UB-Mannheim/tesseract/wiki which is needed for OCR of the numbers that are scraped
 - Install virtualbox and put the poker client into the virtual box. That way it can be controlled without having to use the mouse in your main window.
-- Run ``main.py`` froy pycharm
+- Run ``main.py`` from pycharm
 
 For a start please make sure of the following:
 

@@ -4,7 +4,7 @@ import logging
 
 import cv2
 import numpy as np
-from PIL import Image, ImageFilter
+from PIL import Image, ImageFilter, ImageGrab
 from pyscreenshot import grab
 from pytesseract import pytesseract
 
@@ -149,7 +149,9 @@ def take_screenshot(virtual_box=False):
 
     """
     if not virtual_box:
-        screenshot = grab()
+        log.debug("Calling screen grabber")
+        screenshot = ImageGrab.grab()
+        log.debug("Direct screenshot successful")
 
     else:  # virtual_box
         try:

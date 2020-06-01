@@ -13,14 +13,14 @@ install:
   - bash miniconda.sh -b -p "$HOME"/miniconda
   - source "$HOME"/miniconda/etc/profile.d/conda.sh
   - conda config --set always_yes yes --set changeps1 no --set auto_update_conda false
-  - pip install requirements.txt
-  - yum install python3-pyqt5
+  - python -m pip install --upgrade pip
+  - sudo apt-get update
+  - sudo apt-get -y install python3-pyqt5
+  - pip install -r requirements.txt
   - export LANG=en_US.UTF-8
   - export COVERAGE_DIR=":$HOME/htmlcov"
   - printenv | sort
 
-install:
-  - pip install -r requirements.txt
 # command to run tests
 script: pytest --log-cli-level=warning
 

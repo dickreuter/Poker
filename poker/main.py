@@ -24,11 +24,12 @@ from poker.tools.mouse_mover import MouseMoverTableBased
 import warnings
 import matplotlib.cbook
 
-version = 4.02
+version = 4.04
 
 warnings.filterwarnings("ignore", category=matplotlib.cbook.mplDeprecation)
 warnings.filterwarnings("ignore", message="ignoring `maxfev` argument to `Minimizer()`. Use `max_nfev` instead.")
 warnings.filterwarnings("ignore", message="DataFrame columns are not unique, some columns will be omitted.")
+warnings.filterwarnings("ignore", message="All-NaN axis encountered")
 warnings.filterwarnings("ignore", message="All-NaN axis encountered")
 
 
@@ -231,7 +232,7 @@ class ThreadManager(threading.Thread):
 # ==== MAIN PROGRAM =====
 
 def run_poker():
-    init_logger(screenlevel=logging.INFO, filename=None)
+    init_logger(screenlevel=logging.INFO, filename='deepming_pokerbot', logdir='log')
     # print(f"Screenloglevel: {screenloglevel}")
     log = logging.getLogger("")
     log.info("Initializing program")

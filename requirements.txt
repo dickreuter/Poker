@@ -20,3 +20,4 @@ xlrd
 pyscreenshot
 lmfit
 jupyter
+xlib

@@ -773,6 +773,8 @@ class MongoManager(metaclass=Singleton):
             table_name: str
 
         """
+        if table_name == "":
+            return False
         if table_name in self.available_tables():
             return False
         self.db[tables_collection].update({'table_name': table_name},
@@ -788,6 +790,8 @@ class MongoManager(metaclass=Singleton):
             old_table_name: str
 
         """
+        if table_name == "":
+            return False
         if table_name in self.available_tables():
             return False
         dic = self.get_table(old_table_name)
