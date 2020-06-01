@@ -17,27 +17,39 @@ Related projects:
 Training the bot by playing against itself is a separate project which can be found here:
 https://github.com/dickreuter/neuron_poker
 
-Usage:
-------
 
-Run:
+Running the bot:
+----------------
 
-- Install python 3.7 and create a virtual environment. You can use anaconda or pure python.
-- Download pycharm as an IDE
-- Create an environment with ``conda create -n poker python=3.7`` or use pycharm's functionality to create a new virtual environment. Chefck youtube for details.
-- Install all the packages with ``pip install -r requirements.txt``
-- Install tesseract from https://github.com/UB-Mannheim/tesseract/wiki which is needed for OCR of the numbers that are scraped
-- Install virtualbox and put the poker client into the virtual box. That way it can be controlled without having to use the mouse in your main window.
-- Run ``main.py`` from pycharm
+
+General setup:
+~~~~~~~~~~~~~~
+
+If you just want to run the bot, please download the binaries from here: https://sourceforge.net/projects/partypoker-pokerstars-pokerbot/
 
 For a start please make sure of the following:
 
-Use Partypoker standard setup. Currently, the bot only works on tables with 6 people and where the bot is always sat at the bottom right. But more tables can be added.
+Use Partypoker standard setup. Currently, the bot only works on tables with 6 people and where the bot is always sat at the bottom right.
 Put the partypoker client (inside the VM) and the bot outside the VM. Put them next to each other so that the bot can see the full table of Partypoker.
 In setup choose Direct Mouse Control. It will then take direct screenshots and move the mouse. If that works, you can try with direct VM control.
-Start with a table like Fast Forward HOldem $1-$2 on Partypoker where the stakes are low ( In the strategy editor create a copy the corresponding strategy and edit it yourself so that you win.
-The bot may not work with play money as it's optimised on small stakes to read the numbers correctly. But this as well could be imporoved.
+Start with a table like Fast Forward Holdem $1-$2 on Partypoker where the stakes are low ( In the strategy editor create a copy of a strategy and edit it yourself so that you win.
+The bot may not work with play money as it's optimized on small stakes to read the numbers correctly.
+The current version is compatible with Windows. Make sure that you don't use any dpi scaling, Otherwise the tables won't be recognized.
 
+It may be useful to run the poker client inside virtual box https://www.virtualbox.org/wiki/Downloads as it can be controlled easier that way.
+Run the bot outside of this virtual machine. As it works with image recognition make sure to not obstruct the view to the Poker software.
+Only one table window should be visible.
+
+
+Running via python code
+~~~~~~~~~~~~~~~~~~~~~~~
+- Download pycharm as an IDE
+- Install python 3.7 or Anaconda (=python with packages)
+- Create an environment with ``conda create -n poker python=3.7`` or use pycharm's functionality to create a new virtual environment. Chefck youtube for details.
+- Install all the packages with ``pip install -r requirements.txt``
+- Install tesseract from https://github.com/UB-Mannheim/tesseract/wiki which is needed for OCR of the numbers that are scraped
+- Install virtualbox from https://www.virtualbox.org/wiki/Downloads and put the poker client into the virtual box. That way it can be controlled without having to use the mouse in your main window.
+- Run ``main.py`` from pycharm after setting up the above created virtual environment as interpreter (check youtube)
 
 Strategies
 ----------
@@ -94,7 +106,8 @@ Roadmap
 - [ ] Update tests. Some are currently outdated. More tests are needed
 - [ ] Make travis to work. Windows support is currently limited, so most likely the bot needs to be made linux compatible (and also mac)
 - [ ] Add more strategies
-- [ ] The bot is using tesseract to recognize the numbers of how high the calls and bets are and how big the pot sizes are. Currently all images need to be rescaled and filtered before they are fed to tesseract. After that regular expressions are used to further filter the results. This is not a satisfactory method and can lead to errors. Ideally tesseract or any other OCR libary could be trained to recognize the numbers correctly.
+- [ ] The bot is using tesseract to recognize the numbers of how high the calls and bets are and how big the pot sizes are. Currently all images need to be rescaled and filtered before they are fed to tesseract.
+After that regular expressions are used to further filter the results. This is not a satisfactory method and can lead to errors. Ideally tesseract or any other OCR libary could be trained to recognize the numbers correctly.
 - [ ] Combine the bot with the neuron_poker project and have it play based on learned strategies via self-play based on reinforcement learning
 
 
@@ -105,6 +118,7 @@ How to contribute
 - The easiest way to contribute is by either:
     - adding new tables.
     - Adding new strategies
+    - Directly add fixes to the code and create a pull request
 
 
 Adding new tables
@@ -133,17 +147,13 @@ Making fixes in the code
 
 - Fixing code and making a pull request back into the origin/master:
 
-
-Github
-^^^^^^
-
 It will be hard for one person alone to beat the world at poker. That's
 why this repo aims to have a collaborative environment, where models can
 be added and evaluated.
 
 To contribute do the following:
 
-- Get Pycharm and build the virtual python environment. Use can do: ``pip install -r requirements.txt``
+- Get Pycharm and build the virtual python environment. Use can do: ``pip install -r requirements.txt`` (see above)
 - Clone your fork to your local machine. You can do this directly from pycharm: VCS --> check out from version control --> git
 - Add as remote the original repository where you created the fork from and call it upstream (the connection to your fork should be called origin). This can be done with vcs --> git --> remotes
 - Create a new branch: click on master at the bottom right, and then click on 'new branch'
@@ -155,7 +165,7 @@ To contribute do the following:
 - To bring your branch up to date with upstream master, if it has moved on: rebase onto upstream master: click on your branch name at the bottom right of pycharm, then click on upstream/master, then rebase onto. You may need to resolve soe conflicts. Once this is done, make sure to always force-push (ctrl+shift+k), (not just push). This can be done by selecting the dropdown next to push and choose force-push (important: don't push and merge a rebased branch with your remote)
 - Create a pull request on your github.com to merge your branch with the upstream master.
 - When your pull request is approved, it will be merged into the upstream/master.
-- Please make sure that all tests are passing, including the pylint test. You can either run them locally on your machine, or when you push check the travis log on github.
+- Please make sure that all tests are passing, including the pylint test. You can either run them locally on your machine, or when you push check the travis log on github. [currently many are failing, feel free to help fixing them!]
 
 
 
@@ -164,28 +174,31 @@ FAQ
 ---
 
 Why is the bot not working?
-
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 - It only works on windows currently
 - It only works with fast forward games with real money on PartyPoker. Use the Supersonic3 table for Partypoker or McNaught table in Pokerstars
 - The poker table window has to be fully visible and cannot be scaled, otherwise it won't be detected properly
 - In Partypoker, when you open the table, choose table options and then choose **back to default size** to make sure the table is in default size.
 
-What about Pokerstars?
-
-- Almost ready. Check the wiki how you can help.
 
 Errors related to the virtual machine
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - Go to setup and choose direct mouse control.
 
 Do I need to use a virtual machine?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- For Pokerstars you definitely do, otherwise you will be blocked and your account will be frozen within minutes. For Partypoker I'm not sure. But it's probably a good idea.
+- For Pokerstars you definitely do, otherwise you will be blocked and your account will be frozen within minutes. For Partypoker I'm not sure. But best check the terms and conditions.
 
 The bot does not recognize the table and doesn't act
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Make su**re everything looks exactly like in the picture below. The buttons need to look exactly like this and it needs to be in English and not scaled. Colours need to be standard.**
+- Make sure everything looks exactly like in the picture above. The buttons need to look exactly like this and it needs to be in English and not scaled. Colours need to be standard.
+- If things still don't work, consider teaching it a new table
 
 Still having problems?
+~~~~~~~~~~~~~~~~~~~~~~
 
-- Check the log file. In the folder where you installed the pokerbot, there is a subfolder with the log files in /log. There are also screenshots in /log/screenshots that may be able to help debug the problem. Please contact me on google hangout under dickreuter@gmail.com.
+- Check the log file. In the folder where you installed the pokerbot, there is a subfolder with the log files in /log. There are also screenshots in /log/screenshots that may be able to help debug the problem.
+- Create a issue on the link at the top of this github page https://github.com/dickreuter/Poker/issues or email dickreuter@gmail.com

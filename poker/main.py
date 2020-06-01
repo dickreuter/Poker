@@ -1,5 +1,14 @@
-import time
+import warnings
 
+import matplotlib.cbook
+
+warnings.filterwarnings("ignore", category=matplotlib.cbook.mplDeprecation)
+warnings.filterwarnings("ignore", message="ignoring `maxfev` argument to `Minimizer()`. Use `max_nfev` instead.")
+warnings.filterwarnings("ignore", message="DataFrame columns are not unique, some columns will be omitted.")
+warnings.filterwarnings("ignore", message="All-NaN axis encountered")
+warnings.filterwarnings("ignore", category=UserWarning)
+
+import time
 import matplotlib
 import numpy as np
 import pandas as pd
@@ -21,16 +30,8 @@ from poker.decisionmaker.current_hand_memory import History, CurrentHandPreflopS
 from poker.decisionmaker.montecarlo_python import run_montecarlo_wrapper
 from poker.decisionmaker.decisionmaker import Decision
 from poker.tools.mouse_mover import MouseMoverTableBased
-import warnings
-import matplotlib.cbook
 
-version = 4.04
-
-warnings.filterwarnings("ignore", category=matplotlib.cbook.mplDeprecation)
-warnings.filterwarnings("ignore", message="ignoring `maxfev` argument to `Minimizer()`. Use `max_nfev` instead.")
-warnings.filterwarnings("ignore", message="DataFrame columns are not unique, some columns will be omitted.")
-warnings.filterwarnings("ignore", message="All-NaN axis encountered")
-warnings.filterwarnings("ignore", message="All-NaN axis encountered")
+version = 4.07
 
 
 class ThreadManager(threading.Thread):
@@ -232,7 +233,7 @@ class ThreadManager(threading.Thread):
 # ==== MAIN PROGRAM =====
 
 def run_poker():
-    init_logger(screenlevel=logging.INFO, filename='deepming_pokerbot', logdir='log')
+    init_logger(screenlevel=logging.INFO, filename='deepmind_pokerbot', logdir='log')
     # print(f"Screenloglevel: {screenloglevel}")
     log = logging.getLogger("")
     log.info("Initializing program")

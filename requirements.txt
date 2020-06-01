@@ -1,7 +1,6 @@
 pandas
 pytest
 pylint
-pyscreenshot
 pydocstyle
 numpy
 matplotlib
@@ -16,8 +15,7 @@ virtualbox
 pyyaml
 requests
 configobj
-xlrd
-pyscreenshot
-lmfit
 jupyter
 xlib
+xlrd
+lmfit

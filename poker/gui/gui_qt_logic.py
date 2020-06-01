@@ -198,7 +198,7 @@ class UIActionAndSignals(QObject):
         ui_main_window.comboBox_current_strategy.addItems(playable_list)
         ui_main_window.comboBox_current_strategy.currentIndexChanged[str].connect(
             lambda: self.signal_update_selected_strategy(l, p))
-        ui_main_window.comboBox_current_strategy.currentIndexChanged[str].connect(
+        ui_main_window.table_selection.currentIndexChanged[str].connect(
             lambda: self.signal_update_selected_strategy(l, p))
         config = ConfigObj("config.ini")
         initial_selection = config['last_strategy']
@@ -345,7 +345,7 @@ class UIActionAndSignals(QObject):
         self.genetic_algorithm_form.buttonBox.accepted.connect(lambda: GeneticAlgorithm(True, self.logger, l))
 
     def open_help(self, p, l):
-        url = "https://github.com/dickreuter/Poker/wiki/Frequently-asked-questions"
+        url = "https://github.com/dickreuter/Poker"
         webbrowser.open(url, new=2)
         # self.help_form = QtWidgets.QWidget()
         # self.ui_help = Ui_help_form()

@@ -64,7 +64,9 @@ class TableSetupActionAndSignals(QObject):
         self.ui.copy_to_new.clicked.connect(lambda: self.copy_to_new())
         self.ui.crop.clicked.connect(lambda: self.crop())
         self.ui.load.clicked.connect(lambda: self.load())
+        self.ui.button_delete.clicked.connect(lambda: self.delete())
         self.ui.tesseract.clicked.connect(lambda: self._recognize_number())
+        self.ui.topleft_corner.clicked.connect(lambda: self.save_topleft_corner())
         self.ui.current_player.currentIndexChanged[str].connect(lambda: self._update_selected_player())
 
     @pyqtSlot()
@@ -83,7 +85,7 @@ class TableSetupActionAndSignals(QObject):
         save_image_buttons = ['call_button', 'raise_button', 'check_button', 'fold_button', 'fast_fold_button',
                               'all_in_call_button',
                               'my_turn',
-                              'lost_everything', 'im_back', 'dealer_button', 'covered_card', 'topleft_corner']
+                              'lost_everything', 'im_back', 'dealer_button', 'covered_card']
         for button in save_image_buttons:
             button_property = getattr(self.ui, button)
             button_property.clicked.connect(lambda state, x=button: self.save_image(x))
@@ -107,6 +109,20 @@ class TableSetupActionAndSignals(QObject):
         for button in range_buttons:
             button_property = getattr(self.ui, button)
             button_property.clicked.connect(lambda state, x=button: self.save_coordinates(x, self.selected_player))
+
+    def save_topleft_corner(self):
+        self.table_name = self.ui.table_name.currentText()
+        log.info(f"Load top left corner for {self.table_name}")
+        try:
+            self.top_left_corner_img = get_table_template_image(self.table_name, 'topleft_corner')
+            resp = pop_up("Are you sure?",
+                          "You already defined a top left corner for this table before. You will need to enter all buttons (but not images) again if you have already saved corrdinates for any other items.",
+                          ok_cancel=True)
+            if resp == 1024:
+                self.save_image('topleft_corner')
+        except KeyError:
+            # no top left corner yet, continue
+            self.save_image('topleft_corner')
 
     @pyqtSlot(object, str)
     def save_image(self, label):
@@ -288,6 +304,21 @@ class TableSetupActionAndSignals(QObject):
         func = getattr(self.ui, item)
         log.info(f"Updating label {item} with value {value}")
         func.setText(str(value))
+
+    def delete(self):
+        self.table_name = self.ui.table_name.currentText()
+        mongo = MongoManager()
+        owner = mongo.get_table_owner(self.table_name)
+        if owner != COMPUTER_NAME:
+            pop_up("Not authorized.",
+                   "You can only delete the tables that you created")
+            return
+
+        resp = pop_up("Are you sure?",
+                      "Are you sure you want to delete this table? This cannot be undone.",
+                      ok_cancel=True)
+        if resp == 1024:
+            mongo.delete_table(table_name=self.table_name)
 
     def load(self):
         self.table_name = self.ui.table_name.currentText()

@@ -5,7 +5,6 @@ import time
 
 import cv2  # opencv 3.0
 import numpy as np
-import pyscreenshot as ImageGrab
 import pytesseract
 from PIL import Image, ImageFilter
 from configobj import ConfigObj
@@ -50,7 +49,8 @@ class Table(TableScraper):
             except:
                 self.logger.warning("No virtual machine found. Press SETUP to re initialize the VM controller")
                 # gui_signals.signal_open_setup.emit(p,L)
-                self.entireScreenPIL = ImageGrab.grab()
+                self.take_screenshot2()
+                self.entireScreenPIL = self.screenshot
 
         self.gui_signals.signal_status.emit(str(p.current_strategy))
         self.gui_signals.signal_progressbar_increase.emit(5)

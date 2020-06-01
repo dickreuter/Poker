@@ -5,7 +5,6 @@ import logging
 import cv2
 import numpy as np
 from PIL import Image, ImageFilter, ImageGrab
-from pyscreenshot import grab
 from pytesseract import pytesseract
 
 from poker.tools.helper import memory_cache
@@ -161,7 +160,7 @@ def take_screenshot(virtual_box=False):
         except:
             log.warning("No virtual machine found. Press SETUP to re initialize the VM controller")
             # gui_signals.signal_open_setup.emit(p,L)
-            screenshot = grab()
+            screenshot = ImageGrab.grab()
     return screenshot
 
 

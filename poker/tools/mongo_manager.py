@@ -712,7 +712,7 @@ class MongoManager(metaclass=Singleton):
         try:
             table = list(self.db[tables_collection].find({'table_name': table_name}, {"_id": 0}))[0]
         except IndexError:
-            raise RuntimeError ("No table found for given name.")
+            raise RuntimeError("No table found for given name.")
         return table
 
     def get_table_owner(self, table_name):
@@ -810,6 +810,12 @@ class MongoManager(metaclass=Singleton):
     def available_tables(self):
         """Available tables"""
         return self.db[tables_collection].distinct("table_name")
+
+    def delete_table(self, table_name):
+        """Delete a table"""
+        dic = {}
+        dic['table_name'] = table_name
+        self.db[tables_collection].delete_one(dic)
 
 
 if __name__ == '__main__':

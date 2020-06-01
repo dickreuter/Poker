@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>802</width>
+    <width>887</width>
     <height>962</height>
    </rect>
   </property>
@@ -18,7 +18,7 @@
     <rect>
      <x>10</x>
      <y>590</y>
-     <width>761</width>
+     <width>841</width>
      <height>341</height>
     </rect>
    </property>
@@ -30,7 +30,7 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>759</width>
+      <width>839</width>
       <height>339</height>
      </rect>
     </property>
@@ -50,7 +50,7 @@
     <rect>
      <x>550</x>
      <y>310</y>
-     <width>231</width>
+     <width>311</width>
      <height>41</height>
     </rect>
    </property>
@@ -64,9 +64,9 @@
   <widget class="QPushButton" name="topleft_corner">
    <property name="geometry">
     <rect>
-     <x>600</x>
+     <x>720</x>
      <y>280</y>
-     <width>181</width>
+     <width>141</width>
      <height>21</height>
     </rect>
    </property>
@@ -74,7 +74,7 @@
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;After selecting the top left corner (usually the poker sign at the top left of the windows window). It is used as a refernece point to find the poker window. CAREFUL: If you change the top left corner, all subsequent locations need to entered again!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
    <property name="text">
-    <string>Save newly selected top left corner</string>
+    <string>Save new top left corner</string>
    </property>
   </widget>
   <widget class="QPushButton" name="tesseract">
@@ -83,7 +83,7 @@
      <x>530</x>
      <y>400</y>
      <width>141</width>
-     <height>21</height>
+     <height>31</height>
     </rect>
    </property>
    <property name="toolTip">
@@ -98,7 +98,7 @@
     <rect>
      <x>550</x>
      <y>180</y>
-     <width>231</width>
+     <width>311</width>
      <height>41</height>
     </rect>
    </property>
@@ -122,7 +122,7 @@
    <property name="geometry">
     <rect>
      <x>530</x>
-     <y>420</y>
+     <y>440</y>
      <width>131</width>
      <height>16</height>
     </rect>
@@ -135,7 +135,7 @@
    <property name="geometry">
     <rect>
      <x>670</x>
-     <y>420</y>
+     <y>440</y>
      <width>47</width>
      <height>14</height>
     </rect>
@@ -296,7 +296,7 @@
        <x>260</x>
        <y>30</y>
        <width>223</width>
-       <height>201</height>
+       <height>141</height>
       </rect>
      </property>
      <property name="title">
@@ -1137,7 +1137,7 @@
     <rect>
      <x>520</x>
      <y>0</y>
-     <width>271</width>
+     <width>351</width>
      <height>91</height>
     </rect>
    </property>
@@ -1147,7 +1147,7 @@
    <widget class="QPushButton" name="load">
     <property name="geometry">
      <rect>
-      <x>170</x>
+      <x>0</x>
       <y>60</y>
       <width>91</width>
       <height>23</height>
@@ -1178,12 +1178,28 @@
      <rect>
       <x>0</x>
       <y>30</y>
-      <width>261</width>
+      <width>281</width>
       <height>22</height>
      </rect>
     </property>
     <property name="toolTip">
      <string>Select a table to edit. You can only edit your own tables. To edit take a screenshot, crop it with the cop left corner, then select the area top left and bottom right and then choose the corresponding button</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="button_delete">
+    <property name="geometry">
+     <rect>
+      <x>110</x>
+      <y>60</y>
+      <width>91</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="toolTip">
+     <string>Load the template to show which items have already been learned. They can still be overwritten by simply marking the area or image and then pressing the corresponding butotn.</string>
+    </property>
+    <property name="text">
+     <string>delete</string>
     </property>
    </widget>
   </widget>
@@ -1192,7 +1208,7 @@
     <rect>
      <x>550</x>
      <y>230</y>
-     <width>231</width>
+     <width>311</width>
      <height>41</height>
     </rect>
    </property>
@@ -1200,7 +1216,7 @@
     <string>Loads a previously saved top left corner</string>
    </property>
    <property name="text">
-    <string>Load fop left corner</string>
+    <string>Load top left corner</string>
    </property>
   </widget>
   <widget class="QScrollArea" name="scrollArea_2">
@@ -1208,7 +1224,7 @@
     <rect>
      <x>10</x>
      <y>460</y>
-     <width>761</width>
+     <width>841</width>
      <height>81</height>
     </rect>
    </property>
@@ -1220,7 +1236,7 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>759</width>
+      <width>839</width>
       <height>79</height>
      </rect>
     </property>
@@ -1400,12 +1416,12 @@
     <rect>
      <x>520</x>
      <y>90</y>
-     <width>271</width>
+     <width>351</width>
      <height>71</height>
     </rect>
    </property>
    <property name="title">
-    <string>Create a new template</string>
+    <string>Create a new template, USE GOOD NAMING OR IT WILL BE DELETED!!</string>
    </property>
    <widget class="QPushButton" name="blank_new">
     <property name="geometry">
@@ -1428,7 +1444,7 @@
      <rect>
       <x>100</x>
       <y>40</y>
-      <width>91</width>
+      <width>71</width>
       <height>23</height>
      </rect>
     </property>
@@ -1444,7 +1460,7 @@
      <rect>
       <x>10</x>
       <y>20</y>
-      <width>221</width>
+      <width>251</width>
       <height>20</height>
      </rect>
     </property>
@@ -1528,6 +1544,19 @@
    </property>
    <property name="text">
     <string>Check if recognition works correctly</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_5">
+   <property name="geometry">
+    <rect>
+     <x>550</x>
+     <y>280</y>
+     <width>171</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Only do this once at the beginning:</string>
    </property>
   </widget>
  </widget>
