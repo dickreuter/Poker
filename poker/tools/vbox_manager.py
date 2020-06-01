@@ -43,7 +43,7 @@ class VirtualBoxController(virtualbox.library.IMouse):
         open('screenshot_vbox.png', 'wb').write(png)
         # image=Image.fromarray(png)
         # image.show()
-        time.sleep(0.5)
+        time.sleep(0.2)
         return Image.open('screenshot_vbox.png')
 
     def mouse_move_vbox(self, x, y, dz=0, dw=0):

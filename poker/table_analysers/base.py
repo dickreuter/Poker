@@ -31,7 +31,7 @@ class Table(TableScraper):
             if self.gui_signals.exit_thread == True: sys.exit()
             if self.gui_signals.pause_thread == True:
                 while self.gui_signals.pause_thread == True:
-                    time.sleep(1)
+                    time.sleep(.2)
                     if self.gui_signals.exit_thread == True: sys.exit()
 
         time.sleep(0.1)

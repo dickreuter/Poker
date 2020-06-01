@@ -7,6 +7,7 @@ warnings.filterwarnings("ignore", message="ignoring `maxfev` argument to `Minimi
 warnings.filterwarnings("ignore", message="DataFrame columns are not unique, some columns will be omitted.")
 warnings.filterwarnings("ignore", message="All-NaN axis encountered")
 warnings.filterwarnings("ignore", category=UserWarning)
+warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 import time
 import matplotlib
@@ -31,7 +32,7 @@ from poker.decisionmaker.montecarlo_python import run_montecarlo_wrapper
 from poker.decisionmaker.decisionmaker import Decision
 from poker.tools.mouse_mover import MouseMoverTableBased
 
-version = 4.07
+version = 4.08
 
 
 class ThreadManager(threading.Thread):
@@ -136,7 +137,7 @@ class ThreadManager(threading.Thread):
 
             if self.gui_signals.pause_thread:
                 while self.gui_signals.pause_thread == True:
-                    time.sleep(1)
+                    time.sleep(0.2)
                     if self.gui_signals.exit_thread == True: sys.exit()
 
             ready = False
@@ -159,14 +160,14 @@ class ThreadManager(threading.Thread):
                         t.check_fast_fold(h, p, mouse) and \
                         t.check_for_button() and \
                         t.get_round_number(h) and \
+                        t.check_for_checkbutton() and \
                         t.init_get_other_players_info() and \
+                        t.get_other_player_status(p, h) and \
                         t.get_other_player_names(p) and \
                         t.get_other_player_funds(p) and \
                         t.get_other_player_pots() and \
                         t.get_total_pot_value(h) and \
                         t.get_round_pot_value(h) and \
-                        t.check_for_checkbutton() and \
-                        t.get_other_player_status(p, h) and \
                         t.check_for_call() and \
                         t.check_for_betbutton() and \
                         t.check_for_allincall() and \

@@ -114,7 +114,7 @@ class TableScraper:
     def get_my_funds2(self):
         self.get_players_funds(my_funds_only=True)
 
-    def get_players_funds(self, my_funds_only=False):
+    def get_players_funds(self, my_funds_only=False, skip=[]):
         """
         Get funds of players
 
@@ -128,7 +128,10 @@ class TableScraper:
 
         self.player_funds = []
         for i in range(counter):
-            funds = ocr(self.screenshot, 'player_funds_area', self.table_dict, str(i))
+            if i in skip:
+                funds = 0
+            else:
+                funds = ocr(self.screenshot, 'player_funds_area', self.table_dict, str(i))
             self.player_funds.append(funds)
         log.info(f"Player funds: {self.player_funds}")
         return True
@@ -144,9 +147,14 @@ class TableScraper:
         self.total_pot = ocr(self.screenshot, 'total_pot_area', self.table_dict)
         log.info(f"Total pot {self.total_pot}")
 
+    def get_player_pots(self, skip=[]):
+        """Get pots of the players"""
         self.player_pots = []
         for i in range(self.total_players):
-            funds = ocr(self.screenshot, 'player_pot_area', self.table_dict, str(i))
+            if i in skip:
+                funds = 0
+            else:
+                funds = ocr(self.screenshot, 'player_pot_area', self.table_dict, str(i))
             self.player_pots.append(funds)
         log.info(f"Player pots: {self.player_pots}")
 

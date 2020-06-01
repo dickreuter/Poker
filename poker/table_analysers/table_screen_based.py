@@ -210,6 +210,8 @@ class TableScreenBased(Table):
         return True
 
     def check_fast_fold(self, h, p, mouse):
+        self.gui_signals.signal_status.emit("Check for fast fold")
+        self.gui_signals.signal_progressbar_reset.emit()
         if self.gameStage == "PreFlop":
             m = MonteCarlo()
             crd1, crd2 = m.get_two_short_notation(self.mycards)
@@ -294,6 +296,8 @@ class TableScreenBased(Table):
         other_player['decision'] = ''
         self.other_players = []
         for i in range(self.total_players - 1):
+            self.gui_signals.signal_status.emit(f"Check other players {i}")
+            self.gui_signals.signal_progressbar_increase.emit(1)
             op = copy(other_player)
             op['abs_position'] = i
             self.other_players.append(op)
@@ -324,8 +328,9 @@ class TableScreenBased(Table):
 
     def get_other_player_funds(self, p):
         if p.selected_strategy['gather_player_names'] == 1:
-            self.gui_signals.signal_status.emit("Get player funds")
             for i in range(1, self.total_players):
+                self.gui_signals.signal_status.emit(f"Check other players funds {i}")
+                self.gui_signals.signal_progressbar_increase.emit(1)
                 value = self.player_funds[i]
                 value = float(value) if value != '' else ''
                 self.other_players[i]['funds'] = value
@@ -333,8 +338,14 @@ class TableScreenBased(Table):
         return True
 
     def get_other_player_pots(self):
-        self.gui_signals.signal_status.emit("Get player pots")
+        self.gui_signals.signal_status.emit(f"Get table pots")
+        self.gui_signals.signal_progressbar_increase.emit(2)
         self.get_pots()
+
+        exclude = set(range(self.total_players))-set(self.players_in_game)
+        self.gui_signals.signal_status.emit(f"Get player pots of players in game {self.players_in_game}")
+        self.gui_signals.signal_progressbar_increase.emit(5)
+        self.get_player_pots(skip=list(exclude.union({0})))
 
         for n in range(1, self.total_players):
             if self.player_pots[n] != "":
@@ -348,7 +359,9 @@ class TableScreenBased(Table):
         return True
 
     def get_bot_pot(self, p):
-        value = self.player_pots[0]
+        self.gui_signals.signal_status.emit("Get bot pot")
+        from poker.scraper.screen_operations import ocr
+        value = ocr(self.screenshot, 'player_pot_area', self.table_dict, str(0))
 
         if value != "":
             self.bot_pot = float(value)
@@ -362,6 +375,7 @@ class TableScreenBased(Table):
 
     def get_other_player_status(self, p, h):
         self.gui_signals.signal_status.emit("Get other playsrs' status")
+        self.gui_signals.signal_progressbar_increase.emit(2)
         self.get_players_in_game()
 
         self.covered_players = 0
@@ -415,6 +429,8 @@ class TableScreenBased(Table):
         return True
 
     def get_round_number(self, h):
+        self.gui_signals.signal_status.emit(f"Get round number")
+        self.gui_signals.signal_progressbar_increase.emit(1)
         if h.histGameStage == self.gameStage and h.lastRoundGameID == h.GameID:
             h.round_number += 1
         else:
@@ -422,6 +438,8 @@ class TableScreenBased(Table):
         return True
 
     def get_dealer_position(self):
+        self.gui_signals.signal_status.emit(f"Get dealer position")
+        self.gui_signals.signal_progressbar_increase.emit(1)
         self.get_dealer_position2()
         self.position_utg_plus = (self.total_players + 3 - self.dealer_position) % self.total_players
 
@@ -441,7 +459,6 @@ class TableScreenBased(Table):
         return True
 
     def get_total_pot_value(self, h):
-
         self.totalPotValue = self.total_pot
 
         if self.totalPotValue != "":
@@ -458,7 +475,6 @@ class TableScreenBased(Table):
             self.totalPotValue = h.previousPot
 
         log.info("Final Total Pot Value: " + str(self.totalPotValue))
-        self.gui_signals.signal_progressbar_increase.emit(5)
         return True
 
     def get_round_pot_value(self, h):
@@ -482,7 +498,8 @@ class TableScreenBased(Table):
         return True
 
     def get_my_funds(self, h, p):
-
+        self.gui_signals.signal_status.emit(f"Get my funds")
+        self.gui_signals.signal_progressbar_increase.emit(1)
         self.get_my_funds2()
         self.myFunds = self.player_funds[0]
         if self.myFunds != "":
@@ -504,6 +521,8 @@ class TableScreenBased(Table):
         return True
 
     def get_current_call_value(self, p):
+        self.gui_signals.signal_status.emit(f"Get call value")
+        self.gui_signals.signal_progressbar_increase.emit(1)
         if not self.checkButton:
 
             self.currentCallValue = self.get_call_value()
@@ -520,6 +539,8 @@ class TableScreenBased(Table):
         return True
 
     def get_current_bet_value(self, p):
+        self.gui_signals.signal_status.emit(f"Get raise value")
+        self.gui_signals.signal_progressbar_increase.emit(1)
 
         self.currentBetValue = self.get_raise_value()
 
@@ -583,6 +604,8 @@ class TableScreenBased(Table):
             return True
 
     def get_new_hand(self, mouse, h, p):
+        self.gui_signals.signal_status.emit(f"Check if new hand")
+        self.gui_signals.signal_progressbar_increase.emit(1)
         self.gui_signals.signal_progressbar_increase.emit(5)
         if h.previousCards != self.mycards:
             log.info("+++========================== NEW HAND ==========================+++")

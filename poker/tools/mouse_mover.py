@@ -29,7 +29,7 @@ class MouseMover(VirtualBoxController):
             self.mouse.move(x, y)
             self.mouse.click(x, y)
 
-        time.sleep(np.random.uniform(0.2, 0.3, 1)[0])
+        time.sleep(np.random.uniform(0.01, 0.1, 1)[0])
 
     def mouse_mover(self, x1, y1, x2, y2):
         speed = .6

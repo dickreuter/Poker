@@ -44,8 +44,8 @@ Only one table window should be visible.
 Running via python code
 ~~~~~~~~~~~~~~~~~~~~~~~
 - Download pycharm as an IDE
-- Install python 3.7 or Anaconda (=python with packages)
-- Create an environment with ``conda create -n poker python=3.7`` or use pycharm's functionality to create a new virtual environment. Chefck youtube for details.
+- Install python 3.8 or Anaconda (=python with packages)
+- Create an environment with ``conda create -n poker python=3.8`` or use pycharm's functionality to create a new virtual environment. Chefck youtube for details.
 - Install all the packages with ``pip install -r requirements.txt``
 - Install tesseract from https://github.com/UB-Mannheim/tesseract/wiki which is needed for OCR of the numbers that are scraped
 - Install virtualbox from https://www.virtualbox.org/wiki/Downloads and put the poker client into the virtual box. That way it can be controlled without having to use the mouse in your main window.
