@@ -28,10 +28,7 @@ https://github.com/pepijndevos/PyMouse
 
 import sys
 
-if sys.platform.startswith('java'):
-    from .java_ import PyMouse
-
-elif sys.platform == 'darwin':
+if sys.platform == 'darwin':
     from .mac import PyMouse, PyMouseEvent
 
 elif sys.platform == 'win32':

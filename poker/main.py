@@ -32,14 +32,15 @@ from poker.decisionmaker.montecarlo_python import run_montecarlo_wrapper
 from poker.decisionmaker.decisionmaker import Decision
 from poker.tools.mouse_mover import MouseMoverTableBased
 
-version = 4.08
+version = 4.1
 
 
 class ThreadManager(threading.Thread):
-    def __init__(self, threadID, name, counter, gui_signals):
+    def __init__(self, threadID, name, counter, gui_signals, updater):
         threading.Thread.__init__(self)
         self.threadID = threadID
         self.gui_signals = gui_signals
+        self.updater = updater
         self.name = name
         self.counter = counter
         self.loger = logging.getLogger('main')
@@ -112,7 +113,7 @@ class ThreadManager(threading.Thread):
     def run(self):
         log = logging.getLogger(__name__)
         h = History()
-        preflop_url, preflop_url_backup = u.get_preflop_sheet_url()
+        preflop_url, preflop_url_backup = self.updater.get_preflop_sheet_url()
         try:
             h.preflop_sheet = pd.read_excel(preflop_url, sheet_name=None)
         except:
@@ -143,14 +144,14 @@ class ThreadManager(threading.Thread):
             ready = False
             while (not ready):
                 p.read_strategy()
-                t = TableScreenBased(p, table_dict, gui_signals, self.game_logger, version)
+                t = TableScreenBased(p, table_dict, self.gui_signals, self.game_logger, version)
                 mouse = MouseMoverTableBased(table_dict)
                 mouse.move_mouse_away_from_buttons_jump()
 
                 ready = t.take_screenshot(True, p) and \
                         t.get_top_left_corner(p) and \
                         t.check_for_captcha(mouse) and \
-                        t.get_lost_everything(h, t, p, gui_signals) and \
+                        t.get_lost_everything(h, t, p, self.gui_signals) and \
                         t.check_for_imback(mouse) and \
                         t.get_my_cards(h) and \
                         t.get_new_hand(mouse, h, p) and \
@@ -241,9 +242,10 @@ def run_poker():
 
     # Back up the reference to the exceptionhook
     sys._excepthook = sys.excepthook
-    global u
-    u = UpdateChecker()
-    u.check_update(version)
+    log.info("Check for auto-update")
+    updater = UpdateChecker()
+    updater.check_update(version)
+    log.info(f"Lastest version already installed: {version}")
 
     def exception_hook(exctype, value, traceback):
         # Print the error and traceback
@@ -259,28 +261,16 @@ def run_poker():
     # Set the exception hook to our wrapping function
     sys.__excepthook__ = exception_hook
 
-    # # check for tesseract
-    # try:
-    #     pytesseract.image_to_string(Image.open('pics/PP/call.png'))
-    # except Exception as e:
-    #     print(e)
-    #     print(
-    #         "Tesseract not installed. Please install it into the same folder as the pokerbot or alternatively set the path variable.")
-    #     # subprocess.call(["start", 'tesseract-installer/tesseract-ocr-setup-3.05.00dev.exe'], shell=True)
-    #     sys.exit()
-
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
 
-    global ui
     ui = Ui_Pokerbot()
     ui.setupUi(MainWindow)
     MainWindow.setWindowIcon(QtGui.QIcon('icon.ico'))
 
-    global gui_signals
     gui_signals = UIActionAndSignals(ui)
 
-    t1 = ThreadManager(1, "Thread-1", 1, gui_signals)
+    t1 = ThreadManager(1, "Thread-1", 1, gui_signals, updater)
     t1.start()
 
     MainWindow.show()
@@ -289,8 +279,6 @@ def run_poker():
     except:
         print("Preparing to exit...")
         gui_signals.exit_thread = True
-
-    pass
 
 
 if __name__ == '__main__':

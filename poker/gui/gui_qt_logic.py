@@ -187,6 +187,7 @@ class UIActionAndSignals(QObject):
 
         ui_main_window.pushButton_setup.clicked.connect(lambda: self.open_setup(p, l))
         ui_main_window.pushButton_help.clicked.connect(lambda: self.open_help(p, l))
+        ui_main_window.open_chat.clicked.connect(lambda: self.open_chat())
         ui_main_window.button_table_setup.clicked.connect(lambda: self.open_table_setup())
 
         self.signal_update_strategy_sliders.connect(lambda: self.update_strategy_editor_sliders(p.current_strategy))
@@ -351,6 +352,10 @@ class UIActionAndSignals(QObject):
         # self.ui_help = Ui_help_form()
         # self.ui_help.setupUi(self.help_form)
         # self.help_form.show()
+
+    def open_chat(self):
+        url = "https://t.me/joinchat/HlwI8xietZJ7QNAO_P5g1Q"
+        webbrowser.open(url, new=2)
 
     def open_table_setup(self):
         self.table_setup_form = QtWidgets.QWidget()

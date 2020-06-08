@@ -62,7 +62,7 @@ class TestDecision(TestCase):
         t.gameStage = "PreFlop"
 
         d.__init__(t, h, p, l)
-        d.preflop_table_analyser(t, logger, h, p)
+        d.preflop_table_analyser(t, h, p)
         self.assertEqual(t.first_raiser_utg, 2)
         # self.assertEqual(t.preflop_sheet_name, '42R3')
 
@@ -77,7 +77,7 @@ class TestDecision(TestCase):
         t.gameStage = "PreFlop"
 
         d.__init__(t, h, p, l)
-        d.preflop_table_analyser(t, logger, h, p)
+        d.preflop_table_analyser(t, h, p)
         self.assertEqual(t.first_raiser_utg, 4)
         # self.assertEqual(t.preflop_sheet_name, '22R5')
 
@@ -92,7 +92,7 @@ class TestDecision(TestCase):
         t.gameStage = "PreFlop"
 
         d.__init__(t, h, p, l)
-        d.preflop_table_analyser(t, logger, h, p)
+        d.preflop_table_analyser(t, h, p)
         self.assertEqual(t.first_raiser_utg, 2)
         # self.assertEqual(t.preflop_sheet_name, '12R3')
 
@@ -107,7 +107,7 @@ class TestDecision(TestCase):
         t.gameStage = "PreFlop"
 
         d.__init__(t, h, p, l)
-        d.preflop_table_analyser(t, logger, h, p)
+        d.preflop_table_analyser(t, h, p)
 
         self.assertEqual(t.first_raiser, 2)
         self.assertEqual(t.second_raiser, 4)
@@ -123,7 +123,7 @@ class TestDecision(TestCase):
         t.gameStage = "PreFlop"
 
         d.__init__(t, h, p, l)
-        d.preflop_table_analyser(t, logger, h, p)
+        d.preflop_table_analyser(t, h, p)
 
         self.assertEqual(t.first_raiser_utg, 3)
         self.assertEqual(np.isnan(t.second_raiser_utg), True)
@@ -138,7 +138,7 @@ class TestDecision(TestCase):
         t.isHeadsUp = True
         t.gameStage = "PreFlop"
         d.__init__(t, h, p, l)
-        d.preflop_table_analyser(t, logger, h, p)
+        d.preflop_table_analyser(t, h, p)
 
         self.assertEqual(t.first_raiser_utg, 4)
         self.assertEqual(np.isnan(t.second_raiser_utg), True)
@@ -152,7 +152,7 @@ class TestDecision(TestCase):
         t.isHeadsUp = True
         t.gameStage = "PreFlop"
         d.__init__(t, h, p, l)
-        d.preflop_table_analyser(t, logger, h, p)
+        d.preflop_table_analyser(t, h, p)
 
         self.assertEqual(t.preflop_sheet_name, '6R1C2')
 
@@ -164,7 +164,7 @@ class TestDecision(TestCase):
         t.isHeadsUp = True
         t.gameStage = "PreFlop"
         d.__init__(t, h, p, l)
-        d.preflop_table_analyser(t, logger, h, p)
+        d.preflop_table_analyser(t, h, p)
 
         self.assertEqual(t.preflop_sheet_name, '22R6')
 
@@ -176,7 +176,7 @@ class TestDecision(TestCase):
         t.isHeadsUp = True
         t.gameStage = "PreFlop"
         d.__init__(t, h, p, l)
-        d.preflop_table_analyser(t, logger, h, p)
+        d.preflop_table_analyser(t, h, p)
 
         self.assertEqual(t.preflop_sheet_name, '2R1')
 
@@ -188,7 +188,7 @@ class TestDecision(TestCase):
         t.isHeadsUp = True
         t.gameStage = "PreFlop"
         d.__init__(t, h, p, l)
-        d.preflop_table_analyser(t, logger, h, p)
+        d.preflop_table_analyser(t, h, p)
 
         self.assertEqual(t.preflop_sheet_name, '4R1')
 
@@ -199,7 +199,7 @@ class TestDecision(TestCase):
         t.isHeadsUp = True
         t.gameStage = "PreFlop"
         d.__init__(t, h, p, l)
-        d.preflop_table_analyser(t, logger, h, p)
+        d.preflop_table_analyser(t, h, p)
 
         self.assertEqual(t.preflop_sheet_name, '4R3')
 
@@ -211,6 +211,6 @@ class TestDecision(TestCase):
         t.isHeadsUp = True
         t.gameStage = "PreFlop"
         d.__init__(t, h, p, l)
-        d.preflop_table_analyser(t, logger, h, p)
+        d.preflop_table_analyser(t, h, p)
 
         self.assertEqual(t.preflop_sheet_name, '12R4R6')

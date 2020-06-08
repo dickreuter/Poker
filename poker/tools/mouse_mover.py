@@ -1,11 +1,11 @@
 import logging
 import random
+import time
 
 import numpy as np
 from configobj import ConfigObj
 
 from poker import pymouse
-from poker.captcha.key_press_vbox import *
 from poker.tools.vbox_manager import VirtualBoxController
 
 log = logging.getLogger(__name__)
@@ -134,26 +134,6 @@ class MouseMoverTableBased(MouseMover):
                 self.mouse.move(x2, y2)
         except Exception as e:
             log.warning("Moving mouse via jump away failed" + str(e))
-
-    def enter_captcha(self, captchaString, topleftcorner):
-        log.warning("Entering Captcha: " + str(captchaString))
-        buttonToleranceX = 30
-        buttonToleranceY = 0
-        tlx = topleftcorner[0]
-        tly = topleftcorner[1]
-        if not self.vbox_mode:
-            (x1, y1) = self.mouse.position()
-        else:
-            x1 = self.old_x
-            y1 = self.old_y
-        x2 = 30 + tlx
-        y2 = 565 + tly
-        self.mouse_mover(x1, y1, x2, y2)
-        self.mouse_clicker(x2, y2, buttonToleranceX, buttonToleranceY)
-        try:
-            write_characters_to_virtualbox(captchaString, "win")
-        except:
-            log.info("Captcha Error")
 
     def mouse_action(self, decision, topleftcorner):
         if decision == 'Check Deception': decision = 'Check'

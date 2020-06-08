@@ -845,7 +845,7 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="4" colspan="2">
+    <item row="0" column="5">
      <widget class="QPushButton" name="pushButton_help">
       <property name="font">
        <font>
@@ -853,7 +853,19 @@
        </font>
       </property>
       <property name="text">
-       <string>Help</string>
+       <string>Documentation</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="4">
+     <widget class="QPushButton" name="open_chat">
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Telegram Chat</string>
       </property>
      </widget>
     </item>

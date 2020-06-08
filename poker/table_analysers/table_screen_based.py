@@ -162,53 +162,6 @@ class TableScreenBased(Table):
 
         return True
 
-    def get_table_cards_nn(self, h):
-        func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
-
-        self.gui_signals.signal_progressbar_increase.emit(5)
-        self.cardsOnTable = []
-        width = self.coo['card_sizes'][self.tbl][0]
-        height = self.coo['card_sizes'][self.tbl][1]
-
-        for i in range(5):
-            pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict[i][0],
-                                        self.tlc[1] + func_dict[i][1],
-                                        self.tlc[0] + func_dict[i][0] + width, self.tlc[1] + func_dict[i][1] + height)
-
-            card = h.n.recognize_card(pil_image)
-            self.cardsOnTable.append(card)
-            try:
-                pil_image.save('pics/pp/' + card + '.png')
-            except:
-                pass
-
-        for i in range(5):
-            if 'empty' in self.cardsOnTable:
-                self.cardsOnTable.remove('empty')
-        self.gameStage = ''
-
-        if len(self.cardsOnTable) < 1:
-            self.gameStage = "PreFlop"
-        elif len(self.cardsOnTable) == 3:
-            self.gameStage = "Flop"
-        elif len(self.cardsOnTable) == 4:
-            self.gameStage = "Turn"
-        elif len(self.cardsOnTable) == 5:
-            self.gameStage = "River"
-
-        if self.gameStage == '':
-            log.critical("Table cards not recognised correctly: " + str(len(self.cardsOnTable)))
-            self.gameStage = "River"
-
-        log.info("---")
-        log.info("Gamestage: " + self.gameStage)
-        log.info("Cards on table: " + str(self.cardsOnTable))
-        log.info("---")
-
-        self.max_X = 1 if self.gameStage != 'PreFlop' else 0.86
-
-        return True
-
     def check_fast_fold(self, h, p, mouse):
         self.gui_signals.signal_status.emit("Check for fast fold")
         self.gui_signals.signal_progressbar_reset.emit()
@@ -342,7 +295,7 @@ class TableScreenBased(Table):
         self.gui_signals.signal_progressbar_increase.emit(2)
         self.get_pots()
 
-        exclude = set(range(self.total_players))-set(self.players_in_game)
+        exclude = set(range(self.total_players)) - set(self.players_in_game)
         self.gui_signals.signal_status.emit(f"Get player pots of players in game {self.players_in_game}")
         self.gui_signals.signal_progressbar_increase.emit(5)
         self.get_player_pots(skip=list(exclude.union({0})))

@@ -5,6 +5,8 @@ h contains values from the historical (last) decision
 p contains values from the Strategy as defined in the xml file
 """
 
+# pylint: disable=too-many-boolean-expressions
+
 from enum import Enum
 
 from .base import DecisionBase
