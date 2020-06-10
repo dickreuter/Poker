@@ -449,7 +449,7 @@ class MonteCarlo(object):
                 none_count += 1
             else:
                 wins += r[0]
-                winnerCardTypeList.append(r[1])
+                if r[0] == 1: winnerCardTypeList.append(r[1])
 
         runs = maxRuns - none_count
         if none_count > 0:
