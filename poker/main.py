@@ -2,6 +2,8 @@ import warnings
 
 import matplotlib.cbook
 
+from poker.tools.pool_manager import PoolManager
+
 warnings.filterwarnings("ignore", category=matplotlib.cbook.mplDeprecation)
 warnings.filterwarnings("ignore", message="ignoring `maxfev` argument to `Minimizer()`. Use `max_nfev` instead.")
 warnings.filterwarnings("ignore", message="DataFrame columns are not unique, some columns will be omitted.")
@@ -126,6 +128,10 @@ class ThreadManager(threading.Thread):
 
         preflop_state = CurrentHandPreflopState()
         mongo = MongoManager()
+
+        pm = PoolManager()
+        pm.init_pool()  # init pool and keep the pool alive, load overhead only once
+
         table_scraper_name = None
 
         while True:
@@ -232,6 +238,11 @@ class ThreadManager(threading.Thread):
                 log.info("=========== round end ===========")
 
 
+def clean_up():
+    pm = PoolManager()
+    pm.shutdown()
+
+
 # ==== MAIN PROGRAM =====
 
 def run_poker():
@@ -262,6 +273,7 @@ def run_poker():
     sys.__excepthook__ = exception_hook
 
     app = QtWidgets.QApplication(sys.argv)
+    app.aboutToQuit.connect(clean_up)
     MainWindow = QtWidgets.QMainWindow()
 
     ui = Ui_Pokerbot()
