@@ -32,7 +32,7 @@ from poker.decisionmaker.montecarlo_python import run_montecarlo_wrapper
 from poker.decisionmaker.decisionmaker import Decision
 from poker.tools.mouse_mover import MouseMoverTableBased
 
-version = 4.1
+version = 4.20
 
 
 class ThreadManager(threading.Thread):
@@ -263,7 +263,7 @@ def run_poker():
 
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
-
+    global ui
     ui = Ui_Pokerbot()
     ui.setupUi(MainWindow)
     MainWindow.setWindowIcon(QtGui.QIcon('icon.ico'))

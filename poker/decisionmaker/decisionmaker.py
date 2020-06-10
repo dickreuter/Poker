@@ -510,11 +510,6 @@ class Decision(DecisionBase):
         else:
             self.ErrCallButton = False
 
-        if t.checkButton == True:
-            if self.decision == DecisionTypes.fold: self.decision = DecisionTypes.check
-            if self.decision == DecisionTypes.call: self.decision = DecisionTypes.check
-            if self.decision == DecisionTypes.call_deception: self.decision = DecisionTypes.check_deception
-
         if t.allInCallButton and self.decision != DecisionTypes.fold:
             self.decision = DecisionTypes.call
 
@@ -529,6 +524,11 @@ class Decision(DecisionBase):
         if self.decision == DecisionTypes.bet_bluff: h.myLastBet = t.totalPotValue / 2
         if self.decision == DecisionTypes.bet3: h.myLastBet = t.totalPotValue / 2
         if self.decision == DecisionTypes.bet4: h.myLastBet = t.totalPotValue
+
+        if t.checkButton:
+            if self.decision == DecisionTypes.fold: self.decision = DecisionTypes.check
+            if self.decision == DecisionTypes.call: self.decision = DecisionTypes.check
+            if self.decision == DecisionTypes.call_deception: self.decision = DecisionTypes.check_deception
 
     def make_decision(self, t, h, p, l):
         self.preflop_sheet_name = ''
