@@ -458,7 +458,7 @@ class MonteCarlo(object):
 
 
         try:
-            self.equity = np.round(wins / runs, 3)
+            self.equity = np.round(wins / runs, 4)
         except ZeroDivisionError:
             self.equity = 0.5
             self.logger.warning('MonteCarlo Timeout at Start! runs 0. Setting equity to 0.5')
