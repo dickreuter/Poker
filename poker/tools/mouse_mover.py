@@ -1,5 +1,6 @@
 import logging
 import random
+import sys
 import time
 
 import numpy as np
@@ -53,7 +54,10 @@ class MouseMover(VirtualBoxController):
             x = xa[i] + int(+random.random() * xTremble)
             y = ya[i] + int(+random.random() * yTremble)
             if self.vbox_mode:
-                self.mouse_move_vbox(x, y)
+                try:
+                    self.mouse_move_vbox(x, y)
+                except AttributeError:
+                    raise RuntimeError("Virtual box not detected. Switch to direct mouse control in setup or open VirtualBox")
                 time.sleep(np.random.uniform(0.01 * speed, 0.03 * speed, 1)[0])
             else:
                 self.mouse.move(x, y)

@@ -59,7 +59,6 @@ class TableSetupActionAndSignals(QObject):
         self.ui.test_all_button.clicked.connect(lambda: self.test_all())
         self._connect_cards_with_save_slot()
         self._connect_range_buttons_with_save_coordinates()
-        self.ui.load_topleft_corner.clicked.connect(lambda: self.load_topleft_corner())
         self.ui.blank_new.clicked.connect(lambda: self.blank_new())
         self.ui.copy_to_new.clicked.connect(lambda: self.copy_to_new())
         self.ui.crop.clicked.connect(lambda: self.crop())

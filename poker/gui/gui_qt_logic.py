@@ -1,10 +1,13 @@
+from sys import platform
+
 import matplotlib
 
 from poker.scraper.table_setup import TableSetupActionAndSignals
 from poker.scraper.ui_table_setup import Ui_table_setup_form
 from poker.tools.mongo_manager import MongoManager
 
-matplotlib.use('Qt5Agg')
+if not (platform == "linux" or platform == "linux2"):
+    matplotlib.use('Qt5Agg')
 from PyQt5.QtCore import *
 
 from matplotlib.backends.backend_qt5agg import (
@@ -208,9 +211,8 @@ class UIActionAndSignals(QObject):
         ui_main_window.comboBox_current_strategy.setCurrentIndex(idx)
 
         table_scraper_name = config['table_scraper_name']
-        idx=available_tables.index(table_scraper_name)
+        idx = available_tables.index(table_scraper_name)
         ui_main_window.table_selection.setCurrentIndex(idx)
-
 
     def signal_update_selected_strategy(self, l, p):
         config = ConfigObj("config.ini")

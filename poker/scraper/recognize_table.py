@@ -71,9 +71,9 @@ class TableScraper:
                 if is_template_in_search_area(self.table_dict, self.screenshot,
                                               value.lower() + suit.lower(), 'table_cards_area'):
                     self.table_cards.append(value + suit)
+        log.info(f"Table cards: {self.table_cards}")
         assert len(self.table_cards) != 1, "Table cards can never be 1"
         assert len(self.table_cards) != 2, "Table cards can never be 2"
-        log.info(f"Table cards: {self.table_cards}")
         return True
 
     def get_dealer_position2(self):

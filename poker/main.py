@@ -1,4 +1,5 @@
 import warnings
+from sys import platform
 
 import matplotlib.cbook
 
@@ -16,7 +17,9 @@ import pandas as pd
 
 from poker.tools.helper import init_logger
 
-matplotlib.use('Qt5Agg')
+if not (platform == "linux" or platform == "linux2"):
+    matplotlib.use('Qt5Agg')
+
 import logging.handlers
 import threading
 import datetime
@@ -32,7 +35,7 @@ from poker.decisionmaker.montecarlo_python import run_montecarlo_wrapper
 from poker.decisionmaker.decisionmaker import Decision
 from poker.tools.mouse_mover import MouseMoverTableBased
 
-version = 4.20
+version = 4.21
 
 
 class ThreadManager(threading.Thread):
@@ -138,7 +141,7 @@ class ThreadManager(threading.Thread):
 
             if self.gui_signals.pause_thread:
                 while self.gui_signals.pause_thread == True:
-                    time.sleep(0.2)
+                    time.sleep(0.5)
                     if self.gui_signals.exit_thread == True: sys.exit()
 
             ready = False

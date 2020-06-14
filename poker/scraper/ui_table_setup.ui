@@ -49,7 +49,7 @@
    <property name="geometry">
     <rect>
      <x>550</x>
-     <y>310</y>
+     <y>270</y>
      <width>311</width>
      <height>41</height>
     </rect>
@@ -65,7 +65,7 @@
    <property name="geometry">
     <rect>
      <x>720</x>
-     <y>280</y>
+     <y>240</y>
      <width>141</width>
      <height>21</height>
     </rect>
@@ -80,9 +80,9 @@
   <widget class="QPushButton" name="tesseract">
    <property name="geometry">
     <rect>
-     <x>530</x>
-     <y>400</y>
-     <width>141</width>
+     <x>540</x>
+     <y>370</y>
+     <width>201</width>
      <height>31</height>
     </rect>
    </property>
@@ -121,8 +121,8 @@
   <widget class="QLabel" name="label_3">
    <property name="geometry">
     <rect>
-     <x>530</x>
-     <y>440</y>
+     <x>540</x>
+     <y>410</y>
      <width>131</width>
      <height>16</height>
     </rect>
@@ -134,10 +134,10 @@
   <widget class="QLabel" name="tesseract_label">
    <property name="geometry">
     <rect>
-     <x>670</x>
-     <y>440</y>
-     <width>47</width>
-     <height>14</height>
+     <x>660</x>
+     <y>410</y>
+     <width>81</width>
+     <height>16</height>
     </rect>
    </property>
    <property name="text">
@@ -170,7 +170,7 @@
       </rect>
      </property>
      <property name="title">
-      <string>Button Images and value areas</string>
+      <string>Button Images and their search areas</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_6">
       <item row="0" column="0">
@@ -296,11 +296,11 @@
        <x>260</x>
        <y>30</y>
        <width>223</width>
-       <height>141</height>
+       <height>91</height>
       </rect>
      </property>
      <property name="title">
-      <string>Search Areas</string>
+      <string>Search areas for cards</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_4">
       <item row="1" column="0">
@@ -321,17 +321,36 @@
            <string>Area where the cards appear on the table at flop, turn and river</string>
           </property>
           <property name="text">
-           <string>Table Cards Area</string>
+           <string>Table Cards area</string>
           </property>
          </widget>
         </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+    <widget class="QGroupBox" name="groupBox_10">
+     <property name="geometry">
+      <rect>
+       <x>260</x>
+       <y>130</y>
+       <width>221</width>
+       <height>221</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>Values</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_7">
+      <item row="0" column="0">
+       <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
          <widget class="QPushButton" name="total_pot_area">
           <property name="toolTip">
            <string>Total pot. Make sure to only select the numbers very narrowly and test it by pressing the recognize number or text button</string>
           </property>
           <property name="text">
-           <string>Total Pot Area</string>
+           <string>Total Pot value</string>
           </property>
          </widget>
         </item>
@@ -341,66 +360,54 @@
            <string>The pot of the current rount (e.g. flop). Select the area very narrowly and test it by pressing the recognize number button</string>
           </property>
           <property name="text">
-           <string>Current Round Pot</string>
+           <string>Current Round Pot value</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="raise_value">
+          <property name="toolTip">
+           <string>The value on the raise button. Make sure to select very narrowly and then test with the recognize number button</string>
+          </property>
+          <property name="text">
+           <string>Raise Value</string>
+          </property>
+          <property name="flat">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="call_value">
+          <property name="toolTip">
+           <string>Value on the call button, make sure to select narrowly and then test by pressing the recognize number button</string>
+          </property>
+          <property name="text">
+           <string>Call value</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="all_in_call_value">
+          <property name="toolTip">
+           <string>The all in call value may be in a different place in case the all in call button appears. Make sure to select the value narrowly and test it with the recognize number button</string>
+          </property>
+          <property name="text">
+           <string>All in call value</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="game_number">
+          <property name="toolTip">
+           <string>Game number for collusion, in partypoker available on top right</string>
+          </property>
+          <property name="text">
+           <string>Game Number</string>
           </property>
          </widget>
         </item>
        </layout>
-      </item>
-     </layout>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget">
-     <property name="geometry">
-      <rect>
-       <x>270</x>
-       <y>230</y>
-       <width>201</width>
-       <height>112</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_3">
-      <item>
-       <widget class="QPushButton" name="raise_value">
-        <property name="toolTip">
-         <string>The value on the raise button. Make sure to select very narrowly and then test with the recognize number button</string>
-        </property>
-        <property name="text">
-         <string>Raise Value</string>
-        </property>
-        <property name="flat">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="call_value">
-        <property name="toolTip">
-         <string>Value on the call button, make sure to select narrowly and then test by pressing the recognize number button</string>
-        </property>
-        <property name="text">
-         <string>Call value</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="all_in_call_value">
-        <property name="toolTip">
-         <string>The all in call value may be in a different place in case the all in call button appears. Make sure to select the value narrowly and test it with the recognize number button</string>
-        </property>
-        <property name="text">
-         <string>All in call value</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="game_number">
-        <property name="toolTip">
-         <string>Game number for collusion, in partypoker available on top right</string>
-        </property>
-        <property name="text">
-         <string>Game Number</string>
-        </property>
-       </widget>
       </item>
      </layout>
     </widget>
@@ -414,96 +421,14 @@
       <rect>
        <x>20</x>
        <y>40</y>
-       <width>371</width>
-       <height>151</height>
+       <width>451</width>
+       <height>191</height>
       </rect>
      </property>
      <property name="title">
       <string>Players</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_5">
-      <item row="0" column="0">
-       <widget class="QGroupBox" name="groupBox_3">
-        <property name="title">
-         <string>Table size</string>
-        </property>
-        <widget class="QComboBox" name="max_players">
-         <property name="geometry">
-          <rect>
-           <x>10</x>
-           <y>20</y>
-           <width>91</width>
-           <height>22</height>
-          </rect>
-         </property>
-         <property name="toolTip">
-          <string>Select the amount of players on the table</string>
-         </property>
-         <item>
-          <property name="text">
-           <string>6</string>
-          </property>
-         </item>
-        </widget>
-       </widget>
-      </item>
-      <item row="0" column="1" rowspan="2">
-       <layout class="QFormLayout" name="formLayout_2">
-        <item row="0" column="0">
-         <widget class="QPushButton" name="player_funds_area">
-          <property name="toolTip">
-           <string>area where the remaining player funds are shown. Use narrow selection and test it by pressing the Recognize number button</string>
-          </property>
-          <property name="text">
-           <string>Player funds area</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QPushButton" name="player_pot_area">
-          <property name="toolTip">
-           <string>Pot of the player</string>
-          </property>
-          <property name="text">
-           <string>Player pot area</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0">
-         <widget class="QPushButton" name="player_name_area">
-          <property name="text">
-           <string>Player name area</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="0">
-         <widget class="QPushButton" name="covered_card_area">
-          <property name="contextMenuPolicy">
-           <enum>Qt::NoContextMenu</enum>
-          </property>
-          <property name="toolTip">
-           <string>Area where the player has the cards, so the bot can detect if he is still in the game</string>
-          </property>
-          <property name="toolTipDuration">
-           <number>9</number>
-          </property>
-          <property name="text">
-           <string>Covered card area</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="1">
-         <widget class="QPushButton" name="button_search_area">
-          <property name="toolTip">
-           <string>Where the given player would have the button to indicate he is the dealer. </string>
-          </property>
-          <property name="text">
-           <string>Button search area</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
       <item row="1" column="0">
        <widget class="QGroupBox" name="groupBox_4">
         <property name="title">
@@ -519,7 +444,7 @@
           </rect>
          </property>
          <property name="toolTip">
-          <string>0 is the bot, then counter clockwise the other players</string>
+          <string>0 is the bot, then clockwise the other players</string>
          </property>
          <item>
           <property name="text">
@@ -553,6 +478,88 @@
          </item>
         </widget>
        </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QGroupBox" name="groupBox_3">
+        <property name="title">
+         <string>Table size</string>
+        </property>
+        <widget class="QComboBox" name="max_players">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>20</y>
+           <width>91</width>
+           <height>22</height>
+          </rect>
+         </property>
+         <property name="toolTip">
+          <string>Select the amount of players on the table</string>
+         </property>
+         <item>
+          <property name="text">
+           <string>6</string>
+          </property>
+         </item>
+        </widget>
+       </widget>
+      </item>
+      <item row="0" column="1" rowspan="2">
+       <layout class="QFormLayout" name="formLayout_2">
+        <item row="0" column="1">
+         <widget class="QPushButton" name="player_pot_area">
+          <property name="toolTip">
+           <string>Pot of the player</string>
+          </property>
+          <property name="text">
+           <string>Player pot area</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
+         <widget class="QPushButton" name="button_search_area">
+          <property name="toolTip">
+           <string>Where the given player would have the button to indicate he is the dealer. </string>
+          </property>
+          <property name="text">
+           <string>Dealer button search area</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QPushButton" name="player_funds_area">
+          <property name="toolTip">
+           <string>area where the remaining player funds are shown. Use narrow selection and test it by pressing the Recognize number button</string>
+          </property>
+          <property name="text">
+           <string>Player funds area</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QPushButton" name="player_name_area">
+          <property name="text">
+           <string>Player name area</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QPushButton" name="covered_card_area">
+          <property name="contextMenuPolicy">
+           <enum>Qt::NoContextMenu</enum>
+          </property>
+          <property name="toolTip">
+           <string>Area where the player has the cards, so the bot can detect if he is still in the game</string>
+          </property>
+          <property name="toolTipDuration">
+           <number>9</number>
+          </property>
+          <property name="text">
+           <string>Covered card area (cards upside down)</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
      </layout>
     </widget>
@@ -966,7 +973,7 @@
         <item>
          <widget class="QPushButton" name="dealer_button">
           <property name="toolTip">
-           <string>The dealer button image. Make sure to select very narrowly and don't include any background that might change depending on it's location</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The dealer button image. Make sure to select very narrowly and don't include any background that might change depending on it's location&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string>Dealer button</string>
@@ -1203,22 +1210,6 @@
     </property>
    </widget>
   </widget>
-  <widget class="QPushButton" name="load_topleft_corner">
-   <property name="geometry">
-    <rect>
-     <x>550</x>
-     <y>230</y>
-     <width>311</width>
-     <height>41</height>
-    </rect>
-   </property>
-   <property name="toolTip">
-    <string>Loads a previously saved top left corner</string>
-   </property>
-   <property name="text">
-    <string>Load top left corner</string>
-   </property>
-  </widget>
   <widget class="QScrollArea" name="scrollArea_2">
    <property name="geometry">
     <rect>
@@ -1271,13 +1262,13 @@
     <string>1</string>
    </property>
   </widget>
-  <widget class="QLabel" name="label_8">
+  <widget class="QLabel" name="label_9">
    <property name="geometry">
     <rect>
      <x>530</x>
-     <y>230</y>
-     <width>16</width>
-     <height>16</height>
+     <y>270</y>
+     <width>21</width>
+     <height>20</height>
     </rect>
    </property>
    <property name="font">
@@ -1291,31 +1282,11 @@
     <string>2</string>
    </property>
   </widget>
-  <widget class="QLabel" name="label_9">
-   <property name="geometry">
-    <rect>
-     <x>530</x>
-     <y>320</y>
-     <width>21</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>10</pointsize>
-     <weight>75</weight>
-     <bold>true</bold>
-    </font>
-   </property>
-   <property name="text">
-    <string>3</string>
-   </property>
-  </widget>
   <widget class="QLabel" name="label_11">
    <property name="geometry">
     <rect>
-     <x>530</x>
-     <y>370</y>
+     <x>540</x>
+     <y>330</y>
      <width>261</width>
      <height>16</height>
     </rect>
@@ -1328,7 +1299,7 @@
     </font>
    </property>
    <property name="text">
-    <string>Step 6 (only for numbers, optional)</string>
+    <string>Step 5 (only for numbers, optional)</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_10">
@@ -1348,7 +1319,7 @@
     </font>
    </property>
    <property name="text">
-    <string>Step 5. Assign selection to save it</string>
+    <string>Step 4. Assign selection to save it</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_13">
@@ -1523,14 +1494,14 @@
     </font>
    </property>
    <property name="text">
-    <string>Step 4: click on top left and bottom right (2 separate clicks) of what you want to select</string>
+    <string>Step 3: click on top left and bottom right (2 separate clicks) of what you want to select</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_18">
    <property name="geometry">
     <rect>
-     <x>530</x>
-     <y>380</y>
+     <x>540</x>
+     <y>350</y>
      <width>261</width>
      <height>16</height>
     </rect>
@@ -1550,7 +1521,7 @@
    <property name="geometry">
     <rect>
      <x>550</x>
-     <y>280</y>
+     <y>240</y>
      <width>171</width>
      <height>20</height>
     </rect>

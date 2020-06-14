@@ -4,7 +4,7 @@ import logging
 
 import cv2
 import numpy as np
-from PIL import Image, ImageFilter, ImageGrab
+from PIL import Image, ImageGrab, ImageFilter
 from pytesseract import pytesseract
 
 from poker.tools.helper import memory_cache
@@ -136,6 +136,31 @@ def get_ocr_float(img_orig, name=None, big_blind=0.02, binarize=False):
     return ''
 
 
+# def get_ocr_float(img_orig, name=None, big_blind=0.02, binarize=False):
+#     img = pil_to_cv2(img_orig)
+#     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+#     threshold_img = cv2.threshold(gray, 100, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+#     im_pil = cv2_to_pil(threshold_img)
+#     result = pytesseract.image_to_string(im_pil, 'eng',
+#                                          config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789.$£B'). \
+#         replace('$', '').replace('£', '')
+#
+#     if 'B' in result:
+#         result = result.replace('B', '')
+#         try:
+#             final_value = float(result) * big_blind
+#         except:
+#             final_value = 0
+#
+#     else:
+#         try:
+#             final_value = float(result)
+#         except:
+#             final_value = 0
+#
+#     return final_valuev
+
+
 def take_screenshot(virtual_box=False):
     """
     Take screenshot directly from screen or via virtualbox
@@ -185,6 +210,10 @@ def binary_pil_to_cv2(img):
 
 def pil_to_cv2(img):
     return cv2.cvtColor(np.array(img), cv2.COLOR_BGR2RGB)
+
+
+def cv2_to_pil(img):
+    return Image.fromarray(img)
 
 
 def check_if_image_in_range(img, screenshot, x1, y1, x2, y2):
