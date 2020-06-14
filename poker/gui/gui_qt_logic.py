@@ -2,13 +2,12 @@ from sys import platform
 
 import matplotlib
 
-from poker.scraper.table_setup import TableSetupActionAndSignals
-from poker.scraper.ui_table_setup import Ui_table_setup_form
-from poker.tools.mongo_manager import MongoManager
-
 if not (platform == "linux" or platform == "linux2"):
     matplotlib.use('Qt5Agg')
 from PyQt5.QtCore import *
+from poker.scraper.table_setup import TableSetupActionAndSignals
+from poker.scraper.ui_table_setup import Ui_table_setup_form
+from poker.tools.mongo_manager import MongoManager
 
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvasQTAgg as FigureCanvas)
@@ -28,6 +27,8 @@ import os
 import logging
 from configobj import ConfigObj
 
+
+# pylint: disable=unnecessary-lambda
 
 class PandasModel(QtCore.QAbstractTableModel):
     """

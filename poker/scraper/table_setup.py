@@ -11,6 +11,8 @@ from poker.scraper.screen_operations import get_table_template_image, get_ocr_fl
 from poker.tools.helper import COMPUTER_NAME
 from poker.tools.mongo_manager import MongoManager
 
+# pylint: disable=unnecessary-lambda
+
 log = logging.getLogger(__name__)
 
 mongo = MongoManager()
