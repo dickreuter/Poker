@@ -202,3 +202,4 @@ Still having problems?
 
 - Check the log file. In the folder where you installed the pokerbot, there is a subfolder with the log files in /log. There are also screenshots in /log/screenshots that may be able to help debug the problem.
 - Create a issue on the link at the top of this github page https://github.com/dickreuter/Poker/issues or email dickreuter@gmail.com
+[![Run on Repl.it](https://repl.it/badge/github/dickreuter/Poker)](https://repl.it/github/dickreuter/Poker)
