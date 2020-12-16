@@ -313,7 +313,7 @@ class TableScreenBased(Table):
 
     def get_bot_pot(self, p):
         self.gui_signals.signal_status.emit("Get bot pot")
-        from poker.scraper.screen_operations import ocr
+        from poker.tools.screen_operations import ocr
         value = ocr(self.screenshot, 'player_pot_area', self.table_dict, str(0))
 
         if value != "":

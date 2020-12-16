@@ -11,6 +11,7 @@ from configobj import ConfigObj
 
 from poker.decisionmaker.genetic_algorithm import GeneticAlgorithm
 from poker.scraper.recognize_table import TableScraper
+from poker.tools.helper import CONFIG_FILENAME
 from poker.tools.vbox_manager import VirtualBoxController
 
 
@@ -35,7 +36,7 @@ class Table(TableScraper):
                     if self.gui_signals.exit_thread == True: sys.exit()
 
         time.sleep(0.1)
-        config = ConfigObj("config.ini")
+        config = ConfigObj(CONFIG_FILENAME)
         control = config['control']
         if control == 'Direct mouse control':
             self.take_screenshot2()

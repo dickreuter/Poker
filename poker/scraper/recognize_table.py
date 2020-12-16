@@ -1,7 +1,7 @@
 """Recognize table"""
 import logging
 
-from poker.scraper.screen_operations import take_screenshot, crop_screenshot_with_topleft_corner, \
+from poker.tools.screen_operations import take_screenshot, crop_screenshot_with_topleft_corner, \
     is_template_in_search_area, binary_pil_to_cv2, ocr
 from poker.scraper.table_setup import CARD_SUITES, CARD_VALUES
 
