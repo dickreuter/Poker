@@ -118,9 +118,9 @@ class ThreadManager(threading.Thread):
         h = History()
         preflop_url, preflop_url_backup = self.updater.get_preflop_sheet_url()
         try:
-            h.preflop_sheet = pd.read_excel(preflop_url, sheet_name=None)
+            h.preflop_sheet = pd.read_excel(preflop_url, sheet_name=None, engine='openpyxl')
         except:
-            h.preflop_sheet = pd.read_excel(preflop_url_backup, sheet_name=None)
+            h.preflop_sheet = pd.read_excel(preflop_url_backup, sheet_name=None, engine='openpyxl')
 
         self.game_logger.clean_database()
 
