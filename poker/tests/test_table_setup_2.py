@@ -6,9 +6,9 @@ import numpy as np
 from PIL import Image
 
 from poker.scraper.recognize_table import TableScraper
-from poker.scraper.screen_operations import find_template_on_screen, get_table_template_image, \
+from poker.tools.screen_operations import find_template_on_screen, get_table_template_image, \
     crop_screenshot_with_topleft_corner
-from poker.scraper.screen_operations import ocr
+from poker.tools.screen_operations import ocr
 from poker.tools.helper import get_dir
 from poker.tools.mongo_manager import MongoManager
 

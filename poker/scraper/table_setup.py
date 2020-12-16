@@ -6,12 +6,10 @@ from PyQt5 import QtGui
 from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal
 from PyQt5.QtWidgets import QMessageBox
 
-from poker.scraper.screen_operations import get_table_template_image, get_ocr_float, take_screenshot, \
+from poker.tools.screen_operations import get_table_template_image, get_ocr_float, take_screenshot, \
     crop_screenshot_with_topleft_corner
 from poker.tools.helper import COMPUTER_NAME
 from poker.tools.mongo_manager import MongoManager
-
-# pylint: disable=unnecessary-lambda
 
 log = logging.getLogger(__name__)
 
@@ -47,12 +45,11 @@ class TableSetupActionAndSignals(QObject):
         self.selected_player = '0'
         self.cropped = False
 
-        mongo = MongoManager()
         available_tables = mongo.get_available_tables()
         self.ui.table_name.addItems(available_tables)
 
     def connect_signals_with_slots(self):
-        """Connect sigals with slots"""
+        """Connect signals with slots"""
         self.signal_update_screenshot_pic.connect(self.update_screenshot_pic)
         self.signal_update_label.connect(self._update_label)
         self.signal_flatten_button.connect(self._flatten_button)
@@ -117,7 +114,9 @@ class TableSetupActionAndSignals(QObject):
         try:
             self.top_left_corner_img = get_table_template_image(self.table_name, 'topleft_corner')
             resp = pop_up("Are you sure?",
-                          "You already defined a top left corner for this table before. You will need to enter all buttons (but not images) again if you have already saved corrdinates for any other items.",
+                          "You already defined a top left corner for this table before. "
+                          "You will need to enter all buttons (but not images) again if you have already saved"
+                          "coordinates for any other items.",
                           ok_cancel=True)
             if resp == 1024:
                 self.save_image('topleft_corner')
@@ -131,14 +130,14 @@ class TableSetupActionAndSignals(QObject):
             pop_up("Mark an image first.",
                    "Before you can save an image, you need to take a screenshot (with the take screenshot button),"
                    "Then you need to mark the top left corner of the poker window (or load a previously saved one)"
-                   "After that an image needs to be marked by clicking on the top left and then bottom right corner of that image.")
+                   "After that an image needs to be marked by clicking on the top left and then bottom right corner "
+                   "of that image.")
             return
 
         log.info(f"flattening button {label}")
         self.signal_flatten_button.emit(label)
 
         self.table_name = self.ui.table_name.currentText()
-        mongo = MongoManager()
         owner = mongo.get_table_owner(self.table_name)
         if owner != COMPUTER_NAME:
             pop_up("Not authorized.",
@@ -160,7 +159,6 @@ class TableSetupActionAndSignals(QObject):
             button.setFlat(True)
 
     def blank_new(self):
-        mongo = MongoManager()
         ok = mongo.create_new_table(self.ui.new_name.text())
         if ok:
             self.ui.table_name.addItems([self.ui.new_name.text()])
@@ -169,7 +167,6 @@ class TableSetupActionAndSignals(QObject):
             pop_up("Unable to create new table with that name", "Please choose a different name.")
 
     def copy_to_new(self):
-        mongo = MongoManager()
         ok = mongo.create_new_table_from_old(self.ui.new_name.text(), self.ui.table_name.currentText())
         if ok:
             self.ui.table_name.addItems([self.ui.new_name.text()])
@@ -186,13 +183,12 @@ class TableSetupActionAndSignals(QObject):
 
         if self.x1 > self.x2 or self.y1 > self.y2:
             pop_up("Invalid coordinates",
-                   "Top left corner of image is more to the right/bottom the lower right coordinates. Please try again.")
+                   "Top left corner of image is more to the right/bottom the lower right coordinates, try again.")
             return
 
         self.table_name = self.ui.table_name.currentText()
 
         log.info(f"Saving coordinates for {label} with coordinates {self.x1, self.y1, self.x2, self.y2}")
-        mongo = MongoManager()
         owner = mongo.get_table_owner(self.table_name)
 
         if owner != COMPUTER_NAME:
@@ -212,7 +208,7 @@ class TableSetupActionAndSignals(QObject):
 
         log.info("Emitting update signal")
         self.signal_update_screenshot_pic.emit(self.original_screenshot)
-        log.info("signmal emission complete")
+        log.info("signal emission complete")
 
     @pyqtSlot(object)
     def update_screenshot_pic(self, screenshot):
@@ -229,8 +225,8 @@ class TableSetupActionAndSignals(QObject):
     def crop(self):
         if not self.original_screenshot:
             pop_up("No screenshot taken yet",
-                   "Please take a screenshot first by pressing on the take screenshot button. Then mark a new top left corner"
-                   "or load a previously saved one. After that you can crop the image.")
+                   "Please take a screenshot first by pressing on the take screenshot button. Then mark a new top "
+                   "left corner or load a previously saved one. After that you can crop the image.")
             return
         self.load_topleft_corner()
         log.debug("Cropping top left corner")
@@ -239,8 +235,8 @@ class TableSetupActionAndSignals(QObject):
         if self.original_screenshot is None:
             log.warning("No top left corner found")
             pop_up("Top left corner not found",
-                   "It was not possible to find the top left corner of the poker window. Please first mark a new topleft corner"
-                   "or load a previously saved one by clicking on the corresponding buttons")
+                   "It was not possible to find the top left corner of the poker window. Please first mark a new "
+                   "topleft corner or load a previously saved one by clicking on the corresponding buttons")
             return
         else:
             self.signal_update_screenshot_pic.emit(self.original_screenshot)
@@ -308,7 +304,6 @@ class TableSetupActionAndSignals(QObject):
 
     def delete(self):
         self.table_name = self.ui.table_name.currentText()
-        mongo = MongoManager()
         owner = mongo.get_table_owner(self.table_name)
         if owner != COMPUTER_NAME:
             pop_up("Not authorized.",

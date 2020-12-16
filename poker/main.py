@@ -1,21 +1,14 @@
+import time
 import warnings
 from sys import platform
 
-import matplotlib.cbook
-
-warnings.filterwarnings("ignore", category=matplotlib.cbook.mplDeprecation)
-warnings.filterwarnings("ignore", message="ignoring `maxfev` argument to `Minimizer()`. Use `max_nfev` instead.")
-warnings.filterwarnings("ignore", message="DataFrame columns are not unique, some columns will be omitted.")
-warnings.filterwarnings("ignore", message="All-NaN axis encountered")
-warnings.filterwarnings("ignore", category=UserWarning)
-warnings.filterwarnings("ignore", category=RuntimeWarning)
-
-import time
 import matplotlib
 import numpy as np
 import pandas as pd
 
-from poker.tools.helper import init_logger
+from poker.tools.game_logger import GameLogger
+from poker.tools.helper import init_logger, CONFIG_FILENAME
+from poker.tools.update_checker import UpdateChecker
 
 if not (platform == "linux" or platform == "linux2"):
     matplotlib.use('Qt5Agg')
@@ -27,13 +20,20 @@ import sys
 from PyQt5 import QtWidgets, QtGui
 from configobj import ConfigObj
 from poker.gui.gui_qt_ui import Ui_Pokerbot
-from poker.gui.gui_qt_logic import UIActionAndSignals
-from poker.tools.mongo_manager import StrategyHandler, UpdateChecker, GameLogger, MongoManager
+from poker.gui.gui_qt_logic import UIActionAndSignals, StrategyHandler
+from poker.tools.mongo_manager import MongoManager
 from poker.table_analysers.table_screen_based import TableScreenBased
 from poker.decisionmaker.current_hand_memory import History, CurrentHandPreflopState
 from poker.decisionmaker.montecarlo_python import run_montecarlo_wrapper
 from poker.decisionmaker.decisionmaker import Decision
 from poker.tools.mouse_mover import MouseMoverTableBased
+
+warnings.filterwarnings("ignore", category=matplotlib.cbook.mplDeprecation)
+warnings.filterwarnings("ignore", message="ignoring `maxfev` argument to `Minimizer()`. Use `max_nfev` instead.")
+warnings.filterwarnings("ignore", message="DataFrame columns are not unique, some columns will be omitted.")
+warnings.filterwarnings("ignore", message="All-NaN axis encountered")
+warnings.filterwarnings("ignore", category=UserWarning)
+warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 version = 4.21
 
@@ -133,19 +133,20 @@ class ThreadManager(threading.Thread):
 
         while True:
             # reload table if changed
-            config = ConfigObj("config.ini")
+            config = ConfigObj(CONFIG_FILENAME)
             if table_scraper_name != config['table_scraper_name']:
                 table_scraper_name = config['table_scraper_name']
                 log.info(f"Loading table scraper info for {table_scraper_name}")
                 table_dict = mongo.get_table(table_scraper_name)
 
             if self.gui_signals.pause_thread:
-                while self.gui_signals.pause_thread == True:
+                while self.gui_signals.pause_thread:
                     time.sleep(0.5)
-                    if self.gui_signals.exit_thread == True: sys.exit()
+                    if self.gui_signals.exit_thread:
+                        sys.exit()
 
             ready = False
-            while (not ready):
+            while not ready:
                 p.read_strategy()
                 t = TableScreenBased(p, table_dict, self.gui_signals, self.game_logger, version)
                 mouse = MouseMoverTableBased(table_dict)
@@ -179,7 +180,7 @@ class ThreadManager(threading.Thread):
                         t.get_current_bet_value(p)
 
             if not self.gui_signals.pause_thread:
-                config = ConfigObj("config.ini")
+                config = ConfigObj(CONFIG_FILENAME)
                 m = run_montecarlo_wrapper(p, self.gui_signals, config, ui, t, self.game_logger, preflop_state, h)
                 self.gui_signals.signal_progressbar_increase.emit(20)
                 d = Decision(t, h, p, self.game_logger)

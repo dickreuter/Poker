@@ -4,7 +4,9 @@ Assesses the log file and checks how the parameters in strategies.xml need to be
 
 from configobj import ConfigObj
 
-from poker.tools.mongo_manager import GameLogger, StrategyHandler
+from poker.tools.game_logger import GameLogger
+from poker.tools.helper import CONFIG_FILENAME
+from poker.tools.strategy_handler import StrategyHandler
 
 
 class GeneticAlgorithm(object):
@@ -18,10 +20,10 @@ class GeneticAlgorithm(object):
         self.logger.debug("Strategy to analyse: " + p_name)
         self.load_log(p_name, L)
         self.improve_strategy(L, p)
-        if (self.modified and write_update == True) or write_update == "Force":
+        if (self.modified and write_update is True) or write_update == "Force":
             p.save_strategy_genetic_algorithm()
 
-            config = ConfigObj("config.ini")
+            config = ConfigObj(CONFIG_FILENAME)
             config['last_strategy'] = p.current_strategy
             config.write()
             self.logger.info("Genetic algorithm: New strategy saved")
@@ -41,12 +43,12 @@ class GeneticAlgorithm(object):
             'Fold', stage, 'Lost'] * coeff3  # Fold Lost*c3 > Call won + bet won
         if A and B:
             self.recommendation[stage, decision] = "ok"
-        elif A and B == False and C:
+        elif A and B is False and C:
             self.recommendation[stage, decision] = "more agressive"
             p.modify_strategy(stage + 'MinCallEquity', -change)
             p.modify_strategy(stage + 'CallPower', -change * 25)
             self.changed += 1
-        elif A == False and B == True:
+        elif A is False and B is True:
             self.recommendation[stage, decision] = "less agressive"
             p.modify_strategy(stage + 'MinCallEquity', +change)
             p.modify_strategy(stage + 'CallPower', +change * 25)
