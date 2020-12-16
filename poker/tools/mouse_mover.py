@@ -1,12 +1,12 @@
 import logging
 import random
-import sys
 import time
 
 import numpy as np
 from configobj import ConfigObj
 
 from poker import pymouse
+from poker.tools.helper import CONFIG_FILENAME
 from poker.tools.vbox_manager import VirtualBoxController
 
 log = logging.getLogger(__name__)
@@ -57,7 +57,8 @@ class MouseMover(VirtualBoxController):
                 try:
                     self.mouse_move_vbox(x, y)
                 except AttributeError:
-                    raise RuntimeError("Virtual box not detected. Switch to direct mouse control in setup or open VirtualBox")
+                    raise RuntimeError("Virtual box not detected."
+                                       "Switch to direct mouse control in setup or open VirtualBox")
                 time.sleep(np.random.uniform(0.01 * speed, 0.03 * speed, 1)[0])
             else:
                 self.mouse.move(x, y)
@@ -91,8 +92,7 @@ class MouseMover(VirtualBoxController):
 
 class MouseMoverTableBased(MouseMover):
     def __init__(self, table_dict):
-        config = ConfigObj("config.ini")
-        log = logging.getLogger('mouse')
+        config = ConfigObj(CONFIG_FILENAME)
 
         try:
             mouse_control = config['control']
@@ -140,8 +140,10 @@ class MouseMoverTableBased(MouseMover):
             log.warning("Moving mouse via jump away failed" + str(e))
 
     def mouse_action(self, decision, topleftcorner):
-        if decision == 'Check Deception': decision = 'Check'
-        if decision == 'Call Deception': decision = 'Call'
+        if decision == 'Check Deception':
+            decision = 'Check'
+        if decision == 'Call Deception':
+            decision = 'Call'
 
         tlx = int(topleftcorner[0])
         tly = int(topleftcorner[1])
