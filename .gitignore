@@ -13,3 +13,4 @@ sheet_not_found.png
 *.log.*
 /poker/pics/*
 /venv/
+/poker/log
