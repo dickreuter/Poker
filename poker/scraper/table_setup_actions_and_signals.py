@@ -23,7 +23,7 @@ class TableSetupActionAndSignals(QObject):
     """Actions and signals for table logic for QT"""
     signal_update_screenshot_pic = pyqtSignal(object)
     signal_update_label = pyqtSignal(str, str)
-    signal_flatten_button = pyqtSignal(str)
+    signal_flatten_button = pyqtSignal(str, bool)
 
     def __init__(self, ui):
         """Initial"""
@@ -80,6 +80,9 @@ class TableSetupActionAndSignals(QObject):
             button_property = getattr(self.ui, 'card_' + card)
             button_property.clicked.connect(lambda state, x=card: self.save_image(x))
 
+            button_show_property = getattr(self.ui, 'card_' + card + '_show')
+            button_show_property.clicked.connect(lambda state, x=card: self.load_image(x))
+
         save_image_buttons = ['call_button', 'raise_button', 'check_button', 'fold_button', 'fast_fold_button',
                               'all_in_call_button',
                               'my_turn',
@@ -87,6 +90,12 @@ class TableSetupActionAndSignals(QObject):
         for button in save_image_buttons:
             button_property = getattr(self.ui, button)
             button_property.clicked.connect(lambda state, x=button: self.save_image(x))
+
+        button_show_property = getattr(self.ui, 'dealer_button_show')
+        button_show_property.clicked.connect(lambda state: self.load_image('dealer_button'))
+
+        button_show_property = getattr(self.ui, 'covered_card_show')
+        button_show_property.clicked.connect(lambda state: self.load_image('covered_card'))
 
     def _connect_range_buttons_with_save_coordinates(self):
         range_buttons = ['call_value', 'raise_value', 'all_in_call_value', 'game_number', 'current_round_pot',
@@ -147,8 +156,19 @@ class TableSetupActionAndSignals(QObject):
         mongo.update_table_image(pil_image=self.preview, label=label, table_name=self.table_name)
         log.info("Saving complete")
 
-    @pyqtSlot(str)
-    def _flatten_button(self, label):
+    @pyqtSlot(object, str)
+    def load_image(self, label):
+        self.table_name = self.ui.table_name.currentText()
+        log.info(f"Loading {label}")
+        self.preview = mongo.load_table_image(image_name=label, table_name=self.table_name)
+        self._update_preview_label(self.preview)
+        log.info("Loading complete")
+
+    @pyqtSlot(str, bool)
+    def _flatten_button(self, label, checked):
+        self.flatten_button(label, checked)
+
+    def flatten_button(self, label, checked=True):
         if len(label) == 2:
             button_name = 'card_' + label
         else:
@@ -156,7 +176,18 @@ class TableSetupActionAndSignals(QObject):
 
         if label[0] != '_':
             button = getattr(self.ui, button_name)
-            button.setFlat(True)
+            button.setFlat(checked)
+
+            excluded_buttons = ['topleft_corner', 'game_number', 'call_value', 'raise_value', 'all_in_call_value',
+                                'my_turn_search_area', 'lost_everything_search_area',
+                                'mouse_fold', 'mouse_fast_fold', 'mouse_raise', 'mouse_full_pot', 'mouse_call',
+                                'mouse_increase', 'mouse_call2', 'mouse_check', 'mouse_imback', 'mouse_half_pot',
+                                'mouse_all_in', 'buttons_search_area', 'call_button', 'raise_button', 'check_button',
+                                'fold_button', 'fast_fold_button', 'all_in_call_button', 'my_turn', 'lost_everything',
+                                'im_back']
+            if button_name not in excluded_buttons:
+                button = getattr(self.ui, button_name + '_show')
+                button.setEnabled(checked)
 
     def blank_new(self):
         ok = mongo.create_new_table(self.ui.new_name.text())
@@ -319,21 +350,54 @@ class TableSetupActionAndSignals(QObject):
     def load(self):
         self.table_name = self.ui.table_name.currentText()
 
+        # unflatten buttons and disable 'show' buttons
+        deck = []  # contains cards in the deck
+        _ = [deck.append(x.lower() + y.lower()) for x in CARD_VALUES for y in CARD_SUITES]
+
+        for card in deck:
+            log.info(f"UnFlattening button {'card_' + card}")
+            self.signal_flatten_button.emit('card_' + card, False)
+
+        all_buttons = ['call_value', 'raise_value', 'all_in_call_value', 'game_number', 'current_round_pot',
+                       'total_pot_area', 'my_turn_search_area', 'lost_everything_search_area', 'table_cards_area',
+                       'my_cards_area', 'mouse_fold', 'mouse_fast_fold', 'mouse_raise', 'mouse_full_pot', 'mouse_call',
+                       'mouse_increase', 'mouse_call2', 'mouse_check', 'mouse_imback', 'mouse_half_pot', 'mouse_all_in',
+                       'buttons_search_area', 'call_button', 'raise_button', 'check_button', 'fold_button',
+                       'fast_fold_button', 'all_in_call_button', 'my_turn', 'lost_everything', 'im_back',
+                       'dealer_button', 'covered_card', 'covered_card_area', 'player_name_area', 'player_funds_area',
+                       'player_pot_area', 'button_search_area', 'covered_card_area', 'player_name_area',
+                       'player_funds_area', 'player_pot_area', 'button_search_area']
+
+        for key in all_buttons:
+            log.info(f"UnFlattening button {key}")
+            self.signal_flatten_button.emit(key, False)
+
         log.info(f"Loading table {self.table_name}")
         table = mongo.get_table(table_name=self.table_name)
         log.info(table.keys())
         exceptions = ["table_name"]
-        for key, _ in table.items():
+        players_buttons = ['covered_card_area', 'player_name_area', 'player_funds_area', 'player_pot_area',
+                           'button_search_area']
+
+        for key, value in table.items():
             if key in exceptions:
                 continue
-            log.info(f"Flattening button {key}")
-            self.signal_flatten_button.emit(key)
+            if key in players_buttons:
+                if str(self.selected_player) in value.keys():
+                    log.info(f"Flattening button {key}")
+                    self.signal_flatten_button.emit(key, True)
+                else:
+                    log.info(f"UnFlattening button {key}")
+                    self.signal_flatten_button.emit(key, False)
+            else:
+                log.info(f"Flattening button {key}")
+                self.signal_flatten_button.emit(key, True)
 
     @pyqtSlot()
     def test_all(self):
         """Test table button"""
         self.table_name = self.ui.table_name.currentText()
-        from poker.scraper.recognize_table import TableScraper
+        from poker.scraper.table_scraper import TableScraper
         table_dict = mongo.get_table(table_name=self.table_name)
         table_scraper = TableScraper(table_dict)
         table_scraper.screenshot = self.original_screenshot
