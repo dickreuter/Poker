@@ -6,7 +6,7 @@ import numpy as np
 from poker.decisionmaker.decisionmaker import Decision
 from poker.decisionmaker.decisionmaker import DecisionTypes
 from poker.tests import init_table
-from poker.tools.mongo_manager import StrategyHandler
+from poker.tools.strategy_handler import StrategyHandler
 
 
 class TestDecision(TestCase):
@@ -195,6 +195,7 @@ class TestDecision(TestCase):
     def first_round_98h(self):
         t, p, gui_signals, h, logger = init_table('tests/screenshots/98h.png', strategy='Snowie3', round_number=0)
         t.checkButton = False
+        l = MagicMock()
         d = Decision(t, h, p, l)
         t.isHeadsUp = True
         t.gameStage = "PreFlop"
