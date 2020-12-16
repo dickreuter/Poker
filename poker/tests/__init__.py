@@ -28,7 +28,8 @@ def init_table(file, round_number=0, strategy='Default1'):
     cursor = u.mongodb.internal.find()
     c = cursor.next()
     preflop_url = c['preflop_url']
-    h.preflop_sheet = pd.read_excel(preflop_url, sheet_name=None)
+    # preflop_url = 'decisionmaker/preflop.xlsx'
+    h.preflop_sheet = pd.read_excel(preflop_url, sheet_name=None, engine='openpyxl')
     game_logger = GameLogger()
     t = main.TableScreenBased(p, {}, gui_signals, game_logger, 0.0)
     t.entireScreenPIL = Image.open(file)
