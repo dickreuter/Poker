@@ -11,7 +11,7 @@ class UpdateChecker:
         self.preflop_url_backup = 'decisionmaker/preflop.xlsx'
         self.file_name = "Pokerbot_installer.exe"
         self.dl_link = ""
-        self.mongoclient = MongoClient(f'mongodb://neuron_poker:donald@dickreuter.com/neuron_poker')
+        self.mongoclient = MongoClient('mongodb://neuron_poker:donald@dickreuter.com/neuron_poker')
         self.mongodb = self.mongoclient.neuron_poker
 
     def downloader(self):

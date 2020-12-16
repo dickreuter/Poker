@@ -9,7 +9,7 @@ from poker.tools.helper import CONFIG_FILENAME
 
 class StrategyHandler(object):
     def __init__(self):
-        self.mongo_client = MongoClient(f'mongodb://neuron_poker:donald@dickreuter.com/neuron_poker')
+        self.mongo_client = MongoClient('mongodb://neuron_poker:donald@dickreuter.com/neuron_poker')
         self.mongodb = self.mongo_client.neuron_poker
         self.current_strategy = None
         self.selected_strategy = None
