@@ -2,12 +2,13 @@ import io
 import logging
 
 import pandas as pd
+from PIL import Image
 from pymongo import MongoClient
 
 from poker.tools.helper import COMPUTER_NAME
 from poker.tools.singleton import Singleton
 
-tables_collection = 'tables'
+TABLES_COLLECTION = 'tables'
 log = logging.getLogger(__name__)
 
 
@@ -33,8 +34,21 @@ class MongoManager(metaclass=Singleton):
         img_byte_array = io.BytesIO()
         pil_image.save(img_byte_array, format='PNG')
         binary_image = img_byte_array.getvalue()
-        self.db[tables_collection].update({'table_name': table_name},
+        self.db[TABLES_COLLECTION].update({'table_name': table_name},
                                           {'$set': {label: binary_image}}, upsert=True)
+
+    def load_table_image(self, image_name, table_name):
+        """load table image"""
+        log.debug("started")
+
+        try:
+            table_dict = list(self.db[TABLES_COLLECTION].find({'table_name': table_name}, {"_id": 0}))[0]
+            loaded_image = Image.open(io.BytesIO(table_dict[image_name]))
+            loaded_image.save('log/pics/loaded_image.png')
+        except:
+            raise RuntimeError("No image found for given name.")
+        log.debug("finished")
+        return loaded_image
 
     def get_table(self, table_name):
         """
@@ -47,7 +61,7 @@ class MongoManager(metaclass=Singleton):
 
         """
         try:
-            table = list(self.db[tables_collection].find({'table_name': table_name}, {"_id": 0}))[0]
+            table = list(self.db[TABLES_COLLECTION].find({'table_name': table_name}, {"_id": 0}))[0]
         except IndexError:
             raise RuntimeError("No table found for given name.")
         return table
@@ -62,7 +76,7 @@ class MongoManager(metaclass=Singleton):
         Returns: dict
 
         """
-        table = list(self.db[tables_collection].find({'table_name': table_name}, {"_owner": 1}))
+        table = list(self.db[TABLES_COLLECTION].find({'table_name': table_name}, {"_owner": 1}))
         return table[0]['_owner']
 
     def get_available_tables(self):
@@ -72,7 +86,7 @@ class MongoManager(metaclass=Singleton):
         Returns: list
 
         """
-        tables = list(self.db[tables_collection].distinct('table_name'))
+        tables = list(self.db[TABLES_COLLECTION].distinct('table_name'))
         return tables
 
     def find(self, collection, search_dict):
@@ -99,7 +113,7 @@ class MongoManager(metaclass=Singleton):
             image: byte
 
         """
-        self.db[tables_collection].update({'table_name': table_name},
+        self.db[TABLES_COLLECTION].update({'table_name': table_name},
                                           {'$set': {label: image}}, upsert=True)
 
     def create_new_table(self, table_name):
@@ -114,7 +128,7 @@ class MongoManager(metaclass=Singleton):
             return False
         if table_name in self.available_tables():
             return False
-        self.db[tables_collection].update({'table_name': table_name},
+        self.db[TABLES_COLLECTION].update({'table_name': table_name},
                                           {'$set': {"_owner": COMPUTER_NAME}}, upsert=True)
         return True
 
@@ -134,21 +148,21 @@ class MongoManager(metaclass=Singleton):
         dic = self.get_table(old_table_name)
         dic['_owner'] = COMPUTER_NAME
         dic['table_name'] = table_name
-        self.db[tables_collection].insert_one(dic)
+        self.db[TABLES_COLLECTION].insert_one(dic)
         return True
 
     def save_coordinates(self, table_name, label, coordinates_dict):
         """Save coordinates for a given label for a given table"""
         log.info(f"Saving to mongodb.... {coordinates_dict}")
-        self.db[tables_collection].update({'table_name': table_name},
+        self.db[TABLES_COLLECTION].update({'table_name': table_name},
                                           {'$set': {label: coordinates_dict}}, upsert=True)
         log.info("Coordinates saved")
 
     def available_tables(self):
         """Available tables"""
-        return self.db[tables_collection].distinct("table_name")
+        return self.db[TABLES_COLLECTION].distinct("table_name")
 
     def delete_table(self, table_name):
         """Delete a table"""
         dic = {'table_name': table_name}
-        self.db[tables_collection].delete_one(dic)
+        self.db[TABLES_COLLECTION].delete_one(dic)

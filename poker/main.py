@@ -19,10 +19,10 @@ import datetime
 import sys
 from PyQt5 import QtWidgets, QtGui
 from configobj import ConfigObj
-from poker.gui.gui_qt_ui import Ui_Pokerbot
-from poker.gui.gui_qt_logic import UIActionAndSignals, StrategyHandler
+from poker.gui.main_window import UiPokerbot
+from poker.gui.action_and_signals import UIActionAndSignals, StrategyHandler
 from poker.tools.mongo_manager import MongoManager
-from poker.table_analysers.table_screen_based import TableScreenBased
+from poker.scraper.table_screen_based import TableScreenBased
 from poker.decisionmaker.current_hand_memory import History, CurrentHandPreflopState
 from poker.decisionmaker.montecarlo_python import run_montecarlo_wrapper
 from poker.decisionmaker.decisionmaker import Decision
@@ -266,18 +266,15 @@ def run_poker():
     sys.__excepthook__ = exception_hook
 
     app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
-    global ui
-    ui = Ui_Pokerbot()
-    ui.setupUi(MainWindow)
-    MainWindow.setWindowIcon(QtGui.QIcon('icon.ico'))
+    # global ui
+    ui = UiPokerbot()
+    ui.setWindowIcon(QtGui.QIcon('gui/ui/icon.ico'))
 
     gui_signals = UIActionAndSignals(ui)
 
     t1 = ThreadManager(1, "Thread-1", 1, gui_signals, updater)
     t1.start()
 
-    MainWindow.show()
     try:
         sys.exit(app.exec_())
     except:

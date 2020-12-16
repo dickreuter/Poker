@@ -15,14 +15,14 @@ from poker.gui.plots.scatter_plot import ScatterPlot
 if not (platform == "linux" or platform == "linux2"):
     matplotlib.use('Qt5Agg')
 from PyQt5.QtCore import *
-from poker.scraper.table_setup import TableSetupActionAndSignals
-from poker.scraper.ui_table_setup import Ui_table_setup_form
+from poker.scraper.table_setup_actions_and_signals import TableSetupActionAndSignals
+from poker.gui.table_setup_form import TableSetupForm
 from poker.tools.mongo_manager import MongoManager
 
-from poker.gui.gui_qt_ui_genetic_algorithm import *
-from poker.gui.gui_qt_ui_strategy_manager import *
-from poker.gui.GUI_QT_ui_analyser import *
-from poker.gui.setup import *
+from poker.gui.genetic_algorithm_form import *
+from poker.gui.strategy_manager_form import *
+from poker.gui.analyser_form import *
+from poker.gui.setup_form import *
 from poker.gui.help import *
 from poker.tools.vbox_manager import VirtualBoxController
 from PyQt5.QtWidgets import QMessageBox
@@ -55,6 +55,8 @@ class UIActionAndSignals(QObject):
 
     def __init__(self, ui_main_window):
         self.logger = logging.getLogger('gui')
+
+        self.ui_analyser = None
 
         gl = GameLogger()
         gl.clean_database()
@@ -242,10 +244,7 @@ class UIActionAndSignals(QObject):
 
     def open_strategy_analyser(self, p, l):
         self.signal_progressbar_reset.emit()
-        self.stragegy_analyser_form = QtWidgets.QWidget()
-        self.ui_analyser = Ui_Form()
-        self.ui_analyser.setupUi(self.stragegy_analyser_form)
-        self.stragegy_analyser_form.show()
+        self.ui_analyser = AnalyserForm()
 
         self.gui_fundschange = FundsChangePlot(self.ui_analyser)
         self.gui_fundschange.drawfigure()
@@ -277,7 +276,7 @@ class UIActionAndSignals(QObject):
         self.p_edited.read_strategy()
         self.signal_progressbar_reset.emit()
         self.stragegy_editor_form = QtWidgets.QWidget()
-        self.ui_editor = Ui_editor_form()
+        self.ui_editor = StrategyManagerForm()
         self.ui_editor.setupUi(self.stragegy_editor_form)
         self.stragegy_editor_form.show()
 
@@ -318,7 +317,7 @@ class UIActionAndSignals(QObject):
         r = g.get_results()
 
         self.genetic_algorithm_dialog = QtWidgets.QDialog()
-        self.genetic_algorithm_form = Ui_Dialog()
+        self.genetic_algorithm_form = GeneticAlgorithmForm()
         self.genetic_algorithm_form.setupUi(self.genetic_algorithm_dialog)
         self.genetic_algorithm_dialog.show()
 
@@ -340,18 +339,11 @@ class UIActionAndSignals(QObject):
         webbrowser.open(url, new=2)
 
     def open_table_setup(self):
-        self.table_setup_form = QtWidgets.QWidget()
-        self.ui_setup_table = Ui_table_setup_form()
-        self.ui_setup_table.setupUi(self.table_setup_form)
-        self.table_setup_form.show()
+        self.ui_setup_table = TableSetupForm()
         gui_signals = TableSetupActionAndSignals(self.ui_setup_table)
 
     def open_setup(self):
-        self.setup_form = QtWidgets.QWidget()
-        self.ui_setup = Ui_setup_form()
-        self.ui_setup.setupUi(self.setup_form)
-        self.setup_form.show()
-
+        self.ui_setup = SetupForm()
         self.ui_setup.pushButton_save.clicked.connect(lambda: self.save_setup())
         vm_list = ['Direct mouse control']
         try:
@@ -386,7 +378,7 @@ class UIActionAndSignals(QObject):
         config['control'] = self.ui_setup.comboBox_vm.currentText()
         config['montecarlo_timeout'] = self.ui_setup.comboBox_2.currentText()
         config.write()
-        self.setup_form.close()
+        self.ui_setup.close()
 
     def update_strategy_analyser(self, l, p):
         number_of_games = int(l.get_game_count(self.ui_analyser.combobox_strategy.currentText()))

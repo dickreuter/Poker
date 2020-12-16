@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'gui_qt_ui_genetic_algorithm.ui'
+# Form implementation generated from reading ui file 'genetic_algorithm_form.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.0
 #
@@ -11,7 +11,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-class Ui_Dialog(object):
+class GeneticAlgorithmForm(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
         Dialog.resize(400, 300)
@@ -40,7 +40,7 @@ if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
     Dialog = QtWidgets.QDialog()
-    ui = Ui_Dialog()
+    ui = GeneticAlgorithmForm()
     ui.setupUi(Dialog)
     Dialog.show()
     sys.exit(app.exec_())
