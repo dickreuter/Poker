@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'gui_qt_ui_strategy_manager.ui'
+# Form implementation generated from reading ui file 'strategy_manager_form.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.0
 #
@@ -11,7 +11,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-class Ui_editor_form(object):
+class StrategyManagerForm(object):
     def setupUi(self, editor_form):
         editor_form.setObjectName("editor_form")
         editor_form.resize(722, 748)
@@ -2097,7 +2097,7 @@ if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
     editor_form = QtWidgets.QWidget()
-    ui = Ui_editor_form()
+    ui = StrategyManagerForm()
     ui.setupUi(editor_form)
     editor_form.show()
     sys.exit(app.exec_())

@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 from PIL import Image
 
-from poker.scraper.recognize_table import TableScraper
+from poker.scraper.table_scraper import TableScraper
 from poker.tools.screen_operations import find_template_on_screen, get_table_template_image, \
     crop_screenshot_with_topleft_corner
 from poker.tools.screen_operations import ocr

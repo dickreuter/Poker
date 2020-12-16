@@ -12,8 +12,8 @@ import pytesseract
 from PIL import Image
 
 from poker.decisionmaker.montecarlo_python import MonteCarlo
-from .base import Table
-from ..scraper.recognize_table import TableScraper
+from poker.scraper.table import Table
+from poker.scraper.table_scraper import TableScraper
 
 log = logging.getLogger(__name__)
 

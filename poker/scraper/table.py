@@ -10,7 +10,7 @@ from PIL import Image, ImageFilter
 from configobj import ConfigObj
 
 from poker.decisionmaker.genetic_algorithm import GeneticAlgorithm
-from poker.scraper.recognize_table import TableScraper
+from poker.scraper.table_scraper import TableScraper
 from poker.tools.helper import CONFIG_FILENAME
 from poker.tools.vbox_manager import VirtualBoxController
 
