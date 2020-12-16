@@ -2,7 +2,7 @@ pandas
 pytest
 pylint
 pydocstyle
-numpy
+numpy==1.19.3
 matplotlib
 scipy
 opencv-python
