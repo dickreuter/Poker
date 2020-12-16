@@ -86,8 +86,14 @@ def init_logger(screenlevel, filename=None, logdir=None, modulename=''):
 
     """
     # for all other modules just use log = logging.getLogger(__name__)
-    if not logdir:
-        logdir = get_dir('log')
+    try:
+        if not os.path.exists(logdir):
+            os.makedirs(logdir)
+    except OSError:
+        print(f"Creation of the directory '{logdir}' failed")
+        exit(1)
+    else:
+        print(f"Successfully created the directory '{logdir}' ")
 
     root = logging.getLogger()
     [root.removeHandler(rh) for rh in root.handlers]  # pylint: disable=W0106
