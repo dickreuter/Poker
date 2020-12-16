@@ -1,6 +1,6 @@
 class Singleton(type):
-    def __init__(cls, name, bases, dict):
-        super(Singleton, cls).__init__(name, bases, dict)
+    def __init__(cls, name, bases, dct):
+        super(Singleton, cls).__init__(name, bases, dct)
         cls.instance = None
 
     def __call__(cls, *args, **kw):

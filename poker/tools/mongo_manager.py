@@ -17,7 +17,7 @@ class MongoManager(metaclass=Singleton):
 
     def __init__(self):
         """Initialize connection as singleton"""
-        self.client = MongoClient(f'mongodb://neuron_poker:donald@dickreuter.com/neuron_poker')
+        self.client = MongoClient('mongodb://neuron_poker:donald@dickreuter.com/neuron_poker')
         self.db = self.client['neuron_poker']
 
     def upload_dataframe(self, df, collection_name):

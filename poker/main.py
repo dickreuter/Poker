@@ -1,32 +1,30 @@
 import time
 import warnings
-from sys import platform
-
-import matplotlib
-import numpy as np
-import pandas as pd
-
-from poker.tools.game_logger import GameLogger
-from poker.tools.helper import init_logger, CONFIG_FILENAME
-from poker.tools.update_checker import UpdateChecker
-
-if not (platform == "linux" or platform == "linux2"):
-    matplotlib.use('Qt5Agg')
-
 import logging.handlers
 import threading
 import datetime
 import sys
+import matplotlib
+import numpy as np
+import pandas as pd
+
+from sys import platform
+
 from PyQt5 import QtWidgets, QtGui
+if not (platform == "linux" or platform == "linux2"):
+    matplotlib.use('Qt5Agg')
 from configobj import ConfigObj
+from poker.tools.game_logger import GameLogger
+from poker.tools.helper import init_logger, CONFIG_FILENAME
+from poker.tools.update_checker import UpdateChecker
+from poker.tools.mouse_mover import MouseMoverTableBased
+from poker.tools.mongo_manager import MongoManager
 from poker.gui.main_window import UiPokerbot
 from poker.gui.action_and_signals import UIActionAndSignals, StrategyHandler
-from poker.tools.mongo_manager import MongoManager
 from poker.scraper.table_screen_based import TableScreenBased
 from poker.decisionmaker.current_hand_memory import History, CurrentHandPreflopState
 from poker.decisionmaker.montecarlo_python import run_montecarlo_wrapper
 from poker.decisionmaker.decisionmaker import Decision
-from poker.tools.mouse_mover import MouseMoverTableBased
 
 warnings.filterwarnings("ignore", category=matplotlib.cbook.mplDeprecation)
 warnings.filterwarnings("ignore", message="ignoring `maxfev` argument to `Minimizer()`. Use `max_nfev` instead.")
@@ -36,6 +34,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 version = 4.21
+ui = None
 
 
 class ThreadManager(threading.Thread):
@@ -59,13 +58,14 @@ class ThreadManager(threading.Thread):
         gui_signals.signal_status.emit(d.decision)
         range2 = ''
         if hasattr(t, 'reverse_sheet_name'):
-            range = t.reverse_sheet_name
+            _range = t.reverse_sheet_name
             if hasattr(preflop_state, 'range_column_name'):
                 range2 = " " + preflop_state.range_column_name + ""
 
         else:
-            range = str(m.opponent_range)
-        if range == '1': range = 'All cards'
+            _range = str(m.opponent_range)
+        if _range == '1':
+            _range = 'All cards'
 
         if t.gameStage != 'PreFlop' and p.selected_strategy['preflop_override']:
             sheet_name = preflop_state.preflop_sheet_name
@@ -84,7 +84,7 @@ class ThreadManager(threading.Thread):
         gui_signals.signal_label_number_update.emit('collusion_cards', str(m.collusion_cards))
         gui_signals.signal_label_number_update.emit('mycards', str(t.mycards))
         gui_signals.signal_label_number_update.emit('tablecards', str(t.cardsOnTable))
-        gui_signals.signal_label_number_update.emit('opponent_range', str(range) + str(range2))
+        gui_signals.signal_label_number_update.emit('opponent_range', str(_range) + str(range2))
         gui_signals.signal_label_number_update.emit('mincallequity', str(np.round(t.minEquityCall, 2) * 100) + "%")
         gui_signals.signal_label_number_update.emit('minbetequity', str(np.round(t.minEquityBet, 2) * 100) + "%")
         gui_signals.signal_label_number_update.emit('outs', str(d.outs))
@@ -266,7 +266,7 @@ def run_poker():
     sys.__excepthook__ = exception_hook
 
     app = QtWidgets.QApplication(sys.argv)
-    # global ui
+    global ui
     ui = UiPokerbot()
     ui.setWindowIcon(QtGui.QIcon('gui/ui/icon.ico'))
 

@@ -1,9 +1,9 @@
+import time
+import logging
+import numpy as np
 import virtualbox
 from PIL import Image
-import time
 from configobj import ConfigObj
-import numpy as np
-import logging
 
 from poker.tools.helper import CONFIG_FILENAME
 
