@@ -15,6 +15,7 @@ class GameLogger(object, metaclass=Singleton):
     def __init__(self):
         self.mongo_client = MongoClient(f'mongodb://neuron_poker:donald@dickreuter.com/neuron_poker')
         self.mongodb = self.mongo_client.neuron_poker
+        self.d = dict()  # TODO: refactor it
 
         self.FinalDataFrame = None
 
@@ -161,7 +162,6 @@ class GameLogger(object, metaclass=Singleton):
 
     def get_stacked_bar_data(self, p_name, p_value, chartType):
         final_data = []
-        d = dict()
         outcomes = ['Won', 'Lost']
         gameStages = ['PreFlop', 'Flop', 'Turn', 'River']
         decisions = ['Bet Bluff', 'Check Deception', 'Call Deception', 'Fold', 'Check', 'Call', 'Bet', 'BetPlus',
@@ -170,7 +170,7 @@ class GameLogger(object, metaclass=Singleton):
         for outcome in outcomes:
             for gameStage in gameStages:
                 for decision in decisions:
-                    d[decision, gameStage, outcome] = 0
+                    self.d[decision, gameStage, outcome] = 0
 
         cursor = self.mongodb.games.aggregate([
             {"$unwind": "$rounds"},
@@ -188,16 +188,16 @@ class GameLogger(object, metaclass=Singleton):
         ])
 
         for e in cursor:
-            d[e['_id']['ld'], e['_id']['gs'], e['_id']['fa']] = abs(e['Total'])
+            self.d[e['_id']['ld'], e['_id']['gs'], e['_id']['fa']] = abs(e['Total'])
 
-        numbers = [[d['Call', 'PreFlop', 'Lost'], d['Call', 'Flop', 'Lost'], d['Call', 'River', 'Lost'],
-                    d['Bet', 'Flop', 'Lost'], d['Bet', 'Turn', 'Lost'], d['Bet', 'River', 'Lost'],
-                    d['Bet half pot', 'Turn', 'Lost'], d['Bet half pot', 'River', 'Lost'],
-                    d['Fold', 'PreFlop', 'Lost'], d['Fold', 'Flop', 'Lost'], d['Fold', 'Turn', 'Lost'],
-                    d['Fold', 'River', 'Lost'], d['Call', 'Flop', 'Won'], d['Call', 'Turn', 'Won'],
-                    d['Call', 'River', 'Won'], d['Bet', 'Flop', 'Won'], d['Bet', 'Turn', 'Won'],
-                    d['Bet', 'River', 'Won'], d['Bet half pot', 'Turn', 'Won'],
-                    d['Bet half pot', 'River', 'Won'], 0, 0, 0, 0]]
+        numbers = [[self.d['Call', 'PreFlop', 'Lost'], self.d['Call', 'Flop', 'Lost'], self.d['Call', 'River', 'Lost'],
+                    self.d['Bet', 'Flop', 'Lost'], self.d['Bet', 'Turn', 'Lost'], self.d['Bet', 'River', 'Lost'],
+                    self.d['Bet half pot', 'Turn', 'Lost'], self.d['Bet half pot', 'River', 'Lost'],
+                    self.d['Fold', 'PreFlop', 'Lost'], self.d['Fold', 'Flop', 'Lost'], self.d['Fold', 'Turn', 'Lost'],
+                    self.d['Fold', 'River', 'Lost'], self.d['Call', 'Flop', 'Won'], self.d['Call', 'Turn', 'Won'],
+                    self.d['Call', 'River', 'Won'], self.d['Bet', 'Flop', 'Won'], self.d['Bet', 'Turn', 'Won'],
+                    self.d['Bet', 'River', 'Won'], self.d['Bet half pot', 'Turn', 'Won'],
+                    self.d['Bet half pot', 'River', 'Won'], 0, 0, 0, 0]]
 
         if chartType == 'spider':
             Data = {
@@ -208,39 +208,39 @@ class GameLogger(object, metaclass=Singleton):
                     numbers}
 
         if chartType == 'stackedBar':
-            final_data = [[d['Bet Bluff', 'PreFlop', 'Won'], d['Bet Bluff', 'PreFlop', 'Lost'], 0,
-                           d['Bet Bluff', 'Flop', 'Won'] + d['Check Deception', 'Flop', 'Won'] + d[
+            final_data = [[self.d['Bet Bluff', 'PreFlop', 'Won'], self.d['Bet Bluff', 'PreFlop', 'Lost'], 0,
+                           self.d['Bet Bluff', 'Flop', 'Won'] + self.d['Check Deception', 'Flop', 'Won'] + self.d[
                                'Call Deception', 'Flop', 'Won'],
-                           d['Bet Bluff', 'Flop', 'Lost'] + d['Check Deception', 'Flop', 'Lost'] + d[
-                               'Call Deception', 'Flop', 'Lost'], 0, d['Bet Bluff', 'Turn', 'Won'],
-                           d['Bet Bluff', 'Turn', 'Lost'], 0, d['Bet Bluff', 'River', 'Won'],
-                           d['Bet Bluff', 'River', 'Lost']],
-                          [d['Bet pot', 'PreFlop', 'Won'], d['Bet pot', 'PreFlop', 'Lost'], 0,
-                           d['Bet pot', 'Flop', 'Won'], d['Bet pot', 'Flop', 'Lost'], 0,
-                           d['Bet pot', 'Turn', 'Won'], d['Bet pot', 'Turn', 'Lost'], 0,
-                           d['Bet pot', 'River', 'Won'], d['Bet pot', 'River', 'Lost']],
-                          [d['Bet half pot', 'PreFlop', 'Won'], d['Bet half pot', 'PreFlop', 'Lost'], 0,
-                           d['Bet half pot', 'Flop', 'Won'], d['Bet half pot', 'Flop', 'Lost'], 0,
-                           d['Bet half pot', 'Turn', 'Won'], d['Bet half pot', 'Turn', 'Lost'], 0,
-                           d['Bet half pot', 'River', 'Won'], d['Bet half pot', 'River', 'Lost']],
-                          [d['Bet', 'PreFlop', 'Won'] + d['BetPlus', 'PreFlop', 'Won'],
-                           d['Bet', 'PreFlop', 'Lost'] + d['BetPlus', 'PreFlop', 'Lost'], 0,
-                           d['Bet', 'Flop', 'Won'] + d['BetPlus', 'Flop', 'Won'],
-                           d['Bet', 'Flop', 'Lost'] + d['BetPlus', 'Flop', 'Lost'], 0,
-                           d['Bet', 'Turn', 'Won'] + d['BetPlus', 'Turn', 'Won'],
-                           d['Bet', 'Turn', 'Lost'] + d['BetPlus', 'Turn', 'Lost'], 0,
-                           d['Bet', 'River', 'Won'] + d['BetPlus', 'River', 'Won'],
-                           d['Bet', 'River', 'Lost'] + d['BetPlus', 'River', 'Lost']],
-                          [d['Call', 'PreFlop', 'Won'], d['Call', 'PreFlop', 'Lost'], 0,
-                           d['Call', 'Flop', 'Won'], d['Call', 'Flop', 'Lost'], 0,
-                           d['Call', 'Turn', 'Won'], d['Call', 'Turn', 'Lost'], 0,
-                           d['Call', 'River', 'Won'], d['Call', 'River', 'Lost']],
-                          [d['Check', 'PreFlop', 'Won'], d['Check', 'PreFlop', 'Lost'], 0,
-                           d['Check', 'Flop', 'Won'], d['Check', 'Flop', 'Lost'], 0,
-                           d['Check', 'Turn', 'Won'], d['Check', 'Turn', 'Lost'], 0,
-                           d['Check', 'River', 'Won'], d['Check', 'River', 'Lost']],
-                          [0, d['Fold', 'PreFlop', 'Lost'], 0, 0, d['Fold', 'Flop', 'Lost'], 0, 0,
-                           d['Fold', 'Turn', 'Lost'], 0, 0, d['Fold', 'River', 'Lost']]]
+                           self.d['Bet Bluff', 'Flop', 'Lost'] + self.d['Check Deception', 'Flop', 'Lost'] + self.d[
+                               'Call Deception', 'Flop', 'Lost'], 0, self.d['Bet Bluff', 'Turn', 'Won'],
+                           self.d['Bet Bluff', 'Turn', 'Lost'], 0, self.d['Bet Bluff', 'River', 'Won'],
+                           self.d['Bet Bluff', 'River', 'Lost']],
+                          [self.d['Bet pot', 'PreFlop', 'Won'], self.d['Bet pot', 'PreFlop', 'Lost'], 0,
+                           self.d['Bet pot', 'Flop', 'Won'], self.d['Bet pot', 'Flop', 'Lost'], 0,
+                           self.d['Bet pot', 'Turn', 'Won'], self.d['Bet pot', 'Turn', 'Lost'], 0,
+                           self.d['Bet pot', 'River', 'Won'], self.d['Bet pot', 'River', 'Lost']],
+                          [self.d['Bet half pot', 'PreFlop', 'Won'], self.d['Bet half pot', 'PreFlop', 'Lost'], 0,
+                           self.d['Bet half pot', 'Flop', 'Won'], self.d['Bet half pot', 'Flop', 'Lost'], 0,
+                           self.d['Bet half pot', 'Turn', 'Won'], self.d['Bet half pot', 'Turn', 'Lost'], 0,
+                           self.d['Bet half pot', 'River', 'Won'], self.d['Bet half pot', 'River', 'Lost']],
+                          [self.d['Bet', 'PreFlop', 'Won'] + self.d['BetPlus', 'PreFlop', 'Won'],
+                           self.d['Bet', 'PreFlop', 'Lost'] + self.d['BetPlus', 'PreFlop', 'Lost'], 0,
+                           self.d['Bet', 'Flop', 'Won'] + self.d['BetPlus', 'Flop', 'Won'],
+                           self.d['Bet', 'Flop', 'Lost'] + self.d['BetPlus', 'Flop', 'Lost'], 0,
+                           self.d['Bet', 'Turn', 'Won'] + self.d['BetPlus', 'Turn', 'Won'],
+                           self.d['Bet', 'Turn', 'Lost'] + self.d['BetPlus', 'Turn', 'Lost'], 0,
+                           self.d['Bet', 'River', 'Won'] + self.d['BetPlus', 'River', 'Won'],
+                           self.d['Bet', 'River', 'Lost'] + self.d['BetPlus', 'River', 'Lost']],
+                          [self.d['Call', 'PreFlop', 'Won'], self.d['Call', 'PreFlop', 'Lost'], 0,
+                           self.d['Call', 'Flop', 'Won'], self.d['Call', 'Flop', 'Lost'], 0,
+                           self.d['Call', 'Turn', 'Won'], self.d['Call', 'Turn', 'Lost'], 0,
+                           self.d['Call', 'River', 'Won'], self.d['Call', 'River', 'Lost']],
+                          [self.d['Check', 'PreFlop', 'Won'], self.d['Check', 'PreFlop', 'Lost'], 0,
+                           self.d['Check', 'Flop', 'Won'], self.d['Check', 'Flop', 'Lost'], 0,
+                           self.d['Check', 'Turn', 'Won'], self.d['Check', 'Turn', 'Lost'], 0,
+                           self.d['Check', 'River', 'Won'], self.d['Check', 'River', 'Lost']],
+                          [0, self.d['Fold', 'PreFlop', 'Lost'], 0, 0, self.d['Fold', 'Flop', 'Lost'], 0, 0,
+                           self.d['Fold', 'Turn', 'Lost'], 0, 0, self.d['Fold', 'River', 'Lost']]]
 
         return final_data
 

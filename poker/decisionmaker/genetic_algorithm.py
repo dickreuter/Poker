@@ -1,7 +1,7 @@
 '''
 Assesses the log file and checks how the parameters in strategies.xml need to be adjusted to optimize playing
 '''
-
+import logging
 from configobj import ConfigObj
 
 from poker.tools.game_logger import GameLogger
@@ -9,7 +9,7 @@ from poker.tools.helper import CONFIG_FILENAME
 from poker.tools.strategy_handler import StrategyHandler
 
 
-class GeneticAlgorithm(object):
+class GeneticAlgorithm:
     def __init__(self, write_update, L):
         self.logger = logging.getLogger('genetic_algo')
         self.logger.setLevel(logging.DEBUG)
