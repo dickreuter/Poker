@@ -144,7 +144,7 @@ class TableSetupActionAndSignals(QObject):
             return
 
         log.info(f"flattening button {label}")
-        self.signal_flatten_button.emit(label)
+        self.signal_flatten_button.emit(label, True)
 
         self.table_name = self.ui.table_name.currentText()
         owner = mongo.get_table_owner(self.table_name)
