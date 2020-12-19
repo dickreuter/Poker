@@ -2,13 +2,14 @@ from unittest import TestCase
 from unittest.mock import MagicMock
 
 import numpy as np
+import pytest
 
 from poker.decisionmaker.decisionmaker import Decision
 from poker.decisionmaker.decisionmaker import DecisionTypes
 from poker.tests import init_table
 from poker.tools.strategy_handler import StrategyHandler
 
-
+@pytest.mark.skip
 class TestDecision(TestCase):
     def test_bluff(self):
         t, p, gui_signals, h, logger = init_table('tests/screenshots/751235173_PreFlop_0.png')

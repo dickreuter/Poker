@@ -1,5 +1,7 @@
 from sys import platform
 
+import numexpr  # required for pyinstaller
+_ = numexpr
 import matplotlib
 
 from poker.gui.pandas_model import PandasModel

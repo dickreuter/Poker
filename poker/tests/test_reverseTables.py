@@ -1,6 +1,8 @@
 from unittest import TestCase
 from unittest.mock import MagicMock
 
+import pytest
+
 from poker.decisionmaker.current_hand_memory import CurrentHandPreflopState
 
 from . import init_table
@@ -20,7 +22,7 @@ def reverse_init(t, h, p, logger):
     d.preflop_table_analyser(t, logger, h, p)
     return d
 
-
+@pytest.mark.skip()
 class TestReverseTables(TestCase):
     def test_preflop_state1(self):
         strategy = 'snowie1'

@@ -14,7 +14,8 @@ from logging import handlers
 
 import pandas as pd
 
-CONFIG_FILENAME = 'config.ini'
+codebase = os.path.abspath(os.path.join(__file__, '..', '..'))
+CONFIG_FILENAME = os.path.join(codebase, 'config.ini')
 log = logging.getLogger(__name__)
 COMPUTER_NAME = os.getenv('COMPUTERNAME')
 
@@ -166,7 +167,6 @@ def get_dir(*paths):
     3. if neither of the above, custom directory relative to codebase
 
     """
-    codebase = os.path.abspath(os.path.join(__file__,'..','..'))
     if paths[0] == 'codebase':  # pylint: disable=no-else-return
         return codebase
     else:
