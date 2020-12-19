@@ -19,13 +19,14 @@ from poker.tools.vbox_manager import VirtualBoxController
 
 class Table(TableScraper):
     # General tools that are used to operate the pokerbot and are valid for all tables
-    def __init__(self, p, gui_signals, game_logger, version):
+    def __init__(self, p, table_dict, gui_signals, game_logger, version):
         self.version = version
         self.ip = ''
         self.logger = logging.getLogger('table')
         self.logger.setLevel(logging.DEBUG)
         self.gui_signals = gui_signals
         self.game_logger = game_logger
+        super().__init__(table_dict)
 
     def take_screenshot(self, initial, p):
         if initial:

@@ -430,7 +430,9 @@ class GameLogger(metaclass=Singleton):
         bigBlind = 0.04
         maxValue = 2
         maxEquity = 1
+        minEquity = .5
         max_X = 1
+        pw = 0
 
         def check_if_below(equity, min_call, final_funds_change):
             x = np.array([float(equity)])

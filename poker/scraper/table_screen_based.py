@@ -13,15 +13,11 @@ from PIL import Image
 
 from poker.decisionmaker.montecarlo_python import MonteCarlo
 from poker.scraper.table import Table
-from poker.scraper.table_scraper import TableScraper
 
 log = logging.getLogger(__name__)
 
 
 class TableScreenBased(Table):
-    def __init__(self, p, table_dict, gui_signals, game_logger, version):
-        Table.__init__(self, p, gui_signals, game_logger, version)
-        TableScraper.__init__(self, table_dict)
 
     def get_top_left_corner(self, p):
 

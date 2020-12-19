@@ -76,7 +76,7 @@ class TableScraper:
         assert len(self.table_cards) != 2, "Table cards can never be 2"
         return True
 
-    def get_dealer_position2(self): # pylit: disable=inconsistent-return-statements
+    def get_dealer_position2(self):  # pylint: disable=inconsistent-return-statements
         """Determines position of dealer, where 0=myself, continous counter clockwise"""
         for i in range(self.total_players):
             if is_template_in_search_area(self.table_dict, self.screenshot,
@@ -158,11 +158,6 @@ class TableScraper:
         log.info(f"Player pots: {self.player_pots}")
 
         return True
-
-    def check_button(self):
-        """See if check button is avaialble"""
-        return is_template_in_search_area(self.table_dict, self.screenshot,
-                                          'check_button', 'buttons_search_area')
 
     def has_call_button(self):
         """Chek if call button is visible"""
