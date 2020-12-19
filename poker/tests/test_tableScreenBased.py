@@ -39,7 +39,6 @@ class TestTableScreenBased(TestCase):
         self.assertEqual(t.bet_button_found, True)
         self.assertEqual(t.cardsOnTable, ['5C', 'AS', '5H', 'KH', '9S'])
 
-
     def test4(self):
         t, p, gui_signals, h, logger = init_table('tests/screenshots/test4.png')
         t.get_game_number_on_screen(h)
