@@ -6,7 +6,7 @@ import sys
 
 import cv2
 import numpy as np
-from PIL import Image, ImageGrab, ImageFilter
+from PIL import Image, ImageGrab
 from pytesseract import pytesseract
 
 from poker.tools.helper import memory_cache
@@ -18,11 +18,11 @@ is_debug = False  # used for saving images for debug purposes
 
 
 def find_template_on_screen(template, screenshot, threshold):
-    """Find tempalte on screen"""
+    """Find template on screen"""
     res = cv2.matchTemplate(screenshot, template, cv2.TM_SQDIFF_NORMED)
     loc = np.where(res <= threshold)
     log.debug(f"Looking for template with threshold {threshold}")
-    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+    min_val, _, min_loc, _ = cv2.minMaxLoc(res)
 
     bestFit = min_loc
     count = 0
@@ -51,13 +51,14 @@ def get_table_template_image(table_name='default', label='topleft_corner'):
     return template_cv2
 
 
-def get_ocr_float(img_orig, name=None, big_blind=0.02, binarize=False):
+def get_ocr_float(img_orig):
     """Return float value from image. -1.0f when OCR failed"""
     return get_ocr_number(img_orig)
 
 
 def prepareImage(img_orig, binarize=True):
     """Prepare image for OCR"""
+
     def binarize_array_opencv(image):
         """Binarize image from gray channel with 127 as threshold"""
         img = cv2.cvtColor(np.array(image), cv2.COLOR_BGR2RGB)
@@ -163,7 +164,7 @@ def take_screenshot(virtual_box=False):
 def crop_screenshot_with_topleft_corner(original_screenshot, topleft_corner):
     log.debug("Cropping top left corner")
     img = cv2.cvtColor(np.array(original_screenshot), cv2.COLOR_BGR2RGB)
-    count, points, bestfit, minimum_value = find_template_on_screen(topleft_corner, img, 0.01)
+    count, points, _, _ = find_template_on_screen(topleft_corner, img, 0.01)
 
     if count == 1:
         tlc = points[0]
@@ -190,7 +191,7 @@ def cv2_to_pil(img):
 def check_if_image_in_range(img, screenshot, x1, y1, x2, y2):
     cropped_screenshot = screenshot.crop((x1, y1, x2, y2))
     cropped_screenshot = pil_to_cv2(cropped_screenshot)
-    count, points, bestfit, minimum_value = find_template_on_screen(img, cropped_screenshot, 0.01)
+    count, _, _, _ = find_template_on_screen(img, cropped_screenshot, 0.01)
     return count >= 1
 
 
@@ -223,9 +224,10 @@ def ocr(screenshot, image_area, table_dict, player=None):
             search_area = table_dict[image_area][player]
         except KeyError:
             log.error(f"Missing table entry for {image_area} {player}. "
-                      f"Please select it from the screenshot and press the corresponding button to add it to the table template. ")
+                      f"Please select it from the screenshot and press the corresponding button to add it to the "
+                      f"table template. ")
             return 0
     else:
         search_area = table_dict[image_area]
     cropped_screenshot = screenshot.crop((search_area['x1'], search_area['y1'], search_area['x2'], search_area['y2']))
-    return get_ocr_float(cropped_screenshot, image_area)
+    return get_ocr_float(cropped_screenshot)
