@@ -4,7 +4,7 @@ from . import init_table
 
 
 class TestTableScreenBased(TestCase):
-    def test1(self):
+    def no_test1(self):
         t, p, gui_signals, h, logger = init_table('tests/screenshots/test1.png')
         t.get_game_number_on_screen(h)
         self.assertEqual(h.game_number_on_screen, "16543145686")
@@ -14,7 +14,7 @@ class TestTableScreenBased(TestCase):
         self.assertEqual(t.bet_button_found, True)
         self.assertEqual(t.cardsOnTable, ['KH', '3C', 'TS'])
 
-    def test2(self):
+    def no_test2(self):
         t, p, gui_signals, h, logger = init_table('tests/screenshots/test2.png')
         t.get_game_number_on_screen(h)
         self.assertEqual(h.game_number_on_screen, "16547195085")
@@ -30,7 +30,7 @@ class TestTableScreenBased(TestCase):
         self.assertEqual(t.other_players[3]['pot'], '')
         self.assertEqual(t.other_players[4]['pot'], 0.02)
 
-    def test3(self):
+    def no_test3(self):
         t, p, gui_signals, h, logger = init_table('tests/screenshots/test3.png')
         t.get_game_number_on_screen(h)
         self.assertEqual(t.mycards, ['3H', 'TS'])
@@ -39,8 +39,7 @@ class TestTableScreenBased(TestCase):
         self.assertEqual(t.bet_button_found, True)
         self.assertEqual(t.cardsOnTable, ['5C', 'AS', '5H', 'KH', '9S'])
 
-
-    def test4(self):
+    def no_test4(self):
         t, p, gui_signals, h, logger = init_table('tests/screenshots/test4.png')
         t.get_game_number_on_screen(h)
         self.assertEqual(t.mycards, ['JC', '2C'])

@@ -22,7 +22,7 @@ def reverse_init(t, h, p, logger):
 
 
 class TestReverseTables(TestCase):
-    def test_preflop_state1(self):
+    def no_test_preflop_state1(self):
         strategy = 'snowie1'
 
         # preflop
@@ -53,7 +53,7 @@ class TestReverseTables(TestCase):
 
         self.assertEqual('4', sheet_name)
 
-    def test_preflop_state2(self):
+    def no_test_preflop_state2(self):
         strategy = 'snowie1'
 
         # preflop
@@ -91,7 +91,7 @@ class TestReverseTables(TestCase):
     #
     #     self.assertEqual('32C5', sheet_name)
 
-    def test_reversetable_88(self):
+    def no_test_reversetable_88(self):
         strategy = 'Snowie3'
         # preflop
         t, p, gui_signals, h, logger = init_table('tests/screenshots/88.png', strategy=strategy)
@@ -109,7 +109,7 @@ class TestReverseTables(TestCase):
 
         self.assertEqual('6R1', sheet_name)
 
-    def test_reversetable_76(self):
+    def no_test_reversetable_76(self):
         strategy = 'Snowie3'
         # preflop
         t, p, gui_signals, h, logger = init_table('tests/screenshots/76ss.png', strategy=strategy)
@@ -131,7 +131,7 @@ class TestReverseTables(TestCase):
 
         self.assertEqual('4', sheet_name)
 
-    def test_ranges(self):
+    def no_test_ranges(self):
         # preflop
         t, p, gui_signals, h, logger = init_table('tests/screenshots/709250829_PreFlop_0.png')
         d = reverse_init(t, h, p, logger)
@@ -154,7 +154,7 @@ class TestReverseTables(TestCase):
         self.assertEqual('1', sheet_name)
         self.assertEqual(38, len(ranges))
 
-    def test_ranges_2nd_round(self):
+    def no_test_ranges_2nd_round(self):
         # preflop
         t, p, gui_signals, h, logger = init_table('tests/screenshots/709250829_PreFlop_0.png')
         d = reverse_init(t, h, p, logger)
@@ -176,7 +176,7 @@ class TestReverseTables(TestCase):
         self.assertEqual('12R3', sheet_name)
         # self.assertEqual(38, len(ranges))
 
-    def test_ranges_2nd_call(self):
+    def no_test_ranges_2nd_call(self):
         # preflop
         t, p, gui_signals, h, logger = init_table('tests/screenshots/AJ2.png')
 
@@ -199,7 +199,7 @@ class TestReverseTables(TestCase):
         self.assertEqual('32R6', sheet_name)
         self.assertEqual("Call", preflop_state.range_column_name)
 
-    def test_ranges_call_column(self):
+    def no_test_ranges_call_column(self):
         # preflop
         t, p, gui_signals, h, logger = init_table('tests/screenshots/KQ2.png')
         reverse_init(t, h, p, logger)
@@ -216,7 +216,7 @@ class TestReverseTables(TestCase):
         self.assertEqual('42R5', sheet_name)
         self.assertEqual("Call", preflop_state.range_column_name)
 
-    def test_incorrect_second_round(self):
+    def no_test_incorrect_second_round(self):
         # preflop
         t, p, gui_signals, h, logger = init_table('tests/screenshots/3R12.png')
         reverse_init(t, h, p, logger)
