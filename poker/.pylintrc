@@ -155,13 +155,38 @@ disable=print-statement,
         wrong-import-position,
         bare-except,
         c-extension-no-member,
-        no-else-return
+        too-many-statements,
+        singleton-comparison,
+        broad-except,
+        redefined-builtin,
+        no-else-break,
+        wildcard-import,
+        unused-argument,
+        no-self-use,
+        unused-variable,
+        wrong-import-order,
+        trailing-whitespace,
+        superfluous-parens,
+        no-member,
+        no-name-in-module,
+        super-with-arguments,
+        too-many-lines,
+        too-many-function-args,
+        f-string-without-interpolation,
+        unnecessary-comprehension,
+        import-outside-toplevel,
+        raise-missing-from,
+        useless-suppression,
+        consider-using-sys-exit,
+        no-else-return,
+
+
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
 # multiple time (only on the command line, not in the configuration file where
 # it should appear only once). See also the "--disable" option for examples.
-enable=useless-suppression
+enable=
 
 
 [REPORTS]
@@ -530,13 +555,13 @@ max-attributes=50
 max-bool-expr=5
 
 # Maximum number of branch for function / method body.
-max-branches=30
+max-branches=40
 
 # Maximum number of locals for function / method body.
-max-locals=30
+max-locals=40
 
 # Maximum number of parents for a class (see R0901).
-max-parents=5
+max-parents=10
 
 # Maximum number of public methods for a class (see R0904).
 max-public-methods=30

@@ -9,6 +9,8 @@ from poker.decisionmaker.decisionmaker import DecisionTypes
 from poker.tests import init_table
 from poker.tools.strategy_handler import StrategyHandler
 
+# pylint: disable=unused-variable
+
 @pytest.mark.skip
 class TestDecision(TestCase):
     def test_bluff(self):

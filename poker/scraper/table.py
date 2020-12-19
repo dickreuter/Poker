@@ -15,6 +15,8 @@ from poker.tools.helper import CONFIG_FILENAME
 from poker.tools.vbox_manager import VirtualBoxController
 
 
+# pylint: disable=no-member,unused-variable,no-self-use
+
 class Table(TableScraper):
     # General tools that are used to operate the pokerbot and are valid for all tables
     def __init__(self, p, gui_signals, game_logger, version):
@@ -31,7 +33,7 @@ class Table(TableScraper):
             self.gui_signals.signal_progressbar_reset.emit()
             if self.gui_signals.exit_thread == True: sys.exit()
             if self.gui_signals.pause_thread == True:
-                while self.gui_signals.pause_thread == True:
+                while self.gui_signals.pause_thread:
                     time.sleep(.2)
                     if self.gui_signals.exit_thread == True: sys.exit()
 
@@ -60,7 +62,7 @@ class Table(TableScraper):
     def find_template_on_screen(self, template, screenshot, threshold):
         # 'cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR',
         # 'cv2.TM_CCORR_NORMED', 'cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
-        method = eval('cv2.TM_SQDIFF_NORMED')
+        method = eval('cv2.TM_SQDIFF_NORMED')  # pylint: disable=eval-used
         # Apply template Matching
         res = cv2.matchTemplate(screenshot, template, method)
         loc = np.where(res <= threshold)
@@ -84,69 +86,6 @@ class Table(TableScraper):
         # plt.imshow(img, cmap = 'gray', interpolation = 'bicubic')
         # plt.show()
         return count, points, bestFit, min_val
-
-    # New function  
-    def find_value(self, fund, pil_image, threshold_each):
-        numberImages = dict()
-        img = dict()
-        values = "0123456789."
-        number_values = "0123456789"
-        keyList = []
-        x_value = []
-
-        if Fund == "game_number":  # Beim Game_Number auslesen stört der "." (Punkt), deshalb wird er hier weggelassen
-            values = number_values
-
-        for x in values:
-            name = "pics/PP/" + fund + "/" + x + ".png"
-            img[x] = Image.open(name)
-            numberImages[x] = cv2.cvtColor(np.array(img[x]), cv2.COLOR_BGR2RGB)
-
-        def go_through_value(img_cv2, which_number):
-            if which_number == "all":
-                for key, value in numberImages.items():
-                    template_cv2 = value
-                    res = cv2.matchTemplate(img_cv2, template_cv2, cv2.TM_CCOEFF_NORMED)
-
-                    threshold = 0.9
-                    loc = np.where(res >= threshold)
-
-                    for pt in zip(*loc[::-1]):
-                        x_value.append(pt[0])
-                x_value.sort()
-
-                return x_value
-
-            if which_number == "each_one":
-                for key, value in numberImages.items():
-                    template_cv2 = value
-                    method = eval('cv2.TM_SQDIFF_NORMED')
-                    res_1 = cv2.matchTemplate(img_cv2, template_cv2, method)
-                    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res_1)
-
-                    if min_val < threshold_each:
-                        keyList.append(key)
-
-                return keyList
-
-        img = cv2.cvtColor(np.array(pil_image), cv2.COLOR_BGR2RGB)
-
-        value = go_through_value(img, "all")
-
-        width, height = pil_image.size  # Get dimensions
-
-        for a, fd in enumerate(value):
-            image_cut = self.crop_image(pil_image, fd, 0, fd + 11, height)
-            img = cv2.cvtColor(np.array(image_cut), cv2.COLOR_BGR2RGB)
-            liste = go_through_value(img, "each_one")
-
-        try:
-            Value = float(''.join(map(str, liste)))
-
-        except:
-            Value = ""
-
-        return Value
 
     def get_ocr_float(self, img_orig, name, force_method=0, binarize=False):
         def binarize_array(image, threshold=200):

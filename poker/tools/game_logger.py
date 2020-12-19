@@ -11,7 +11,7 @@ from pymongo import MongoClient
 from poker.tools.singleton import Singleton
 
 
-class GameLogger(object, metaclass=Singleton):
+class GameLogger(metaclass=Singleton):
     def __init__(self):
         self.mongo_client = MongoClient(f'mongodb://neuron_poker:donald@dickreuter.com/neuron_poker')
         self.mongodb = self.mongo_client.neuron_poker

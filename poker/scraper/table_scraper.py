@@ -138,7 +138,6 @@ class TableScraper:
 
     def other_players_names(self):
         """Read other player names"""
-        pass
 
     def get_pots(self):
         """Get current and total pot"""

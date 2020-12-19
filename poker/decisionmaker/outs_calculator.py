@@ -1,8 +1,9 @@
 import itertools as iter
 import logging
 
+# pylint: disable=consider-using-enumerate,unused-variable
 
-class Outs_Calculator(object):
+class Outs_Calculator:
     def __init__(self):
         self.logger = logging.getLogger('out_calc')
         self.logger.setLevel(logging.DEBUG)
@@ -19,7 +20,7 @@ class Outs_Calculator(object):
         values = "23456789TJQKA"
         suites = "CDHS"
         oc.deck = []
-        [oc.deck.append(x + y) for x in values for y in suites]
+        _ = [oc.deck.append(x + y) for x in values for y in suites]
         # remove drawn cards
         oc.deck = [elem for elem in oc.deck if elem not in oc.hand]
         return oc.deck
@@ -66,14 +67,14 @@ class Outs_Calculator(object):
                     if suits.count(flushSuit) >= 5:
                         break
 
-                flushHand = [k for k in hand if flushSuit in k]
+                flushHand = [k for k in hand if flushSuit in k]  # pylint: disable=undefined-loop-variable
                 rcountsFlush = {card_ranks_original.find(r): ''.join(flushHand).count(r) for r, _ in flushHand}.items()
                 score, card_ranks = zip(*sorted((cnt, rank) for rank, cnt in rcountsFlush)[::-1])
                 card_ranks = tuple(
                     sorted(card_ranks, reverse=True))  # ignore original sorting where pairs had influence
 
                 # check for straight in flush
-                if 12 in card_ranks and not -1 in card_ranks:  # adjust if 5 high straight
+                if 12 in card_ranks and -1 not in card_ranks:  # adjust if 5 high straight
                     card_ranks += (-1,)
                 for i in range(len(card_ranks) - 4):
                     straight = card_ranks[i] - card_ranks[i + 4] == 4

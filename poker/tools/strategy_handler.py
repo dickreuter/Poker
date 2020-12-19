@@ -7,7 +7,7 @@ from pymongo import MongoClient
 from poker.tools.helper import CONFIG_FILENAME
 
 
-class StrategyHandler(object):
+class StrategyHandler:
     def __init__(self):
         self.mongo_client = MongoClient('mongodb://neuron_poker:donald@dickreuter.com/neuron_poker')
         self.mongodb = self.mongo_client.neuron_poker

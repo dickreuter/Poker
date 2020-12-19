@@ -12,7 +12,9 @@ import numpy as np
 strided = np.lib.stride_tricks.as_strided
 
 
-class Evaluation(object):
+# pylint: disable=unsubscriptable-object,singleton-comparison,too-many-instance-attributes
+
+class Evaluation:
     def __init__(self):
         self.highcard_multiplier = 1
         self.pair_multiplier = 1000000

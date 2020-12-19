@@ -1,22 +1,23 @@
-from lmfit import minimize, Parameters, Parameter, report_fit
-import numpy as np
-import matplotlib.pyplot as plt
-from scipy.optimize import curve_fit
+"""Helps to fit curves when two points and a curvature are given."""
+
 from copy import copy
 
-'''
-Helps to fit curves when two points and a curvature are given.
-'''
+import matplotlib.pyplot as plt
+import numpy as np
+from lmfit import minimize, Parameters
+from scipy.optimize import curve_fit
 
+
+# pylint: disable=unused-variable
 
 class Curvefitting_scipy():
     def __init__(self, xf, smallBlind, bigBlind, maxValue, minEquity, maxEquity, pw, pl=False):
         x = [minEquity, 1]
         y = [bigBlind, maxValue]
         self.pw = pw
-        popt, pcov = curve_fit(self.func, x, y, maxfev=10000)
+        popt, pcov = curve_fit(self.func, x, y, maxfev=10000)  # pylint: disable=unbalanced-tuple-unpacking
 
-        yf = self.func(xf, *popt)
+        yf = self.func(xf, *popt)  # pylint: disable=unbalanced-tuple-unpacking
         yf2 = copy(yf)
         yf2 = [x + smallBlind for x in yf2]
         yf2 = np.array(yf)
@@ -34,7 +35,7 @@ class Curvefitting_scipy():
         return ((x + adj1) ** self.pw) * adj2
 
 
-class Curvefitting(object):
+class Curvefitting:
     def __init__(self, x, smallBlind, bigBlind, maxValue, minEquity, maxEquity, max_X, pw, pl=False):
         def fcn2min(params, x, data):
             pw = params['pw'].value

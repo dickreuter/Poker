@@ -14,6 +14,7 @@ class ScatterPlot(FigureCanvas):
         super(ScatterPlot, self).__init__(self.fig)
         self.ui.horizontalLayout_4.insertWidget(1, self)
 
+    # pylint: disable=too-many-arguments
     def drawfigure(self, p_name, game_stage, decision, l, smallBlind, bigBlind, maxValue, minEquityBet, max_X,
                    maxEquityBet,
                    power):

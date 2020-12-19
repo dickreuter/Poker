@@ -1,18 +1,17 @@
+import datetime
+import logging.handlers
+import sys
+import threading
 import time
 import warnings
-import logging.handlers
-import threading
-import datetime
-import sys
+from sys import platform
+
 import matplotlib
 import numpy as np
 import pandas as pd
-
-from sys import platform
-
 from PyQt5 import QtWidgets, QtGui
 
-if not platform in ["linux", "linux2"]:
+if platform not in ["linux", "linux2"]:
     matplotlib.use('Qt5Agg')
 from configobj import ConfigObj
 from poker.tools.game_logger import GameLogger
@@ -26,6 +25,8 @@ from poker.scraper.table_screen_based import TableScreenBased
 from poker.decisionmaker.current_hand_memory import History, CurrentHandPreflopState
 from poker.decisionmaker.montecarlo_python import run_montecarlo_wrapper
 from poker.decisionmaker.decisionmaker import Decision
+
+# pylint: disable=no-member,simplifiable-if-expression,protected-access
 
 warnings.filterwarnings("ignore", category=matplotlib.cbook.mplDeprecation)
 warnings.filterwarnings("ignore", message="ignoring `maxfev` argument to `Minimizer()`. Use `max_nfev` instead.")
@@ -271,7 +272,7 @@ def run_poker():
     sys.__excepthook__ = exception_hook
 
     app = QtWidgets.QApplication(sys.argv)
-    global ui
+    global ui  # pylint: disable=global-statement
     ui = UiPokerbot()
     ui.setWindowIcon(QtGui.QIcon('gui/ui/icon.ico'))
 
