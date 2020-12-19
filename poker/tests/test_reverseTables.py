@@ -4,20 +4,20 @@ from unittest.mock import MagicMock
 from poker.decisionmaker.current_hand_memory import CurrentHandPreflopState
 
 from . import init_table
-from ..decisionmaker.decisionmaker import Decision
-from ..tools.strategy_handler import StrategyHandler
+from ..decisionmaker.decisionmaker import Decision  # pylint: disable=relative-beyond-top-level
+from ..tools.strategy_handler import StrategyHandler  # pylint: disable=relative-beyond-top-level
 
 
-def reverse_init(t, h, p, logger):
-    l = MagicMock()
+def reverse_init(t, h, p):
+    lst = MagicMock()
     t.totalPotValue = 0.5
     t.equity = 0.5
     t.checkButton = False
-    d = Decision(t, h, p, l)
+    d = Decision(t, h, p, lst)
     t.isHeadsUp = True
     t.gameStage = "PreFlop"
-    d.__init__(t, h, p, l)
-    d.preflop_table_analyser(t, logger, h, p)
+    d.__init__(t, h, p, lst)
+    d.preflop_table_analyser(t, h, p)
     return d
 
 
@@ -26,18 +26,18 @@ class TestReverseTables(TestCase):
         strategy = 'snowie1'
 
         # preflop
-        t, p, gui_signals, h, logger = init_table('tests/screenshots/76s.png', strategy=strategy)
+        t, p, _, h, _ = init_table('tests/screenshots/76s.png', strategy=strategy)
         p = StrategyHandler()
         p.read_strategy(strategy)
-        l = MagicMock()
+        lst = MagicMock()
         t.totalPotValue = 0.5
         t.equity = 0.5
         t.checkButton = False
-        d = Decision(t, h, p, l)
+        d = Decision(t, h, p, lst)
         t.isHeadsUp = True
         t.gameStage = "PreFlop"
-        d.__init__(t, h, p, l)
-        d.preflop_table_analyser(t, logger, h, p)
+        d.__init__(t, h, p, lst)
+        d.preflop_table_analyser(t, h, p)
         preflop_state = CurrentHandPreflopState()
         bot_preflop_decision = 'Call'
         d = MagicMock()
@@ -46,7 +46,8 @@ class TestReverseTables(TestCase):
         self.assertEqual(t.preflop_sheet_name, '6R4')
 
         # flop
-        t, p, gui_signals, h, logger = init_table('tests/screenshots/76ss.png', strategy=strategy)
+        t, p, _, h, _ = init_table('tests/screenshots/76ss.png', strategy=strategy)
+        sheet_name = ''
         for abs_pos in range(5):
             if t.other_players[abs_pos]['status'] == 1:
                 sheet_name = preflop_state.get_reverse_sheetname(abs_pos, t, h)
@@ -57,15 +58,16 @@ class TestReverseTables(TestCase):
         strategy = 'snowie1'
 
         # preflop
-        t, p, gui_signals, h, logger = init_table('tests/screenshots/458770525_PreFlop_0.png', strategy=strategy)
-        d = reverse_init(t, h, p, logger)
+        t, p, _, h, _ = init_table('tests/screenshots/458770525_PreFlop_0.png', strategy=strategy)
+        reverse_init(t, h, p)
         preflop_state = CurrentHandPreflopState()
         bot_preflop_decision = 'Call'
         d = MagicMock()
         preflop_state.update_values(t, bot_preflop_decision, h, d)
 
         # flop
-        t, p, gui_signals, h, logger = init_table('tests/screenshots/458770525_Flop_0.png', strategy=strategy)
+        t, p, _, h, _ = init_table('tests/screenshots/458770525_Flop_0.png', strategy=strategy)
+        sheet_name = ''
         for abs_pos in range(5):
             if t.other_players[abs_pos]['status'] == 1:
                 sheet_name = preflop_state.get_reverse_sheetname(abs_pos, t, h)
@@ -77,14 +79,14 @@ class TestReverseTables(TestCase):
     #     strategy = 'pp_nickpick_supersonic2'
     #
     #     # preflop
-    #     t, p, gui_signals, h, logger = init_table('tests/screenshots/1791526_PreFlop_0.png', strategy=strategy)
-    #     d = reverse_init(t, h, p, logger)
+    #     t, p, _, h, _ = init_table('tests/screenshots/1791526_PreFlop_0.png', strategy=strategy)
+    #     d = reverse_init(t, h, p, _)
     #     preflop_state = CurrentHandPreflopState()
     #     bot_preflop_decision = 'Call'
     #     preflop_state.update_values(t, bot_preflop_decision, h, d)
     #
     #     # river round 2
-    #     t, p, gui_signals, h, logger = init_table('tests/screenshots/1791526_River_1.png', strategy=strategy)
+    #     t, p, _, h, _ = init_table('tests/screenshots/1791526_River_1.png', strategy=strategy)
     #     for abs_pos in range(5):
     #         if t.other_players[abs_pos]['status'] == 1:
     #             sheet_name = preflop_state.get_reverse_sheetname(abs_pos, t, h)
@@ -94,15 +96,16 @@ class TestReverseTables(TestCase):
     def no_test_reversetable_88(self):
         strategy = 'Snowie3'
         # preflop
-        t, p, gui_signals, h, logger = init_table('tests/screenshots/88.png', strategy=strategy)
-        d = reverse_init(t, h, p, logger)
+        t, p, _, h, _ = init_table('tests/screenshots/88.png', strategy=strategy)
+        reverse_init(t, h, p)
         preflop_state = CurrentHandPreflopState()
         bot_preflop_decision = 'Bet'
         d = MagicMock()
         preflop_state.update_values(t, bot_preflop_decision, h, d)
 
         # river round 2
-        t, p, gui_signals, h, logger = init_table('tests/screenshots/88F.png', strategy=strategy)
+        t, p, _, h, _ = init_table('tests/screenshots/88F.png', strategy=strategy)
+        sheet_name = ''
         for abs_pos in range(5):
             if t.other_players[abs_pos]['status'] == 1:
                 sheet_name = preflop_state.get_reverse_sheetname(abs_pos, t, h)
@@ -112,9 +115,9 @@ class TestReverseTables(TestCase):
     def no_test_reversetable_76(self):
         strategy = 'Snowie3'
         # preflop
-        t, p, gui_signals, h, logger = init_table('tests/screenshots/76ss.png', strategy=strategy)
-        d = reverse_init(t, h, p, logger)
-        d.preflop_table_analyser(t, logger, h, p)
+        t, p, _, h, _ = init_table('tests/screenshots/76ss.png', strategy=strategy)
+        d = reverse_init(t, h, p)
+        d.preflop_table_analyser(t, h, p)
 
         self.assertEqual('6R4', t.preflop_sheet_name)
 
@@ -124,7 +127,8 @@ class TestReverseTables(TestCase):
         preflop_state.update_values(t, bot_preflop_decision, h, d)
 
         # river round 2
-        t, p, gui_signals, h, logger = init_table('tests/screenshots/76s.png', strategy=strategy)
+        t, p, _, h, _ = init_table('tests/screenshots/76s.png', strategy=strategy)
+        sheet_name = ''
         for abs_pos in range(5):
             if t.other_players[abs_pos]['status'] == 1:
                 sheet_name = preflop_state.get_reverse_sheetname(abs_pos, t, h)
@@ -133,9 +137,9 @@ class TestReverseTables(TestCase):
 
     def no_test_ranges(self):
         # preflop
-        t, p, gui_signals, h, logger = init_table('tests/screenshots/709250829_PreFlop_0.png')
-        d = reverse_init(t, h, p, logger)
-        d.preflop_table_analyser(t, logger, h, p)
+        t, p, _, h, _ = init_table('tests/screenshots/709250829_PreFlop_0.png')
+        d = reverse_init(t, h, p)
+        d.preflop_table_analyser(t, h, p)
 
         self.assertEqual('3R1', t.preflop_sheet_name)
 
@@ -145,7 +149,9 @@ class TestReverseTables(TestCase):
         preflop_state.update_values(t, bot_preflop_decision, h, d)
 
         # river round 2
-        t, p, gui_signals, h, logger = init_table('tests/screenshots/709250829_Flop_0.png')
+        t, p, _, h, _ = init_table('tests/screenshots/709250829_Flop_0.png')
+        sheet_name = ''
+        ranges = ''
         for abs_pos in range(5):
             if t.other_players[abs_pos]['status'] == 1:
                 sheet_name = preflop_state.get_reverse_sheetname(abs_pos, t, h)
@@ -156,8 +162,8 @@ class TestReverseTables(TestCase):
 
     def no_test_ranges_2nd_round(self):
         # preflop
-        t, p, gui_signals, h, logger = init_table('tests/screenshots/709250829_PreFlop_0.png')
-        d = reverse_init(t, h, p, logger)
+        t, p, _, h, _ = init_table('tests/screenshots/709250829_PreFlop_0.png')
+        reverse_init(t, h, p)
 
         self.assertEqual('3R1', t.preflop_sheet_name)
 
@@ -167,20 +173,21 @@ class TestReverseTables(TestCase):
         preflop_state.update_values(t, bot_preflop_decision, h, d)
 
         # flop after 2nd round preflop
-        t, p, gui_signals, h, logger = init_table('tests/screenshots/709250829_Flop_0.png')
+        t, p, _, h, _ = init_table('tests/screenshots/709250829_Flop_0.png')
+        sheet_name = ''
         for abs_pos in range(5):
             if t.other_players[abs_pos]['status'] == 1:
                 sheet_name = preflop_state.get_reverse_sheetname(abs_pos, t, h)
-                ranges = preflop_state.get_rangecards_from_sheetname(abs_pos, sheet_name, t, h, p)
+                preflop_state.get_rangecards_from_sheetname(abs_pos, sheet_name, t, h, p)
 
         self.assertEqual('12R3', sheet_name)
         # self.assertEqual(38, len(ranges))
 
     def no_test_ranges_2nd_call(self):
         # preflop
-        t, p, gui_signals, h, logger = init_table('tests/screenshots/AJ2.png')
+        t, p, _, h, _ = init_table('tests/screenshots/AJ2.png')
 
-        d = reverse_init(t, h, p, logger)
+        reverse_init(t, h, p)
 
         self.assertEqual('6R3', t.preflop_sheet_name)
 
@@ -190,47 +197,48 @@ class TestReverseTables(TestCase):
         preflop_state.update_values(t, bot_preflop_decision, h, d)
 
         # flop after 2nd round preflop
-        t, p, gui_signals, h, logger = init_table('tests/screenshots/AJs.png')
+        t, p, _, h, _ = init_table('tests/screenshots/AJs.png')
+        sheet_name = ''
         for abs_pos in range(5):
             if t.other_players[abs_pos]['status'] == 1:
                 sheet_name = preflop_state.get_reverse_sheetname(abs_pos, t, h)
-                ranges = preflop_state.get_rangecards_from_sheetname(abs_pos, sheet_name, t, h, p)
+                preflop_state.get_rangecards_from_sheetname(abs_pos, sheet_name, t, h, p)
 
         self.assertEqual('32R6', sheet_name)
         self.assertEqual("Call", preflop_state.range_column_name)
 
     def no_test_ranges_call_column(self):
         # preflop
-        t, p, gui_signals, h, logger = init_table('tests/screenshots/KQ2.png')
-        reverse_init(t, h, p, logger)
+        t, p, _, h, _ = init_table('tests/screenshots/KQ2.png')
+        reverse_init(t, h, p)
         preflop_state = CurrentHandPreflopState()
         bot_preflop_decision = 'Bet'
         d = MagicMock()
         preflop_state.update_values(t, bot_preflop_decision, h, d)
-        t, p, gui_signals, h, logger = init_table('tests/screenshots/KQ.png')
+        t, p, _, h, _ = init_table('tests/screenshots/KQ.png')
+        sheet_name = ''
         for abs_pos in range(5):
             if t.other_players[abs_pos]['status'] == 1:
                 sheet_name = preflop_state.get_reverse_sheetname(abs_pos, t, h)
-                ranges = preflop_state.get_rangecards_from_sheetname(abs_pos, sheet_name, t, h, p)
+                preflop_state.get_rangecards_from_sheetname(abs_pos, sheet_name, t, h, p)
 
         self.assertEqual('42R5', sheet_name)
         self.assertEqual("Call", preflop_state.range_column_name)
 
     def no_test_incorrect_second_round(self):
         # preflop
-        t, p, gui_signals, h, logger = init_table('tests/screenshots/3R12.png')
-        reverse_init(t, h, p, logger)
+        t, p, _, h, _ = init_table('tests/screenshots/3R12.png')
+        reverse_init(t, h, p)
         preflop_state = CurrentHandPreflopState()
         bot_preflop_decision = 'Bet'
         d = MagicMock()
-        d = MagicMock()
         preflop_state.update_values(t, bot_preflop_decision, h, d)
-        t, p, gui_signals, h, logger = init_table('tests/screenshots/3R1.png')
+        t, p, _, h, _ = init_table('tests/screenshots/3R1.png')
         reverse_sheet_names = []
         for abs_pos in range(5):
             if t.other_players[abs_pos]['status'] == 1:
                 sheet_name = preflop_state.get_reverse_sheetname(abs_pos, t, h)
-                ranges = preflop_state.get_rangecards_from_sheetname(abs_pos, sheet_name, t, h, p)
+                preflop_state.get_rangecards_from_sheetname(abs_pos, sheet_name, t, h, p)
                 reverse_sheet_names.append(sheet_name)
 
         self.assertEqual('3R1', reverse_sheet_names[0])

@@ -146,7 +146,8 @@ class TestMonteCarlo(unittest.TestCase):
             Simulation.player_final_cards.index(Simulation.eval_best_hand(Simulation.player_final_cards)[0]),
             0)
 
-    def test_monteCarlo(self):  # Unittest to ensure correct winning probabilities are returned
+    # Unittest to ensure correct winning probabilities are returned
+    def test_monteCarlo(self):  # pylint: disable=too-many-statements
         def testRun(Simulation, my_cards, cards_on_table, players, expected_results, opponent_range=1):
             maxRuns = 15000  # maximum number of montecarlo runs
             testRuns = 5  # make several testruns to get standard deviation of winning probability
