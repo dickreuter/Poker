@@ -1,10 +1,12 @@
 """Operations to help identify items on screen"""
 import io
 import logging
+from concurrent.futures.thread import ThreadPoolExecutor
+from itertools import groupby
 
 import cv2
 import numpy as np
-from PIL import Image, ImageGrab, ImageFilter
+from PIL import Image, ImageGrab, ImageFilter, ImageOps
 from pytesseract import pytesseract
 
 from poker.tools.helper import memory_cache
@@ -81,59 +83,65 @@ def get_ocr_float(img_orig, name=None, big_blind=0.02, binarize=False):
     if binarize:
         img_resized = binarize_array(img_resized, 200)
 
-    img_min = img_resized.filter(ImageFilter.MinFilter)
-    img_mod = img_resized.filter(ImageFilter.ModeFilter)
-    img_med = img_resized.filter(ImageFilter.MedianFilter)
-    img_sharp = img_resized.filter(ImageFilter.SHARPEN)
+    result_list = compute_result_list_parallel(img_resized)
 
-    lst.append(
-        pytesseract.image_to_string(img_min, 'eng', config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789.$£B').
-            replace('$', '').
-            replace('£', ''))
+    log.debug(result_list)
+    # pick the most returned value from all OCR methods
+    res = [(count, x) for x, g in groupby(sorted(result_list)) if (count := len(list(g))) > 0]
+    print("OCR results " + str(res))
+    if len(res) == 0:
+        return ''
+    return max(res)[1]
 
-    if lst[0] == '' or lst[0] == '.':
-        lst.append(
-            pytesseract.image_to_string(img_mod, 'eng',
-                                        config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789.$£B').
-                replace('$', '').
-                replace('£', ''))
 
-        if lst[1] == '' or lst[1] == '.':
-            lst.append(
-                pytesseract.image_to_string(img_med, 'eng',
-                                            config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789.$£B').
-                    replace('$', '').
-                    replace('£', ''))
-            if lst[2] == '' or lst[2] == '.':
-                lst.append(
-                    pytesseract.image_to_string(img_sharp, 'eng',
-                                                config='--psm 6 --oem 1 -c tessedit_char_whitelist=0123456789.$£B').
-                        replace('$', '').
-                        replace('£', ''))
-    log.debug(lst)
-    for element in lst:
-        if element != '':
-            if 'B' in element:
-                element = element.replace('B', '')
-                try:
-                    element = float(element) * big_blind
-                except:
-                    element = 0
-            final_element = ''
-            allow_dot = True
-            for char in str(element):
-                if char == '.' and not allow_dot:
-                    continue
-                final_element = final_element + char
-                if char == '.':
-                    allow_dot = False
-            try:
-                final_value = float(final_element)
-            except:
-                final_value = ""
-            return final_value
+def tesseract(img):
+    return pytesseract.image_to_string(img, 'eng', config='--psm 6 --oem 1 -c'
+                                                          ' tessedit_char_blacklist=qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVNMB'
+                                                          '=-+|\/?—(){}[]:;<>_&'
+                                                          ' tessedit_char_whitelist=0123456789.$£B') \
+        .replace('$', '') \
+        .replace('£', '') \
+        .replace('B', '') \
+        .replace('—', '') \
+        .replace('\'', '') \
+        .replace('"', '') \
+        .replace('\n', '') \
+        .replace('\\', '') \
+        .replace('“', '') \
+        .replace('‘', '') \
 
-    return ''
+
+def compute_result_list_parallel(img_resized):
+    result_list = []
+
+    img_min = lambda img: img.filter(ImageFilter.MinFilter)
+    img_mod = lambda img: img.filter(ImageFilter.ModeFilter)
+    img_med = lambda img: img.filter(ImageFilter.MedianFilter)
+    img_sharp = lambda img: img.filter(ImageFilter.SHARPEN)
+    img_negative = lambda img: ImageOps.invert(img)
+    img_gauss = lambda img: img.filter(ImageFilter.GaussianBlur)
+
+    #todo optimise here (picked random 15)
+    executor = ThreadPoolExecutor(max_workers=15)
+
+    img_min_future = executor.submit(img_min, img_resized)
+    img_mod_future = executor.submit(img_mod, img_resized)
+    img_med_future = executor.submit(img_med, img_resized)
+    img_sharp_future = executor.submit(img_sharp, img_resized)
+    img_negative_future = executor.submit(img_negative, img_resized)
+    img_gauss_future = executor.submit(img_gauss, img_resized)
+
+    result_list.append(tesseract(img_min_future.result()))
+    result_list.append(tesseract(img_mod_future.result()))
+    result_list.append(tesseract(img_med_future.result()))
+    result_list.append(tesseract(img_sharp_future.result()))
+    result_list.append(tesseract(img_negative_future.result()))
+    result_list.append(tesseract(img_gauss_future.result()))
+
+    # filter non valid results
+    # i think filtering the '0' results it's a good idea because there are alot of ocr fails that return '0'
+    return list(filter(lambda x: x != '' and x != '.' and not x.endswith('.') and x != '0'
+                       , result_list))
 
 
 # def get_ocr_float(img_orig, name=None, big_blind=0.02, binarize=False):
