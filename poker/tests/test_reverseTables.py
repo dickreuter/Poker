@@ -4,10 +4,9 @@ from unittest.mock import MagicMock
 import pytest
 
 from poker.decisionmaker.current_hand_memory import CurrentHandPreflopState
-
-from . import init_table
-from ..decisionmaker.decisionmaker import Decision  # pylint: disable=relative-beyond-top-level
-from ..tools.strategy_handler import StrategyHandler  # pylint: disable=relative-beyond-top-level
+from poker.decisionmaker.decisionmaker import Decision
+from poker.tests import init_table
+from poker.tools.strategy_handler import StrategyHandler
 
 
 def reverse_init(t, h, p):

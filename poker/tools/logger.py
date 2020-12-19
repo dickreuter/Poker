@@ -2,14 +2,14 @@ import logging
 # for all other modules just use log = logging.getLogger(__name__)
 import os
 import sys
-from logging import handlers
+from logging import handlers  # pylint: disable=unused-import
 
 
 def init_logger(screenlevel, filename):
     logdir = get_dir('log')
     root = logging.getLogger()
-    [root.removeHandler(rh) for rh in root.handlers]
-    [root.removeFilter(rf) for rf in root.filters]
+    _ = [root.removeHandler(rh) for rh in root.handlers]
+    _ = [root.removeFilter(rf) for rf in root.filters]
 
     root = logging.getLogger('')
     root.setLevel(logging.WARNING)
@@ -18,7 +18,8 @@ def init_logger(screenlevel, filename):
     # fh.setLevel(logging.DEBUG)
     fh2 = logging.handlers.RotatingFileHandler(os.path.join(logdir, filename + '.log'), maxBytes=300000, backupCount=20)
     fh2.setLevel(logging.INFO)
-    er = logging.handlers.RotatingFileHandler(os.path.join(logdir, filename + '_errors.log'), maxBytes=300000, backupCount=20)
+    er = logging.handlers.RotatingFileHandler(os.path.join(logdir, filename + '_errors.log'), maxBytes=300000,
+                                              backupCount=20)
     er.setLevel(logging.WARNING)
     ch = logging.StreamHandler(sys.stdout)
     ch.setLevel(screenlevel)
@@ -40,5 +41,4 @@ def get_dir(path):
     codebase = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     if path == 'codebase':
         return codebase
-    else:
-        return os.path.join(codebase, path)
+    return os.path.join(codebase, path)

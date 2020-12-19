@@ -1,6 +1,9 @@
+# pylint: disable=ungrouped-imports
+
 from sys import platform
 
 import numexpr  # required for pyinstaller
+
 _ = numexpr
 import matplotlib
 
@@ -15,28 +18,30 @@ from poker.gui.plots.pie_plotter import PiePlotter
 from poker.gui.plots.scatter_plot import ScatterPlot
 from poker.tools.helper import COMPUTER_NAME
 
-if not (platform == "linux" or platform == "linux2"):
+if not (platform == "linux" or platform == "linux2"): # pylint: disable=consider-using-in
     matplotlib.use('Qt5Agg')
 from PyQt5.QtCore import *
 from poker.scraper.table_setup_actions_and_signals import TableSetupActionAndSignals
 from poker.gui.table_setup_form import TableSetupForm
 from poker.tools.mongo_manager import MongoManager
 
-from poker.gui.genetic_algorithm_form import *
-from poker.gui.strategy_manager_form import *
-from poker.gui.analyser_form import *
-from poker.gui.setup_form import *
-from poker.gui.help import *
+from poker.gui.genetic_algorithm_form import *  # pylint: disable=wildcard-import
+from poker.gui.strategy_manager_form import *  # pylint: disable=wildcard-import
+from poker.gui.analyser_form import *  # pylint: disable=wildcard-import
+from poker.gui.setup_form import *  # pylint: disable=wildcard-import
+from poker.gui.help import *  # pylint: disable=wildcard-import
 from poker.tools.vbox_manager import VirtualBoxController
 from PyQt5.QtWidgets import QMessageBox
 import webbrowser
-from poker.decisionmaker.genetic_algorithm import *
+from poker.decisionmaker.genetic_algorithm import *  # pylint: disable=wildcard-import
 import os
 import logging
 from configobj import ConfigObj
 
 
-class UIActionAndSignals(QObject):
+# pylint: disable=unnecessary-lambda
+
+class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
     signal_progressbar_increase = QtCore.pyqtSignal(int)
     signal_progressbar_reset = QtCore.pyqtSignal()
 
@@ -71,7 +76,7 @@ class UIActionAndSignals(QObject):
         self.pause_thread = True
         self.exit_thread = False
 
-        QObject.__init__(self)
+        QObject.__init__(self)  # pylint: disable=undefined-variable
         self.strategy_items_with_multipliers = {
             "always_call_low_stack_multiplier": 1,
             "out_multiplier": 1,

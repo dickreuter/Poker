@@ -1,7 +1,7 @@
 from poker.decisionmaker.outs_calculator import Outs_Calculator
 
 
-class Implied_Odds(object):
+class Implied_Odds:
     def __init__(self):
         pass
 

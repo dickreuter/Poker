@@ -2,7 +2,7 @@ from unittest import TestCase
 
 import pytest
 
-from . import init_table
+from poker.tests import init_table
 
 
 @pytest.mark.skip

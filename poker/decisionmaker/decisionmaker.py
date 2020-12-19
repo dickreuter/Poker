@@ -5,7 +5,7 @@ h contains values from the historical (last) decision
 p contains values from the Strategy as defined in the xml file
 """
 
-# pylint: disable=too-many-boolean-expressions
+# pylint: disable=too-many-boolean-expressions,unused-argument,too-many-branches,chained-comparison,singleton-comparison
 
 from enum import Enum
 
@@ -40,6 +40,7 @@ class Decision(DecisionBase):
 
         t.bigBlindMultiplier = t.bigBlind / 0.02
 
+        # pylint: disable=unidiomatic-typecheck
         pots = [player['pot'] for player in t.other_players if type(player['pot']) != str]
         try:
             self.max_player_pot = max(pots)

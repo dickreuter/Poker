@@ -12,7 +12,9 @@ from copy import copy
 import numpy as np
 
 
-class MonteCarlo(object):
+# pylint: disable=unidiomatic-typecheck
+
+class MonteCarlo:
     def __init__(self):
         self.logger = logging.getLogger('montecarlo')
         self.logger.setLevel(logging.DEBUG)
@@ -257,14 +259,14 @@ class MonteCarlo(object):
                     if suits.count(flushSuit) >= 5:
                         break
 
-                flushHand = [k for k in hand if flushSuit in k]
+                flushHand = [k for k in hand if flushSuit in k]  # pylint: disable=undefined-loop-variable
                 rcountsFlush = {card_ranks_original.find(r): ''.join(flushHand).count(r) for r, _ in flushHand}.items()
                 score, card_ranks = zip(*sorted((cnt, rank) for rank, cnt in rcountsFlush)[::-1])
                 card_ranks = tuple(
                     sorted(card_ranks, reverse=True))  # ignore original sorting where pairs had influence
 
                 # check for straight in flush
-                if 12 in card_ranks and not -1 in card_ranks:  # adjust if 5 high straight
+                if 12 in card_ranks and -1 not in card_ranks:  # adjust if 5 high straight
                     card_ranks += (-1,)
                 for i in range(len(card_ranks) - 4):
                     straight = card_ranks[i] - card_ranks[i + 4] == 4
@@ -317,7 +319,7 @@ class MonteCarlo(object):
         values = "23456789TJQKA"
         suites = "CDHS"
         Deck = []
-        [Deck.append(x + y) for x in values for y in suites]
+        _ = [Deck.append(x + y) for x in values for y in suites]
         return Deck
 
     def distribute_cards_to_players(self, deck, player_amount, player_card_list, known_table_cards,
@@ -340,7 +342,7 @@ class MonteCarlo(object):
                     passes += 1
                     random_card1 = np.random.randint(0, len(deck))
                     random_card2 = np.random.randint(0, len(deck) - 1)
-                    if not random_card1 == random_card2:
+                    if random_card1 != random_card2:
                         crd1, crd2 = self.get_two_short_notation([deck[random_card1], deck[random_card2]],
                                                                  add_O_to_pairs=False)
                         if crd1 in player_cards or crd2 in player_cards:
@@ -371,7 +373,7 @@ class MonteCarlo(object):
                 random_card1 = np.random.randint(0, len(deck))
                 random_card2 = np.random.randint(0, len(deck) - 1)
 
-                if not random_card1 == random_card2:
+                if random_card1 != random_card2:
                     crd1, crd2 = self.get_two_short_notation([deck[random_card1], deck[random_card2]],
                                                              add_O_to_pairs=False)
                     if crd1 in opponent_allowed_cards or crd2 in opponent_allowed_cards:

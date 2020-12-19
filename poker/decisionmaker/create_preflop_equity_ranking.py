@@ -15,7 +15,7 @@ if __name__ == '__main__':
     hands = '23456789TJQKA'
     suits = ['D', 'H']
     for suit1 in suits:
-        for i in range(len(hands)):
+        for i in range(len(hands)):  # pylint: disable=consider-using-enumerate
             h1 = hands[i]
             for j in range(i, len(hands)):
                 h2 = hands[j]

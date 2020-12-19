@@ -18,6 +18,7 @@ mongo = MongoManager()
 CARD_VALUES = "23456789TJQKA"
 CARD_SUITES = "CDHS"
 
+# pylint: disable=unnecessary-lambda
 
 class TableSetupActionAndSignals(QObject):
     """Actions and signals for table logic for QT"""

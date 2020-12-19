@@ -11,7 +11,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-class StrategyManagerForm(object):
+class StrategyManagerForm:  # pylint: disable=too-many-instance-attributes
     def setupUi(self, editor_form):
         editor_form.setObjectName("editor_form")
         editor_form.resize(722, 748)

@@ -159,15 +159,3 @@ def run_genetic_algorithm(write, logger):
     logger.info("===Running genetic algorithm===")
     L = GameLogger()
     GeneticAlgorithm(write, logger, L)
-
-
-if __name__ == '__main__':
-    import logging
-
-    logger = logging
-    logger.basicConfig(level=logging.DEBUG)
-    run_genetic_algorithm(False, logger)
-
-    user_input = input("Run again and modify (Y)=Force / N? ")
-    if user_input.upper() == "Y":
-        run_genetic_algorithm("Force", logger)

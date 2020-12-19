@@ -5,7 +5,7 @@ from poker.decisionmaker.curvefitting import *
 from weakref import proxy
 import numpy as np
 
-
+# pylint: disable=access-member-before-definition
 class CurvePlot(FigureCanvas):
     def __init__(self, ui, p, layout='vLayout3'):
         self.p = p
@@ -43,6 +43,7 @@ class CurvePlot(FigureCanvas):
 
         self.draw()
 
+    # pylint: disable=too-many-arguments
     def update_lines(self, power1, power2, minEquityCall, minEquityBet, smallBlind, bigBlind, maxValue, maxvalue_bet,
                      maxEquityCall,
                      max_X,
