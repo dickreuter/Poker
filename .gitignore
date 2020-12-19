@@ -14,3 +14,5 @@ sheet_not_found.png
 /poker/pics/*
 /venv/
 /poker/log
+/poker/tests/log
+*.prof
