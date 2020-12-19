@@ -267,7 +267,7 @@ class Outs_Calculator:
 
             straight_draw, straight_outs = self.check_straight(hand_list, ghost_card, straight_outs)
 
-        if straight_outs == 8 or straight_outs == 4:
+        if straight_outs == 8 or straight_outs == 4:  # pylint: disable=consider-using-in
             straight_draw = True
 
         if self.flush_draw and straight_draw:

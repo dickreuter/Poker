@@ -351,7 +351,7 @@ class TableScreenBased(Table):
             self.playersBehind = sum(
                 [v['status'] for v in self.other_players if v['abs_position'] >= self.dealer_position + 1 - 1])
         self.playersAhead = self.other_active_players - self.playersBehind
-        self.isHeadsUp = True if self.other_active_players < 2 else False
+        self.isHeadsUp = True if self.other_active_players < 2 else False  # pylint: disable=simplifiable-if-expression
         log.debug("Other players in the game: " + str(self.other_active_players))
         log.debug("Players behind: " + str(self.playersBehind))
         log.debug("Players ahead: " + str(self.playersAhead))

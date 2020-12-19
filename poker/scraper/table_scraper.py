@@ -76,7 +76,7 @@ class TableScraper:
         assert len(self.table_cards) != 2, "Table cards can never be 2"
         return True
 
-    def get_dealer_position2(self):
+    def get_dealer_position2(self): # pylit: disable=inconsistent-return-statements
         """Determines position of dealer, where 0=myself, continous counter clockwise"""
         for i in range(self.total_players):
             if is_template_in_search_area(self.table_dict, self.screenshot,
@@ -114,7 +114,7 @@ class TableScraper:
     def get_my_funds2(self):
         self.get_players_funds(my_funds_only=True)
 
-    def get_players_funds(self, my_funds_only=False, skip=[]):
+    def get_players_funds(self, my_funds_only=False, skip=[]):  # pylint: disable=dangerous-default-value
         """
         Get funds of players
 
@@ -146,7 +146,7 @@ class TableScraper:
         self.total_pot = ocr(self.screenshot, 'total_pot_area', self.table_dict)
         log.info(f"Total pot {self.total_pot}")
 
-    def get_player_pots(self, skip=[]):
+    def get_player_pots(self, skip=[]):  # pylint: disable=dangerous-default-value
         """Get pots of the players"""
         self.player_pots = []
         for i in range(self.total_players):

@@ -6,7 +6,7 @@ strided = np.lib.stride_tricks.as_strided
 
 # pylint: disable=no-else-return,no-self-use,consider-using-enumerate,unsubscriptable-object,singleton-comparison,unused-variable
 
-class Evaluation:
+class Evaluation:  # pylint: disable=too-many-instance-attributes
     def __init__(self):
         self.highcard_multiplier = 1
         self.pair_multiplier = 10 ** 2

@@ -91,7 +91,7 @@ class Table(TableScraper):
         def binarize_array(image, threshold=200):
             """Binarize a numpy array."""
             numpy_array = np.array(image)
-            for i in range(len(numpy_array)):
+            for i in range(len(numpy_array)):  # pylint: disable=consider-using-enumerate
                 for j in range(len(numpy_array[0])):
                     if numpy_array[i][j] > threshold:
                         numpy_array[i][j] = 255
@@ -103,7 +103,7 @@ class Table(TableScraper):
             t = t.replace("I", "1").replace("Â°lo", "").replace("O", "0").replace("o", "0") \
                 .replace("-", ".").replace("D", "0").replace("I", "1").replace("_", ".").replace("-", ".") \
                 .replace("B", "8").replace("..", ".")
-            t = re.sub("[^0123456789\.]", "", t)
+            t = re.sub("[^0123456789\.]", "", t)  # pylint: disable=anomalous-backslash-in-string
             try:
                 if t[0] == ".": t = t[1:]
             except:

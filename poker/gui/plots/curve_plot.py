@@ -43,6 +43,7 @@ class CurvePlot(FigureCanvas):
 
         self.draw()
 
+    # pylint: disable=too-many-arguments
     def update_lines(self, power1, power2, minEquityCall, minEquityBet, smallBlind, bigBlind, maxValue, maxvalue_bet,
                      maxEquityCall,
                      max_X,

@@ -14,7 +14,7 @@ import numpy as np
 
 # pylint: disable=unidiomatic-typecheck
 
-class MonteCarlo(object):
+class MonteCarlo:
     def __init__(self):
         self.logger = logging.getLogger('montecarlo')
         self.logger.setLevel(logging.DEBUG)
