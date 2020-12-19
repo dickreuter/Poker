@@ -17,7 +17,7 @@ def test_cropping():
     entire_screen_pil = Image.open(os.path.join(get_dir('tests', 'screenshots'), '173280759_PreFlop_0.png'))
     top_left_corner = get_table_template_image("PartyPoker 6 Players Fast Forward $1-$2 NL Hold'em", 'topleft_corner')
     img = cv2.cvtColor(np.array(entire_screen_pil), cv2.COLOR_BGR2RGB)
-    count, points, bestfit, minimum_value = find_template_on_screen(top_left_corner, img, 0.01)
+    find_template_on_screen(top_left_corner, img, 0.01)
 
 
 def test_crop_func():
