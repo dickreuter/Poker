@@ -79,15 +79,26 @@ class MongoManager(metaclass=Singleton):
         table = list(self.db[TABLES_COLLECTION].find({'table_name': table_name}, {"_owner": 1}))
         return table[0]['_owner']
 
-    def get_available_tables(self):
+    def get_available_tables(self, computer_name):
         """
         Get available tables
 
         Returns: list
 
         """
-        tables = list(self.db[TABLES_COLLECTION].distinct('table_name'))
+        tables = list(self.db[TABLES_COLLECTION].distinct('table_name',
+                                                          {"$or": [{"owner": computer_name},
+                                                                   {"plays": {"$gte": 1}}]}))
         return tables
+
+    def increment_plays(self, table_name):
+        table = list(self.db[TABLES_COLLECTION].find({'table_name': table_name}, {"plays": 1}))
+        try:
+            new_plays = table[0]['plays'] + 1
+        except:
+            new_plays = 1
+        self.db[TABLES_COLLECTION].update({'table_name': table_name},
+                                          {'$set': {"plays": new_plays}})
 
     def find(self, collection, search_dict):
         """

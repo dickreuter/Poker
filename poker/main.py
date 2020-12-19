@@ -34,7 +34,7 @@ warnings.filterwarnings("ignore", message="All-NaN axis encountered")
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-version = 4.3
+version = 4.31
 ui = None
 
 
@@ -237,6 +237,7 @@ class ThreadManager(threading.Thread):
                 history.last_round_bluff = False if table.currentBluff == 0 else True
                 if table.gameStage == 'PreFlop':
                     preflop_state.update_values(table, d.decision, history, d)
+                mongo.increment_plays(table_scraper_name)
                 log.info("=========== round end ===========")
 
 

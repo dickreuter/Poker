@@ -45,7 +45,7 @@ class TableSetupActionAndSignals(QObject):
         self.selected_player = '0'
         self.cropped = False
 
-        available_tables = mongo.get_available_tables()
+        available_tables = mongo.get_available_tables(COMPUTER_NAME)
         self.ui.table_name.addItems(available_tables)
 
     def connect_signals_with_slots(self):

@@ -11,6 +11,7 @@ from poker.gui.plots.funds_plotter import FundsPlotter
 from poker.gui.plots.histogram_equity import HistogramEquityWinLoss
 from poker.gui.plots.pie_plotter import PiePlotter
 from poker.gui.plots.scatter_plot import ScatterPlot
+from poker.tools.helper import COMPUTER_NAME
 
 if not (platform == "linux" or platform == "linux2"):
     matplotlib.use('Qt5Agg')
@@ -175,7 +176,7 @@ class UIActionAndSignals(QObject):
         self.signal_update_strategy_sliders.connect(lambda: self.update_strategy_editor_sliders(p.current_strategy))
 
         mongo = MongoManager()
-        available_tables = mongo.get_available_tables()
+        available_tables = mongo.get_available_tables(COMPUTER_NAME)
         ui_main_window.table_selection.addItems(available_tables)
         playable_list = p.get_playable_strategy_list()
         ui_main_window.comboBox_current_strategy.addItems(playable_list)
