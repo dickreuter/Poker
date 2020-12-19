@@ -11,7 +11,8 @@ import pandas as pd
 from sys import platform
 
 from PyQt5 import QtWidgets, QtGui
-if not (platform == "linux" or platform == "linux2"):
+
+if not platform in ["linux", "linux2"]:
     matplotlib.use('Qt5Agg')
 from configobj import ConfigObj
 from poker.tools.game_logger import GameLogger
@@ -115,17 +116,17 @@ class ThreadManager(threading.Thread):
 
     def run(self):
         log = logging.getLogger(__name__)
-        h = History()
+        history = History()
         preflop_url, preflop_url_backup = self.updater.get_preflop_sheet_url()
         try:
-            h.preflop_sheet = pd.read_excel(preflop_url, sheet_name=None, engine='openpyxl')
+            history.preflop_sheet = pd.read_excel(preflop_url, sheet_name=None, engine='openpyxl')
         except:
-            h.preflop_sheet = pd.read_excel(preflop_url_backup, sheet_name=None, engine='openpyxl')
+            history.preflop_sheet = pd.read_excel(preflop_url_backup, sheet_name=None, engine='openpyxl')
 
         self.game_logger.clean_database()
 
-        p = StrategyHandler()
-        p.read_strategy()
+        strategy = StrategyHandler()
+        strategy.read_strategy()
 
         preflop_state = CurrentHandPreflopState()
         mongo = MongoManager()
@@ -147,92 +148,95 @@ class ThreadManager(threading.Thread):
 
             ready = False
             while not ready:
-                p.read_strategy()
-                t = TableScreenBased(p, table_dict, self.gui_signals, self.game_logger, version)
+                strategy.read_strategy()
+                table = TableScreenBased(strategy, table_dict, self.gui_signals, self.game_logger, version)
                 mouse = MouseMoverTableBased(table_dict)
                 mouse.move_mouse_away_from_buttons_jump()
 
-                ready = t.take_screenshot(True, p) and \
-                        t.get_top_left_corner(p) and \
-                        t.check_for_captcha(mouse) and \
-                        t.get_lost_everything(h, t, p, self.gui_signals) and \
-                        t.check_for_imback(mouse) and \
-                        t.get_my_cards(h) and \
-                        t.get_new_hand(mouse, h, p) and \
-                        t.get_table_cards(h) and \
-                        t.upload_collusion_wrapper(p, h) and \
-                        t.get_dealer_position() and \
-                        t.check_fast_fold(h, p, mouse) and \
-                        t.check_for_button() and \
-                        t.get_round_number(h) and \
-                        t.check_for_checkbutton() and \
-                        t.init_get_other_players_info() and \
-                        t.get_other_player_status(p, h) and \
-                        t.get_other_player_names(p) and \
-                        t.get_other_player_funds(p) and \
-                        t.get_other_player_pots() and \
-                        t.get_total_pot_value(h) and \
-                        t.get_round_pot_value(h) and \
-                        t.check_for_call() and \
-                        t.check_for_betbutton() and \
-                        t.check_for_allincall() and \
-                        t.get_current_call_value(p) and \
-                        t.get_current_bet_value(p)
+                ready = table.take_screenshot(True, strategy) and \
+                        table.get_top_left_corner(strategy) and \
+                        table.check_for_captcha(mouse) and \
+                        table.get_lost_everything(history, table, strategy, self.gui_signals) and \
+                        table.check_for_imback(mouse) and \
+                        table.get_my_cards(history) and \
+                        table.get_new_hand(mouse, history, strategy) and \
+                        table.get_table_cards(history) and \
+                        table.upload_collusion_wrapper(strategy, history) and \
+                        table.get_dealer_position() and \
+                        table.check_fast_fold(history, strategy, mouse) and \
+                        table.check_for_button() and \
+                        table.get_round_number(history) and \
+                        table.check_for_checkbutton() and \
+                        table.init_get_other_players_info() and \
+                        table.get_other_player_status(strategy, history) and \
+                        table.get_other_player_names(strategy) and \
+                        table.get_other_player_funds(strategy) and \
+                        table.get_other_player_pots() and \
+                        table.get_total_pot_value(history) and \
+                        table.get_round_pot_value(history) and \
+                        table.check_for_call() and \
+                        table.check_for_betbutton() and \
+                        table.check_for_allincall() and \
+                        table.get_current_call_value(strategy) and \
+                        table.get_current_bet_value(strategy)
 
             if not self.gui_signals.pause_thread:
                 config = ConfigObj(CONFIG_FILENAME)
-                m = run_montecarlo_wrapper(p, self.gui_signals, config, ui, t, self.game_logger, preflop_state, h)
+                m = run_montecarlo_wrapper(strategy, self.gui_signals, config, ui, table, self.game_logger,
+                                           preflop_state, history)
                 self.gui_signals.signal_progressbar_increase.emit(20)
-                d = Decision(t, h, p, self.game_logger)
-                d.make_decision(t, h, p, self.game_logger)
+                d = Decision(table, history, strategy, self.game_logger)
+                d.make_decision(table, history, strategy, self.game_logger)
                 self.gui_signals.signal_progressbar_increase.emit(10)
                 if self.gui_signals.exit_thread: sys.exit()
 
-                self.update_most_gui_items(preflop_state, p, m, t, d, h, self.gui_signals)
+                self.update_most_gui_items(preflop_state, strategy, m, table, d, history, self.gui_signals)
 
                 log.info(
-                    "Equity: " + str(t.equity * 100) + "% -> " + str(int(t.assumedPlayers)) + " (" + str(
-                        int(t.other_active_players)) + "-" + str(int(t.playersAhead)) + "+1) Plr")
-                log.info("Final Call Limit: " + str(d.finalCallLimit) + " --> " + str(t.minCall))
-                log.info("Final Bet Limit: " + str(d.finalBetLimit) + " --> " + str(t.minBet))
+                    "Equity: " + str(table.equity * 100) + "% -> " + str(int(table.assumedPlayers)) + " (" + str(
+                        int(table.other_active_players)) + "-" + str(int(table.playersAhead)) + "+1) Plr")
+                log.info("Final Call Limit: " + str(d.finalCallLimit) + " --> " + str(table.minCall))
+                log.info("Final Bet Limit: " + str(d.finalBetLimit) + " --> " + str(table.minBet))
                 log.info(
-                    "Pot size: " + str((t.totalPotValue)) + " -> Zero EV Call: " + str(round(d.maxCallEV, 2)))
+                    "Pot size: " + str((table.totalPotValue)) + " -> Zero EV Call: " + str(round(d.maxCallEV, 2)))
                 log.info("+++++++++++++++++++++++ Decision: " + str(d.decision) + "+++++++++++++++++++++++")
 
                 mouse_target = d.decision
-                if mouse_target == 'Call' and t.allInCallButton:
+                if mouse_target == 'Call' and table.allInCallButton:
                     mouse_target = 'Call2'
-                mouse.mouse_action(mouse_target, t.tlc)
+                mouse.mouse_action(mouse_target, table.tlc)
 
-                t.time_action_completed = datetime.datetime.utcnow()
+                table.time_action_completed = datetime.datetime.utcnow()
 
-                filename = str(h.GameID) + "_" + str(t.gameStage) + "_" + str(h.round_number) + ".png"
+                filename = str(history.GameID) + "_" + str(table.gameStage) + "_" + str(history.round_number) + ".png"
                 log.debug("Saving screenshot: " + filename)
-                pil_image = t.crop_image(t.entireScreenPIL, t.tlc[0], t.tlc[1], t.tlc[0] + 950, t.tlc[1] + 650)
+                pil_image = table.crop_image(table.entireScreenPIL, table.tlc[0], table.tlc[1], table.tlc[0] + 950,
+                                             table.tlc[1] + 650)
                 pil_image.save("log/screenshots/" + filename)
 
                 self.gui_signals.signal_status.emit("Logging data")
 
-                t_log_db = threading.Thread(name='t_log_db', target=self.game_logger.write_log_file, args=[p, h, t, d])
+                t_log_db = threading.Thread(name='t_log_db', target=self.game_logger.write_log_file,
+                                            args=[strategy, history, table, d])
                 t_log_db.daemon = True
                 t_log_db.start()
-                # self.game_logger.write_log_file(p, h, t, d)
+                # self.game_logger.write_log_file(strategy, history, table, d)
 
-                h.previousPot = t.totalPotValue
-                h.histGameStage = t.gameStage
-                h.histDecision = d.decision
-                h.histEquity = t.equity
-                h.histMinCall = t.minCall
-                h.histMinBet = t.minBet
-                h.hist_other_players = t.other_players
-                h.first_raiser = t.first_raiser
-                h.first_caller = t.first_caller
-                h.previous_decision = d.decision
-                h.lastRoundGameID = h.GameID
-                h.previous_round_pot_value = t.round_pot_value
-                h.last_round_bluff = False if t.currentBluff == 0 else True
-                if t.gameStage == 'PreFlop':
-                    preflop_state.update_values(t, d.decision, h, d)
+                history.previousPot = table.totalPotValue
+                history.histGameStage = table.gameStage
+                history.histDecision = d.decision
+                history.histEquity = table.equity
+                history.histMinCall = table.minCall
+                history.histMinBet = table.minBet
+                history.hist_other_players = table.other_players
+                history.first_raiser = table.first_raiser
+                history.first_caller = table.first_caller
+                history.previous_decision = d.decision
+                history.lastRoundGameID = history.GameID
+                history.previous_round_pot_value = table.round_pot_value
+                history.last_round_bluff = False if table.currentBluff == 0 else True
+                if table.gameStage == 'PreFlop':
+                    preflop_state.update_values(table, d.decision, history, d)
                 log.info("=========== round end ===========")
 
 
