@@ -60,11 +60,11 @@ def prepareImage(img_orig, binarize=True):
     """Prepare image for OCR"""
 
     def binarize_array_opencv(image):
-        """Binarize image from gray channel with 127 as threshold"""
+        """Binarize image from gray channel with 80 as threshold"""
         img = cv2.cvtColor(np.array(image), cv2.COLOR_BGR2RGB)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-        _, thresh2 = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY_INV)
+        _, thresh2 = cv2.threshold(img, 80, 255, cv2.THRESH_BINARY_INV)
         return Image.fromarray(thresh2)
 
     basewidth = 300
