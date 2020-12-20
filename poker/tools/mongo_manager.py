@@ -87,7 +87,7 @@ class MongoManager(metaclass=Singleton):
 
         """
         tables = list(self.db[TABLES_COLLECTION].distinct('table_name',
-                                                          {"$or": [{"owner": computer_name},
+                                                          {"$or": [{"_owner": computer_name},
                                                                    {"_plays": {"$gte": 1}}]}))
         return tables
 

@@ -2503,9 +2503,12 @@ Then check the console output for error messages.</string>
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="take_screenshot_cropped_button">
+             <widget class="QPushButton" name="crop">
+              <property name="toolTip">
+               <string>Crops the image to only show everything relative to the top left corner.</string>
+              </property>
               <property name="text">
-               <string>Take cropped screenshot</string>
+               <string>Crop from top left corner</string>
               </property>
              </widget>
             </item>
@@ -2516,16 +2519,6 @@ Then check the console output for error messages.</string>
               </property>
               <property name="text">
                <string>Save new top left corner</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="crop">
-              <property name="toolTip">
-               <string>Crops the image to only show everything relative to the top left corner.</string>
-              </property>
-              <property name="text">
-               <string>Crop from top left corner</string>
               </property>
              </widget>
             </item>

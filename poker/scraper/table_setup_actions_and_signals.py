@@ -1,15 +1,17 @@
 """Learn to read a table"""
 import logging
+import time
 
+from PIL import Image
 from PIL.ImageQt import ImageQt
 from PyQt5 import QtGui
 from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal
 from PyQt5.QtWidgets import QMessageBox
 
-from poker.tools.screen_operations import get_table_template_image, get_ocr_float, take_screenshot, \
-    crop_screenshot_with_topleft_corner
 from poker.tools.helper import COMPUTER_NAME
 from poker.tools.mongo_manager import MongoManager
+from poker.tools.screen_operations import get_table_template_image, get_ocr_float, take_screenshot, \
+    crop_screenshot_with_topleft_corner
 
 log = logging.getLogger(__name__)
 
@@ -57,7 +59,7 @@ class TableSetupActionAndSignals(QObject):
         self.signal_flatten_button.connect(self._flatten_button)
         self.ui.screenshot_label.mousePressEvent = self.get_position
         self.ui.take_screenshot_button.clicked.connect(lambda: self.take_screenshot())
-        self.ui.take_screenshot_cropped_button.clicked.connect(lambda: self.take_screenshot_cropped())
+        # self.ui.take_screenshot_cropped_button.clicked.connect(lambda: self.take_screenshot_cropped())
         self.ui.test_all_button.clicked.connect(lambda: self.test_all())
         self._connect_cards_with_save_slot()
         self._connect_range_buttons_with_save_coordinates()
@@ -237,6 +239,10 @@ class TableSetupActionAndSignals(QObject):
     @pyqtSlot(object)
     def take_screenshot(self):
         """Take a screenshot"""
+        log.info("Clearing window")
+        self.signal_update_screenshot_pic.emit(Image.new('RGB', (3, 3)))
+        # time.sleep(1)
+
         log.info("Taking screenshot")
         self.original_screenshot = take_screenshot()
 
@@ -247,6 +253,10 @@ class TableSetupActionAndSignals(QObject):
     @pyqtSlot(object)
     def take_screenshot_cropped(self):
         """Take a screenshot"""
+        log.info("Clearing window")
+        self.signal_update_screenshot_pic.emit(Image.new('RGB', (3, 3)))
+        time.sleep(3)  # todo: this is not working, the screen is not cleared before the full function completes
+
         log.info("Taking screenshot")
         self.original_screenshot = take_screenshot()
 
@@ -267,7 +277,6 @@ class TableSetupActionAndSignals(QObject):
         self.ui.screenshot_label.setPixmap(self.screenshot_image)
         self.ui.screenshot_label.adjustSize()
 
-    @pyqtSlot(object)
     def crop(self):
         if not self.original_screenshot:
             pop_up("No screenshot taken yet",
@@ -279,10 +288,12 @@ class TableSetupActionAndSignals(QObject):
         self.original_screenshot, self.tlc = crop_screenshot_with_topleft_corner(self.original_screenshot,
                                                                                  self.top_left_corner_img)
         if self.original_screenshot is None:
-            log.warning("No top left corner found")
+            log.warning("No (or multiple) top left corner found")
             pop_up("Top left corner not found",
                    "It was not possible to find the top left corner of the poker window. Please first mark a new "
-                   "topleft corner or load a previously saved one by clicking on the corresponding buttons")
+                   "topleft corner or load a previously saved one by clicking on the corresponding buttons. This error"
+                   "can also occur if in the table editor a top left corner is visible as well. Taking 2 or 3 consecutive"
+                   "screenshots usually solves the problem.")
             return
         else:
             self.signal_update_screenshot_pic.emit(self.original_screenshot)
@@ -301,7 +312,7 @@ class TableSetupActionAndSignals(QObject):
     def get_position(self, event):
         """Get position of mouse click"""
         x = event.pos().x()
-        y = event.pos().y() - 15
+        y = event.pos().y()
         #
         # self.penRectangle = QtGui.QPen(QtCore.Qt.red)
         # self.penRectangle.setWidth(3)

@@ -171,6 +171,9 @@ def crop_screenshot_with_topleft_corner(original_screenshot, topleft_corner):
         log.debug(f"Found to left corner at {tlc}")
         cropped_screenshot = original_screenshot.crop((tlc[0], tlc[1], tlc[0] + 800, tlc[1] + 600))
         return cropped_screenshot, tlc
+    elif count >1:
+        log.warning("Multiple top left corners found. That doesn't work unfortunately at this point. Make sure only one table is visible.")
+        return None, None
     else:
         log.warning("No top left corner found")
         return None, None
