@@ -18,6 +18,7 @@ mongo = MongoManager()
 CARD_VALUES = "23456789TJQKA"
 CARD_SUITES = "CDHS"
 
+
 # pylint: disable=unnecessary-lambda
 
 class TableSetupActionAndSignals(QObject):
@@ -56,6 +57,7 @@ class TableSetupActionAndSignals(QObject):
         self.signal_flatten_button.connect(self._flatten_button)
         self.ui.screenshot_label.mousePressEvent = self.get_position
         self.ui.take_screenshot_button.clicked.connect(lambda: self.take_screenshot())
+        self.ui.take_screenshot_cropped_button.clicked.connect(lambda: self.take_screenshot_cropped())
         self.ui.test_all_button.clicked.connect(lambda: self.test_all())
         self._connect_cards_with_save_slot()
         self._connect_range_buttons_with_save_coordinates()
@@ -243,6 +245,18 @@ class TableSetupActionAndSignals(QObject):
         log.info("signal emission complete")
 
     @pyqtSlot(object)
+    def take_screenshot_cropped(self):
+        """Take a screenshot"""
+        log.info("Taking screenshot")
+        self.original_screenshot = take_screenshot()
+
+        log.info("Emitting update signal")
+        self.signal_update_screenshot_pic.emit(self.original_screenshot)
+        log.info("signal emission complete")
+
+        self.crop()
+
+    @pyqtSlot(object)
     def update_screenshot_pic(self, screenshot):
         """Update label with screenshot picture"""
         log.info("Convert to to pixmap")
@@ -287,7 +301,7 @@ class TableSetupActionAndSignals(QObject):
     def get_position(self, event):
         """Get position of mouse click"""
         x = event.pos().x()
-        y = event.pos().y()
+        y = event.pos().y() - 15
         #
         # self.penRectangle = QtGui.QPen(QtCore.Qt.red)
         # self.penRectangle.setWidth(3)
