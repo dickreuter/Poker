@@ -7,11 +7,13 @@ from PIL.ImageQt import ImageQt
 from PyQt5 import QtGui
 from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal
 from PyQt5.QtWidgets import QMessageBox
+from configobj import ConfigObj
 
-from poker.tools.helper import COMPUTER_NAME
+from poker.tools.helper import COMPUTER_NAME, CONFIG_FILENAME
 from poker.tools.mongo_manager import MongoManager
 from poker.tools.screen_operations import get_table_template_image, get_ocr_float, take_screenshot, \
     crop_screenshot_with_topleft_corner
+from poker.tools.vbox_manager import VirtualBoxController
 
 log = logging.getLogger(__name__)
 
@@ -241,10 +243,23 @@ class TableSetupActionAndSignals(QObject):
         """Take a screenshot"""
         log.info("Clearing window")
         self.signal_update_screenshot_pic.emit(Image.new('RGB', (3, 3)))
-        # time.sleep(1)
 
         log.info("Taking screenshot")
-        self.original_screenshot = take_screenshot()
+
+
+        config = ConfigObj(CONFIG_FILENAME)
+        control = config['control']
+        if control == 'Direct mouse control':
+            self.original_screenshot = take_screenshot()
+
+        else:
+            try:
+                vb = VirtualBoxController()
+                self.original_screenshot = vb.get_screenshot_vbox()
+                log.debug("Screenshot taken from virtual machine")
+            except:
+                log.warning("No virtual machine found. Press SETUP to re initialize the VM controller")
+                self.original_screenshot = take_screenshot()
 
         log.info("Emitting update signal")
         self.signal_update_screenshot_pic.emit(self.original_screenshot)

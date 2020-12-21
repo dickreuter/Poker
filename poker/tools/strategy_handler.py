@@ -111,8 +111,7 @@ class StrategyHandler:
         return self.selected_strategy
 
     def save_strategy_genetic_algorithm(self):
-        r = re.compile("([a-zA-Z]+)([0-9]+)")
-        m = r.match(self.current_strategy)
+        m= re.search(r'([a-zA-Z?-_]+)([0-9]+)', self.current_strategy)
         stringPart = m.group(1)
         numberPart = int(m.group(2))
         numberPart += 1
