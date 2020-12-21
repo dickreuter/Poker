@@ -245,8 +245,6 @@ class TableSetupActionAndSignals(QObject):
         self.signal_update_screenshot_pic.emit(Image.new('RGB', (3, 3)))
 
         log.info("Taking screenshot")
-
-
         config = ConfigObj(CONFIG_FILENAME)
         control = config['control']
         if control == 'Direct mouse control':
@@ -383,7 +381,7 @@ class TableSetupActionAndSignals(QObject):
             return
 
         resp = pop_up("Are you sure?",
-                      "Are you sure you want to delete this table? This cannot be undone.",
+                      f"Are you sure you want to delete the table {self.table_name}? This cannot be undone.",
                       ok_cancel=True)
         if resp == 1024:
             mongo.delete_table(table_name=self.table_name)
