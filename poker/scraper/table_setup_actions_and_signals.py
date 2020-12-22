@@ -302,11 +302,8 @@ class TableSetupActionAndSignals(QObject):
                                                                                  self.top_left_corner_img)
         if self.original_screenshot is None:
             log.warning("No (or multiple) top left corner found")
-            pop_up("Top left corner not found",
-                   "It was not possible to find the top left corner of the poker window. Please first mark a new "
-                   "topleft corner or load a previously saved one by clicking on the corresponding buttons. This error"
-                   "can also occur if in the table editor a top left corner is visible as well. Taking 2 or 3 consecutive"
-                   "screenshots usually solves the problem.")
+            pop_up("Top left corner problem: ",
+                   "No or multiple top left corners visible. Please ensure only a single top left corner is visible.")
             return
         else:
             self.signal_update_screenshot_pic.emit(self.original_screenshot)
@@ -326,6 +323,9 @@ class TableSetupActionAndSignals(QObject):
         """Get position of mouse click"""
         x = event.pos().x()
         y = event.pos().y()
+        # if self.cropped:
+        #     log.info("Crop adjustment")
+        #     y -= 15
         #
         # self.penRectangle = QtGui.QPen(QtCore.Qt.red)
         # self.penRectangle.setWidth(3)

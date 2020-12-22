@@ -47,6 +47,7 @@ Running via python code
 - Install python 3.8 or Anaconda (=python with packages)
 - Create an environment with ``conda create -n poker python=3.8`` or use pycharm's functionality to create a new virtual environment. Chefck youtube for details.
 - Install all the packages with ``pip install -r requirements.txt``
+- You also may need to get c++ runtime distributable: https://visualstudio.microsoft.com/downloads/
 - Install tesseract from https://github.com/UB-Mannheim/tesseract/wiki which is needed for OCR of the numbers that are scraped
 - Install virtualbox from https://www.virtualbox.org/wiki/Downloads and put the poker client into the virtual box. That way it can be controlled without having to use the mouse in your main window.
 - Run ``main.py`` from pycharm after setting up the above created virtual environment as interpreter (check youtube)
