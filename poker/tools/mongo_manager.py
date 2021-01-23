@@ -158,6 +158,7 @@ class MongoManager(metaclass=Singleton):
             return False
         dic = self.get_table(old_table_name)
         dic['_owner'] = COMPUTER_NAME
+        dic['_plays'] = 0
         dic['table_name'] = table_name
         self.db[TABLES_COLLECTION].insert_one(dic)
         return True
