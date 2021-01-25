@@ -94,7 +94,7 @@ class MongoManager(metaclass=Singleton):
     def increment_plays(self, table_name):
         table = list(self.db[TABLES_COLLECTION].find({'table_name': table_name}, {"_plays": 1}))
         try:
-            new_plays = table[0]['plays'] + 1
+            new_plays = table[0]['_plays'] + 1
         except:
             new_plays = 1
         self.db[TABLES_COLLECTION].update({'table_name': table_name},
