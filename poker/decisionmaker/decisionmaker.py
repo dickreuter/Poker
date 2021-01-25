@@ -512,6 +512,7 @@ class Decision(DecisionBase):
             self.ErrCallButton = False
 
         if t.allInCallButton and self.decision != DecisionTypes.fold:
+            log.info("All in call button was found, switching to applying that")
             self.decision = DecisionTypes.call
 
         h.lastSecondRoundAdjustment = self.secondRoundAdjustment
