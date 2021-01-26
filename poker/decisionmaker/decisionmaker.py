@@ -87,24 +87,22 @@ class Decision(DecisionBase):
             t.equity = t.abs_equity
             log.info("Use absolute equity")
 
-        # out_multiplier = p.selected_strategy['out_multiplier']
-        # oc = Outs_Calculator()
-        # if 3 <= len(t.cardsOnTable) <= 4:  #
-        #     try:
-        #         outs = oc.evaluate_hands(t.mycards, t.cardsOnTable, oc)
-        #     except:
-        #         outs = 0
-        #         log.critical("Error in outs calculation!")
-        # else:
-        #     outs = 0
-        # self.out_adjustment = outs * out_multiplier * .01
-        #
-        # self.outs = outs
-        #
-        # if outs > 0:
-        #     log.info("Minimum equity is reduced because of outs by percent: %s", int(self.out_adjustment * 100))
-        self.out_adjustment = 0
-        self.outs = 0
+        out_multiplier = p.selected_strategy['out_multiplier']
+        oc = Outs_Calculator()
+        if 3 <= len(t.cardsOnTable) <= 4:  #
+            try:
+                outs = oc.evaluate_hands(t.mycards, t.cardsOnTable, oc)
+            except:
+                outs = 0
+                log.critical("Error in outs calculation!")
+        else:
+            outs = 0
+        self.out_adjustment = outs * out_multiplier * .01
+
+        self.outs = outs
+
+        if outs > 0:
+            log.info("Minimum equity is reduced because of outs by percent: %s", int(self.out_adjustment * 100))
 
         self.preflop_adjustment = -float(
             p.selected_strategy['pre_flop_equity_reduction_by_position']) * t.position_utg_plus
@@ -494,18 +492,19 @@ class Decision(DecisionBase):
                 self.bullyDecision = False
 
     def admin(self, t, p, h):
-        if int(p.selected_strategy[
-                   'minimum_bet_size']) == 2 and self.decision == DecisionTypes.bet1: self.decision = DecisionTypes.bet2
-        if int(p.selected_strategy[
-                   'minimum_bet_size']) == 3 and self.decision == DecisionTypes.bet1: self.decision = DecisionTypes.bet3
-        if int(p.selected_strategy[
-                   'minimum_bet_size']) == 3 and self.decision == DecisionTypes.bet2: self.decision = DecisionTypes.bet3
-        if int(p.selected_strategy[
-                   'minimum_bet_size']) == 4 and self.decision == DecisionTypes.bet1: self.decision = DecisionTypes.bet4
-        if int(p.selected_strategy[
-                   'minimum_bet_size']) == 4 and self.decision == DecisionTypes.bet2: self.decision = DecisionTypes.bet4
-        if int(p.selected_strategy[
-                   'minimum_bet_size']) == 4 and self.decision == DecisionTypes.bet3: self.decision = DecisionTypes.bet4
+        if t.gameStage != GameStages.PreFlop.value:
+            if int(p.selected_strategy[
+                       'minimum_bet_size']) == 2 and self.decision == DecisionTypes.bet1: self.decision = DecisionTypes.bet2
+            if int(p.selected_strategy[
+                       'minimum_bet_size']) == 3 and self.decision == DecisionTypes.bet1: self.decision = DecisionTypes.bet3
+            if int(p.selected_strategy[
+                       'minimum_bet_size']) == 3 and self.decision == DecisionTypes.bet2: self.decision = DecisionTypes.bet3
+            if int(p.selected_strategy[
+                       'minimum_bet_size']) == 4 and self.decision == DecisionTypes.bet1: self.decision = DecisionTypes.bet4
+            if int(p.selected_strategy[
+                       'minimum_bet_size']) == 4 and self.decision == DecisionTypes.bet2: self.decision = DecisionTypes.bet4
+            if int(p.selected_strategy[
+                       'minimum_bet_size']) == 4 and self.decision == DecisionTypes.bet3: self.decision = DecisionTypes.bet4
 
         if t.checkButton == False and t.minCall == 0.0 and p.selected_strategy['use_pot_multiples'] == 0:
             self.ErrCallButton = True
