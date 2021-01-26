@@ -35,7 +35,7 @@ warnings.filterwarnings("ignore", message="All-NaN axis encountered")
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-version = 4.35
+version = 4.38
 ui = None
 
 
@@ -172,7 +172,6 @@ class ThreadManager(threading.Thread):
                         table.get_other_player_status(strategy, history) and \
                         table.get_other_player_names(strategy) and \
                         table.get_other_player_funds(strategy) and \
-                        table.get_other_player_pots() and \
                         table.get_total_pot_value(history) and \
                         table.get_round_pot_value(history) and \
                         table.check_for_call() and \

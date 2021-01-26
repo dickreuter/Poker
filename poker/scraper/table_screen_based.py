@@ -357,6 +357,7 @@ class TableScreenBased(Table):
         else:
             reference_pot = self.get_bot_pot(p)
 
+        self.get_other_player_pots()
         # get first raiser in (tested for preflop)
         self.first_raiser, \
         self.second_raiser, \
