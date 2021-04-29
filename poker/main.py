@@ -198,13 +198,18 @@ class ThreadManager(threading.Thread):
                 log.info("Final Call Limit: " + str(d.finalCallLimit) + " --> " + str(table.minCall))
                 log.info("Final Bet Limit: " + str(d.finalBetLimit) + " --> " + str(table.minBet))
                 log.info(
-                    "Pot size: " + str((table.totalPotValue)) + " -> Zero EV Call: " + str(round(d.maxCallEV, 2)))
+                    "Pot size: " + str(table.totalPotValue) + " -> Zero EV Call: " + str(round(d.maxCallEV, 2)))
                 log.info("+++++++++++++++++++++++ Decision: " + str(d.decision) + "+++++++++++++++++++++++")
 
                 mouse_target = d.decision
+                action_options = {}
+
                 if mouse_target == 'Call' and table.allInCallButton:
                     mouse_target = 'Call2'
-                mouse.mouse_action(mouse_target, table.tlc)
+                elif mouse_target == 'BetPlus':
+                    action_options['increases_num'] = strategy.selected_strategy['BetPlusInc']
+
+                mouse.mouse_action(mouse_target, table.tlc, action_options)
 
                 table.time_action_completed = datetime.datetime.utcnow()
 
