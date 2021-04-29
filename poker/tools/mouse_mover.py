@@ -139,7 +139,7 @@ class MouseMoverTableBased(MouseMover):
         except Exception as e:
             log.warning("Moving mouse via jump away failed" + str(e))
 
-    def mouse_action(self, decision, topleftcorner):
+    def mouse_action(self, decision, topleftcorner, options=None):
         if decision == 'Check Deception':
             decision = 'Check'
         if decision == 'Call Deception':
@@ -177,7 +177,7 @@ class MouseMoverTableBased(MouseMover):
             self.take_action(coo['x1'] + tlx, coo['y1'] + tly, coo['x2'] + tlx, coo['y2'] + tly)
 
         elif decision == "BetPlus":
-            for i in range(3):
+            for i in range(int(options['increases_num'])):
                 coo = self.table_dict['mouse_increase']
                 self.take_action(coo['x1'] + tlx, coo['y1'] + tly, coo['x2'] + tlx, coo['y2'] + tly)
 
