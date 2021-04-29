@@ -60,17 +60,17 @@ def prepareImage(img_orig, binarize=True):
     """Prepare image for OCR"""
 
     def binarize_array_opencv(image):
-        """Binarize image from gray channel with 80 as threshold"""
+        """Binarize image from gray channel with 76 as threshold"""
         img = cv2.cvtColor(np.array(image), cv2.COLOR_BGR2RGB)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-        _, thresh2 = cv2.threshold(img, 80, 255, cv2.THRESH_BINARY_INV)
+        _, thresh2 = cv2.threshold(img, 76, 255, cv2.THRESH_BINARY_INV)
         return Image.fromarray(thresh2)
 
     basewidth = 300
     wpercent = (basewidth / float(img_orig.size[0]))
     hsize = int((float(img_orig.size[1]) * float(wpercent)))
-    img_resized = img_orig.convert('L').resize((basewidth, hsize), Image.ANTIALIAS)
+    img_resized = img_orig.convert('L').resize((basewidth, hsize), Image.LANCZOS)
     if binarize:
         img_resized = binarize_array_opencv(img_resized)
 
@@ -95,11 +95,11 @@ def get_ocr_number(img_orig):
     """Return float value from image. -1.0f when OCR failed"""
     img_resized = prepareImage(img_orig)
     lst = []
-    config_ocr = '--psm 7 --oem 1 -c tessedit_char_whitelist=0123456789.$£B'
+    config_ocr = '--psm 7 --oem 1 -c tessedit_char_whitelist=0123456789.,$£B'
 
     lst.append(
         pytesseract.image_to_string(img_resized, 'eng', config=config_ocr).
-            strip().replace('$', '').replace('£', '').replace('B', ''))
+            strip().replace('$', '').replace('£', '').replace('B', '').replace(',', '.'))
 
     try:
         return float(lst[-1])
