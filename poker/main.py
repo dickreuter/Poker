@@ -216,7 +216,7 @@ class ThreadManager(threading.Thread):
                 filename = str(history.GameID) + "_" + str(table.gameStage) + "_" + str(history.round_number) + ".png"
                 log.debug("Saving screenshot: " + filename)
                 pil_image = table.crop_image(table.entireScreenPIL, table.tlc[0], table.tlc[1], table.tlc[0] + 950,
-                                             table.tlc[1] + 650)
+                                             table.tlc[1] + 700)
                 pil_image.save("log/screenshots/" + filename)
 
                 self.gui_signals.signal_status.emit("Logging data")
