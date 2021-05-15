@@ -154,7 +154,7 @@ class TableScreenBased(Table):
         log.info("Cards on table: " + str(self.cardsOnTable))
         log.info("---")
 
-        self.max_X = 1 if self.gameStage != 'PreFlop' else 0.86
+        self.max_X = 1 if self.gameStage != 'PreFlop' else 0.95
 
         return True
 
@@ -254,25 +254,25 @@ class TableScreenBased(Table):
         return True
 
     def get_other_player_names(self, p):
-        if p.selected_strategy['gather_player_names'] == 1:
-            func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
-            self.gui_signals.signal_status.emit("Get player names")
-
-            for i, fd in enumerate(func_dict):
-                self.gui_signals.signal_progressbar_increase.emit(2)
-                pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1],
-                                            self.tlc[0] + fd[2], self.tlc[1] + fd[3])
-                basewidth = 500
-                wpercent = (basewidth / float(pil_image.size[0]))
-                hsize = int((float(pil_image.size[1]) * float(wpercent)))
-                pil_image = pil_image.resize((basewidth, hsize), Image.ANTIALIAS)
-                try:
-                    recognizedText = (pytesseract.image_to_string(pil_image, None, False, "-psm 6"))
-                    recognizedText = re.sub(r'[\W+]', '', recognizedText)
-                    log.debug("Player name: " + recognizedText)
-                    self.other_players[i]['name'] = recognizedText
-                except Exception as e:
-                    log.debug("Pyteseract error in player name recognition: " + str(e))
+        # if p.selected_strategy['gather_player_names'] == 1:
+        #     func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
+        #     self.gui_signals.signal_status.emit("Get player names")
+        #
+        #     for i, fd in enumerate(func_dict):
+        #         self.gui_signals.signal_progressbar_increase.emit(2)
+        #         pil_image = self.crop_image(self.entireScreenPIL, self.tlc[0] + fd[0], self.tlc[1] + fd[1],
+        #                                     self.tlc[0] + fd[2], self.tlc[1] + fd[3])
+        #         basewidth = 500
+        #         wpercent = (basewidth / float(pil_image.size[0]))
+        #         hsize = int((float(pil_image.size[1]) * float(wpercent)))
+        #         pil_image = pil_image.resize((basewidth, hsize), Image.ANTIALIAS)
+        #         try:
+        #             recognizedText = (pytesseract.image_to_string(pil_image, None, False, "-psm 6"))
+        #             recognizedText = re.sub(r'[\W+]', '', recognizedText)
+        #             log.debug("Player name: " + recognizedText)
+        #             self.other_players[i]['name'] = recognizedText
+        #         except Exception as e:
+        #             log.debug("Pyteseract error in player name recognition: " + str(e))
         return True
 
     def get_other_player_funds(self, p):

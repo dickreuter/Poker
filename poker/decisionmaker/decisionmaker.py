@@ -159,7 +159,7 @@ class Decision(DecisionBase):
             t.potStretch = 1
             t.maxEquityCall = 1
         elif t.gameStage == GameStages.Turn.value:
-            t.power1 = int(p.selected_strategy['TurnCallPower']) + secondRoundAdjustmentPowerIncrease
+            t.power1 = int(float(p.selected_strategy['TurnCallPower'])) + secondRoundAdjustmentPowerIncrease
             t.minEquityCall = float(
                 p.selected_strategy[
                     'TurnMinCallEquity']) + self.secondRoundAdjustment - self.potAdjustment - self.out_adjustment

@@ -96,6 +96,8 @@ class StrategyHandler:
             self.selected_strategy['range_multiple_players'] = 0.2
         if 'minimum_bet_size' not in self.selected_strategy:
             self.selected_strategy['minimum_bet_size'] = 3
+        if 'antibluff_percentage' not in self.selected_strategy:
+            self.selected_strategy['antibluff_percentage'] = 0
 
     def read_strategy(self, strategy_override=''):
         config = ConfigObj(CONFIG_FILENAME)

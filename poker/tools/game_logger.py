@@ -323,7 +323,7 @@ class GameLogger(metaclass=Singleton):
                         "FinalFundsChange": {"$sum": "$FinalFundsChange"}
                     },
             }
-        ])
+        ], allowDiskUse=True)
         try:
             change = list(cursor)[0]['FinalFundsChange']
         except:

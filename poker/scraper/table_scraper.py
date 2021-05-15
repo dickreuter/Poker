@@ -6,8 +6,6 @@ from poker.tools.screen_operations import take_screenshot, crop_screenshot_with_
 from poker.scraper.table_setup_actions_and_signals import CARD_SUITES, CARD_VALUES
 
 log = logging.getLogger(__name__)
-
-
 class TableScraper:
     def __init__(self, table_dict):
         self.table_dict = table_dict

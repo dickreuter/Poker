@@ -4,6 +4,8 @@ from sys import platform
 
 import numexpr  # required for pyinstaller
 
+from poker.gui.setup_form import SetupForm
+
 _ = numexpr
 import matplotlib
 
@@ -28,8 +30,6 @@ from poker.tools.mongo_manager import MongoManager
 from poker.gui.genetic_algorithm_form import *  # pylint: disable=wildcard-import
 from poker.gui.strategy_manager_form import *  # pylint: disable=wildcard-import
 from poker.gui.analyser_form import *  # pylint: disable=wildcard-import
-from poker.gui.setup_form import *  # pylint: disable=wildcard-import
-from poker.gui.help import *  # pylint: disable=wildcard-import
 from poker.tools.vbox_manager import VirtualBoxController
 from PyQt5.QtWidgets import QMessageBox
 import webbrowser
@@ -392,7 +392,10 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
         number_of_games = int(l.get_game_count(self.ui_analyser.combobox_strategy.currentText()))
         total_return = l.get_strategy_return(self.ui_analyser.combobox_strategy.currentText(), 999999)
 
-        winnings_per_bb_100 = total_return / p.selected_strategy['bigBlind'] / number_of_games * 100
+        try:
+            winnings_per_bb_100 = total_return / p.selected_strategy['bigBlind'] / number_of_games * 100
+        except ZeroDivisionError:
+            winnings_per_bb_100 = 0
 
         self.ui_analyser.lcdNumber_2.display(number_of_games)
         self.ui_analyser.lcdNumber.display(winnings_per_bb_100)
@@ -420,7 +423,7 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
         max_equity = float(
             p.selected_strategy['PreFlopMaxBetEquity']) if game_stage == 'PreFlop' and call_or_bet == 'Bet' else 1
         power = float(p.selected_strategy[game_stage + call_or_bet + 'Power'])
-        max_X = .86 if game_stage == "Preflop" else 1
+        max_X = .95 if game_stage == "Preflop" else 1
 
         self.gui_scatterplot.drawfigure(p_name, game_stage, decision, l,
                                         float(p.selected_strategy['smallBlind']),
@@ -434,8 +437,9 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
     def strategy_analyser_update_table(self, l):
         p_name = str(self.ui_analyser.combobox_strategy.currentText())
         df = l.get_worst_games(p_name)
-        model = PandasModel(df)
-        self.ui_analyser.tableView.setModel(model)
+        if not df.empty:
+            model = PandasModel(df)
+            self.ui_analyser.tableView.setModel(model)
 
     def update_strategy_editor_sliders(self, strategy_name):
         self.strategy_handler.read_strategy(strategy_name)
