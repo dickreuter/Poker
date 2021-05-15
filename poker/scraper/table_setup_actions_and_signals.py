@@ -98,6 +98,9 @@ class TableSetupActionAndSignals(QObject):
             button_property = getattr(self.ui, button)
             button_property.clicked.connect(lambda state, x=button: self.save_image(x))
 
+            button_show_property = getattr(self.ui, button + '_show')
+            button_show_property.clicked.connect(lambda state, x=button: self.load_image(x))
+
         button_show_property = getattr(self.ui, 'dealer_button_show')
         button_show_property.clicked.connect(lambda state: self.load_image('dealer_button'))
 
@@ -189,9 +192,7 @@ class TableSetupActionAndSignals(QObject):
                                 'my_turn_search_area', 'lost_everything_search_area',
                                 'mouse_fold', 'mouse_fast_fold', 'mouse_raise', 'mouse_full_pot', 'mouse_call',
                                 'mouse_increase', 'mouse_call2', 'mouse_check', 'mouse_imback', 'mouse_half_pot',
-                                'mouse_all_in', 'buttons_search_area', 'call_button', 'raise_button', 'check_button',
-                                'fold_button', 'fast_fold_button', 'all_in_call_button', 'my_turn', 'lost_everything',
-                                'im_back']
+                                'mouse_all_in', 'buttons_search_area']
             if button_name not in excluded_buttons:
                 button = getattr(self.ui, button_name + '_show')
                 button.setEnabled(checked)

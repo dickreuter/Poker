@@ -50,8 +50,24 @@
                      <property name="toolTip">
                       <string>Only select the raise text, without the chainging element of the raise amount</string>
                      </property>
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
                      <property name="text">
                       <string>Raise Button</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="1">
+                    <widget class="QPushButton" name="raise_button_show">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="text">
+                      <string>Show</string>
                      </property>
                     </widget>
                    </item>
@@ -62,6 +78,16 @@
                      </property>
                      <property name="text">
                       <string>All in call Button</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="6" column="1">
+                    <widget class="QPushButton" name="all_in_call_button_show">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="text">
+                      <string>Show</string>
                      </property>
                     </widget>
                    </item>
@@ -82,6 +108,16 @@
                      </property>
                     </widget>
                    </item>
+                   <item row="4" column="1">
+                    <widget class="QPushButton" name="fold_button_show">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="text">
+                      <string>Show</string>
+                     </property>
+                    </widget>
+                   </item>
                    <item row="11" column="0">
                     <widget class="QPushButton" name="im_back">
                      <property name="toolTip">
@@ -89,6 +125,16 @@
                      </property>
                      <property name="text">
                       <string>I'm back</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="11" column="1">
+                    <widget class="QPushButton" name="im_back_show">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="text">
+                      <string>Show</string>
                      </property>
                     </widget>
                    </item>
@@ -102,10 +148,30 @@
                      </property>
                     </widget>
                    </item>
+                   <item row="10" column="1">
+                    <widget class="QPushButton" name="lost_everything_show">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="text">
+                      <string>Show</string>
+                     </property>
+                    </widget>
+                   </item>
                    <item row="3" column="0">
                     <widget class="QPushButton" name="check_button">
                      <property name="text">
                       <string>Check Button</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="1">
+                    <widget class="QPushButton" name="check_button_show">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="text">
+                      <string>Show</string>
                      </property>
                     </widget>
                    </item>
@@ -119,6 +185,16 @@
                      </property>
                     </widget>
                    </item>
+                   <item row="1" column="1">
+                    <widget class="QPushButton" name="call_button_show">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="text">
+                      <string>Show</string>
+                     </property>
+                    </widget>
+                   </item>
                    <item row="8" column="0">
                     <widget class="QPushButton" name="my_turn">
                      <property name="toolTip">
@@ -126,6 +202,16 @@
                      </property>
                      <property name="text">
                       <string>&quot;My Turn&quot; image</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="8" column="1">
+                    <widget class="QPushButton" name="my_turn_show">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="text">
+                      <string>Show</string>
                      </property>
                     </widget>
                    </item>
@@ -153,6 +239,16 @@
                     <widget class="QPushButton" name="fast_fold_button">
                      <property name="text">
                       <string>Fast Fold Button</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="5" column="1">
+                    <widget class="QPushButton" name="fast_fold_button_show">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="text">
+                      <string>Show</string>
                      </property>
                     </widget>
                    </item>
