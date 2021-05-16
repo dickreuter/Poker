@@ -1,15 +1,12 @@
 import datetime
 import inspect
 import logging
-import re
 import sys
 import threading
 import time
 from copy import copy
 
 import numpy as np
-import pytesseract
-from PIL import Image
 
 from poker.decisionmaker.montecarlo_python import MonteCarlo
 from poker.scraper.table import Table
