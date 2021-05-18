@@ -109,11 +109,11 @@ class Decision(DecisionBase):
 
         if not np.isnan(t.first_raiser_utg):
             self.preflop_adjustment += float(p.selected_strategy['pre_flop_equity_increase_if_bet'])
-                                       # + ((5 - t.first_raiser_utg) * 0.01)
+            # + ((5 - t.first_raiser_utg) * 0.01)
 
         if not np.isnan(t.first_caller_utg):
             self.preflop_adjustment += float(p.selected_strategy['pre_flop_equity_increase_if_call'])
-                    # + (5 - t.first_caller_utg) * 0.01)
+            # + (5 - t.first_caller_utg) * 0.01)
 
         # in case the other players called my bet become less aggressive and make an adjustment for the second round
         if (h.histGameStage == t.gameStage and h.lastRoundGameID == h.GameID) or h.lastSecondRoundAdjustment > 0:
@@ -335,6 +335,9 @@ class Decision(DecisionBase):
         if self.finalCallLimit >= t.minCall:
             self.decision = DecisionTypes.call
             log.debug("Call limit ok: calling would be fine")
+        if t.allInCallButton and t.minCall and self.finalCallLimit < t.minBet:
+            log.info("All in call: suggest folding because call button is in raise button position")
+            self.decision = DecisionTypes.fold
 
     def betting(self, t, p, h):
         # preflop
