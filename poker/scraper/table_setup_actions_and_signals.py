@@ -93,7 +93,7 @@ class TableSetupActionAndSignals(QObject):
         save_image_buttons = ['call_button', 'raise_button', 'check_button', 'fold_button', 'fast_fold_button',
                               'all_in_call_button',
                               'my_turn',
-                              'lost_everything', 'im_back', 'dealer_button', 'covered_card']
+                              'lost_everything', 'im_back', 'resume_hand', 'dealer_button', 'covered_card']
         for button in save_image_buttons:
             button_property = getattr(self.ui, button)
             button_property.clicked.connect(lambda state, x=button: self.save_image(x))
@@ -114,7 +114,7 @@ class TableSetupActionAndSignals(QObject):
                          'mouse_fold', 'mouse_fast_fold', 'mouse_raise', 'mouse_full_pot', 'mouse_call',
                          'mouse_increase', 'mouse_call2', 'mouse_check',
                          'mouse_imback',
-                         'mouse_half_pot', 'mouse_all_in', 'buttons_search_area']
+                         'mouse_half_pot', 'mouse_all_in', 'mouse_resume_hand', 'buttons_search_area']
 
         for button in range_buttons:
             button_property = getattr(self.ui, button)
@@ -191,7 +191,7 @@ class TableSetupActionAndSignals(QObject):
             excluded_buttons = ['topleft_corner', 'game_number', 'call_value', 'raise_value', 'all_in_call_value',
                                 'my_turn_search_area', 'lost_everything_search_area',
                                 'mouse_fold', 'mouse_fast_fold', 'mouse_raise', 'mouse_full_pot', 'mouse_call',
-                                'mouse_increase', 'mouse_call2', 'mouse_check', 'mouse_imback', 'mouse_half_pot',
+                                'mouse_increase', 'mouse_resume_hand', 'mouse_call2', 'mouse_check', 'mouse_imback', 'mouse_half_pot',
                                 'mouse_all_in', 'buttons_search_area']
             if button_name not in excluded_buttons:
                 button = getattr(self.ui, button_name + '_show')
@@ -401,9 +401,9 @@ class TableSetupActionAndSignals(QObject):
         all_buttons = ['call_value', 'raise_value', 'all_in_call_value', 'game_number', 'current_round_pot',
                        'total_pot_area', 'my_turn_search_area', 'lost_everything_search_area', 'table_cards_area',
                        'my_cards_area', 'mouse_fold', 'mouse_fast_fold', 'mouse_raise', 'mouse_full_pot', 'mouse_call',
-                       'mouse_increase', 'mouse_call2', 'mouse_check', 'mouse_imback', 'mouse_half_pot', 'mouse_all_in',
+                       'mouse_increase', 'mouse_call2', 'mouse_check', 'mouse_imback', 'mouse_resume_hand', 'mouse_half_pot', 'mouse_all_in',
                        'buttons_search_area', 'call_button', 'raise_button', 'check_button', 'fold_button',
-                       'fast_fold_button', 'all_in_call_button', 'my_turn', 'lost_everything', 'im_back',
+                       'fast_fold_button', 'all_in_call_button', 'my_turn', 'lost_everything', 'im_back', 'resume_hand',
                        'dealer_button', 'covered_card', 'covered_card_area', 'player_name_area', 'player_funds_area',
                        'player_pot_area', 'button_search_area', 'covered_card_area', 'player_name_area',
                        'player_funds_area', 'player_pot_area', 'button_search_area']
