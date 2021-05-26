@@ -28,7 +28,7 @@
            </sizepolicy>
           </property>
           <property name="currentIndex">
-           <number>2</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="tab_2">
            <attribute name="title">
@@ -45,42 +45,6 @@
                 <layout class="QGridLayout" name="gridLayout_6">
                  <item row="1" column="0">
                   <layout class="QGridLayout" name="gridLayout_3">
-                   <item row="2" column="0">
-                    <widget class="QPushButton" name="raise_button">
-                     <property name="toolTip">
-                      <string>Only select the raise text, without the chainging element of the raise amount</string>
-                     </property>
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="text">
-                      <string>Raise Button</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="1">
-                    <widget class="QPushButton" name="raise_button_show">
-                     <property name="enabled">
-                      <bool>false</bool>
-                     </property>
-                     <property name="text">
-                      <string>Show</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="6" column="0">
-                    <widget class="QPushButton" name="all_in_call_button">
-                     <property name="toolTip">
-                      <string>Ensure to only select the portion that never changes</string>
-                     </property>
-                     <property name="text">
-                      <string>All in call Button</string>
-                     </property>
-                    </widget>
-                   </item>
                    <item row="6" column="1">
                     <widget class="QPushButton" name="all_in_call_button_show">
                      <property name="enabled">
@@ -88,6 +52,13 @@
                      </property>
                      <property name="text">
                       <string>Show</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="4" column="0">
+                    <widget class="QPushButton" name="fold_button">
+                     <property name="text">
+                      <string>Fold Button</string>
                      </property>
                     </widget>
                    </item>
@@ -101,67 +72,13 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="4" column="0">
-                    <widget class="QPushButton" name="fold_button">
-                     <property name="text">
-                      <string>Fold Button</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="4" column="1">
-                    <widget class="QPushButton" name="fold_button_show">
-                     <property name="enabled">
-                      <bool>false</bool>
-                     </property>
-                     <property name="text">
-                      <string>Show</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="11" column="0">
-                    <widget class="QPushButton" name="im_back">
+                   <item row="6" column="0">
+                    <widget class="QPushButton" name="all_in_call_button">
                      <property name="toolTip">
-                      <string>Image showing I'm back, in case of tha time out</string>
+                      <string>Ensure to only select the portion that never changes</string>
                      </property>
                      <property name="text">
-                      <string>I'm back</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="11" column="1">
-                    <widget class="QPushButton" name="im_back_show">
-                     <property name="enabled">
-                      <bool>false</bool>
-                     </property>
-                     <property name="text">
-                      <string>Show</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="10" column="0">
-                    <widget class="QPushButton" name="lost_everything">
-                     <property name="toolTip">
-                      <string>An image showing no funds left: e.g. 0.00</string>
-                     </property>
-                     <property name="text">
-                      <string>Lost everything image</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="10" column="1">
-                    <widget class="QPushButton" name="lost_everything_show">
-                     <property name="enabled">
-                      <bool>false</bool>
-                     </property>
-                     <property name="text">
-                      <string>Show</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="3" column="0">
-                    <widget class="QPushButton" name="check_button">
-                     <property name="text">
-                      <string>Check Button</string>
+                      <string>All in call Button</string>
                      </property>
                     </widget>
                    </item>
@@ -175,33 +92,19 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="1" column="0">
-                    <widget class="QPushButton" name="call_button">
+                   <item row="2" column="0">
+                    <widget class="QPushButton" name="raise_button">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
                      <property name="toolTip">
-                      <string>Only select a small portion of the button (e.g. the call text), without the actual call amount</string>
+                      <string>Only select the raise text, without the chainging element of the raise amount</string>
                      </property>
                      <property name="text">
-                      <string>Call Button</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="1">
-                    <widget class="QPushButton" name="call_button_show">
-                     <property name="enabled">
-                      <bool>false</bool>
-                     </property>
-                     <property name="text">
-                      <string>Show</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="8" column="0">
-                    <widget class="QPushButton" name="my_turn">
-                     <property name="toolTip">
-                      <string>Best select the top left corner of the call button, or any other element that is always identical for all situations when it's your turn</string>
-                     </property>
-                     <property name="text">
-                      <string>&quot;My Turn&quot; image</string>
+                      <string>Raise Button</string>
                      </property>
                     </widget>
                    </item>
@@ -225,6 +128,110 @@
                      </property>
                     </widget>
                    </item>
+                   <item row="5" column="0">
+                    <widget class="QPushButton" name="fast_fold_button">
+                     <property name="text">
+                      <string>Fast Fold Button</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="0">
+                    <widget class="QPushButton" name="check_button">
+                     <property name="text">
+                      <string>Check Button</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="1">
+                    <widget class="QPushButton" name="raise_button_show">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="text">
+                      <string>Show</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="11" column="1">
+                    <widget class="QPushButton" name="im_back_show">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="text">
+                      <string>Show</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="11" column="0">
+                    <widget class="QPushButton" name="im_back">
+                     <property name="toolTip">
+                      <string>Image showing I'm back, in case of tha time out</string>
+                     </property>
+                     <property name="text">
+                      <string>I'm back</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="8" column="0">
+                    <widget class="QPushButton" name="my_turn">
+                     <property name="toolTip">
+                      <string>Best select the top left corner of the call button, or any other element that is always identical for all situations when it's your turn</string>
+                     </property>
+                     <property name="text">
+                      <string>&quot;My Turn&quot; image</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QPushButton" name="call_button">
+                     <property name="toolTip">
+                      <string>Only select a small portion of the button (e.g. the call text), without the actual call amount</string>
+                     </property>
+                     <property name="text">
+                      <string>Call Button</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="10" column="1">
+                    <widget class="QPushButton" name="lost_everything_show">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="text">
+                      <string>Show</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="5" column="1">
+                    <widget class="QPushButton" name="fast_fold_button_show">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="text">
+                      <string>Show</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="4" column="1">
+                    <widget class="QPushButton" name="fold_button_show">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="text">
+                      <string>Show</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QPushButton" name="call_button_show">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="text">
+                      <string>Show</string>
+                     </property>
+                    </widget>
+                   </item>
                    <item row="9" column="0">
                     <widget class="QPushButton" name="lost_everything_search_area">
                      <property name="toolTip">
@@ -235,15 +242,25 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="5" column="0">
-                    <widget class="QPushButton" name="fast_fold_button">
+                   <item row="10" column="0">
+                    <widget class="QPushButton" name="lost_everything">
+                     <property name="toolTip">
+                      <string>An image showing no funds left: e.g. 0.00</string>
+                     </property>
                      <property name="text">
-                      <string>Fast Fold Button</string>
+                      <string>Lost everything image</string>
                      </property>
                     </widget>
                    </item>
-                   <item row="5" column="1">
-                    <widget class="QPushButton" name="fast_fold_button_show">
+                   <item row="12" column="0">
+                    <widget class="QPushButton" name="resume_hand">
+                     <property name="text">
+                      <string>Resume Hand</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="12" column="1">
+                    <widget class="QPushButton" name="resume_hand_show">
                      <property name="enabled">
                       <bool>false</bool>
                      </property>
@@ -2336,58 +2353,13 @@
                <string>Mouse Control</string>
               </property>
               <layout class="QGridLayout" name="gridLayout_2">
-               <item row="8" column="0">
-                <widget class="QPushButton" name="mouse_check">
+               <item row="9" column="0">
+                <widget class="QPushButton" name="mouse_imback">
                  <property name="toolTip">
                   <string>Location of I'm back button</string>
                  </property>
                  <property name="text">
-                  <string>Check</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="4" column="0">
-                <widget class="QPushButton" name="mouse_call">
-                 <property name="text">
-                  <string>Call</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="0" column="0">
-                <widget class="QPushButton" name="mouse_fold">
-                 <property name="toolTip">
-                  <string>Area of fold button to click</string>
-                 </property>
-                 <property name="text">
-                  <string>Fold</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="1" column="0">
-                <widget class="QPushButton" name="mouse_raise">
-                 <property name="text">
-                  <string>Raise</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="7" column="0">
-                <widget class="QPushButton" name="mouse_all_in">
-                 <property name="text">
-                  <string>All In</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="3" column="0">
-                <widget class="QPushButton" name="mouse_full_pot">
-                 <property name="text">
-                  <string>Full pot</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="2" column="0">
-                <widget class="QPushButton" name="mouse_half_pot">
-                 <property name="text">
-                  <string>Half pot</string>
+                  <string>I'm back</string>
                  </property>
                 </widget>
                </item>
@@ -2401,31 +2373,55 @@
                  </property>
                 </widget>
                </item>
-               <item row="6" column="0">
-                <widget class="QPushButton" name="mouse_fast_fold">
-                 <property name="text">
-                  <string>Fast Fold</string>
-                 </property>
-                </widget>
-               </item>
-               <item row="9" column="0">
-                <widget class="QPushButton" name="mouse_imback">
+               <item row="0" column="0">
+                <widget class="QPushButton" name="mouse_fold">
                  <property name="toolTip">
-                  <string>Location of I'm back button</string>
+                  <string>Area of fold button to click</string>
                  </property>
                  <property name="text">
-                  <string>I'm back</string>
+                  <string>Fold</string>
                  </property>
                 </widget>
                </item>
-               <item row="10" column="0">
+               <item row="2" column="0">
+                <widget class="QPushButton" name="mouse_half_pot">
+                 <property name="text">
+                  <string>Half pot</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="11" column="0">
                 <widget class="QPushButton" name="mouse_increase">
                  <property name="text">
                   <string>Increase</string>
                  </property>
                 </widget>
                </item>
-               <item row="11" column="0">
+               <item row="4" column="0">
+                <widget class="QPushButton" name="mouse_call">
+                 <property name="text">
+                  <string>Call</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="8" column="0">
+                <widget class="QPushButton" name="mouse_check">
+                 <property name="toolTip">
+                  <string>Location of I'm back button</string>
+                 </property>
+                 <property name="text">
+                  <string>Check</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="7" column="0">
+                <widget class="QPushButton" name="mouse_all_in">
+                 <property name="text">
+                  <string>All In</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="12" column="0">
                 <spacer name="verticalSpacer_4">
                  <property name="orientation">
                   <enum>Qt::Vertical</enum>
@@ -2437,6 +2433,34 @@
                   </size>
                  </property>
                 </spacer>
+               </item>
+               <item row="1" column="0">
+                <widget class="QPushButton" name="mouse_raise">
+                 <property name="text">
+                  <string>Raise</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="3" column="0">
+                <widget class="QPushButton" name="mouse_full_pot">
+                 <property name="text">
+                  <string>Full pot</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="6" column="0">
+                <widget class="QPushButton" name="mouse_fast_fold">
+                 <property name="text">
+                  <string>Fast Fold</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="10" column="0">
+                <widget class="QPushButton" name="mouse_resume_hand">
+                 <property name="text">
+                  <string>Resume Hand</string>
+                 </property>
+                </widget>
                </item>
               </layout>
              </widget>

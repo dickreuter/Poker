@@ -47,6 +47,11 @@ class TableScraper:
         return is_template_in_search_area(self.table_dict, self.screenshot,
                                           'im_back', 'buttons_search_area')
 
+    def resume_hand(self):
+        """Check if I'm back button is visible"""
+        return is_template_in_search_area(self.table_dict, self.screenshot,
+                                          'resume_hand', 'buttons_search_area')
+
     def get_my_cards2(self):
         """Get my cards"""
         self.my_cards = []

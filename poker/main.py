@@ -35,7 +35,7 @@ warnings.filterwarnings("ignore", message="All-NaN axis encountered")
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-version = 4.43
+version = 4.44
 ui = None
 
 
@@ -159,6 +159,7 @@ class ThreadManager(threading.Thread):
                         table.check_for_captcha(mouse) and \
                         table.get_lost_everything(history, table, strategy, self.gui_signals) and \
                         table.check_for_imback(mouse) and \
+                        table.check_for_resume_hand(mouse) and \
                         table.get_my_cards(history) and \
                         table.get_new_hand(mouse, history, strategy) and \
                         table.get_table_cards(history) and \
@@ -210,6 +211,11 @@ class ThreadManager(threading.Thread):
                     action_options['increases_num'] = strategy.selected_strategy['BetPlusInc']
 
                 mouse.mouse_action(mouse_target, table.tlc, action_options)
+
+                # for pokerstars, high fold straight after all in call (fold button matches the stay in game)
+                if mouse_target == 'Call2' and table.allInCallButton:
+                    mouse_target = 'Fold'
+                    mouse.mouse_action(mouse_target, table.tlc, action_options)
 
                 table.time_action_completed = datetime.datetime.utcnow()
 

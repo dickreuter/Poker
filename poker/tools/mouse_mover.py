@@ -160,6 +160,11 @@ class MouseMoverTableBased(MouseMover):
             coo = self.table_dict['mouse_imback']
             self.take_action(coo['x1'] + tlx, coo['y1'] + tly, coo['x2'] + tlx, coo['y2'] + tly)
 
+        elif decision == "resume_hand":
+            time.sleep(np.random.uniform(0, 3, 1)[0])
+            coo = self.table_dict['mouse_resume_hand']
+            self.take_action(coo['x1'] + tlx, coo['y1'] + tly, coo['x2'] + tlx, coo['y2'] + tly)
+
         elif decision == "Call":
             coo = self.table_dict['mouse_call']
             self.take_action(coo['x1'] + tlx, coo['y1'] + tly, coo['x2'] + tlx, coo['y2'] + tly)

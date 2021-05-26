@@ -96,6 +96,19 @@ class TableScreenBased(Table):
         else:
             return True
 
+    def check_for_resume_hand(self, mouse):
+        try:
+            resume_hand = self.resume_hand()
+        except:
+            return False
+
+        if resume_hand:
+            self.gui_signals.signal_status.emit("Resume hand")
+            mouse.mouse_action("resume_hand", self.tlc)
+            return False
+        else:
+            return True
+
     def check_for_call(self):
         self.callButton = self.has_call_button()
         self.gui_signals.signal_progressbar_increase.emit(5)
