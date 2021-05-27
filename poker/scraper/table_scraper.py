@@ -176,6 +176,13 @@ class TableScraper:
         log.info(f"Raise button found: {self.raise_button}")
         return self.raise_button
 
+    def has_bet_button(self):
+        """Check if bet button is present"""
+        self.bet_button = is_template_in_search_area(self.table_dict, self.screenshot,
+                                                       'bet_button', 'buttons_search_area')
+        log.info(f"Bet button found: {self.bet_button}")
+        return self.bet_button
+
     def has_check_button(self):
         """Check if check button is present"""
         self.check_button = is_template_in_search_area(self.table_dict, self.screenshot,

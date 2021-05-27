@@ -122,6 +122,14 @@ class TableScreenBased(Table):
     def check_for_betbutton(self):
         self.gui_signals.signal_progressbar_increase.emit(5)
         self.bet_button_found = self.has_raise_button()
+
+        if not self.bet_button_found:
+            # check for second version of bet button
+            try:
+                self.bet_button_found = self.has_bet_button()
+            except:
+                self.bet_button_found = False
+
         if self.bet_button_found:
             log.debug("Bet button found")
         else:

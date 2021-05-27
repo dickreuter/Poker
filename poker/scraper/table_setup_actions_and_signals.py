@@ -90,7 +90,7 @@ class TableSetupActionAndSignals(QObject):
             button_show_property = getattr(self.ui, 'card_' + card + '_show')
             button_show_property.clicked.connect(lambda state, x=card: self.load_image(x))
 
-        save_image_buttons = ['call_button', 'raise_button', 'check_button', 'fold_button', 'fast_fold_button',
+        save_image_buttons = ['call_button', 'raise_button', 'bet_button', 'check_button', 'fold_button', 'fast_fold_button',
                               'all_in_call_button',
                               'my_turn',
                               'lost_everything', 'im_back', 'resume_hand', 'dealer_button', 'covered_card']
@@ -402,7 +402,7 @@ class TableSetupActionAndSignals(QObject):
                        'total_pot_area', 'my_turn_search_area', 'lost_everything_search_area', 'table_cards_area',
                        'my_cards_area', 'mouse_fold', 'mouse_fast_fold', 'mouse_raise', 'mouse_full_pot', 'mouse_call',
                        'mouse_increase', 'mouse_call2', 'mouse_check', 'mouse_imback', 'mouse_resume_hand', 'mouse_half_pot', 'mouse_all_in',
-                       'buttons_search_area', 'call_button', 'raise_button', 'check_button', 'fold_button',
+                       'buttons_search_area', 'call_button', 'raise_button', 'bet_button', 'check_button', 'fold_button',
                        'fast_fold_button', 'all_in_call_button', 'my_turn', 'lost_everything', 'im_back', 'resume_hand',
                        'dealer_button', 'covered_card', 'covered_card_area', 'player_name_area', 'player_funds_area',
                        'player_pot_area', 'button_search_area', 'covered_card_area', 'player_name_area',
@@ -456,6 +456,7 @@ class TableSetupActionAndSignals(QObject):
         table_scraper.has_all_in_call_button()
         table_scraper.has_call_button()
         table_scraper.has_raise_button()
+        table_scraper.has_bet_button()
 
 
 def pop_up(title, text, details=None, ok_cancel=False):

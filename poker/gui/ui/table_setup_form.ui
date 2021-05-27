@@ -45,53 +45,6 @@
                 <layout class="QGridLayout" name="gridLayout_6">
                  <item row="1" column="0">
                   <layout class="QGridLayout" name="gridLayout_3">
-                   <item row="6" column="1">
-                    <widget class="QPushButton" name="all_in_call_button_show">
-                     <property name="enabled">
-                      <bool>false</bool>
-                     </property>
-                     <property name="text">
-                      <string>Show</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="4" column="0">
-                    <widget class="QPushButton" name="fold_button">
-                     <property name="text">
-                      <string>Fold Button</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="0" column="0">
-                    <widget class="QPushButton" name="buttons_search_area">
-                     <property name="toolTip">
-                      <string>Area where fold, call and raise buttons are located</string>
-                     </property>
-                     <property name="text">
-                      <string>Buttons search area</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="6" column="0">
-                    <widget class="QPushButton" name="all_in_call_button">
-                     <property name="toolTip">
-                      <string>Ensure to only select the portion that never changes</string>
-                     </property>
-                     <property name="text">
-                      <string>All in call Button</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="3" column="1">
-                    <widget class="QPushButton" name="check_button_show">
-                     <property name="enabled">
-                      <bool>false</bool>
-                     </property>
-                     <property name="text">
-                      <string>Show</string>
-                     </property>
-                    </widget>
-                   </item>
                    <item row="2" column="0">
                     <widget class="QPushButton" name="raise_button">
                      <property name="sizePolicy">
@@ -108,8 +61,8 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="8" column="1">
-                    <widget class="QPushButton" name="my_turn_show">
+                   <item row="4" column="1">
+                    <widget class="QPushButton" name="check_button_show">
                      <property name="enabled">
                       <bool>false</bool>
                      </property>
@@ -119,6 +72,16 @@
                     </widget>
                    </item>
                    <item row="7" column="0">
+                    <widget class="QPushButton" name="all_in_call_button">
+                     <property name="toolTip">
+                      <string>Ensure to only select the portion that never changes</string>
+                     </property>
+                     <property name="text">
+                      <string>All in call Button</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="8" column="0">
                     <widget class="QPushButton" name="my_turn_search_area">
                      <property name="toolTip">
                       <string>Select an area where to look for a single sign that it's your turn</string>
@@ -128,92 +91,8 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="5" column="0">
-                    <widget class="QPushButton" name="fast_fold_button">
-                     <property name="text">
-                      <string>Fast Fold Button</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="3" column="0">
-                    <widget class="QPushButton" name="check_button">
-                     <property name="text">
-                      <string>Check Button</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="2" column="1">
-                    <widget class="QPushButton" name="raise_button_show">
-                     <property name="enabled">
-                      <bool>false</bool>
-                     </property>
-                     <property name="text">
-                      <string>Show</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="11" column="1">
-                    <widget class="QPushButton" name="im_back_show">
-                     <property name="enabled">
-                      <bool>false</bool>
-                     </property>
-                     <property name="text">
-                      <string>Show</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="11" column="0">
-                    <widget class="QPushButton" name="im_back">
-                     <property name="toolTip">
-                      <string>Image showing I'm back, in case of tha time out</string>
-                     </property>
-                     <property name="text">
-                      <string>I'm back</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="8" column="0">
-                    <widget class="QPushButton" name="my_turn">
-                     <property name="toolTip">
-                      <string>Best select the top left corner of the call button, or any other element that is always identical for all situations when it's your turn</string>
-                     </property>
-                     <property name="text">
-                      <string>&quot;My Turn&quot; image</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="0">
-                    <widget class="QPushButton" name="call_button">
-                     <property name="toolTip">
-                      <string>Only select a small portion of the button (e.g. the call text), without the actual call amount</string>
-                     </property>
-                     <property name="text">
-                      <string>Call Button</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="10" column="1">
-                    <widget class="QPushButton" name="lost_everything_show">
-                     <property name="enabled">
-                      <bool>false</bool>
-                     </property>
-                     <property name="text">
-                      <string>Show</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="5" column="1">
-                    <widget class="QPushButton" name="fast_fold_button_show">
-                     <property name="enabled">
-                      <bool>false</bool>
-                     </property>
-                     <property name="text">
-                      <string>Show</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="4" column="1">
-                    <widget class="QPushButton" name="fold_button_show">
+                   <item row="13" column="1">
+                    <widget class="QPushButton" name="resume_hand_show">
                      <property name="enabled">
                       <bool>false</bool>
                      </property>
@@ -232,7 +111,105 @@
                      </property>
                     </widget>
                    </item>
+                   <item row="6" column="0">
+                    <widget class="QPushButton" name="fast_fold_button">
+                     <property name="text">
+                      <string>Fast Fold Button</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="5" column="0">
+                    <widget class="QPushButton" name="fold_button">
+                     <property name="text">
+                      <string>Fold Button</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="4" column="0">
+                    <widget class="QPushButton" name="check_button">
+                     <property name="text">
+                      <string>Check Button</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="13" column="0">
+                    <widget class="QPushButton" name="resume_hand">
+                     <property name="text">
+                      <string>Resume Hand</string>
+                     </property>
+                    </widget>
+                   </item>
                    <item row="9" column="0">
+                    <widget class="QPushButton" name="my_turn">
+                     <property name="toolTip">
+                      <string>Best select the top left corner of the call button, or any other element that is always identical for all situations when it's your turn</string>
+                     </property>
+                     <property name="text">
+                      <string>&quot;My Turn&quot; image</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="9" column="1">
+                    <widget class="QPushButton" name="my_turn_show">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="text">
+                      <string>Show</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="12" column="0">
+                    <widget class="QPushButton" name="im_back">
+                     <property name="toolTip">
+                      <string>Image showing I'm back, in case of tha time out</string>
+                     </property>
+                     <property name="text">
+                      <string>I'm back</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QPushButton" name="call_button">
+                     <property name="toolTip">
+                      <string>Only select a small portion of the button (e.g. the call text), without the actual call amount</string>
+                     </property>
+                     <property name="text">
+                      <string>Call Button</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="11" column="1">
+                    <widget class="QPushButton" name="lost_everything_show">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="text">
+                      <string>Show</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="12" column="1">
+                    <widget class="QPushButton" name="im_back_show">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="text">
+                      <string>Show</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="5" column="1">
+                    <widget class="QPushButton" name="fold_button_show">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="text">
+                      <string>Show</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="10" column="0">
                     <widget class="QPushButton" name="lost_everything_search_area">
                      <property name="toolTip">
                       <string>Select area to look for a sign that all funds are lost. This is usually the area of the player's left funds.</string>
@@ -242,7 +219,7 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="10" column="0">
+                   <item row="11" column="0">
                     <widget class="QPushButton" name="lost_everything">
                      <property name="toolTip">
                       <string>An image showing no funds left: e.g. 0.00</string>
@@ -252,15 +229,55 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="12" column="0">
-                    <widget class="QPushButton" name="resume_hand">
+                   <item row="0" column="0">
+                    <widget class="QPushButton" name="buttons_search_area">
+                     <property name="toolTip">
+                      <string>Area where fold, call and raise buttons are located</string>
+                     </property>
                      <property name="text">
-                      <string>Resume Hand</string>
+                      <string>Buttons search area</string>
                      </property>
                     </widget>
                    </item>
-                   <item row="12" column="1">
-                    <widget class="QPushButton" name="resume_hand_show">
+                   <item row="7" column="1">
+                    <widget class="QPushButton" name="all_in_call_button_show">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="text">
+                      <string>Show</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="2" column="1">
+                    <widget class="QPushButton" name="raise_button_show">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="text">
+                      <string>Show</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="6" column="1">
+                    <widget class="QPushButton" name="fast_fold_button_show">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="text">
+                      <string>Show</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="0">
+                    <widget class="QPushButton" name="bet_button">
+                     <property name="text">
+                      <string>Bet Button</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="1">
+                    <widget class="QPushButton" name="bet_button_show">
                      <property name="enabled">
                       <bool>false</bool>
                      </property>
@@ -364,6 +381,39 @@
                  <string>Values</string>
                 </property>
                 <layout class="QGridLayout" name="gridLayout_7">
+                 <item row="5" column="1">
+                  <widget class="QPushButton" name="current_round_pot_show">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="text">
+                    <string>Show</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="0">
+                  <widget class="QPushButton" name="raise_value">
+                   <property name="toolTip">
+                    <string>The value on the raise button. Make sure to select very narrowly and then test with the recognize number button</string>
+                   </property>
+                   <property name="text">
+                    <string>Raise Value</string>
+                   </property>
+                   <property name="flat">
+                    <bool>false</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="6" column="1">
+                  <widget class="QPushButton" name="total_pot_area_show">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="text">
+                    <string>Show</string>
+                   </property>
+                  </widget>
+                 </item>
                  <item row="2" column="0">
                   <widget class="QPushButton" name="call_value">
                    <property name="toolTip">
@@ -384,40 +434,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="4" column="0">
-                  <widget class="QPushButton" name="current_round_pot">
-                   <property name="toolTip">
-                    <string>The pot of the current rount (e.g. flop). Select the area very narrowly and test it by pressing the recognize number button</string>
-                   </property>
-                   <property name="text">
-                    <string>Current Round Pot value</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="0">
-                  <widget class="QPushButton" name="raise_value">
-                   <property name="toolTip">
-                    <string>The value on the raise button. Make sure to select very narrowly and then test with the recognize number button</string>
-                   </property>
-                   <property name="text">
-                    <string>Raise Value</string>
-                   </property>
-                   <property name="flat">
-                    <bool>false</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="0">
-                  <widget class="QPushButton" name="all_in_call_value">
-                   <property name="toolTip">
-                    <string>The all in call value may be in a different place in case the all in call button appears. Make sure to select the value narrowly and test it with the recognize number button</string>
-                   </property>
-                   <property name="text">
-                    <string>All in call value</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="5" column="0">
+                 <item row="6" column="0">
                   <widget class="QPushButton" name="total_pot_area">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -433,23 +450,23 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="5" column="1">
-                  <widget class="QPushButton" name="total_pot_area_show">
-                   <property name="enabled">
-                    <bool>false</bool>
+                 <item row="1" column="0">
+                  <widget class="QPushButton" name="all_in_call_value">
+                   <property name="toolTip">
+                    <string>The all in call value may be in a different place in case the all in call button appears. Make sure to select the value narrowly and test it with the recognize number button</string>
                    </property>
                    <property name="text">
-                    <string>Show</string>
+                    <string>All in call value</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="4" column="1">
-                  <widget class="QPushButton" name="current_round_pot_show">
-                   <property name="enabled">
-                    <bool>false</bool>
+                 <item row="5" column="0">
+                  <widget class="QPushButton" name="current_round_pot">
+                   <property name="toolTip">
+                    <string>The pot of the current rount (e.g. flop). Select the area very narrowly and test it by pressing the recognize number button</string>
                    </property>
                    <property name="text">
-                    <string>Show</string>
+                    <string>Current Round Pot value</string>
                    </property>
                   </widget>
                  </item>
