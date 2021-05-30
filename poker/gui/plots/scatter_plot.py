@@ -35,10 +35,12 @@ class ScatterPlot(FigureCanvas):
         # self.axes.set_ylim(0, .2)
 
         area = np.pi * (50 * wins['FinalFundsChange'])  # 0 to 15 point radiuses
-        green_dots = self.axes.scatter(x=wins['equity'].tolist(), y=wins['minCall'], s=area, c='green', alpha=0.5)
+        green_dots = self.axes.scatter(x=wins['equity'].astype(float).tolist(),
+                                       y=wins['minCall'].astype(float), s=area, c='green', alpha=0.5)
 
         area = np.pi * (50 * abs(losses['FinalFundsChange']))
-        red_dots = self.axes.scatter(x=losses['equity'].tolist(), y=losses['minCall'], s=area, c='red', alpha=0.5)
+        red_dots = self.axes.scatter(x=losses['equity'].astype(float).tolist(),
+                                     y=losses['minCall'].astype(float), s=area, c='red', alpha=0.5)
 
         self.axes.legend((green_dots, red_dots),
                          ('Wins', 'Losses'), loc=2)
