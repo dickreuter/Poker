@@ -20,7 +20,7 @@ from poker.gui.plots.pie_plotter import PiePlotter
 from poker.gui.plots.scatter_plot import ScatterPlot
 from poker.tools.helper import COMPUTER_NAME
 
-if not (platform == "linux" or platform == "linux2"): # pylint: disable=consider-using-in
+if not (platform == "linux" or platform == "linux2"):  # pylint: disable=consider-using-in
     matplotlib.use('Qt5Agg')
 from PyQt5.QtCore import *
 from poker.scraper.table_setup_actions_and_signals import TableSetupActionAndSignals
@@ -381,10 +381,25 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
             idx = i
             self.ui_setup.comboBox_2.setCurrentIndex(idx)
 
+        try:
+            login = config['login']
+            password = config['password']
+            db = config['db']
+        except:
+            log.error("No entries for login and password found")
+
+        self.ui_setup.db.setText(db)
+        self.ui_setup.login.setText(login)
+        self.ui_setup.password.setText(password)
+
     def save_setup(self):
         config = ConfigObj(CONFIG_FILENAME)
         config['control'] = self.ui_setup.comboBox_vm.currentText()
         config['montecarlo_timeout'] = self.ui_setup.comboBox_2.currentText()
+        config['db'] = self.ui_setup.db.text()
+        config['login'] = self.ui_setup.login.text()
+        config['password'] = self.ui_setup.password.text()
+        config['db'] = self.ui_setup.db.text()
         config.write()
         self.ui_setup.close()
 

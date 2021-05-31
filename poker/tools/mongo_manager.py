@@ -3,9 +3,10 @@ import logging
 
 import pandas as pd
 from PIL import Image
+from configobj import ConfigObj
 from pymongo import MongoClient
 
-from poker.tools.helper import COMPUTER_NAME
+from poker.tools.helper import COMPUTER_NAME, CONFIG_FILENAME
 from poker.tools.singleton import Singleton
 
 TABLES_COLLECTION = 'tables'
@@ -17,8 +18,12 @@ class MongoManager(metaclass=Singleton):
 
     def __init__(self):
         """Initialize connection as singleton"""
-        self.client = MongoClient('mongodb://neuron_poker:donald@dickreuter.com/neuron_poker')
-        self.db = self.client['neuron_poker']
+        config = ConfigObj(CONFIG_FILENAME)
+        login = config['login']
+        password = config['password']
+        db = config['db']
+        self.client = MongoClient(f'mongodb://{login}:{password}@dickreuter.com/admin')
+        self.db = self.client[db]
 
     def upload_dataframe(self, df, collection_name):
         """updload df to mongodb"""

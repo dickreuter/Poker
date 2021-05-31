@@ -108,7 +108,7 @@
       <string/>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab_5">
       <attribute name="title">
@@ -229,7 +229,7 @@
           <item>
            <widget class="QLabel" name="label_43">
             <property name="text">
-             <string>Don't log changes in my pot if the exceed this threshold (to avoid confusing the chart if the funds are not read correctly for a round)</string>
+             <string>Ignore Funds changes above threshold in logging (in cents)</string>
             </property>
             <property name="wordWrap">
              <bool>true</bool>
