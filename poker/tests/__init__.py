@@ -4,15 +4,22 @@ import os
 import sys
 from unittest.mock import MagicMock
 
+import json
 import pandas as pd
 from PIL import Image
+import requests
 
 from poker.tools.game_logger import GameLogger
 from poker.tools.strategy_handler import StrategyHandler
 from poker.tools.update_checker import UpdateChecker
 from poker import main
+from poker.tools.helper import COMPUTER_NAME, CONFIG_FILENAME
+from configobj import ConfigObj
+config = ConfigObj(CONFIG_FILENAME)
+URL = config['db']
 
-currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+currentdir = os.path.dirname(os.path.abspath(
+    inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 
@@ -25,11 +32,12 @@ def init_table(file, round_number=0, strategy='Default1'):
     p.read_strategy(strategy_override=strategy)
     h = main.History()
     u = UpdateChecker()
-    cursor = u.mongodb.internal.find()
-    c = cursor.next()
+    c = requests.post(URL + "find", params={'collection': 'internal',
+                                            'search_dict': json.dumps({})}).json()[0]
     preflop_url = c['preflop_url']
     # preflop_url = 'decisionmaker/preflop.xlsx'
-    h.preflop_sheet = pd.read_excel(preflop_url, sheet_name=None, engine='openpyxl')
+    h.preflop_sheet = pd.read_excel(
+        preflop_url, sheet_name=None, engine='openpyxl')
     game_logger = GameLogger()
     t = main.TableScreenBased(p, {}, gui_signals, game_logger, 0.0)
     t.entireScreenPIL = Image.open(file)

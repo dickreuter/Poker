@@ -1,8 +1,15 @@
+import json
 import subprocess
 import sys
 
 import requests
-from pymongo import MongoClient
+from configobj import ConfigObj
+
+from poker.tools.helper import CONFIG_FILENAME
+from poker.tools.mongo_manager import MongoManager
+
+config = ConfigObj(CONFIG_FILENAME)
+URL = config['db']
 
 
 class UpdateChecker:
@@ -11,8 +18,6 @@ class UpdateChecker:
         self.preflop_url_backup = 'decisionmaker/preflop.xlsx'
         self.file_name = "Pokerbot_installer.exe"
         self.dl_link = ""
-        self.mongoclient = MongoClient('mongodb://neuron_poker:donald@dickreuter.com/neuron_poker')
-        self.mongodb = self.mongoclient.neuron_poker
 
     def downloader(self):
         with open(self.file_name, "wb") as f:
@@ -29,12 +34,13 @@ class UpdateChecker:
                     dl += len(data)
                     f.write(data)
                     done = int(50 * dl / total_length)
-                    sys.stdout.write("\r[%s%s]" % ('=' * done, ' ' * (50 - done)))
+                    sys.stdout.write("\r[%s%s]" %
+                                     ('=' * done, ' ' * (50 - done)))
                     sys.stdout.flush()
 
     def check_update(self, version):
-        cursor = self.mongodb.internal.find()
-        c = cursor.next()
+        c = requests.post(URL + "find", params={'collection': 'internal',
+                                                'search_dict': json.dumps({})}).json()[0]
         current_version = c['current_version']
         self.dl_link = c['dl']
         latest_updates = c['latest_updates']
@@ -50,13 +56,14 @@ class UpdateChecker:
                 self.downloader()
                 subprocess.call(["start", self.file_name], shell=True)
             else:
-                print("Please get the latest version by either updating your repo or by downloading the latest binaries. "
-                      "\nThis version is out of date and may not work correcly or you may be missing important updates"
-                      " to ensure the bot plays the best possible strategy.")
+                print(
+                    "Please get the latest version by either updating your repo or by downloading the latest binaries. "
+                    "\nThis version is out of date and may not work correcly or you may be missing important updates"
+                    " to ensure the bot plays the best possible strategy.")
             sys.exit()
 
     def get_preflop_sheet_url(self):
-        cursor = self.mongodb.internal.find()
-        c = cursor.next()
+        mongo = MongoManager()
+        c = mongo.find('internal', {})[0]
         self.preflop_url = c['preflop_url']
         return self.preflop_url, self.preflop_url_backup

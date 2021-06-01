@@ -385,7 +385,7 @@ class TableSetupActionAndSignals(QObject):
                       f"Are you sure you want to delete the table {self.table_name}? This cannot be undone.",
                       ok_cancel=True)
         if resp == 1024:
-            mongo.delete_table(table_name=self.table_name)
+            mongo.delete_table(table_name=self.table_name, owner=COMPUTER_NAME)
 
     def load(self):
         self.table_name = self.ui.table_name.currentText()

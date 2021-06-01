@@ -1,23 +1,23 @@
 import datetime
+import json
 import re
 
+import requests
 from configobj import ConfigObj
-from pymongo import MongoClient
-
 from poker.tools.helper import CONFIG_FILENAME
 
+config = ConfigObj(CONFIG_FILENAME)
+URL = config['db']
 
 class StrategyHandler:
     def __init__(self):
-        self.mongo_client = MongoClient('mongodb://neuron_poker:donald@dickreuter.com/neuron_poker')
-        self.mongodb = self.mongo_client.neuron_poker
         self.current_strategy = None
         self.selected_strategy = None
         self.new_strategy_name = None
         self.modified = False
 
     def get_playable_strategy_list(self):
-        lst = list(self.mongodb.strategies.distinct("Strategy"))[::-1]
+        lst = requests.post(URL + "get_playable_strategy_list").json()
         return lst
 
     def check_defaults(self):
@@ -104,11 +104,15 @@ class StrategyHandler:
         last_strategy = config['last_strategy']
         self.current_strategy = last_strategy if strategy_override == '' else strategy_override
         try:
-            cursor = self.mongodb.strategies.find({'Strategy': self.current_strategy})
-            self.selected_strategy = cursor.next()
+            output = requests.post(URL + "find", params={'collection': 'strategies',
+                                                    'search_dict': json.dumps({'Strategy': 
+                                                        self.current_strategy})}).json()[0]
         except:
-            cursor = self.mongodb.strategies.find({'Strategy': "Default"})
-            self.selected_strategy = cursor.next()
+            output = requests.post(URL + "find", params={'collection': 'strategies',
+                                                    'search_dict': json.dumps({'Strategy': 
+                                                        'Default'})}).json()[0]
+        self.selected_strategy = output
+
         self.check_defaults()
         return self.selected_strategy
 
@@ -122,24 +126,25 @@ class StrategyHandler:
         self.selected_strategy['Strategy'] = self.new_strategy_name
         self.current_strategy = self.new_strategy_name
         del self.selected_strategy['_id']
-        self.mongodb.strategies.insert_one(self.selected_strategy)
+        response = requests.post(
+            URL + "insert_dict", params={'rec': self.selected_strategy, 'col': 'strategies'})
 
     def save_strategy(self, strategy_dict):
-        del strategy_dict['_id']
-        self.mongodb.strategies.insert_one(strategy_dict)
+        response = requests.post(
+            URL + "insert_dict", params={'rec': strategy_dict, 'col': 'strategies'})
 
     def update_strategy(self, strategy):
         try:
             del strategy['_id']
         except:
             pass
-        self.mongodb.strategies.update_one(
-            {"Strategy": strategy['Strategy']},
-            {"$set": strategy}
-        )
+        response = requests.post(
+            URL + "update_strategy", params={'name': strategy['Strategy'],
+                                             'content': strategy})
 
     def create_new_strategy(self, strategy):
-        self.mongodb.strategies.insert_one(strategy)
+        response = requests.post(
+            URL + "insert_dict", params={'rec': strategy, 'col': 'strategies'})
 
     def modify_strategy(self, elementName, change):
         self.selected_strategy[elementName] = str(round(float(self.selected_strategy[elementName]) + change, 2))

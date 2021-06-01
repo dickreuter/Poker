@@ -1,16 +1,20 @@
+import base64
 import io
+import json
 import logging
 
-import pandas as pd
-from PIL import Image
+import requests
 from configobj import ConfigObj
-from pymongo import MongoClient
-
+from fastapi.encoders import jsonable_encoder
+from PIL import Image
 from poker.tools.helper import COMPUTER_NAME, CONFIG_FILENAME
 from poker.tools.singleton import Singleton
 
 TABLES_COLLECTION = 'tables'
 log = logging.getLogger(__name__)
+
+config = ConfigObj(CONFIG_FILENAME)
+URL = config['db']
 
 
 class MongoManager(metaclass=Singleton):
@@ -18,44 +22,44 @@ class MongoManager(metaclass=Singleton):
 
     def __init__(self):
         """Initialize connection as singleton"""
-        config = ConfigObj(CONFIG_FILENAME)
-        db = config['db']
-        login = config['login']
-        if db != "neuron_poker":
-            password = str(-hash(config['password']))
-        else:
-            password = config['password']
-        self.client = MongoClient(f'mongodb://{login}:{password}@dickreuter.com/admin')
-        self.db = self.client[db]
+        self.login = config['login']
+        self.password = config['password']
 
-    def upload_dataframe(self, df, collection_name):
-        """updload df to mongodb"""
-        self.db[collection_name].insert_many(df.to_dict('records'))
+    def save_image(self, table_name, label, image):
+        """
+        save market image in mongodb
 
-    def get_dataframe(self, collection_name, max_rows=0):
-        """download dict from mongodb and convert to dataframe"""
-        df = pd.DataFrame(list(self.db[collection_name].find().limit(max_rows)))
-        return df
+        Args:
+            table_name: str
+            label: str
+            image: byte
+
+        """
+        encoded = jsonable_encoder(image, custom_encoder={
+            bytes: lambda v: base64.b64encode(v).decode('utf-8')})
+
+        response = requests.post(URL + "update_table_image", params={'image': encoded,
+                                                                     'label': label,
+                                                                     'table_name': table_name}).json()
 
     def update_table_image(self, pil_image, label, table_name):
         """update table image"""
         img_byte_array = io.BytesIO()
         pil_image.save(img_byte_array, format='PNG')
         binary_image = img_byte_array.getvalue()
-        self.db[TABLES_COLLECTION].update({'table_name': table_name},
-                                          {'$set': {label: binary_image}}, upsert=True)
+        encoded = jsonable_encoder(binary_image, custom_encoder={
+                                   bytes: lambda v: base64.b64encode(v).decode('utf-8')})
+        response = requests.post(URL + "update_table_image", params={'pil_image': encoded,
+                                                                     'label': label,
+                                                                     'table_name': table_name}).json()
+        log.info(response)
+        return True
 
     def load_table_image(self, image_name, table_name):
         """load table image"""
-        log.debug("started")
-
-        try:
-            table_dict = list(self.db[TABLES_COLLECTION].find({'table_name': table_name}, {"_id": 0}))[0]
-            loaded_image = Image.open(io.BytesIO(table_dict[image_name]))
-            loaded_image.save('log/pics/loaded_image.png')
-        except:
-            raise RuntimeError("No image found for given name.")
-        log.debug("finished")
+        image = requests.post(URL + "load_table_image", params={'image_name': image_name,
+                                                                'table_name': table_name}).json()
+        loaded_image = Image.open(io.BytesIO(base64.b64decode(image)))
         return loaded_image
 
     def get_table(self, table_name):
@@ -69,10 +73,21 @@ class MongoManager(metaclass=Singleton):
 
         """
         try:
-            table = list(self.db[TABLES_COLLECTION].find({'table_name': table_name}, {"_id": 0}))[0]
+            table = requests.post(
+                URL + "get_table", params={'table_name': table_name}).json()
         except IndexError:
             raise RuntimeError("No table found for given name.")
-        return table
+
+        table_converted = {}
+        for key, value in table.items():
+            if isinstance(value, (dict, int, list, float)):
+                table_converted[key] = value
+            elif value[0:2] == 'iV':
+                table_converted[key] = base64.b64decode(value)
+            else:
+                table_converted[key] = value
+
+        return table_converted
 
     def get_table_owner(self, table_name):
         """
@@ -84,8 +99,9 @@ class MongoManager(metaclass=Singleton):
         Returns: dict
 
         """
-        table = list(self.db[TABLES_COLLECTION].find({'table_name': table_name}, {"_owner": 1}))
-        return table[0]['_owner']
+        owner = requests.post(URL + "get_table_owner",
+                              params={'table_name': table_name}).json()
+        return owner
 
     def get_available_tables(self, computer_name):
         """
@@ -94,19 +110,13 @@ class MongoManager(metaclass=Singleton):
         Returns: list
 
         """
-        tables = list(self.db[TABLES_COLLECTION].distinct('table_name',
-                                                          {"$or": [{"_owner": computer_name},
-                                                                   {"_plays": {"$gte": 1}}]}))
+        tables = requests.post(URL + "get_available_tables",
+                               params={'computer_name': computer_name}).json()
         return tables
 
     def increment_plays(self, table_name):
-        table = list(self.db[TABLES_COLLECTION].find({'table_name': table_name}, {"_plays": 1}))
-        try:
-            new_plays = table[0]['_plays'] + 1
-        except:
-            new_plays = 1
-        self.db[TABLES_COLLECTION].update({'table_name': table_name},
-                                          {'$set': {"_plays": new_plays}})
+        requests.post(URL + "increment_plays",
+                      params={'table_name': table_name})
 
     def find(self, collection, search_dict):
         """
@@ -119,21 +129,9 @@ class MongoManager(metaclass=Singleton):
         Returns:
 
         """
-        output = self.db[collection].find(search_dict)
+        output = requests.post(URL + "find", params={'collection': collection,
+                                                     'search_dict': json.dumps(search_dict)}).json()
         return output
-
-    def save_image(self, table_name, label, image):
-        """
-        save market image in mongodb
-
-        Args:
-            table_name: str
-            label: str
-            image: byte
-
-        """
-        self.db[TABLES_COLLECTION].update({'table_name': table_name},
-                                          {'$set': {label: image}}, upsert=True)
 
     def create_new_table(self, table_name):
         """
@@ -143,12 +141,8 @@ class MongoManager(metaclass=Singleton):
             table_name: str
 
         """
-        if table_name == "":
-            return False
-        if table_name in self.available_tables():
-            return False
-        self.db[TABLES_COLLECTION].update({'table_name': table_name},
-                                          {'$set': {"_owner": COMPUTER_NAME}}, upsert=True)
+        requests.post(URL + "create_new_table", params={'table_name': table_name,
+                                                        'computer_name': COMPUTER_NAME})
         return True
 
     def create_new_table_from_old(self, table_name, old_table_name):
@@ -160,29 +154,18 @@ class MongoManager(metaclass=Singleton):
             old_table_name: str
 
         """
-        if table_name == "":
-            return False
-        if table_name in self.available_tables():
-            return False
-        dic = self.get_table(old_table_name)
-        dic['_owner'] = COMPUTER_NAME
-        dic['_plays'] = 0
-        dic['table_name'] = table_name
-        self.db[TABLES_COLLECTION].insert_one(dic)
-        return True
+        requests.post(URL + "create_new_table_from_old", params={'table_name': table_name,
+                                                                 'old_table_name': old_table_name,
+                                                                 'computer_name': COMPUTER_NAME}).json()
 
     def save_coordinates(self, table_name, label, coordinates_dict):
         """Save coordinates for a given label for a given table"""
-        log.info(f"Saving to mongodb.... {coordinates_dict}")
-        self.db[TABLES_COLLECTION].update({'table_name': table_name},
-                                          {'$set': {label: coordinates_dict}}, upsert=True)
+        requests.post(URL + "save_coordinates", params={'table_name': table_name,
+                                                        'label': label,
+                                                        'coordinates_dict': coordinates_dict})
         log.info("Coordinates saved")
 
-    def available_tables(self):
-        """Available tables"""
-        return self.db[TABLES_COLLECTION].distinct("table_name")
-
-    def delete_table(self, table_name):
+    def delete_table(self, table_name, owner):
         """Delete a table"""
-        dic = {'table_name': table_name}
-        self.db[TABLES_COLLECTION].delete_one(dic)
+        requests.post(URL + "delete_table", params={'table_name': table_name,
+                                                    'owner' : owner})

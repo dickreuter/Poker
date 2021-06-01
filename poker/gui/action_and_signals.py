@@ -386,7 +386,7 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
             password = config['password']
             db = config['db']
         except:
-            log.error("No entries for login and password found")
+            pass
 
         self.ui_setup.db.setText(db)
         self.ui_setup.login.setText(login)
