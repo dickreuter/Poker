@@ -346,6 +346,7 @@ class GameLogger(metaclass=Singleton):
 
     def get_played_strategy_list(self):
         lst = list(self.mongodb.games.distinct("Template"))
+        lst = [item for item in lst if '*' not in item]
         lst.append('.*')
         return lst
 

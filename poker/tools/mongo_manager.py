@@ -19,9 +19,12 @@ class MongoManager(metaclass=Singleton):
     def __init__(self):
         """Initialize connection as singleton"""
         config = ConfigObj(CONFIG_FILENAME)
-        login = config['login']
-        password = config['password']
         db = config['db']
+        login = config['login']
+        if db != "neuron_poker":
+            password = str(-hash(config['password']))
+        else:
+            password = config['password']
         self.client = MongoClient(f'mongodb://{login}:{password}@dickreuter.com/admin')
         self.db = self.client[db]
 

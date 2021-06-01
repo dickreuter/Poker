@@ -38,15 +38,21 @@ class UpdateChecker:
         current_version = c['current_version']
         self.dl_link = c['dl']
         latest_updates = c['latest_updates']
+
         if current_version > version:
-            print("Downloading latest version of the DeepMind Pokerbot...")
-            print("\n")
-            print("Version changes:")
-            for latest_update in latest_updates:
-                print("* " + latest_update)
-            print("\n")
-            self.downloader()
-            subprocess.call(["start", self.file_name], shell=True)
+            if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+                print("Downloading latest version of the DeepMind Pokerbot...")
+                print("\n")
+                print("Version changes:")
+                for latest_update in latest_updates:
+                    print("* " + latest_update)
+                print("\n")
+                self.downloader()
+                subprocess.call(["start", self.file_name], shell=True)
+            else:
+                print("Please get the latest version by either updating your repo or by downloading the latest binaries. "
+                      "\nThis version is out of date and may not work correcly or you may be missing important updates"
+                      " to ensure the bot plays the best possible strategy.")
             sys.exit()
 
     def get_preflop_sheet_url(self):

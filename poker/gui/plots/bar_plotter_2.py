@@ -34,12 +34,15 @@ class BarPlotter2(FigureCanvas):
         width = 1  # the width of the bars: can also be len(x) sequence
 
         self.p0 = self.axes.bar(ind, Bluff, width, color='y')
-        self.p1 = self.axes.bar(ind, BP, width, color='k', bottom=Bluff)
-        self.p2 = self.axes.bar(ind, BHP, width, color='b', bottom=[sum(x) for x in zip(Bluff, BP)])
-        self.p3 = self.axes.bar(ind, Bet, width, color='c', bottom=[sum(x) for x in zip(Bluff, BP, BHP)])
-        self.p4 = self.axes.bar(ind, Call, width, color='g', bottom=[sum(x) for x in zip(Bluff, BP, BHP, Bet)])
-        self.p5 = self.axes.bar(ind, Check, width, color='w', bottom=[sum(x) for x in zip(Bluff, BP, BHP, Bet, Call)])
-        self.p6 = self.axes.bar(ind, Fold, width, color='r',
+        self.p1 = self.axes.bar(ind, BP, width, color='k', edgecolor='black', bottom=Bluff)
+        self.p2 = self.axes.bar(ind, BHP, width, color='b', edgecolor='black', bottom=[sum(x) for x in zip(Bluff, BP)])
+        self.p3 = self.axes.bar(ind, Bet, width, color='c', edgecolor='black',
+                                bottom=[sum(x) for x in zip(Bluff, BP, BHP)])
+        self.p4 = self.axes.bar(ind, Call, width, color='g', edgecolor='black',
+                                bottom=[sum(x) for x in zip(Bluff, BP, BHP, Bet)])
+        self.p5 = self.axes.bar(ind, Check, width, color='w', edgecolor='black',
+                                bottom=[sum(x) for x in zip(Bluff, BP, BHP, Bet, Call)])
+        self.p6 = self.axes.bar(ind, Fold, width, color='r', edgecolor='black',
                                 bottom=[sum(x) for x in zip(Bluff, BP, BHP, Bet, Call, Check)])
 
         self.axes.set_ylabel('Profitability')
