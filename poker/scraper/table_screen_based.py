@@ -100,7 +100,7 @@ class TableScreenBased(Table):
         try:
             resume_hand = self.resume_hand()
         except:
-            return False
+            return True
 
         if resume_hand:
             self.gui_signals.signal_status.emit("Resume hand")
