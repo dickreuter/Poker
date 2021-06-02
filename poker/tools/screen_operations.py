@@ -51,9 +51,9 @@ def get_table_template_image(table_name='default', label='topleft_corner'):
     return template_cv2
 
 
-def get_ocr_float(img_orig):
+def get_ocr_float(img_orig, fast=False):
     """Return float value from image. -1.0f when OCR failed"""
-    return get_ocr_number(img_orig)
+    return get_ocr_number(img_orig, fast)
 
 
 def prepareImage(img_orig, binarize=True):
@@ -91,7 +91,7 @@ def prepareImage(img_orig, binarize=True):
     return img_resized
 
 
-def get_ocr_number(img_orig):
+def get_ocr_number(img_orig, fast=False):
     """Return float value from image. -1.0f when OCR failed"""
     img_resized = prepareImage(img_orig)
     lst = []
@@ -104,6 +104,8 @@ def get_ocr_number(img_orig):
     try:
         return float(lst[-1])
     except ValueError:
+        if fast:
+            return -1
         images = [img_orig, img_resized]  # , img_min, img_mod, img_med, img_sharp]
         i = 0
         while i < 2:
@@ -208,7 +210,7 @@ def is_template_in_search_area(table_dict, screenshot, image_name, image_area, p
                                    search_area['x1'], search_area['y1'], search_area['x2'], search_area['y2'])
 
 
-def ocr(screenshot, image_area, table_dict, player=None):
+def ocr(screenshot, image_area, table_dict, player=None, fast=False):
     """
     get ocr of area of screenshot
 
@@ -233,4 +235,4 @@ def ocr(screenshot, image_area, table_dict, player=None):
     else:
         search_area = table_dict[image_area]
     cropped_screenshot = screenshot.crop((search_area['x1'], search_area['y1'], search_area['x2'], search_area['y2']))
-    return get_ocr_float(cropped_screenshot)
+    return get_ocr_float(cropped_screenshot, fast)
