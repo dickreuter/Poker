@@ -144,7 +144,7 @@ class TableScraper:
 
     def get_pots(self):
         """Get current and total pot"""
-        self.current_round_pot = ocr(self.screenshot, 'current_round_pot', self.table_dict)
+        self.current_round_pot = ocr(self.screenshot, 'current_round_pot', self.table_dict, fast=True)
         log.info(f"Current round pot {self.current_round_pot}")
         self.total_pot = ocr(self.screenshot, 'total_pot_area', self.table_dict)
         log.info(f"Total pot {self.total_pot}")

@@ -35,7 +35,7 @@ warnings.filterwarnings("ignore", message="All-NaN axis encountered")
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-version = 4.48
+version = 4.49
 ui = None
 
 
@@ -135,11 +135,6 @@ class ThreadManager(threading.Thread):
 
         while True:
             # reload table if changed
-            config = ConfigObj(CONFIG_FILENAME)
-            if table_scraper_name != config['table_scraper_name']:
-                table_scraper_name = config['table_scraper_name']
-                log.info(f"Loading table scraper info for {table_scraper_name}")
-                table_dict = mongo.get_table(table_scraper_name)
 
             if self.gui_signals.pause_thread:
                 while self.gui_signals.pause_thread:
@@ -149,6 +144,12 @@ class ThreadManager(threading.Thread):
 
             ready = False
             while not ready:
+                config = ConfigObj(CONFIG_FILENAME)
+                if table_scraper_name != config['table_scraper_name']:
+                    table_scraper_name = config['table_scraper_name']
+                    log.info(f"Loading table scraper info for {table_scraper_name}")
+                    table_dict = mongo.get_table(table_scraper_name)
+
                 strategy.read_strategy()
                 table = TableScreenBased(strategy, table_dict, self.gui_signals, self.game_logger, version)
                 mouse = MouseMoverTableBased(table_dict)

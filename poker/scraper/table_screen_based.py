@@ -578,7 +578,11 @@ class TableScreenBased(Table):
         if h.previousCards != self.mycards:
             log.info("+++========================== NEW HAND ==========================+++")
             self.time_new_cards_recognised = datetime.datetime.utcnow()
-            self.get_game_number_on_screen(h)
+            if p.selected_strategy['collusion'] == 1:
+                self.get_game_number_on_screen(h)
+            else:
+                self.Game_Number = 0
+                h.game_number_on_screen = 0
             self.get_my_funds(h, p)
 
             h.lastGameID = str(h.GameID)
@@ -613,17 +617,14 @@ class TableScreenBased(Table):
         return True
 
     def upload_collusion_wrapper(self, p, h):
-        if not (h.GameID, self.gameStage) in h.uploader:
-            h.uploader[(h.GameID, self.gameStage)] = True
-            self.game_logger.upload_collusion_data(h.game_number_on_screen, self.mycards, p, self.gameStage)
+        if p.selected_strategy['collusion'] == 1:
+            if not (h.GameID, self.gameStage) in h.uploader:
+                h.uploader[(h.GameID, self.gameStage)] = True
+                self.game_logger.upload_collusion_data(h.game_number_on_screen, self.mycards, p, self.gameStage)
         return True
 
     def get_game_number_on_screen(self, h):
-
         self.Game_Number = self.get_game_number_on_screen2()
-
         h.game_number_on_screen = self.Game_Number
-
         log.debug("Game Number: " + str(self.Game_Number))
-
         return True
