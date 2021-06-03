@@ -131,7 +131,7 @@ class StrategyHandler:
 
     def save_strategy(self, strategy_dict):
         response = requests.post(
-            URL + "insert_dict", params={'rec': strategy_dict, 'col': 'strategies'})
+            URL + "save_strategy", params={'strategy': json.dumps(strategy_dict)})
 
     def update_strategy(self, strategy):
         try:
