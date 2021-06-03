@@ -65,7 +65,6 @@ class GameLogger(metaclass=Singleton):
         rec = self.FinalDataFrame.to_dict('records')[0]
         rec['other_players'] = t.other_players
         rec['logging_timestamp'] = datetime.datetime.utcnow()
-        del rec['_id']
         response = requests.post(
             URL + "insert_dict", params={'rec': jsonable_encoder(rec), 'col': 'rounds'})
 
