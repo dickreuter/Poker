@@ -66,7 +66,7 @@ class GameLogger(metaclass=Singleton):
         rec['other_players'] = t.other_players
         rec['logging_timestamp'] = datetime.datetime.utcnow()
         response = requests.post(
-            URL + "insert_log", params={'rec': json.dumps(rec, default=str), 'col': 'rounds'})
+            URL + "insert_round", params={'rec': json.dumps(rec, default=str), 'col': 'rounds'})
 
     def mark_last_game(self, t, h, p):
         # updates the last game after it becomes know if it was won or lost
@@ -118,7 +118,7 @@ class GameLogger(metaclass=Singleton):
 
     def insert_log(self, rec):
         response = requests.post(
-            URL + "insert_dict", params={'rec': jsonable_encoder(rec), 'col': 'games'})
+            URL + "insert_games", params={'rec': json.dumps(rec)})
 
     def insert_collusion(self, rec):
         response = requests.post(
@@ -142,7 +142,13 @@ class GameLogger(metaclass=Singleton):
 
         response = requests.post(URL + "get_stacked_bar_data",
                                  params={'p_value': p_value, 'chartType': chartType}).json()
-        return response
+        data = json.loads(response['d'])
+        k = data.keys()
+        v = data.values()
+        k1 = [eval(i) for i in k]
+        self.d = dict(zip(*[k1, v]))
+
+        return response['final_data']
 
     def get_histrogram_data(self, p_name, p_value, game_stage, decision):
 
