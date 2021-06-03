@@ -66,7 +66,7 @@ class GameLogger(metaclass=Singleton):
         rec['other_players'] = t.other_players
         rec['logging_timestamp'] = datetime.datetime.utcnow()
         response = requests.post(
-            URL + "insert_dict", params={'rec': jsonable_encoder(rec), 'col': 'rounds'})
+            URL + "insert_log", params={'rec': json.dumps(rec, default=str), 'col': 'rounds'})
 
     def mark_last_game(self, t, h, p):
         # updates the last game after it becomes know if it was won or lost
