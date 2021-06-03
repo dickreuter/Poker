@@ -9,6 +9,7 @@ from poker.tools.helper import CONFIG_FILENAME
 config = ConfigObj(CONFIG_FILENAME)
 URL = config['db']
 
+
 class StrategyHandler:
     def __init__(self):
         self.current_strategy = None
@@ -105,19 +106,20 @@ class StrategyHandler:
         self.current_strategy = last_strategy if strategy_override == '' else strategy_override
         try:
             output = requests.post(URL + "find", params={'collection': 'strategies',
-                                                    'search_dict': json.dumps({'Strategy': 
-                                                        self.current_strategy})}).json()[0]
+                                                         'search_dict': json.dumps({'Strategy':
+                                                                                        self.current_strategy})}).json()[
+                0]
         except:
             output = requests.post(URL + "find", params={'collection': 'strategies',
-                                                    'search_dict': json.dumps({'Strategy': 
-                                                        'Default'})}).json()[0]
+                                                         'search_dict': json.dumps({'Strategy':
+                                                                                        'Default'})}).json()[0]
         self.selected_strategy = output
 
         self.check_defaults()
         return self.selected_strategy
 
     def save_strategy_genetic_algorithm(self):
-        m= re.search(r'([a-zA-Z?-_]+)([0-9]+)', self.current_strategy)
+        m = re.search(r'([a-zA-Z?-_]+)([0-9]+)', self.current_strategy)
         stringPart = m.group(1)
         numberPart = int(m.group(2))
         numberPart += 1
@@ -127,7 +129,7 @@ class StrategyHandler:
         self.current_strategy = self.new_strategy_name
         del self.selected_strategy['_id']
         response = requests.post(
-            URL + "insert_dict", params={'rec': self.selected_strategy, 'col': 'strategies'})
+            URL + "save_strategy", params={'strategy': json.dumps(self.selected_strategy)})
 
     def save_strategy(self, strategy_dict):
         response = requests.post(
@@ -140,11 +142,7 @@ class StrategyHandler:
             pass
         response = requests.post(
             URL + "update_strategy", params={'name': strategy['Strategy'],
-                                             'content': strategy})
-
-    def create_new_strategy(self, strategy):
-        response = requests.post(
-            URL + "insert_dict", params={'rec': strategy, 'col': 'strategies'})
+                                             'content': json.dumps(strategy)})
 
     def modify_strategy(self, elementName, change):
         self.selected_strategy[elementName] = str(round(float(self.selected_strategy[elementName]) + change, 2))
