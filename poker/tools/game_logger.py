@@ -65,8 +65,9 @@ class GameLogger(metaclass=Singleton):
         rec = self.FinalDataFrame.to_dict('records')[0]
         rec['other_players'] = t.other_players
         rec['logging_timestamp'] = datetime.datetime.utcnow()
+        del rec['logger']
         response = requests.post(
-            URL + "insert_round", params={'rec': json.dumps(rec, default=str), 'col': 'rounds'})
+            URL + "insert_round", params={'rec': json.dumps(rec, default=str)})
 
     def mark_last_game(self, t, h, p):
         # updates the last game after it becomes know if it was won or lost
