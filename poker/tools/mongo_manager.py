@@ -162,7 +162,7 @@ class MongoManager(metaclass=Singleton):
         """Save coordinates for a given label for a given table"""
         requests.post(URL + "save_coordinates", params={'table_name': table_name,
                                                         'label': label,
-                                                        'coordinates_dict': coordinates_dict})
+                                                        'coordinates_dict': json.dumps(coordinates_dict)})
         log.info("Coordinates saved")
 
     def delete_table(self, table_name, owner):
