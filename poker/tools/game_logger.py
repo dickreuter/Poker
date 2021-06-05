@@ -67,7 +67,7 @@ class GameLogger(metaclass=Singleton):
         rec['logging_timestamp'] = datetime.datetime.utcnow()
         del rec['logger']
         response = requests.post(
-            URL + "insert_round", params={'rec': json.dumps(rec, default=str)})
+            URL + "insert_round", json={'rec': json.dumps(rec, default=str)})
 
     def mark_last_game(self, t, h, p):
         # updates the last game after it becomes know if it was won or lost
@@ -119,7 +119,7 @@ class GameLogger(metaclass=Singleton):
 
     def insert_log(self, rec):
         response = requests.post(
-            URL + "insert_games", params={'rec': json.dumps(rec)})
+            URL + "insert_games", json={'rec': json.dumps(rec)})
 
     def insert_collusion(self, rec):
         response = requests.post(

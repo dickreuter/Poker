@@ -1,9 +1,13 @@
 import datetime
 import json
 import re
+import urllib
+from urllib.parse import urlencode
 
 import requests
 from configobj import ConfigObj
+from fastapi.encoders import jsonable_encoder
+
 from poker.tools.helper import CONFIG_FILENAME
 
 config = ConfigObj(CONFIG_FILENAME)
@@ -129,11 +133,11 @@ class StrategyHandler:
         self.current_strategy = self.new_strategy_name
         del self.selected_strategy['_id']
         response = requests.post(
-            URL + "save_strategy", params={'strategy': json.dumps(self.selected_strategy)})
+            URL + "save_strategy", json={'strategy': json.dumps(self.selected_strategy)})
 
     def save_strategy(self, strategy_dict):
         response = requests.post(
-            URL + "save_strategy", params={'strategy': json.dumps(strategy_dict)})
+            URL + "save_strategy", json={'strategy': json.dumps(strategy_dict)})
 
     def update_strategy(self, strategy):
         try:
@@ -141,8 +145,8 @@ class StrategyHandler:
         except:
             pass
         response = requests.post(
-            URL + "update_strategy", params={'name': strategy['Strategy'],
-                                             'content': json.dumps(strategy)})
+            URL + "update_strategy", json={'name': strategy['Strategy'],
+                                             'strategy': json.dumps(strategy)})
 
     def modify_strategy(self, elementName, change):
         self.selected_strategy[elementName] = str(round(float(self.selected_strategy[elementName]) + change, 2))

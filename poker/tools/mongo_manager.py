@@ -38,9 +38,9 @@ class MongoManager(metaclass=Singleton):
         encoded = jsonable_encoder(image, custom_encoder={
             bytes: lambda v: base64.b64encode(v).decode('utf-8')})
 
-        response = requests.post(URL + "update_table_image", params={'image': encoded,
-                                                                     'label': label,
-                                                                     'table_name': table_name}).json()
+        response = requests.post(URL + "update_table_image", json={'pil_image': encoded,
+                                                                   'label': label,
+                                                                   'table_name': table_name}).json()
 
     def update_table_image(self, pil_image, label, table_name):
         """update table image"""
@@ -48,10 +48,10 @@ class MongoManager(metaclass=Singleton):
         pil_image.save(img_byte_array, format='PNG')
         binary_image = img_byte_array.getvalue()
         encoded = jsonable_encoder(binary_image, custom_encoder={
-                                   bytes: lambda v: base64.b64encode(v).decode('utf-8')})
-        response = requests.post(URL + "update_table_image", params={'pil_image': encoded,
-                                                                     'label': label,
-                                                                     'table_name': table_name}).json()
+            bytes: lambda v: base64.b64encode(v).decode('utf-8')})
+        response = requests.post(URL + "update_table_image", json={'pil_image': encoded,
+                                                                   'label': label,
+                                                                   'table_name': table_name}).json()
         log.info(response)
         return True
 
@@ -168,4 +168,4 @@ class MongoManager(metaclass=Singleton):
     def delete_table(self, table_name, owner):
         """Delete a table"""
         requests.post(URL + "delete_table", params={'table_name': table_name,
-                                                    'owner' : owner})
+                                                    'owner': owner})
