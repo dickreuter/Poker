@@ -130,7 +130,7 @@ class StrategyHandler:
         self.selected_strategy = output
 
         self.check_defaults()
-        return self.selected_strategy
+        return True
 
     def save_strategy_genetic_algorithm(self):
         config = ConfigObj(CONFIG_FILENAME)

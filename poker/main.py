@@ -35,7 +35,7 @@ warnings.filterwarnings("ignore", message="All-NaN axis encountered")
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-version = 6.01
+version = 6.02
 ui = None
 
 class ThreadManager(threading.Thread):
@@ -149,7 +149,6 @@ class ThreadManager(threading.Thread):
                     log.info(f"Loading table scraper info for {table_scraper_name}")
                     table_dict = mongo.get_table(table_scraper_name)
 
-                strategy.read_strategy()
                 table = TableScreenBased(strategy, table_dict, self.gui_signals, self.game_logger, version)
                 mouse = MouseMoverTableBased(table_dict)
                 mouse.move_mouse_away_from_buttons_jump()
@@ -164,6 +163,7 @@ class ThreadManager(threading.Thread):
                         table.get_new_hand(mouse, history, strategy) and \
                         table.get_table_cards(history) and \
                         table.upload_collusion_wrapper(strategy, history) and \
+                        strategy.read_strategy() and \
                         table.get_dealer_position() and \
                         table.check_fast_fold(history, strategy, mouse) and \
                         table.check_for_button() and \
