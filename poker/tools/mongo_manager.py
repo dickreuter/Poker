@@ -118,19 +118,18 @@ class MongoManager(metaclass=Singleton):
         requests.post(URL + "increment_plays",
                       params={'table_name': table_name})
 
-    def find(self, collection, search_dict):
+    def get_rounds(self, game_id):
         """
-        Find entry in mongodb
+        Find latest rounds
 
         Args:
-            collection: str
-            search_dict: dict
+            game_id: str
 
         Returns:
+            rounds of current hand
 
         """
-        output = requests.post(URL + "find", params={'collection': collection,
-                                                     'search_dict': json.dumps(search_dict)}).json()
+        output = requests.post(URL + "get_rounds", params={'game_id': game_id}).json()
         return output
 
     def create_new_table(self, table_name):

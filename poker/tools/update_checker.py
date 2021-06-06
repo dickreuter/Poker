@@ -39,8 +39,7 @@ class UpdateChecker:
                     sys.stdout.flush()
 
     def check_update(self, version):
-        c = requests.post(URL + "find", params={'collection': 'internal',
-                                                'search_dict': json.dumps({})}).json()[0]
+        c = requests.post(URL + "get_internal").json()[0]
         current_version = c['current_version']
         self.dl_link = c['dl']
         latest_updates = c['latest_updates']
@@ -63,7 +62,6 @@ class UpdateChecker:
             sys.exit()
 
     def get_preflop_sheet_url(self):
-        mongo = MongoManager()
-        c = mongo.find('internal', {})[0]
+        c = requests.post(URL + "get_internal").json()[0]
         self.preflop_url = c['preflop_url']
         return self.preflop_url, self.preflop_url_backup

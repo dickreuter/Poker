@@ -32,8 +32,7 @@ def init_table(file, round_number=0, strategy='Default1'):
     p.read_strategy(strategy_override=strategy)
     h = main.History()
     u = UpdateChecker()
-    c = requests.post(URL + "find", params={'collection': 'internal',
-                                            'search_dict': json.dumps({})}).json()[0]
+    c = requests.post(URL + "get_internal")[0]
     preflop_url = c['preflop_url']
     # preflop_url = 'decisionmaker/preflop.xlsx'
     h.preflop_sheet = pd.read_excel(

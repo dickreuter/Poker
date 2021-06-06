@@ -599,16 +599,19 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
         if (name != "" and name not in self.playable_list) or update:
             strategy_dict = self.update_dictionary(name)
             if update:
-                self.p_edited.update_strategy(strategy_dict)
+                success = self.p_edited.update_strategy(strategy_dict)
             else:
-                self.p_edited.save_strategy(strategy_dict)
+                success = self.p_edited.save_strategy(strategy_dict)
                 self.ui_editor.Strategy.insertItem(0, name)
                 idx = len(self.p_edited.get_playable_strategy_list())
                 self.ui_editor.Strategy.setCurrentIndex(0)
                 self.ui.comboBox_current_strategy.insertItem(0, name)
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Information)
-            msg.setText("Saved")
+            if success:
+                msg.setText("Saved")
+            else:
+                msg.setText("This user is not allowed to save strategies")
             msg.setWindowTitle("Strategy editor")
             msg.setStandardButtons(QMessageBox.Ok)
             retval = msg.exec()

@@ -1,17 +1,18 @@
 import datetime
 import json
+import logging
 import re
-import urllib
-from urllib.parse import urlencode
+import time
 
 import requests
 from configobj import ConfigObj
-from fastapi.encoders import jsonable_encoder
 
 from poker.tools.helper import CONFIG_FILENAME
 
 config = ConfigObj(CONFIG_FILENAME)
 URL = config['db']
+
+log = logging.getLogger(__name__)
 
 
 class StrategyHandler:
@@ -106,23 +107,32 @@ class StrategyHandler:
 
     def read_strategy(self, strategy_override=''):
         config = ConfigObj(CONFIG_FILENAME)
+        login = config['login']
+        password = config['password']
         last_strategy = config['last_strategy']
         self.current_strategy = last_strategy if strategy_override == '' else strategy_override
         try:
-            output = requests.post(URL + "find", params={'collection': 'strategies',
-                                                         'search_dict': json.dumps({'Strategy':
-                                                                                        self.current_strategy})}).json()[
-                0]
+            output = requests.post(
+                URL + "get_strategy", params={'name': self.current_strategy,
+                                              "login": login,
+                                              "password": password}).json()[0]
         except:
-            output = requests.post(URL + "find", params={'collection': 'strategies',
-                                                         'search_dict': json.dumps({'Strategy':
-                                                                                        'Default'})}).json()[0]
+            log.error(f"This Strategy is not available for this user: {login}")
+            time.sleep(1)
+            output = requests.post(URL + "get_strategy",
+                                   params={'name': 'Default',
+                                           "login": 'guest',
+                                           "password": 'guest'}).json()[0]
         self.selected_strategy = output
 
         self.check_defaults()
         return self.selected_strategy
 
     def save_strategy_genetic_algorithm(self):
+
+        login = config['login']
+        password = config['password']
+
         m = re.search(r'([a-zA-Z?-_]+)([0-9]+)', self.current_strategy)
         stringPart = m.group(1)
         numberPart = int(m.group(2))
@@ -133,21 +143,45 @@ class StrategyHandler:
         self.current_strategy = self.new_strategy_name
         del self.selected_strategy['_id']
         response = requests.post(
-            URL + "save_strategy", json={'strategy': json.dumps(self.selected_strategy)})
+            URL + "save_strategy", json={'strategy': json.dumps(self.selected_strategy),
+                                         'login': login, 'password': password}).json()
+        if response:
+            log.info("Saved")
+        else:
+            log.error("Not allowed to write strategies")
 
     def save_strategy(self, strategy_dict):
+        login = config['login']
+        password = config['password']
         response = requests.post(
-            URL + "save_strategy", json={'strategy': json.dumps(strategy_dict)})
+            URL + "save_strategy", json={'strategy': json.dumps(strategy_dict),
+                                         'login': login, 'password': password}).json()
+        if response:
+            log.info("Saved")
+            return True
+        else:
+            log.error("Not allowed to write strategies")
+            return False
 
     def update_strategy(self, strategy):
         try:
             del strategy['_id']
         except:
             pass
+        login = config['login']
+        password = config['password']
         response = requests.post(
             URL + "update_strategy", json={'name': strategy['Strategy'],
-                                             'strategy': json.dumps(strategy)})
+                                           'strategy': json.dumps(strategy),
+                                           'login': login, 'password': password}).json()
+        if response:
+            log.info("Saved")
+            return True
+        else:
+            log.error("Not allowed to write strategies")
+            return False
 
     def modify_strategy(self, elementName, change):
-        self.selected_strategy[elementName] = str(round(float(self.selected_strategy[elementName]) + change, 2))
+        self.selected_strategy[elementName] = str(
+            round(float(self.selected_strategy[elementName]) + change, 2))
         self.modified = True
