@@ -93,7 +93,7 @@ class GameLogger(metaclass=Singleton):
             summary_dict['rounds'] = []
             i = 0
             mongo = MongoManager()
-            rounds = mongo.get_rounds(h.lastGameI)
+            rounds = mongo.get_rounds(h.lastGameID)
             for _round in rounds:
                 round_name_value = dict()
                 round_name_value['round_number'] = str(i)
