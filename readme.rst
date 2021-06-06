@@ -18,6 +18,19 @@ Training the bot by playing against itself is a separate project which can be fo
 https://github.com/dickreuter/neuron_poker
 
 
+Full version:
+--------------
+
+The full version allow you to:
+
+* Edit and create new Strategies
+* View all Strategies of all users
+
+To purchase, please follow this link. You'll then receive a password within 24 hours.
+https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-910576034F790373KMC6UZOQ
+
+You can also get a free subscription if you make some (meaningful) contribution to the codebase.
+
 Running the bot:
 ----------------
 
@@ -102,8 +115,8 @@ Roadmap
 - [x] Build a framework that can play online
 - [x] Createa a tool that helps to map the tables and make maps shared over all users via mongodb
 - [x] Update the pokerbot to the new table format of partypoker
-- [ ] Update the pokerbot to the new table format of pokerstars
-- [ ] Fix pylint errors and imporve code quality
+- [x] Update the pokerbot to the new table format of pokerstars
+- [ ] Fix pylint errors and improve code quality
 - [ ] Update tests. Some are currently outdated. More tests are needed
 - [ ] Make travis to work. Windows support is currently limited, so most likely the bot needs to be made linux compatible (and also mac)
 - [ ] Add more strategies
