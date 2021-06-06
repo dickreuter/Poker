@@ -33,8 +33,12 @@ class GameLogger(metaclass=Singleton):
         return [x]
 
     def get_played_strategy_list(self):
+        config = ConfigObj(CONFIG_FILENAME)
+        login = config['login']
+        password = config['password']
         response = requests.post(
-            URL + "get_played_strategy_list")
+            URL + "get_played_strategy_list", params={"login": login,
+                                                      "password": password})
         return response.json()
 
     def write_log_file(self, p, h, t, d):

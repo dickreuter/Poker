@@ -23,7 +23,11 @@ class StrategyHandler:
         self.modified = False
 
     def get_playable_strategy_list(self):
-        lst = requests.post(URL + "get_playable_strategy_list").json()
+        config = ConfigObj(CONFIG_FILENAME)
+        login = config['login']
+        password = config['password']
+        lst = requests.post(URL + "get_playable_strategy_list", params={"login": login,
+                                                                        "password": password}).json()
         return lst
 
     def check_defaults(self):
@@ -129,7 +133,7 @@ class StrategyHandler:
         return self.selected_strategy
 
     def save_strategy_genetic_algorithm(self):
-
+        config = ConfigObj(CONFIG_FILENAME)
         login = config['login']
         password = config['password']
 
@@ -151,6 +155,7 @@ class StrategyHandler:
             log.error("Not allowed to write strategies")
 
     def save_strategy(self, strategy_dict):
+        config = ConfigObj(CONFIG_FILENAME)
         login = config['login']
         password = config['password']
         response = requests.post(
