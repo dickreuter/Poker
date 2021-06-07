@@ -18,7 +18,7 @@ from poker.gui.plots.funds_plotter import FundsPlotter
 from poker.gui.plots.histogram_equity import HistogramEquityWinLoss
 from poker.gui.plots.pie_plotter import PiePlotter
 from poker.gui.plots.scatter_plot import ScatterPlot
-from poker.tools.helper import COMPUTER_NAME
+from poker.tools.helper import COMPUTER_NAME, open_payment_link
 
 if not (platform == "linux" or platform == "linux2"):  # pylint: disable=consider-using-in
     matplotlib.use('Qt5Agg')
@@ -611,7 +611,8 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
             if success:
                 msg.setText("Saved")
             else:
-                msg.setText("This user is not allowed to save strategies")
+                msg.setText("To save strategies you need to purchase a subscription")
+                open_payment_link()
             msg.setWindowTitle("Strategy editor")
             msg.setStandardButtons(QMessageBox.Ok)
             retval = msg.exec()

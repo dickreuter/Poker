@@ -35,7 +35,7 @@ warnings.filterwarnings("ignore", message="All-NaN axis encountered")
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-version = 6.02
+version = 6.03
 ui = None
 
 class ThreadManager(threading.Thread):
@@ -163,10 +163,10 @@ class ThreadManager(threading.Thread):
                         table.get_new_hand(mouse, history, strategy) and \
                         table.get_table_cards(history) and \
                         table.upload_collusion_wrapper(strategy, history) and \
-                        strategy.read_strategy() and \
                         table.get_dealer_position() and \
                         table.check_fast_fold(history, strategy, mouse) and \
                         table.check_for_button() and \
+                        strategy.read_strategy() and \
                         table.get_round_number(history) and \
                         table.check_for_checkbutton() and \
                         table.init_get_other_players_info() and \

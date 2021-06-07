@@ -18,19 +18,6 @@ Training the bot by playing against itself is a separate project which can be fo
 https://github.com/dickreuter/neuron_poker
 
 
-Full version:
---------------
-
-The full version allow you to:
-
-* Edit and create new Strategies
-* View all Strategies of all users
-
-To purchase, please follow this link. You'll then receive a password within 24 hours.
-https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-910576034F790373KMC6UZOQ
-
-You can also get a free subscription if you make some (meaningful) contribution to the codebase.
-
 Running the bot:
 ----------------
 
@@ -38,20 +25,28 @@ Running the bot:
 General setup:
 ~~~~~~~~~~~~~~
 
-If you just want to run the bot, please download the binaries from here: https://sourceforge.net/projects/partypoker-pokerstars-pokerbot/
+If you just want to run the bot, please do the following:
 
-For a start please make sure of the following:
+* Install the binearies of the bot from here: https://sourceforge.net/projects/partypoker-pokerstars-pokerbot/
 
-Use Partypoker standard setup. Currently, the bot only works on tables with 6 people and where the bot is always sat at the bottom right.
-Put the partypoker client (inside the VM) and the bot outside the VM. Put them next to each other so that the bot can see the full table of Partypoker.
-In setup choose Direct Mouse Control. It will then take direct screenshots and move the mouse. If that works, you can try with direct VM control.
-Start with a table like Fast Forward Holdem $1-$2 on Partypoker where the stakes are low ( In the strategy editor create a copy of a strategy and edit it yourself so that you win.
-The bot may not work with play money as it's optimized on small stakes to read the numbers correctly.
-The current version is compatible with Windows. Make sure that you don't use any dpi scaling, Otherwise the tables won't be recognized.
+You can then immediately run the bot. It will analyze the poker client, move the mouse and play in accordance
+with one of its pre-programmed strategies. Most of the strategies are based on zoom or Fast Forward tables.
+You are welcome to edit and imporve any strategies to optmize the play of the bot for your needs.
 
-It may be useful to run the poker client inside virtual box https://www.virtualbox.org/wiki/Downloads as it can be controlled easier that way.
-Run the bot outside of this virtual machine. As it works with image recognition make sure to not obstruct the view to the Poker software.
-Only one table window should be visible.
+In many instances it may be useful to put the poker client inside a virtual machine to avoid it from interfering
+with the bot. Also, the bot will then be able to control the mouse inside the virtual machine, without blocking
+the whole computer:
+
+* Download Virtualbox: https://www.virtualbox.org/
+* Download Windows 7 Iso File, to put windows 7 into your virtualbox: https://letmegooglethat.com/?q=how+to+install+windows+7+on+virtualbox
+* Make sure the bot is installed on your computer directly, not the virtualbox.
+
+
+Note:
+
+* Only works on windows
+* Do not obstruct the view of the table as the bot is based on image recognition
+* Only one table window should be visible.
 
 
 Running via python code
@@ -76,6 +71,22 @@ The decision is made by the Decision class in decisionmaker.py. A variety of fac
 .. figure:: doc/strategy2.png
 .. figure:: doc/strategy_analyser1.jpg
 .. figure:: doc/strategy_analyser_scatter.jpg
+
+
+Full version:
+--------------
+
+The full version allow you to:
+
+* Edit and create new Strategies
+* View all Strategies of all users
+
+To purchase, please follow this link. You'll then receive a password within 24 hours.
+https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-910576034F790373KMC6UZOQ
+
+You can also get a free subscription if you make some (meaningful) contribution to the codebase.
+
+
 
 Packages and modules:
 ~~~~~~~~~~~~~~~~~~~~~

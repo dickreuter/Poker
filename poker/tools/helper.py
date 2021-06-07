@@ -7,11 +7,14 @@ import os
 import pickle
 import sys
 import traceback
+import webbrowser
 from collections import Iterable
 from configparser import ConfigParser, ExtendedInterpolation
 from logging import handlers
 
 import pandas as pd
+import requests
+from configobj import ConfigObj
 
 codebase = os.path.abspath(os.path.join(__file__, '..', '..'))
 CONFIG_FILENAME = 'config.ini'
@@ -296,3 +299,11 @@ def _keys_to_tuple(args, kwargs):
         compiled_args.append(k)
         compiled_args.append(v)
     return tuple(compiled_args)
+
+
+def open_payment_link():
+    config = ConfigObj(CONFIG_FILENAME)
+    URL = config['db']
+    c = requests.post(URL + "get_internal").json()[0]
+    payment_link = c['payment_link']
+    webbrowser.open(payment_link, new=1)
