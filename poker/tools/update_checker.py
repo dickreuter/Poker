@@ -6,7 +6,6 @@ import requests
 from configobj import ConfigObj
 
 from poker.tools.helper import CONFIG_FILENAME
-from poker.tools.mongo_manager import MongoManager
 
 config = ConfigObj(CONFIG_FILENAME)
 URL = config['db']

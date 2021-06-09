@@ -129,7 +129,8 @@ class MongoManager(metaclass=Singleton):
             rounds of current hand
 
         """
-        output = requests.post(URL + "get_rounds", params={'game_id': game_id}).json()
+        output = requests.post(
+            URL + "get_rounds", params={'game_id': game_id}).json()
         return output
 
     def create_new_table(self, table_name):
@@ -140,9 +141,9 @@ class MongoManager(metaclass=Singleton):
             table_name: str
 
         """
-        requests.post(URL + "create_new_table", params={'table_name': table_name,
-                                                        'computer_name': COMPUTER_NAME})
-        return True
+        resp = requests.post(URL + "create_new_table", params={'table_name': table_name,
+                                                               'computer_name': COMPUTER_NAME})
+        return resp
 
     def create_new_table_from_old(self, table_name, old_table_name):
         """
@@ -153,9 +154,10 @@ class MongoManager(metaclass=Singleton):
             old_table_name: str
 
         """
-        requests.post(URL + "create_new_table_from_old", params={'table_name': table_name,
-                                                                 'old_table_name': old_table_name,
-                                                                 'computer_name': COMPUTER_NAME}).json()
+        resp = requests.post(URL + "create_new_table_from_old", params={'table_name': table_name,
+                                                                        'old_table_name': old_table_name,
+                                                                        'computer_name': COMPUTER_NAME}).json()
+        return resp
 
     def save_coordinates(self, table_name, label, coordinates_dict):
         """Save coordinates for a given label for a given table"""
