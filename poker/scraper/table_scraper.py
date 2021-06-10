@@ -199,7 +199,8 @@ class TableScraper:
         """Read the call value from the call button"""
         self.call_value = ocr(self.screenshot, 'call_value', self.table_dict)
         log.info(f"Call value: {self.call_value}")
-        if round(self.call_value) == 90:
+        if round(self.call_value) >= 90:
+            log.warning("Correcting call value from >90")
             self.call_value -=90;
         return self.call_value
 
@@ -207,7 +208,8 @@ class TableScraper:
         """Read the value of the raise button"""
         self.raise_value = ocr(self.screenshot, 'raise_value', self.table_dict)
         log.info(f"Raise value: {self.raise_value}")
-        if round(self.raise_value) == 90:
+        if round(self.raise_value) >= 90:
+            log.warning("Correcting raise value from >90")
             self.raise_value -=90;
         return self.raise_value
 
