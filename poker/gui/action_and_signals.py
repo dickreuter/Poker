@@ -426,10 +426,7 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
 
         self.gui_histogram.drawfigure(p_name, game_stage, decision, l)
 
-        if p_name == '.*':
-            p.read_strategy()
-        else:
-            p.read_strategy(p_name)
+        p.read_strategy(p_name)
 
         call_or_bet = 'Bet' if decision[0] == 'B' else 'Call'
 

@@ -55,7 +55,7 @@ class VirtualBoxController(virtualbox.library.IMouse):
 
     def mouse_click_vbox(self, x, y, dz=0, dw=0):
         self.session.console.mouse.put_mouse_event_absolute(x, y, dz, dw, 0b1)
-        time.sleep(np.random.uniform(0.27, 0.4, 1)[0])
+        time.sleep(np.random.uniform(0.4, 0.6, 1)[0])
         self.session.console.mouse.put_mouse_event_absolute(x, y, dz, dw, 0)
 
     def get_mouse_position_vbox(self):

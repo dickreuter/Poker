@@ -38,8 +38,10 @@ with the bot. Also, the bot will then be able to control the mouse inside the vi
 the whole computer:
 
 * Download Virtualbox: https://www.virtualbox.org/
-* Download Windows 7 Iso File, to put windows 7 into your virtualbox: https://letmegooglethat.com/?q=how+to+install+windows+7+on+virtualbox
-* Make sure the bot is installed on your computer directly, not the virtualbox.
+* Download Windows 10 32 bit Iso File (x86_dvd.iso), for example from here https://www.softlay.com/operating-system/windows-7-ultimate-iso-download.html
+* Create a new virtual box environment and use the ISO file as a startup
+* Install Partypoker or Pokerstars in the virtual box environment
+* Install the pokerbot directly onto your computer (outside of the virtual box)
 
 
 Note:
@@ -49,8 +51,22 @@ Note:
 * Only one table window should be visible.
 
 
-Running via python code
-~~~~~~~~~~~~~~~~~~~~~~~
+Full version:
+--------------
+
+The full version allow you to:
+
+* Edit and create new Strategies
+* View all Strategies of all users
+
+To purchase, please follow this link. You'll then receive a password within 24 hours.
+https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-910576034F790373KMC6UZOQ
+
+You can also get a free subscription if you make some (meaningful) contribution to the codebase.
+
+
+Running via python source code
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 - Download pycharm as an IDE
 - Install python 3.8 or Anaconda (=python with packages)
 - Create an environment with ``conda create -n poker python=3.8`` or use pycharm's functionality to create a new virtual environment. Chefck youtube for details.
@@ -71,21 +87,6 @@ The decision is made by the Decision class in decisionmaker.py. A variety of fac
 .. figure:: doc/strategy2.png
 .. figure:: doc/strategy_analyser1.jpg
 .. figure:: doc/strategy_analyser_scatter.jpg
-
-
-Full version:
---------------
-
-The full version allow you to:
-
-* Edit and create new Strategies
-* View all Strategies of all users
-
-To purchase, please follow this link. You'll then receive a password within 24 hours.
-https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-910576034F790373KMC6UZOQ
-
-You can also get a free subscription if you make some (meaningful) contribution to the codebase.
-
 
 
 Packages and modules:
@@ -129,12 +130,9 @@ Roadmap
 - [x] Update the pokerbot to the new table format of pokerstars
 - [ ] Fix pylint errors and improve code quality
 - [ ] Update tests. Some are currently outdated. More tests are needed
-- [ ] Make travis to work. Windows support is currently limited, so most likely the bot needs to be made linux compatible (and also mac)
+- [ ] Make travis work. Windows support is currently limited, so most likely the bot needs to be made linux compatible (and also mac)
 - [ ] Add more strategies
-- [ ] The bot is using tesseract to recognize the numbers of how high the calls and bets are and how big the pot sizes are. Currently all images need to be rescaled and filtered before they are fed to tesseract.
-After that regular expressions are used to further filter the results. This is not a satisfactory method and can lead to errors. Ideally tesseract or any other OCR libary could be trained to recognize the numbers correctly.
 - [ ] Combine the bot with the neuron_poker project and have it play based on learned strategies via self-play based on reinforcement learning
-
 
 
 How to contribute
@@ -191,7 +189,6 @@ To contribute do the following:
 - Create a pull request on your github.com to merge your branch with the upstream master.
 - When your pull request is approved, it will be merged into the upstream/master.
 - Please make sure that all tests are passing, including the pylint test. You can either run them locally on your machine, or when you push check the travis log on github. [currently many are failing, feel free to help fixing them!]
-
 
 
 

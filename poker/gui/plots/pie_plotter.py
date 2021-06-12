@@ -20,5 +20,5 @@ class PiePlotter(FigureCanvas):
         self.axes.clear()
         self.axes.pie([float(v) for v in winnerCardTypeList.values()],
                       labels=[k for k in winnerCardTypeList.keys()], autopct=None)
-        self.axes.set_title('Winning probabilities')
+        self.axes.set_title('Winning+draw probabilities')
         self.draw()
