@@ -108,6 +108,8 @@ class StrategyHandler:
             self.selected_strategy['minimum_bet_size'] = 3
         if 'antibluff_percentage' not in self.selected_strategy:
             self.selected_strategy['antibluff_percentage'] = 0
+        if 'range_preflop' not in self.selected_strategy:
+            self.selected_strategy['range_preflop'] = 100
 
     def read_strategy(self, strategy_override=''):
         config = ConfigObj(CONFIG_FILENAME)

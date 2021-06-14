@@ -49,7 +49,8 @@ Note:
 * Only works on windows
 * Do not obstruct the view of the table as the bot is based on image recognition
 * Only one table window should be visible.
-
+* For best performance minimize all windows in the vm, except the table window itself
+* 
 
 Full version:
 --------------

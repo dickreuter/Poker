@@ -19,7 +19,7 @@ class BarPlotter(FigureCanvas):
     def drawfigure(self, l, strategy):
         self.axes = self.fig.add_subplot(111)  # create an axis
 
-        data = l.get_stacked_bar_data('Template', strategy, 'stackedBar')
+        data = l.get_stacked_bar_data('Template', strategy, 'stackedBar', last_stage='All')
 
         N = 11
         Bluff = data[0]

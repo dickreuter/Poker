@@ -9,22 +9,24 @@ from sys import platform
 import matplotlib
 import numpy as np
 import pandas as pd
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtGui, QtWidgets
 
 if platform not in ["linux", "linux2"]:
     matplotlib.use('Qt5Agg')
 from configobj import ConfigObj
-from poker.tools.game_logger import GameLogger
-from poker.tools.helper import init_logger, CONFIG_FILENAME
-from poker.tools.update_checker import UpdateChecker
-from poker.tools.mouse_mover import MouseMoverTableBased
-from poker.tools.mongo_manager import MongoManager
-from poker.gui.main_window import UiPokerbot
-from poker.gui.action_and_signals import UIActionAndSignals, StrategyHandler
-from poker.scraper.table_screen_based import TableScreenBased
-from poker.decisionmaker.current_hand_memory import History, CurrentHandPreflopState
-from poker.decisionmaker.montecarlo_python import run_montecarlo_wrapper
+
+from poker.decisionmaker.current_hand_memory import (CurrentHandPreflopState,
+                                                     History)
 from poker.decisionmaker.decisionmaker import Decision
+from poker.decisionmaker.montecarlo_python import run_montecarlo_wrapper
+from poker.gui.action_and_signals import StrategyHandler, UIActionAndSignals
+from poker.gui.main_window import UiPokerbot
+from poker.scraper.table_screen_based import TableScreenBased
+from poker.tools.game_logger import GameLogger
+from poker.tools.helper import CONFIG_FILENAME, init_logger
+from poker.tools.mongo_manager import MongoManager
+from poker.tools.mouse_mover import MouseMoverTableBased
+from poker.tools.update_checker import UpdateChecker
 
 # pylint: disable=no-member,simplifiable-if-expression,protected-access
 
@@ -35,7 +37,7 @@ warnings.filterwarnings("ignore", message="All-NaN axis encountered")
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-version = 6.06
+version = 6.07
 ui = None
 
 class ThreadManager(threading.Thread):

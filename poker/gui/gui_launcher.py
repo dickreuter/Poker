@@ -11,3 +11,12 @@ class TableSetupForm(QMainWindow):
         uic.loadUi('gui/ui/table_setup_form.ui', self)
 
         self.show()
+
+
+class StrategyEditorForm(QMainWindow):
+
+    def __init__(self):
+        super(StrategyEditorForm, self).__init__()
+        uic.loadUi('gui/ui/strategy_manager_form.ui', self)
+
+        self.show()

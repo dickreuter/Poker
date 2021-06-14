@@ -24,7 +24,7 @@ if not (platform == "linux" or platform == "linux2"):  # pylint: disable=conside
     matplotlib.use('Qt5Agg')
 from PyQt5.QtCore import *
 from poker.scraper.table_setup_actions_and_signals import TableSetupActionAndSignals
-from poker.gui.table_setup_form import TableSetupForm
+from poker.gui.gui_launcher import TableSetupForm
 from poker.tools.mongo_manager import MongoManager
 
 from poker.gui.genetic_algorithm_form import *  # pylint: disable=wildcard-import
@@ -97,6 +97,7 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
             "range_utg3": 100,
             "range_utg4": 100,
             "range_utg5": 100,
+            "range_preflop": 100,
             "PreFlopCallPower": 1,
             "secondRiverBetPotMinEquity": 100,
             "FlopBetPower": 1,
@@ -259,7 +260,7 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
 
         self.ui_analyser.combobox_actiontype.addItems(
             ['Fold', 'Check', 'Call', 'Bet', 'BetPlus', 'Bet half pot', 'Bet pot', 'Bet Bluff'])
-        self.ui_analyser.combobox_gamestage.addItems(['PreFlop', 'Flop', 'Turn', 'River'])
+        self.ui_analyser.combobox_gamestage.addItems(['All', 'PreFlop', 'Flop', 'Turn', 'River'])
         self.ui_analyser.combobox_strategy.addItems(l.get_played_strategy_list())
 
         index = self.ui_analyser.combobox_strategy.findText(p.current_strategy, QtCore.Qt.MatchFixedString)
@@ -414,7 +415,6 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
 
         self.ui_analyser.lcdNumber_2.display(number_of_games)
         self.ui_analyser.lcdNumber.display(winnings_per_bb_100)
-        self.gui_bar2.drawfigure(l, self.ui_analyser.combobox_strategy.currentText())
         self.gui_fundschange.drawfigure()
         self.strategy_analyser_update_plots(l, p)
         self.strategy_analyser_update_table(l)
@@ -425,12 +425,16 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
         decision = str(self.ui_analyser.combobox_actiontype.currentText())
 
         self.gui_histogram.drawfigure(p_name, game_stage, decision, l)
+        self.gui_bar2.drawfigure(l, self.ui_analyser.combobox_strategy.currentText(), 
+                                 self.ui_analyser.combobox_gamestage.currentText())
 
         p.read_strategy(p_name)
 
         call_or_bet = 'Bet' if decision[0] == 'B' else 'Call'
 
         max_value = float(p.selected_strategy['initialFunds'])
+        if game_stage == 'All':
+            game_stage = 'PreFlop'
         min_equity = float(p.selected_strategy[game_stage + 'Min' + call_or_bet + 'Equity'])
         max_equity = float(
             p.selected_strategy['PreFlopMaxBetEquity']) if game_stage == 'PreFlop' and call_or_bet == 'Bet' else 1

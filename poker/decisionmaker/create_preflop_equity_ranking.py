@@ -1,11 +1,14 @@
 """Used to create equity rankinks for all 52 preflop card combinations"""
 
 import json
+import logging
 import time
 from collections import OrderedDict
 from operator import itemgetter
 
 from poker.decisionmaker.montecarlo_python import MonteCarlo
+
+logger = logging.getLogger(__name__)
 
 if __name__ == '__main__':
     Simulation = MonteCarlo()
@@ -28,16 +31,19 @@ if __name__ == '__main__':
                     cards_on_table = []
                     players = 2
                     start_time = time.time() + 2
-                    Simulation.run_montecarlo(my_cards, cards_on_table, players, 1, maxRuns=15000, timeout=start_time,
-                                              ui=None, ghost_cards='', opponent_range=1)
+                    Simulation.run_montecarlo(logger, my_cards, cards_on_table, players, 1, maxRuns=15000, timeout=start_time,
+                                              ghost_cards='', opponent_range=.5)
                     print("--- %s seconds ---" % (time.time() - start_time))
                     equity = Simulation.equity  # considering draws as wins
 
                     suited_str = 'S' if suit1 == suits[0] else 'O'
-                    if my_cards[0][0][0] == my_cards[0][1][0]: suited_str = ''
-                    print(my_cards[0][0][0] + my_cards[0][1][0] + suited_str + ": " + str(equity))
-                    equity_dict[my_cards[0][0][0] + my_cards[0][1][0] + suited_str] = equity
+                    if my_cards[0][0][0] == my_cards[0][1][0]:
+                        suited_str = ''
+                    print(my_cards[0][0][0] + my_cards[0][1]
+                          [0] + suited_str + ": " + str(equity))
+                    equity_dict[my_cards[0][0][0] + my_cards[0]
+                                [1][0] + suited_str] = equity
 
     equity_dict = OrderedDict(sorted(equity_dict.items(), key=itemgetter(1)))
-    with open('preflop_equity.json', 'w') as fp:
+    with open('preflop_equity-50.json', 'w') as fp:
         json.dump(equity_dict, fp)
