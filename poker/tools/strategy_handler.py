@@ -47,6 +47,8 @@ class StrategyHandler:
             self.selected_strategy['always_call_low_stack_multiplier'] = 8
         if 'differentiate_reverse_sheet' not in self.selected_strategy:
             self.selected_strategy['differentiate_reverse_sheet'] = 1
+        if 'range_of_range' not in self.selected_strategy:
+            self.selected_strategy['range_of_range'] = 0
         if 'out_multiplier' not in self.selected_strategy:
             self.selected_strategy['out_multiplier'] = 0
         if 'FlopBluffMaxEquity' not in self.selected_strategy:

@@ -3401,7 +3401,15 @@
           <item row="4" column="1">
            <layout class="QHBoxLayout" name="horizontalLayout_2">
             <item>
-             <layout class="QVBoxLayout" name="verticalLayout_7"/>
+             <layout class="QVBoxLayout" name="verticalLayout_7">
+              <item>
+               <widget class="QCheckBox" name="range_of_range">
+                <property name="text">
+                 <string>Assume that other players assume we have a 50% range prefop</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
            </layout>
           </item>
@@ -3419,13 +3427,16 @@
               <item>
                <widget class="QSlider" name="range_preflop">
                 <property name="minimum">
-                 <number>50</number>
+                 <number>10</number>
                 </property>
                 <property name="maximum">
                  <number>100</number>
                 </property>
                 <property name="singleStep">
-                 <number>50</number>
+                 <number>1</number>
+                </property>
+                <property name="value">
+                 <number>100</number>
                 </property>
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>

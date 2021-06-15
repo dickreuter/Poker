@@ -285,7 +285,7 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
         self.p_edited.read_strategy()
         self.signal_progressbar_reset.emit()
         self.stragegy_editor_form = QtWidgets.QWidget()
-        self.ui_editor = StrategyManagerForm()
+        self.ui_editor = Ui_editor_form()
         self.ui_editor.setupUi(self.stragegy_editor_form)
         self.stragegy_editor_form.show()
 
@@ -484,6 +484,8 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
             self.strategy_handler.selected_strategy['opponent_raised_without_initiative_river'])
         self.ui_editor.differentiate_reverse_sheet.setChecked(
             self.strategy_handler.selected_strategy['differentiate_reverse_sheet'])
+        self.ui_editor.range_of_range.setChecked(
+            self.strategy_handler.selected_strategy['range_of_range'])
         self.ui_editor.preflop_override.setChecked(self.strategy_handler.selected_strategy['preflop_override'])
         self.ui_editor.gather_player_names.setChecked(self.strategy_handler.selected_strategy['gather_player_names'])
 
@@ -581,6 +583,7 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
 
         self.strategy_dict['differentiate_reverse_sheet'] = int(self.ui_editor.differentiate_reverse_sheet.isChecked())
         self.strategy_dict['preflop_override'] = int(self.ui_editor.preflop_override.isChecked())
+        self.strategy_dict['range_of_range'] = int(self.ui_editor.range_of_range.isChecked())
         self.strategy_dict['gather_player_names'] = int(self.ui_editor.gather_player_names.isChecked())
 
         self.strategy_dict['collusion'] = int(self.ui_editor.collusion.isChecked())

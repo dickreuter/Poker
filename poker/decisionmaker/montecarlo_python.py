@@ -33,7 +33,9 @@ class MonteCarlo:
         return card1 + card2 + suited_str, card2 + card1 + suited_str
 
     def get_opponent_allowed_cards_list(self, opponent_ranges):
-        with open ('decisionmaker/preflop_equity.json') as f:
+        ror = "-50" if self.use_range_of_range else ""
+                 
+        with open (f'decisionmaker/preflop_equity{ror}.json') as f:
             self.preflop_equities = json.load(f)
         
         peflop_equity_list = sorted(self.preflop_equities.items(), key=operator.itemgetter(1))
@@ -226,8 +228,9 @@ class MonteCarlo:
         return table_card_list
 
     def run_montecarlo(self, logger, original_player_card_list, original_table_card_list, player_amount, ui, maxRuns,
-                       timeout, ghost_cards, opponent_range=1):
+                       timeout, ghost_cards, opponent_range=1, use_range_of_range=False):
 
+        self.use_range_of_range = use_range_of_range
         if type(opponent_range) == float or type(opponent_range) == int:
             opponent_allowed_cards = self.get_opponent_allowed_cards_list(opponent_range)
             self.logger.info('Preflop reverse tables for ranges for opponent: NO')
@@ -418,10 +421,12 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
     ui_action_and_signals.signal_status.emit("Running card Monte Carlo: " + str(maxRuns))
 
     # run montecarlo for absolute equity
+    use_range_of_range = p.selected_strategy['range_of_range']
     t.abs_equity, _ = m.run_montecarlo(logger, t.PlayerCardList_and_others, t.cardsOnTable, int(t.assumedPlayers), ui,
                                        maxRuns=maxRuns,
                                        ghost_cards=ghost_cards, timeout=timeout, 
-                                       opponent_range=opponent_range)
+                                       opponent_range=opponent_range, 
+                                       use_range_of_range=use_range_of_range)
     ui_action_and_signals.signal_status.emit("Monte Carlo completed successfully")
     logger.debug("Cards Monte Carlo completed successfully with runs: " + str(m.runs))
     logger.info("Absolute equity (no ranges for bot) " + str(np.round(t.abs_equity, 2)))

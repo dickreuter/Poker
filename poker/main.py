@@ -37,7 +37,7 @@ warnings.filterwarnings("ignore", message="All-NaN axis encountered")
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-version = 6.07
+version = 6.08
 ui = None
 
 class ThreadManager(threading.Thread):

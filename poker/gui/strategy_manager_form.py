@@ -11,7 +11,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-class StrategyManagerForm:  # pylint: disable=too-many-instance-attributes
+class Ui_editor_form(object):
     def setupUi(self, editor_form):
         editor_form.setObjectName("editor_form")
         editor_form.resize(722, 748)
@@ -1557,6 +1557,9 @@ class StrategyManagerForm:  # pylint: disable=too-many-instance-attributes
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.verticalLayout_7 = QtWidgets.QVBoxLayout()
         self.verticalLayout_7.setObjectName("verticalLayout_7")
+        self.range_of_range = QtWidgets.QCheckBox(self.groupBox_13)
+        self.range_of_range.setObjectName("range_of_range")
+        self.verticalLayout_7.addWidget(self.range_of_range)
         self.horizontalLayout_2.addLayout(self.verticalLayout_7)
         self.gridLayout_14.addLayout(self.horizontalLayout_2, 4, 1, 1, 1)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
@@ -1567,9 +1570,10 @@ class StrategyManagerForm:  # pylint: disable=too-many-instance-attributes
         self.label_5.setObjectName("label_5")
         self.verticalLayout_18.addWidget(self.label_5)
         self.range_preflop = QtWidgets.QSlider(self.groupBox_13)
-        self.range_preflop.setMinimum(50)
+        self.range_preflop.setMinimum(10)
         self.range_preflop.setMaximum(100)
-        self.range_preflop.setSingleStep(50)
+        self.range_preflop.setSingleStep(1)
+        self.range_preflop.setProperty("value", 100)
         self.range_preflop.setOrientation(QtCore.Qt.Horizontal)
         self.range_preflop.setObjectName("range_preflop")
         self.verticalLayout_18.addWidget(self.range_preflop)
@@ -2082,6 +2086,7 @@ class StrategyManagerForm:  # pylint: disable=too-many-instance-attributes
         self.label_83.setText(_translate("editor_form", "Assumed range for other players if more than 1 other player"))
         self.range_multiple_players.setToolTip(_translate("editor_form", "<html><head/><body><p>For the calculation of the equity after the flop, the other players are given ranges. Here you can adjust the top% of preflop equity cards that the playesr are assumed to hold. 100% means they can hold any cards. </p></body></html>"))
         self.label_6.setText(_translate("editor_form", "Ranges Flop Turn and River:"))
+        self.range_of_range.setText(_translate("editor_form", "Assume that other players assume we have a 50% range prefop"))
         self.label_5.setText(_translate("editor_form", "Preflop Range"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), _translate("editor_form", "Betting and Ranges"))
         self.groupBox_2.setTitle(_translate("editor_form", "Turn betting"))
