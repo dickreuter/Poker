@@ -4,17 +4,17 @@ import json
 import logging
 
 import requests
-from configobj import ConfigObj
-from fastapi.encoders import jsonable_encoder
 from PIL import Image
-from poker.tools.helper import COMPUTER_NAME, CONFIG_FILENAME
+from fastapi.encoders import jsonable_encoder
+
+from poker.tools.helper import COMPUTER_NAME, get_config
 from poker.tools.singleton import Singleton
 
 TABLES_COLLECTION = 'tables'
 log = logging.getLogger(__name__)
 
-config = ConfigObj(CONFIG_FILENAME)
-URL = config['db']
+config = get_config()
+URL = config.config.get('main', 'db')
 
 
 class MongoManager(metaclass=Singleton):
@@ -22,8 +22,8 @@ class MongoManager(metaclass=Singleton):
 
     def __init__(self):
         """Initialize connection as singleton"""
-        self.login = config['login']
-        self.password = config['password']
+        self.login = config.config.get('main','login')
+        self.password = config.config.get('main','password')
 
     def save_image(self, table_name, label, image):
         """

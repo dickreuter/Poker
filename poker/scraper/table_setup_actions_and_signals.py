@@ -7,9 +7,8 @@ from PIL.ImageQt import ImageQt
 from PyQt5 import QtGui
 from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal
 from PyQt5.QtWidgets import QMessageBox
-from configobj import ConfigObj
 
-from poker.tools.helper import COMPUTER_NAME, CONFIG_FILENAME
+from poker.tools.helper import COMPUTER_NAME, get_config
 from poker.tools.mongo_manager import MongoManager
 from poker.tools.screen_operations import get_table_template_image, get_ocr_float, take_screenshot, \
     crop_screenshot_with_topleft_corner
@@ -90,7 +89,8 @@ class TableSetupActionAndSignals(QObject):
             button_show_property = getattr(self.ui, 'card_' + card + '_show')
             button_show_property.clicked.connect(lambda state, x=card: self.load_image(x))
 
-        save_image_buttons = ['call_button', 'raise_button', 'bet_button', 'check_button', 'fold_button', 'fast_fold_button',
+        save_image_buttons = ['call_button', 'raise_button', 'bet_button', 'check_button', 'fold_button',
+                              'fast_fold_button',
                               'all_in_call_button',
                               'my_turn',
                               'lost_everything', 'im_back', 'resume_hand', 'dealer_button', 'covered_card']
@@ -191,7 +191,8 @@ class TableSetupActionAndSignals(QObject):
             excluded_buttons = ['topleft_corner', 'game_number', 'call_value', 'raise_value', 'all_in_call_value',
                                 'my_turn_search_area', 'lost_everything_search_area',
                                 'mouse_fold', 'mouse_fast_fold', 'mouse_raise', 'mouse_full_pot', 'mouse_call',
-                                'mouse_increase', 'mouse_resume_hand', 'mouse_call2', 'mouse_check', 'mouse_imback', 'mouse_half_pot',
+                                'mouse_increase', 'mouse_resume_hand', 'mouse_call2', 'mouse_check', 'mouse_imback',
+                                'mouse_half_pot',
                                 'mouse_all_in', 'buttons_search_area']
             if button_name not in excluded_buttons:
                 button = getattr(self.ui, button_name + '_show')
@@ -246,8 +247,8 @@ class TableSetupActionAndSignals(QObject):
         self.signal_update_screenshot_pic.emit(Image.new('RGB', (3, 3)))
 
         log.info("Taking screenshot")
-        config = ConfigObj(CONFIG_FILENAME)
-        control = config['control']
+        config = get_config()
+        control = config.config.get('main', 'control')
         if control == 'Direct mouse control':
             self.original_screenshot = take_screenshot()
 
@@ -401,8 +402,10 @@ class TableSetupActionAndSignals(QObject):
         all_buttons = ['call_value', 'raise_value', 'all_in_call_value', 'game_number', 'current_round_pot',
                        'total_pot_area', 'my_turn_search_area', 'lost_everything_search_area', 'table_cards_area',
                        'my_cards_area', 'mouse_fold', 'mouse_fast_fold', 'mouse_raise', 'mouse_full_pot', 'mouse_call',
-                       'mouse_increase', 'mouse_call2', 'mouse_check', 'mouse_imback', 'mouse_resume_hand', 'mouse_half_pot', 'mouse_all_in',
-                       'buttons_search_area', 'call_button', 'raise_button', 'bet_button', 'check_button', 'fold_button',
+                       'mouse_increase', 'mouse_call2', 'mouse_check', 'mouse_imback', 'mouse_resume_hand',
+                       'mouse_half_pot', 'mouse_all_in',
+                       'buttons_search_area', 'call_button', 'raise_button', 'bet_button', 'check_button',
+                       'fold_button',
                        'fast_fold_button', 'all_in_call_button', 'my_turn', 'lost_everything', 'im_back', 'resume_hand',
                        'dealer_button', 'covered_card', 'covered_card_area', 'player_name_area', 'player_funds_area',
                        'player_pot_area', 'button_search_area', 'covered_card_area', 'player_name_area',

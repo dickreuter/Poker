@@ -36,7 +36,6 @@ import webbrowser
 from poker.decisionmaker.genetic_algorithm import *  # pylint: disable=wildcard-import
 import os
 import logging
-from configobj import ConfigObj
 
 
 # pylint: disable=unnecessary-lambda
@@ -192,27 +191,27 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
             lambda: self.signal_update_selected_strategy(p))
         ui_main_window.table_selection.currentIndexChanged[str].connect(
             lambda: self.signal_update_selected_strategy(p))
-        config = ConfigObj(CONFIG_FILENAME)
-        initial_selection = config['last_strategy']
+        config = get_config()
+        initial_selection = config.config.get('main', 'last_strategy')
         idx = 0
         for i in [i for i, x in enumerate(playable_list) if x == initial_selection]:
             idx = i
         ui_main_window.comboBox_current_strategy.setCurrentIndex(idx)
 
-        table_scraper_name = config['table_scraper_name']
+        table_scraper_name = config.config.get('main', 'table_scraper_name')
         idx = available_tables.index(table_scraper_name)
         ui_main_window.table_selection.setCurrentIndex(idx)
 
     def signal_update_selected_strategy(self, p):
-        config = ConfigObj(CONFIG_FILENAME)
+        config = get_config()
 
         newly_selected_strategy = self.ui.comboBox_current_strategy.currentText()
-        config['last_strategy'] = newly_selected_strategy
+        config.config.set('main', 'last_strategy',  newly_selected_strategy)
 
         table_selection = self.ui.table_selection.currentText()
-        config['table_scraper_name'] = table_selection
+        config.config.set('main', 'table_scraper_name', table_selection)
 
-        config.write()
+        config.update_file()
         p.read_strategy()
         self.logger.info("Active strategy changed to: " + p.current_strategy)
         self.logger.info("Active table changed to: " + table_selection)
@@ -229,8 +228,7 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
 
     def increase_progressbar(self, value):
         self.progressbar_value += value
-        if self.progressbar_value > 100:
-            self.progressbar_value = 100
+        self.progressbar_value = min(self.progressbar_value, 100)
         self.ui.progress_bar.setValue(self.progressbar_value)
 
     def reset_progressbar(self):
@@ -313,8 +311,8 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
 
         self.playable_list = self.p_edited.get_playable_strategy_list()
         self.ui_editor.Strategy.addItems(self.playable_list)
-        config = ConfigObj(CONFIG_FILENAME)
-        initial_selection = config['last_strategy']
+        config = get_config()
+        initial_selection = config.config.get('main', 'last_strategy')
         idx = 0
         for i in [i for i, x in enumerate(self.playable_list) if x == initial_selection]:
             idx = i
@@ -365,9 +363,9 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
         timeouts = ['8', '9', '10', '11', '12']
         self.ui_setup.comboBox_2.addItems(timeouts)
 
-        config = ConfigObj(CONFIG_FILENAME)
+        config = get_config()
         try:
-            mouse_control = config['control']
+            mouse_control = config.config.get('main', 'control')
         except:
             mouse_control = 'Direct mouse control'
         for i in [i for i, x in enumerate(vm_list) if x == mouse_control]:
@@ -375,33 +373,30 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
             self.ui_setup.comboBox_vm.setCurrentIndex(idx)
 
         try:
-            timeout = config['montecarlo_timeout']
+            timeout = config.config.get('main', 'montecarlo_timeout')
         except:
             timeout = 10
         for i in [i for i, x in enumerate(timeouts) if x == timeout]:
             idx = i
             self.ui_setup.comboBox_2.setCurrentIndex(idx)
 
-        try:
-            login = config['login']
-            password = config['password']
-            db = config['db']
-        except:
-            pass
+        login = config.config.get('main', 'login')
+        password = config.config.get('main', 'password')
+        db = config.config.get('main', 'db')
 
         self.ui_setup.db.setText(db)
         self.ui_setup.login.setText(login)
         self.ui_setup.password.setText(password)
 
     def save_setup(self):
-        config = ConfigObj(CONFIG_FILENAME)
-        config['control'] = self.ui_setup.comboBox_vm.currentText()
-        config['montecarlo_timeout'] = self.ui_setup.comboBox_2.currentText()
-        config['db'] = self.ui_setup.db.text()
-        config['login'] = self.ui_setup.login.text()
-        config['password'] = self.ui_setup.password.text()
-        config['db'] = self.ui_setup.db.text()
-        config.write()
+        config = get_config()
+        config.config.set('main', 'control', self.ui_setup.comboBox_vm.currentText())
+        config.config.set('main', 'montecarlo_timeout', self.ui_setup.comboBox_2.currentText())
+        config.config.set('main', 'db', self.ui_setup.db.text())
+        config.config.set('main', 'login', self.ui_setup.login.text())
+        config.config.set('main', 'password', self.ui_setup.password.text())
+        config.config.set('main', 'db', self.ui_setup.db.text())
+        config.update_file()
         self.ui_setup.close()
 
     def update_strategy_analyser(self, l, p):
@@ -425,7 +420,7 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
         decision = str(self.ui_analyser.combobox_actiontype.currentText())
 
         self.gui_histogram.drawfigure(p_name, game_stage, decision, l)
-        self.gui_bar2.drawfigure(l, self.ui_analyser.combobox_strategy.currentText(), 
+        self.gui_bar2.drawfigure(l, self.ui_analyser.combobox_strategy.currentText(),
                                  self.ui_analyser.combobox_gamestage.currentText())
 
         p.read_strategy(p_name)

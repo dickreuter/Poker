@@ -58,7 +58,7 @@ class TableScraper:
         for value in CARD_VALUES:
             for suit in CARD_SUITES:
                 if is_template_in_search_area(self.table_dict, self.screenshot,
-                                              value.lower() + suit.lower(), 'my_cards_area'):
+                                              value.lower() + suit.lower(), 'my_cards_area', extended=True):
                     self.my_cards.append(value + suit)
 
         if len(self.my_cards) != 2:
@@ -201,7 +201,7 @@ class TableScraper:
         log.info(f"Call value: {self.call_value}")
         if round(self.call_value) >= 90:
             log.warning("Correcting call value from >90")
-            self.call_value -=90;
+            self.call_value -=90
         return self.call_value
 
     def get_raise_value(self):
@@ -210,7 +210,7 @@ class TableScraper:
         log.info(f"Raise value: {self.raise_value}")
         if round(self.raise_value) >= 90:
             log.warning("Correcting raise value from >90")
-            self.raise_value -=90;
+            self.raise_value -=90
         return self.raise_value
 
     def get_game_number_on_screen2(self):

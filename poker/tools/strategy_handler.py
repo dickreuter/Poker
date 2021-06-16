@@ -5,12 +5,11 @@ import re
 import time
 
 import requests
-from configobj import ConfigObj
 
-from poker.tools.helper import CONFIG_FILENAME
+from poker.tools.helper import get_config
 
-config = ConfigObj(CONFIG_FILENAME)
-URL = config['db']
+config = get_config()
+URL = config.config.get('main', 'db')
 
 log = logging.getLogger(__name__)
 
@@ -23,9 +22,9 @@ class StrategyHandler:
         self.modified = False
 
     def get_playable_strategy_list(self):
-        config = ConfigObj(CONFIG_FILENAME)
-        login = config['login']
-        password = config['password']
+        config = get_config()
+        login = config.config.get('main', 'login')
+        password = config.config.get('main', 'password')
         lst = requests.post(URL + "get_playable_strategy_list", params={"login": login,
                                                                         "password": password}).json()
         return lst
@@ -114,10 +113,10 @@ class StrategyHandler:
             self.selected_strategy['range_preflop'] = 100
 
     def read_strategy(self, strategy_override=''):
-        config = ConfigObj(CONFIG_FILENAME)
-        login = config['login']
-        password = config['password']
-        last_strategy = config['last_strategy']
+        config = get_config()
+        login = config.config.get('main', 'login')
+        password = config.config.get('main', 'password')
+        last_strategy = config.config.get('main', 'last_strategy')
         self.current_strategy = last_strategy if strategy_override == '' else strategy_override
         try:
             output = requests.post(
@@ -137,9 +136,9 @@ class StrategyHandler:
         return True
 
     def save_strategy_genetic_algorithm(self):
-        config = ConfigObj(CONFIG_FILENAME)
-        login = config['login']
-        password = config['password']
+        config = get_config()
+        login = config.config.get('main', 'login')
+        password = config.config.get('main', 'password')
 
         m = re.search(r'([a-zA-Z?-_]+)([0-9]+)', self.current_strategy)
         stringPart = m.group(1)
@@ -159,9 +158,9 @@ class StrategyHandler:
             log.error("Not allowed to write strategies")
 
     def save_strategy(self, strategy_dict):
-        config = ConfigObj(CONFIG_FILENAME)
-        login = config['login']
-        password = config['password']
+        config = get_config()
+        login = config.config.get('main', 'login')
+        password = config.config.get('main', 'password')
         response = requests.post(
             URL + "save_strategy", json={'strategy': json.dumps(strategy_dict),
                                          'login': login, 'password': password}).json()
@@ -177,8 +176,8 @@ class StrategyHandler:
             del strategy['_id']
         except:
             pass
-        login = config['login']
-        password = config['password']
+        login = config.config.get('main', 'login')
+        password = config.config.get('main', 'password')
         response = requests.post(
             URL + "update_strategy", json={'name': strategy['Strategy'],
                                            'strategy': json.dumps(strategy),

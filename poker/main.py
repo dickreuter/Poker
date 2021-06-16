@@ -13,17 +13,16 @@ from PyQt5 import QtGui, QtWidgets
 
 if platform not in ["linux", "linux2"]:
     matplotlib.use('Qt5Agg')
-from configobj import ConfigObj
 
 from poker.decisionmaker.current_hand_memory import (CurrentHandPreflopState,
                                                      History)
 from poker.decisionmaker.decisionmaker import Decision
 from poker.decisionmaker.montecarlo_python import run_montecarlo_wrapper
 from poker.gui.action_and_signals import StrategyHandler, UIActionAndSignals
-from poker.gui.main_window import UiPokerbot
+from poker.gui.gui_launcher import UiPokerbot
 from poker.scraper.table_screen_based import TableScreenBased
 from poker.tools.game_logger import GameLogger
-from poker.tools.helper import CONFIG_FILENAME, init_logger
+from poker.tools.helper import init_logger, get_config
 from poker.tools.mongo_manager import MongoManager
 from poker.tools.mouse_mover import MouseMoverTableBased
 from poker.tools.update_checker import UpdateChecker
@@ -37,8 +36,9 @@ warnings.filterwarnings("ignore", message="All-NaN axis encountered")
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-version = 6.08
+version = 6.09
 ui = None
+
 
 class ThreadManager(threading.Thread):
     def __init__(self, threadID, name, counter, gui_signals, updater):
@@ -145,9 +145,9 @@ class ThreadManager(threading.Thread):
 
             ready = False
             while not ready:
-                config = ConfigObj(CONFIG_FILENAME)
-                if table_scraper_name != config['table_scraper_name']:
-                    table_scraper_name = config['table_scraper_name']
+                config = get_config()
+                if table_scraper_name != config.config.get('main','table_scraper_name'):
+                    table_scraper_name = config.config.get('main','table_scraper_name')
                     log.info(f"Loading table scraper info for {table_scraper_name}")
                     table_dict = mongo.get_table(table_scraper_name)
 
@@ -184,7 +184,7 @@ class ThreadManager(threading.Thread):
                         table.get_current_bet_value(strategy)
 
             if not self.gui_signals.pause_thread:
-                config = ConfigObj(CONFIG_FILENAME)
+                config = get_config()
                 m = run_montecarlo_wrapper(strategy, self.gui_signals, config, ui, table, self.game_logger,
                                            preflop_state, history)
                 self.gui_signals.signal_progressbar_increase.emit(20)

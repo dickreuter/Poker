@@ -3,10 +3,9 @@ import random
 import time
 
 import numpy as np
-from configobj import ConfigObj
 
 from poker import pymouse
-from poker.tools.helper import CONFIG_FILENAME
+from poker.tools.helper import get_config
 from poker.tools.vbox_manager import VirtualBoxController
 
 log = logging.getLogger(__name__)
@@ -92,10 +91,10 @@ class MouseMover(VirtualBoxController):
 
 class MouseMoverTableBased(MouseMover):
     def __init__(self, table_dict):
-        config = ConfigObj(CONFIG_FILENAME)
+        config = get_config()
 
         try:
-            mouse_control = config['control']
+            mouse_control = config.config.get('main', 'control')
             if mouse_control != 'Direct mouse control':
                 self.vbox_mode = True
             else:

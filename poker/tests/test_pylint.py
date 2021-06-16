@@ -75,7 +75,7 @@ def test_pylint():
 
     errors = []
     for output in pylint_outputs:
-        if not any([i in output for i in IGNORE_LIST]):
+        if not any([i in output for i in IGNORE_LIST]):  # pylint: disable=use-a-generator
             errors.append(output)
         if "Your code has been rated at" in output:
             print("\n" + output)

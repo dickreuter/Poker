@@ -6,15 +6,14 @@ from collections import Iterable
 
 import pandas as pd
 import requests
-from configobj import ConfigObj
 from fastapi.encoders import jsonable_encoder
 
-from poker.tools.helper import CONFIG_FILENAME
+from poker.tools.helper import get_config
 from poker.tools.mongo_manager import MongoManager
 from poker.tools.singleton import Singleton
 
-config = ConfigObj(CONFIG_FILENAME)
-URL = config['db']
+config = get_config()
+URL = config.config.get('main', 'db')
 
 
 class GameLogger(metaclass=Singleton):
@@ -33,9 +32,9 @@ class GameLogger(metaclass=Singleton):
         return [x]
 
     def get_played_strategy_list(self):
-        config = ConfigObj(CONFIG_FILENAME)
-        login = config['login']
-        password = config['password']
+        config = get_config()
+        login = config.config.get('main', 'login')
+        password = config.config.get('main', 'password')
         response = requests.post(
             URL + "get_played_strategy_list", params={"login": login,
                                                       "password": password})
@@ -151,7 +150,7 @@ class GameLogger(metaclass=Singleton):
         data = json.loads(response['d'])
         k = data.keys()
         v = data.values()
-        k1 = [eval(i) for i in k]
+        k1 = [eval(i) for i in k]  # pylint: disable=eval-used
         self.d = dict(zip(*[k1, v]))
 
         return response['final_data']

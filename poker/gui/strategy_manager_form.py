@@ -11,7 +11,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-class Ui_editor_form(object):
+class Ui_editor_form:
     def setupUi(self, editor_form):
         editor_form.setObjectName("editor_form")
         editor_form.resize(722, 748)

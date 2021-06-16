@@ -13,10 +13,10 @@ from poker.tools.game_logger import GameLogger
 from poker.tools.strategy_handler import StrategyHandler
 from poker.tools.update_checker import UpdateChecker
 from poker import main
-from poker.tools.helper import COMPUTER_NAME, CONFIG_FILENAME
-from configobj import ConfigObj
-config = ConfigObj(CONFIG_FILENAME)
-URL = config['db']
+from poker.tools.helper import COMPUTER_NAME, get_config
+
+config = get_config()
+URL = config.config.get('main','db')
 
 currentdir = os.path.dirname(os.path.abspath(
     inspect.getfile(inspect.currentframe())))

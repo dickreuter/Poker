@@ -110,16 +110,19 @@ class Decision(DecisionBase):
 
         self.preflop_adjustment = -float(
             p.selected_strategy['pre_flop_equity_reduction_by_position']) * t.position_utg_plus
+        log.info(f"Preflop adjustment from position UTG+{t.position_utg_plus}: {self.preflop_adjustment}")
 
         if not np.isnan(t.first_raiser_utg):
             self.preflop_adjustment += float(
                 p.selected_strategy['pre_flop_equity_increase_if_bet'])
+        log.info(f"Preflop adjustment from position and raisers {self.preflop_adjustment}")
             # + ((5 - t.first_raiser_utg) * 0.01)
 
         if not np.isnan(t.first_caller_utg):
             self.preflop_adjustment += float(
                 p.selected_strategy['pre_flop_equity_increase_if_call'])
             # + (5 - t.first_caller_utg) * 0.01)
+        log.info(f"Preflop adjustment from position, raisers and callers {self.preflop_adjustment}")
 
         # in case the other players called my bet become less aggressive and make an adjustment for the second round
         if (h.histGameStage == t.gameStage and h.lastRoundGameID == h.GameID) or h.lastSecondRoundAdjustment > 0:

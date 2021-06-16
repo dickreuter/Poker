@@ -3,9 +3,8 @@ import logging
 import numpy as np
 import virtualbox
 from PIL import Image
-from configobj import ConfigObj
 
-from poker.tools.helper import CONFIG_FILENAME
+from poker.tools.helper import get_config
 
 
 class VirtualBoxController(virtualbox.library.IMouse):
@@ -17,12 +16,12 @@ class VirtualBoxController(virtualbox.library.IMouse):
         self.logger.setLevel(logging.DEBUG)
         try:
             self.vbox = virtualbox.VirtualBox()
-            config = ConfigObj(CONFIG_FILENAME)
-            self.control_name = config['control']
+            config = get_config()
+            self.control_name = config.config.get('main','control')
             if self.control_name not in self.get_vbox_list():
                 self.control_name = 'Direct mouse control'
-                config['control'] = 'Direct mouse control'
-                config.write()
+                config.config.set('main','control', 'Direct mouse control')
+                config.update_file()
             self.start_vm()
             self.logger.debug("VM session established successfully")
 

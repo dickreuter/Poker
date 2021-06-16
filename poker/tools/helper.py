@@ -14,10 +14,8 @@ from logging import handlers
 
 import pandas as pd
 import requests
-from configobj import ConfigObj
 
 codebase = os.path.abspath(os.path.join(__file__, '..', '..'))
-CONFIG_FILENAME = 'config.ini'
 log = logging.getLogger(__name__)
 COMPUTER_NAME = os.getenv('COMPUTERNAME')
 
@@ -46,7 +44,7 @@ class Singleton(type):
             del class_name._instances[class_name]  # pylint: disable=protected-access
 
 
-class CustomConfigParser(metaclass=Singleton):
+class CustomConfigParser():
     """
     Singleton class that wraps the ConfigParser to make sure it's only loaded once.
 
@@ -60,7 +58,7 @@ class CustomConfigParser(metaclass=Singleton):
         if config_override_filename and not os.path.isfile(config_override_filename):
             raise ValueError("Unable to find config file {}".format(config_override_filename))
 
-        main_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.ini')
+        main_file = os.path.join(get_dir('codebase'), 'config.ini')
 
         self.config = ConfigParser(interpolation=ExtendedInterpolation())
         self.config.optionxform = str  # enforce case sensitivity on key
@@ -70,11 +68,16 @@ class CustomConfigParser(metaclass=Singleton):
         else:  # no custom file
             self.config.read(main_file)
 
+    def update_file(self):
+        """write back to the config file"""
+        main_file = os.path.join(get_dir('codebase'), 'config.ini')
+        with open(main_file, 'w') as configfile:
+            self.config.write(configfile)
 
-def get_config(config_override_filename=None):
+
+def get_config():
     """Public accessor for config file."""
-    config = CustomConfigParser(config_override_filename)
-    return config.config
+    return CustomConfigParser(os.path.join(get_dir('codebase'), 'config.ini'))
 
 
 def init_logger(screenlevel, filename=None, logdir=None, modulename=''):
@@ -170,15 +173,17 @@ def get_dir(*paths):
 
     """
     if paths[0] == 'codebase':  # pylint: disable=no-else-return
+        if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+            return os.path.dirname(codebase)
         return codebase
     else:
         # check if entry in config.ini
         try:
             config = get_config()
-            specified_path = config.get("Files", paths[0])
+            specified_path = config.config.get("Files", paths[0])
             if len(paths) > 1:
                 specified_path = os.path.join(specified_path, *paths[1:])
-            thirdparty_dir = config.get('Thirdparty', 'thirdparty_dir')
+            thirdparty_dir = config.config.get('Thirdparty', 'thirdparty_dir')
             full_path = os.path.abspath(os.path.join(codebase, thirdparty_dir, specified_path))
             return full_path
         except:  # pylint: disable=bare-except
@@ -302,8 +307,8 @@ def _keys_to_tuple(args, kwargs):
 
 
 def open_payment_link():
-    config = ConfigObj(CONFIG_FILENAME)
-    URL = config['db']
+    config = get_config()
+    URL = config.config.get('main','db')
     c = requests.post(URL + "get_internal").json()[0]
     payment_link = c['payment_link']
     webbrowser.open(payment_link, new=1)

@@ -2,10 +2,9 @@
 Assesses the log file and checks how the parameters in strategies.xml need to be adjusted to optimize playing
 '''
 import logging
-from configobj import ConfigObj
 
 from poker.tools.game_logger import GameLogger
-from poker.tools.helper import CONFIG_FILENAME
+from poker.tools.helper import get_config
 from poker.tools.strategy_handler import StrategyHandler
 
 
@@ -23,9 +22,9 @@ class GeneticAlgorithm:
         if (self.modified and write_update is True) or write_update == "Force":
             p.save_strategy_genetic_algorithm()
 
-            config = ConfigObj(CONFIG_FILENAME)
-            config['last_strategy'] = p.current_strategy
-            config.write()
+            config = get_config()
+            config.config.set('main', 'last_strategy', p.current_strategy)
+            config.update_file()
             self.logger.info("Genetic algorithm: New strategy saved")
 
     def get_results(self):

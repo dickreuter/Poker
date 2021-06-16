@@ -18,11 +18,10 @@ log = logging.getLogger(__name__)
 is_debug = False  # used for saving images for debug purposes
 
 
-def find_template_on_screen(template, screenshot, threshold):
+def find_template_on_screen(template, screenshot, threshold, extended=False):
     """Find template on screen"""
     res = cv2.matchTemplate(screenshot, template, cv2.TM_SQDIFF_NORMED)
     loc = np.where(res <= threshold)
-    log.debug(f"Looking for template with threshold {threshold}")
     min_val, _, min_loc, _ = cv2.minMaxLoc(res)
 
     bestFit = min_loc
@@ -195,21 +194,22 @@ def cv2_to_pil(img):
     return Image.fromarray(img)
 
 
-def check_if_image_in_range(img, screenshot, x1, y1, x2, y2):
+def check_if_image_in_range(img, screenshot, x1, y1, x2, y2, extended=False):
     cropped_screenshot = screenshot.crop((x1, y1, x2, y2))
     cropped_screenshot = pil_to_cv2(cropped_screenshot)
-    count, _, _, _ = find_template_on_screen(img, cropped_screenshot, 0.01)
+    count, _, _, _ = find_template_on_screen(img, cropped_screenshot, 0.01, extended=extended)
     return count >= 1
 
 
-def is_template_in_search_area(table_dict, screenshot, image_name, image_area, player=None):
+def is_template_in_search_area(table_dict, screenshot, image_name, image_area, player=None, extended=False):
     template_cv2 = binary_pil_to_cv2(table_dict[image_name])
     if player:
         search_area = table_dict[image_area][player]
     else:
         search_area = table_dict[image_area]
     return check_if_image_in_range(template_cv2, screenshot,
-                                   search_area['x1'], search_area['y1'], search_area['x2'], search_area['y2'])
+                                   search_area['x1'], search_area['y1'], search_area['x2'], search_area['y2'], 
+                                   extended=extended)
 
 
 def ocr(screenshot, image_area, table_dict, player=None, fast=False):

@@ -179,7 +179,8 @@ disable=print-statement,
         useless-suppression,
         consider-using-sys-exit,
         no-else-return,
-        cyclic-import
+        cyclic-import,
+        too-many-instance-attributes
 
 
 

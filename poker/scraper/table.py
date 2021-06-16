@@ -1,17 +1,12 @@
 import logging
-import re
 import sys
 import time
 
-import cv2  # opencv 3.0
 import numpy as np
-import pytesseract
-from PIL import Image, ImageFilter
-from configobj import ConfigObj
 
 from poker.decisionmaker.genetic_algorithm import GeneticAlgorithm
 from poker.scraper.table_scraper import TableScraper
-from poker.tools.helper import CONFIG_FILENAME
+from poker.tools.helper import get_config
 from poker.tools.vbox_manager import VirtualBoxController
 
 
@@ -39,8 +34,8 @@ class Table(TableScraper):
                     if self.gui_signals.exit_thread == True: sys.exit()
 
         time.sleep(0.1)
-        config = ConfigObj(CONFIG_FILENAME)
-        control = config['control']
+        config = get_config()
+        control = config.config.get('main', 'control')
         if control == 'Direct mouse control':
             self.take_screenshot2()
             self.entireScreenPIL = self.screenshot

@@ -1,4 +1,9 @@
 __author__ = 'Nicolas Dickreuter'
+
+import os
+
+from poker.tools.helper import get_dir
+
 '''
 Runs a Montecarlo simulation to calculate the probability of winning with a certain pokerhand and a given amount of players
 '''
@@ -34,10 +39,10 @@ class MonteCarlo:
 
     def get_opponent_allowed_cards_list(self, opponent_ranges):
         ror = "-50" if self.use_range_of_range else ""
-                 
-        with open (f'decisionmaker/preflop_equity{ror}.json') as f:
+
+        with open(os.path.join(get_dir('codebase'), f'decisionmaker/preflop_equity{ror}.json')) as f:
             self.preflop_equities = json.load(f)
-        
+
         peflop_equity_list = sorted(self.preflop_equities.items(), key=operator.itemgetter(1))
 
         counts = len(peflop_equity_list)
@@ -227,6 +232,7 @@ class MonteCarlo:
             table_card_list.append(Deck.pop(np.random.random_integers(0, len(Deck) - 1)))
         return table_card_list
 
+    # pylint: disable=too-many-arguments
     def run_montecarlo(self, logger, original_player_card_list, original_table_card_list, player_amount, ui, maxRuns,
                        timeout, ghost_cards, opponent_range=1, use_range_of_range=False):
 
@@ -305,7 +311,7 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
 
     if t.gameStage == "PreFlop":
         t.assumedPlayers = 2
-        opponent_range =  p.selected_strategy['range_preflop']
+        opponent_range = p.selected_strategy['range_preflop']
 
     elif t.gameStage == "Flop":
 
@@ -390,7 +396,7 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
 
     ui_action_and_signals.signal_status.emit("Running range Monte Carlo: " + str(maxRuns))
     logger.debug("Running Monte Carlo")
-    t.montecarlo_timeout = float(config['montecarlo_timeout'])
+    t.montecarlo_timeout = float(config.config.get('main', 'montecarlo_timeout'))
     timeout = t.mt_tm + t.montecarlo_timeout
     logger.debug("Used opponent range for montecarlo: " + str(opponent_range))
     logger.debug("maxRuns: " + str(maxRuns))
@@ -398,19 +404,19 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
 
     # calculate range equity
     if t.gameStage != 'PreFlop' and p.selected_strategy['use_relative_equity']:
-        raise RuntimeError ("Relative equity not implemented correctly. Please select a different strategy")
-        if p.selected_strategy['preflop_override'] and preflop_state.preflop_bot_ranges != None:
-            t.player_card_range_list_and_others = t.PlayerCardList_and_others[:]
-            t.player_card_range_list_and_others[0] = preflop_state.preflop_bot_ranges
-
-            t.range_equity, _ = m.run_montecarlo(logger, t.player_card_range_list_and_others, t.cardsOnTable,
-                                                 int(t.assumedPlayers), ui,
-                                                 maxRuns=maxRuns,
-                                                 ghost_cards=ghost_cards, timeout=timeout,
-                                                 opponent_range=opponent_range)
-            t.range_equity = np.round(t.range_equity, 2)
-            logger.debug("Range montecarlo completed successfully with runs: " + str(m.runs))
-            logger.debug("Range equity (range for bot): " + str(t.range_equity))
+        raise RuntimeError("Relative equity not implemented correctly. Please select a different strategy")
+        # if p.selected_strategy['preflop_override'] and preflop_state.preflop_bot_ranges != None:
+        #     t.player_card_range_list_and_others = t.PlayerCardList_and_others[:]
+        #     t.player_card_range_list_and_others[0] = preflop_state.preflop_bot_ranges
+        #
+        #     t.range_equity, _ = m.run_montecarlo(logger, t.player_card_range_list_and_others, t.cardsOnTable,
+        #                                          int(t.assumedPlayers), ui,
+        #                                          maxRuns=maxRuns,
+        #                                          ghost_cards=ghost_cards, timeout=timeout,
+        #                                          opponent_range=opponent_range)
+        #     t.range_equity = np.round(t.range_equity, 2)
+        #     logger.debug("Range montecarlo completed successfully with runs: " + str(m.runs))
+        #     logger.debug("Range equity (range for bot): " + str(t.range_equity))
 
     if preflop_state.preflop_bot_ranges == None and p.selected_strategy[
         'preflop_override'] and t.gameStage != 'PreFlop':
@@ -424,8 +430,8 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
     use_range_of_range = p.selected_strategy['range_of_range']
     t.abs_equity, _ = m.run_montecarlo(logger, t.PlayerCardList_and_others, t.cardsOnTable, int(t.assumedPlayers), ui,
                                        maxRuns=maxRuns,
-                                       ghost_cards=ghost_cards, timeout=timeout, 
-                                       opponent_range=opponent_range, 
+                                       ghost_cards=ghost_cards, timeout=timeout,
+                                       opponent_range=opponent_range,
                                        use_range_of_range=use_range_of_range)
     ui_action_and_signals.signal_status.emit("Monte Carlo completed successfully")
     logger.debug("Cards Monte Carlo completed successfully with runs: " + str(m.runs))

@@ -1,14 +1,12 @@
-import json
 import subprocess
 import sys
 
 import requests
-from configobj import ConfigObj
 
-from poker.tools.helper import CONFIG_FILENAME
+from poker.tools.helper import get_config
 
-config = ConfigObj(CONFIG_FILENAME)
-URL = config['db']
+config = get_config()
+URL = config.config.get('main', 'db')
 
 
 class UpdateChecker:

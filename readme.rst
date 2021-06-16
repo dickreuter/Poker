@@ -1,10 +1,9 @@
-Deep mind pokerbot for pokerstars and partypoker
-================================================
+Deep mind pokerbot for pokerstars, partypoker and GG Poker
+==========================================================
 
-This pokerbot plays automatically on Pokerstars and Partypoker.
+This pokerbot plays automatically on Pokerstars, Partypoker and GG Poker. Any other table can be mapped as well.
 It works with image recognition, montecarlo simulation and a basic genetic algorithm.
 The mouse is moved automatically and the bot can potentially play for hours based on a large number of parameters.
-A new gui to help it recognize new tables ia available as well.
 
 You can download the binaries and run the executable directly from here:
 https://sourceforge.net/projects/partypoker-pokerstars-pokerbot/

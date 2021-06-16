@@ -1,8 +1,8 @@
-pandas~=1.1.5
+pandas
 pytest
 pylint
 pydocstyle
-numpy==1.19.3
+numpy
 matplotlib
 scipy
 opencv-python
@@ -14,11 +14,10 @@ pytesseract
 virtualbox
 pyyaml
 requests
-configobj
 jupyter
 xlib
 xlrd
 lmfit
-openpyxl~=3.0.5
+openpyxl
 numexpr
 fastapi

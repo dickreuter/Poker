@@ -2,21 +2,18 @@
 <ui version="4.0">
  <class>editor_form</class>
  <widget class="QWidget" name="editor_form">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>722</width>
-    <height>748</height>
+    <width>739</width>
+    <height>858</height>
    </rect>
   </property>
   <property name="minimumSize">
-   <size>
-    <width>722</width>
-    <height>748</height>
-   </size>
-  </property>
-  <property name="maximumSize">
    <size>
     <width>722</width>
     <height>748</height>
@@ -26,79 +23,6 @@
    <string>Strategy editor</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_13">
-   <item row="0" column="0">
-    <widget class="QLabel" name="label_4">
-     <property name="font">
-      <font>
-       <pointsize>20</pointsize>
-       <weight>75</weight>
-       <bold>true</bold>
-      </font>
-     </property>
-     <property name="text">
-      <string>Strategy editor</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0">
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
-     <item>
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>New name</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="lineEdit_new_name"/>
-     </item>
-     <item>
-      <widget class="QPushButton" name="pushButton_save_new_strategy">
-       <property name="toolTip">
-        <string>Saves the current strategy under a new name</string>
-       </property>
-       <property name="text">
-        <string>Save under new name</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item row="1" column="0">
-    <layout class="QVBoxLayout" name="verticalLayout_2">
-     <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_4">
-       <item>
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>Select Strategy</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QComboBox" name="Strategy">
-         <property name="toolTip">
-          <string>Select a strategy you want to edit</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButton_save_current_strategy">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="toolTip">
-          <string>You can only save strategies you have created yourself. Otherwise save it under a new name.</string>
-         </property>
-         <property name="text">
-          <string>Save</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-    </layout>
-   </item>
    <item row="3" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="enabled">
@@ -108,7 +32,7 @@
       <string/>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>6</number>
      </property>
      <widget class="QWidget" name="tab_5">
       <attribute name="title">
@@ -2886,7 +2810,10 @@
           <string>Betting sizes</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_11">
-          <item row="1" column="0">
+          <item row="5" column="0">
+           <layout class="QVBoxLayout" name="verticalLayout_22"/>
+          </item>
+          <item row="19" column="0">
            <layout class="QHBoxLayout" name="horizontalLayout_5">
             <item>
              <layout class="QVBoxLayout" name="verticalLayout_14">
@@ -2929,7 +2856,7 @@
             </item>
            </layout>
           </item>
-          <item row="2" column="0">
+          <item row="20" column="0">
            <layout class="QHBoxLayout" name="horizontalLayout_7">
             <item>
              <layout class="QVBoxLayout" name="verticalLayout_16">
@@ -3020,6 +2947,26 @@
              <widget class="QLCDNumber" name="lcdNumber_106"/>
             </item>
            </layout>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_7">
+            <property name="text">
+             <string>TextLabel</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLCDNumber" name="lcdNumber_7"/>
+          </item>
+          <item row="2" column="0">
+           <widget class="QSlider" name="horizontalSlider">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="tickPosition">
+             <enum>QSlider::TicksAbove</enum>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -3404,8 +3351,11 @@
              <layout class="QVBoxLayout" name="verticalLayout_7">
               <item>
                <widget class="QCheckBox" name="range_of_range">
+                <property name="toolTip">
+                 <string>When the range of the other players is determined, a pre calculated pre-flop equity table is used. In order to calculate this table, the other players can be given a range as well.</string>
+                </property>
                 <property name="text">
-                 <string>Assume that other players assume we have a 50% range prefop</string>
+                 <string>Second degree range of 50%</string>
                 </property>
                </widget>
               </item>
@@ -3426,6 +3376,9 @@
               </item>
               <item>
                <widget class="QSlider" name="range_preflop">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;For the calculation of the equity at preflop, the other players are given ranges. Here you can adjust the top% of preflop equity cards that the other players are assumed to hold. 100% means they can hold any cards. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="minimum">
                  <number>10</number>
                 </property>
@@ -3435,11 +3388,17 @@
                 <property name="singleStep">
                  <number>1</number>
                 </property>
+                <property name="pageStep">
+                 <number>1</number>
+                </property>
                 <property name="value">
                  <number>100</number>
                 </property>
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="tickPosition">
+                 <enum>QSlider::TicksAbove</enum>
                 </property>
                </widget>
               </item>
@@ -4004,6 +3963,79 @@
      </widget>
     </widget>
    </item>
+   <item row="1" column="0">
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Select Strategy</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="Strategy">
+         <property name="toolTip">
+          <string>Select a strategy you want to edit</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton_save_current_strategy">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="toolTip">
+          <string>You can only save strategies you have created yourself. Otherwise save it under a new name.</string>
+         </property>
+         <property name="text">
+          <string>Save</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item row="2" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>New name</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="lineEdit_new_name"/>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_save_new_strategy">
+       <property name="toolTip">
+        <string>Saves the current strategy under a new name</string>
+       </property>
+       <property name="text">
+        <string>Save under new name</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label_4">
+     <property name="font">
+      <font>
+       <pointsize>20</pointsize>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Strategy editor</string>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <resources/>
@@ -4048,11 +4080,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>141</x>
-     <y>561</y>
+     <y>671</y>
     </hint>
     <hint type="destinationlabel">
-     <x>346</x>
-     <y>562</y>
+     <x>355</x>
+     <y>672</y>
     </hint>
    </hints>
   </connection>
@@ -4063,12 +4095,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>498</x>
-     <y>545</y>
+     <x>511</x>
+     <y>647</y>
     </hint>
     <hint type="destinationlabel">
-     <x>688</x>
-     <y>546</y>
+     <x>705</x>
+     <y>648</y>
     </hint>
    </hints>
   </connection>
@@ -4096,7 +4128,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>141</x>
-     <y>224</y>
+     <y>251</y>
     </hint>
     <hint type="destinationlabel">
      <x>343</x>
@@ -4112,7 +4144,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>141</x>
-     <y>289</y>
+     <y>344</y>
     </hint>
     <hint type="destinationlabel">
      <x>346</x>
@@ -4128,11 +4160,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>165</x>
-     <y>601</y>
+     <y>705</y>
     </hint>
     <hint type="destinationlabel">
-     <x>355</x>
-     <y>602</y>
+     <x>364</x>
+     <y>710</y>
     </hint>
    </hints>
   </connection>
@@ -4160,7 +4192,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>141</x>
-     <y>387</y>
+     <y>470</y>
     </hint>
     <hint type="destinationlabel">
      <x>346</x>
@@ -4208,11 +4240,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>142</x>
-     <y>519</y>
+     <y>629</y>
     </hint>
     <hint type="destinationlabel">
-     <x>355</x>
-     <y>546</y>
+     <x>364</x>
+     <y>654</y>
     </hint>
    </hints>
   </connection>
@@ -4223,12 +4255,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>484</x>
-     <y>593</y>
+     <x>493</x>
+     <y>703</y>
     </hint>
     <hint type="destinationlabel">
-     <x>689</x>
-     <y>594</y>
+     <x>706</x>
+     <y>704</y>
     </hint>
    </hints>
   </connection>
@@ -4255,12 +4287,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>498</x>
-     <y>601</y>
+     <x>511</x>
+     <y>705</y>
     </hint>
     <hint type="destinationlabel">
-     <x>688</x>
-     <y>602</y>
+     <x>705</x>
+     <y>706</y>
     </hint>
    </hints>
   </connection>
@@ -4272,11 +4304,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>165</x>
-     <y>657</y>
+     <y>763</y>
     </hint>
     <hint type="destinationlabel">
-     <x>355</x>
-     <y>658</y>
+     <x>364</x>
+     <y>766</y>
     </hint>
    </hints>
   </connection>
@@ -4287,12 +4319,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>498</x>
-     <y>657</y>
+     <x>511</x>
+     <y>763</y>
     </hint>
     <hint type="destinationlabel">
-     <x>688</x>
-     <y>658</y>
+     <x>705</x>
+     <y>764</y>
     </hint>
    </hints>
   </connection>
@@ -4304,11 +4336,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>165</x>
-     <y>284</y>
+     <y>366</y>
     </hint>
     <hint type="destinationlabel">
-     <x>688</x>
-     <y>285</y>
+     <x>705</x>
+     <y>367</y>
     </hint>
    </hints>
   </connection>
@@ -4335,12 +4367,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>484</x>
-     <y>660</y>
+     <x>493</x>
+     <y>770</y>
     </hint>
     <hint type="destinationlabel">
-     <x>689</x>
-     <y>661</y>
+     <x>706</x>
+     <y>771</y>
     </hint>
    </hints>
   </connection>
@@ -4352,7 +4384,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>165</x>
-     <y>221</y>
+     <y>213</y>
     </hint>
     <hint type="destinationlabel">
      <x>688</x>
@@ -4416,11 +4448,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>163</x>
-     <y>714</y>
+     <y>817</y>
     </hint>
     <hint type="destinationlabel">
-     <x>682</x>
-     <y>694</y>
+     <x>699</x>
+     <y>797</y>
     </hint>
    </hints>
   </connection>
@@ -4432,11 +4464,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>163</x>
-     <y>667</y>
+     <y>763</y>
     </hint>
     <hint type="destinationlabel">
-     <x>682</x>
-     <y>640</y>
+     <x>699</x>
+     <y>736</y>
     </hint>
    </hints>
   </connection>
@@ -4511,12 +4543,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>484</x>
-     <y>539</y>
+     <x>493</x>
+     <y>649</y>
     </hint>
     <hint type="destinationlabel">
-     <x>689</x>
-     <y>540</y>
+     <x>706</x>
+     <y>650</y>
     </hint>
    </hints>
   </connection>
@@ -4528,11 +4560,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>163</x>
-     <y>620</y>
+     <y>709</y>
     </hint>
     <hint type="destinationlabel">
-     <x>682</x>
-     <y>586</y>
+     <x>699</x>
+     <y>675</y>
     </hint>
    </hints>
   </connection>
@@ -4591,12 +4623,12 @@
    <slot>display(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>484</x>
-     <y>714</y>
+     <x>493</x>
+     <y>824</y>
     </hint>
     <hint type="destinationlabel">
-     <x>689</x>
-     <y>715</y>
+     <x>706</x>
+     <y>825</y>
     </hint>
    </hints>
   </connection>
@@ -4624,11 +4656,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>163</x>
-     <y>517</y>
+     <y>606</y>
     </hint>
     <hint type="destinationlabel">
-     <x>682</x>
-     <y>476</y>
+     <x>699</x>
+     <y>565</y>
     </hint>
    </hints>
   </connection>
@@ -4640,11 +4672,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>141</x>
-     <y>452</y>
+     <y>562</y>
     </hint>
     <hint type="destinationlabel">
-     <x>346</x>
-     <y>453</y>
+     <x>355</x>
+     <y>536</y>
     </hint>
    </hints>
   </connection>
@@ -4656,11 +4688,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>163</x>
-     <y>463</y>
+     <y>552</y>
     </hint>
     <hint type="destinationlabel">
-     <x>682</x>
-     <y>422</y>
+     <x>699</x>
+     <y>510</y>
     </hint>
    </hints>
   </connection>
@@ -4672,11 +4704,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>163</x>
-     <y>409</y>
+     <y>497</y>
     </hint>
     <hint type="destinationlabel">
-     <x>682</x>
-     <y>368</y>
+     <x>699</x>
+     <y>456</y>
     </hint>
    </hints>
   </connection>
@@ -4704,11 +4736,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>141</x>
-     <y>638</y>
+     <y>748</y>
     </hint>
     <hint type="destinationlabel">
-     <x>346</x>
-     <y>639</y>
+     <x>355</x>
+     <y>749</y>
     </hint>
    </hints>
   </connection>
@@ -4784,11 +4816,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>165</x>
-     <y>713</y>
+     <y>821</y>
     </hint>
     <hint type="destinationlabel">
-     <x>688</x>
-     <y>714</y>
+     <x>705</x>
+     <y>822</y>
     </hint>
    </hints>
   </connection>
@@ -5088,11 +5120,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>174</x>
-     <y>250</y>
+     <y>285</y>
     </hint>
     <hint type="destinationlabel">
-     <x>689</x>
-     <y>241</y>
+     <x>706</x>
+     <y>261</y>
     </hint>
    </hints>
   </connection>
@@ -5104,11 +5136,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>141</x>
-     <y>714</y>
+     <y>824</y>
     </hint>
     <hint type="destinationlabel">
-     <x>346</x>
-     <y>715</y>
+     <x>355</x>
+     <y>825</y>
     </hint>
    </hints>
   </connection>
@@ -5152,11 +5184,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>564</x>
-     <y>348</y>
+     <y>422</y>
     </hint>
     <hint type="destinationlabel">
-     <x>653</x>
-     <y>337</y>
+     <x>670</x>
+     <y>419</y>
     </hint>
    </hints>
   </connection>
@@ -5168,11 +5200,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>464</x>
-     <y>322</y>
+     <y>393</y>
     </hint>
     <hint type="destinationlabel">
-     <x>646</x>
-     <y>307</y>
+     <x>663</x>
+     <y>376</y>
     </hint>
    </hints>
   </connection>
@@ -5188,7 +5220,7 @@
     </hint>
     <hint type="destinationlabel">
      <x>158</x>
-     <y>644</y>
+     <y>750</y>
     </hint>
    </hints>
   </connection>
@@ -5204,7 +5236,7 @@
     </hint>
     <hint type="destinationlabel">
      <x>158</x>
-     <y>588</y>
+     <y>692</y>
     </hint>
    </hints>
   </connection>
@@ -5219,8 +5251,8 @@
      <y>180</y>
     </hint>
     <hint type="destinationlabel">
-     <x>491</x>
-     <y>532</y>
+     <x>504</x>
+     <y>634</y>
     </hint>
    </hints>
   </connection>
@@ -5235,8 +5267,8 @@
      <y>180</y>
     </hint>
     <hint type="destinationlabel">
-     <x>491</x>
-     <y>644</y>
+     <x>504</x>
+     <y>750</y>
     </hint>
    </hints>
   </connection>
@@ -5251,8 +5283,8 @@
      <y>180</y>
     </hint>
     <hint type="destinationlabel">
-     <x>491</x>
-     <y>588</y>
+     <x>504</x>
+     <y>692</y>
     </hint>
    </hints>
   </connection>
@@ -5268,7 +5300,7 @@
     </hint>
     <hint type="destinationlabel">
      <x>158</x>
-     <y>532</y>
+     <y>634</y>
     </hint>
    </hints>
   </connection>
@@ -5280,11 +5312,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>207</x>
-     <y>566</y>
+     <y>655</y>
     </hint>
     <hint type="destinationlabel">
      <x>214</x>
-     <y>607</y>
+     <y>696</y>
     </hint>
    </hints>
   </connection>
@@ -5296,11 +5328,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>301</x>
-     <y>562</y>
+     <y>651</y>
     </hint>
     <hint type="destinationlabel">
      <x>319</x>
-     <y>655</y>
+     <y>751</y>
     </hint>
    </hints>
   </connection>
@@ -5312,11 +5344,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>405</x>
-     <y>567</y>
+     <y>656</y>
     </hint>
     <hint type="destinationlabel">
      <x>416</x>
-     <y>706</y>
+     <y>809</y>
     </hint>
    </hints>
   </connection>
@@ -5328,11 +5360,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>548</x>
-     <y>281</y>
+     <y>334</y>
     </hint>
     <hint type="destinationlabel">
-     <x>657</x>
-     <y>281</y>
+     <x>674</x>
+     <y>332</y>
     </hint>
    </hints>
   </connection>
@@ -5344,11 +5376,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>112</x>
-     <y>470</y>
+     <y>567</y>
     </hint>
     <hint type="destinationlabel">
-     <x>335</x>
-     <y>472</y>
+     <x>348</x>
+     <y>569</y>
     </hint>
    </hints>
   </connection>
