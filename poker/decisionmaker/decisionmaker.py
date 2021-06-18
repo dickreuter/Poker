@@ -116,7 +116,7 @@ class Decision(DecisionBase):
             self.preflop_adjustment += float(
                 p.selected_strategy['pre_flop_equity_increase_if_bet'])
         log.info(f"Preflop adjustment from position and raisers {self.preflop_adjustment}")
-            # + ((5 - t.first_raiser_utg) * 0.01)
+        # + ((5 - t.first_raiser_utg) * 0.01)
 
         if not np.isnan(t.first_caller_utg):
             self.preflop_adjustment += float(
@@ -152,7 +152,7 @@ class Decision(DecisionBase):
                                         float(p.selected_strategy['maxPotAdjustmentPreFlop']))
 
         self.potAdjustment = t.totalPotValue / t.bigBlind / \
-            250 * float(p.selected_strategy['potAdjustment'])
+                             250 * float(p.selected_strategy['potAdjustment'])
         self.potAdjustment = min(self.potAdjustment, float(
             p.selected_strategy['maxPotAdjustment']))
 
@@ -380,6 +380,11 @@ class Decision(DecisionBase):
                 log.info("Bet1 condition met")
                 self.decision = DecisionTypes.bet1
 
+            if (self.finalBetLimit >= float(t.totalPotValue) / 2) \
+                    and (p.selected_strategy['increased_preflop_betting'] == 2):
+                log.info("Bet3 condition met")
+                self.decision = DecisionTypes.bet3
+
             # if (self.finalBetLimit > float(t.minBet)) and \
             #         (t.first_raiser_utg >= 0 or t.first_caller_utg >= 0):
             #     log.info("Bet4 condition met")
@@ -408,8 +413,8 @@ class Decision(DecisionBase):
                         log.info("Bet1 condition met")
                     # bet2
                     if self.finalBetLimit >= (t.minBet + t.bigBlind * float(p.selected_strategy['BetPlusInc'])) and ((
-                        t.gameStage == GameStages.Turn.value and t.totalPotValue > t.bigBlind * 3) or
-                        t.gameStage == GameStages.River.value) and \
+                                                                                                                             t.gameStage == GameStages.Turn.value and t.totalPotValue > t.bigBlind * 3) or
+                                                                                                                     t.gameStage == GameStages.River.value) and \
                             (not t.checkButton or not t.other_player_has_initiative or p.selected_strategy[
                                 stage + '_betting_condidion_1'] == 0):
                         self.decision = DecisionTypes.bet2
@@ -443,7 +448,7 @@ class Decision(DecisionBase):
             # flop
             if t.gameStage == GameStages.Flop.value and \
                     float(p.selected_strategy['FlopBluffMaxEquity']) > t.equity > float(
-                        p.selected_strategy['FlopBluffMinEquity']) and \
+                p.selected_strategy['FlopBluffMinEquity']) and \
                     self.decision == DecisionTypes.check and \
                     (t.playersAhead == 0 or p.selected_strategy['flop_bluffing_condidion_1'] == 0):
                 t.currentBluff = 1
@@ -456,7 +461,7 @@ class Decision(DecisionBase):
                     (not t.other_player_has_initiative or p.selected_strategy['turn_bluffing_condidion_2'] == 0) and \
                     self.decision == DecisionTypes.check and \
                     float(p.selected_strategy['TurnBluffMaxEquity']) > t.equity > float(
-                        p.selected_strategy['TurnBluffMinEquity']) and \
+                p.selected_strategy['TurnBluffMinEquity']) and \
                     (t.playersAhead == 0 or p.selected_strategy['turn_bluffing_condidion_1'] == 0):
                 t.currentBluff = 1
                 self.decision = DecisionTypes.bet_bluff
@@ -468,7 +473,7 @@ class Decision(DecisionBase):
                     (not t.other_player_has_initiative or p.selected_strategy['river_bluffing_condidion_2'] == 0) and \
                     self.decision == DecisionTypes.check and \
                     float(p.selected_strategy['RiverBluffMaxEquity']) > t.equity > float(
-                        p.selected_strategy['RiverBluffMinEquity']) and \
+                p.selected_strategy['RiverBluffMinEquity']) and \
                     (t.playersAhead == 0 or p.selected_strategy['river_bluffing_condidion_1'] == 0):
                 t.currentBluff = 1
                 self.decision = DecisionTypes.bet_bluff
@@ -532,22 +537,22 @@ class Decision(DecisionBase):
     def admin(self, t, p, h):
         if t.gameStage != GameStages.PreFlop.value:
             if int(p.selected_strategy[
-                    'minimum_bet_size']) == 2 and self.decision == DecisionTypes.bet1:
+                       'minimum_bet_size']) == 2 and self.decision == DecisionTypes.bet1:
                 self.decision = DecisionTypes.bet2
             if int(p.selected_strategy[
-                    'minimum_bet_size']) == 3 and self.decision == DecisionTypes.bet1:
+                       'minimum_bet_size']) == 3 and self.decision == DecisionTypes.bet1:
                 self.decision = DecisionTypes.bet3
             if int(p.selected_strategy[
-                    'minimum_bet_size']) == 3 and self.decision == DecisionTypes.bet2:
+                       'minimum_bet_size']) == 3 and self.decision == DecisionTypes.bet2:
                 self.decision = DecisionTypes.bet3
             if int(p.selected_strategy[
-                    'minimum_bet_size']) == 4 and self.decision == DecisionTypes.bet1:
+                       'minimum_bet_size']) == 4 and self.decision == DecisionTypes.bet1:
                 self.decision = DecisionTypes.bet4
             if int(p.selected_strategy[
-                    'minimum_bet_size']) == 4 and self.decision == DecisionTypes.bet2:
+                       'minimum_bet_size']) == 4 and self.decision == DecisionTypes.bet2:
                 self.decision = DecisionTypes.bet4
             if int(p.selected_strategy[
-                    'minimum_bet_size']) == 4 and self.decision == DecisionTypes.bet3:
+                       'minimum_bet_size']) == 4 and self.decision == DecisionTypes.bet3:
                 self.decision = DecisionTypes.bet4
 
         if t.checkButton == False and t.minCall == 0.0 and p.selected_strategy['use_pot_multiples'] == 0:
@@ -611,7 +616,7 @@ class Decision(DecisionBase):
                 self.check_deception(t, p, h)
 
             if t.allInCallButton == False and t.equity >= float(p.selected_strategy[
-                    'secondRiverBetPotMinEquity']) and t.gameStage == GameStages.River.value and h.histGameStage == GameStages.River.value:
+                                                                    'secondRiverBetPotMinEquity']) and t.gameStage == GameStages.River.value and h.histGameStage == GameStages.River.value:
                 self.decision = DecisionTypes.bet4
 
                 # self.bully(t,p,h,logger)

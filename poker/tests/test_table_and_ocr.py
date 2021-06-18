@@ -15,21 +15,21 @@ from poker.tools.mongo_manager import MongoManager
 
 def test_cropping():
     entire_screen_pil = Image.open(os.path.join(get_dir('tests', 'screenshots'), '173280759_PreFlop_0.png'))
-    top_left_corner = get_table_template_image("PartyPoker 6 Players Fast Forward $1-$2 NL Hold'em", 'topleft_corner')
+    top_left_corner = get_table_template_image("PartyPoker Old", 'topleft_corner')
     img = cv2.cvtColor(np.array(entire_screen_pil), cv2.COLOR_BGR2RGB)
     find_template_on_screen(top_left_corner, img, 0.01)
 
 
 def test_crop_func():
     entire_screen_pil = Image.open(os.path.join(get_dir('tests', 'screenshots'), '173280759_PreFlop_0.png'))
-    top_left_corner = get_table_template_image("PartyPoker 6 Players Fast Forward $1-$2 NL Hold'em", 'topleft_corner')
+    top_left_corner = get_table_template_image("PartyPoker Old", 'topleft_corner')
     cropped = crop_screenshot_with_topleft_corner(entire_screen_pil, top_left_corner)
     assert cropped
 
 
 def test_table_scraper():
     mongo = MongoManager()
-    table_dict = mongo.get_table("PartyPoker 6 Players Fast Forward $1-$2 NL Hold'em")
+    table_dict = mongo.get_table("PartyPoker Old")
     table_scraper = TableScraper(table_dict)
     table_scraper.screenshot = Image.open(os.path.join(get_dir('tests', 'screenshots'), '173280759_PreFlop_0.png'))
     table_scraper.crop_from_top_left_corner()
@@ -50,7 +50,7 @@ def test_table_scraper():
 
 def test_ocr_pp1():
     mongo = MongoManager()
-    table_dict = mongo.get_table("PartyPoker 6 Players Fast Forward $1-$2 NL Hold'em")
+    table_dict = mongo.get_table("PartyPoker Old")
     table_scraper = TableScraper(table_dict)
     table_scraper.screenshot = Image.open(os.path.join(get_dir('tests', 'screenshots'), '173280759_PreFlop_0.png'))
     table_scraper.crop_from_top_left_corner()
@@ -70,7 +70,7 @@ def test_ocr_pp1():
 
 def test_ocr_pp2():
     mongo = MongoManager()
-    table_dict = mongo.get_table("PartyPoker 6 Players Fast Forward $1-$2 NL Hold'em")
+    table_dict = mongo.get_table("PartyPoker Old")
     table_scraper = TableScraper(table_dict)
     table_scraper.screenshot = Image.open(os.path.join(get_dir('tests', 'screenshots'), '238170361_River_0.png'))
     table_scraper.crop_from_top_left_corner()
@@ -87,7 +87,7 @@ def test_ocr_pp2():
 
 def test_ocr_pp3():
     mongo = MongoManager()
-    table_dict = mongo.get_table("PartyPoker 6 Players Fast Forward $1-$2 NL Hold'em")
+    table_dict = mongo.get_table("PartyPoker Old")
     table_scraper = TableScraper(table_dict)
     table_scraper.screenshot = Image.open(os.path.join(get_dir('tests', 'screenshots'), '721575070_PreFlop_0.png'))
     table_scraper.crop_from_top_left_corner()

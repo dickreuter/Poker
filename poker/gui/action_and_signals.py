@@ -3,8 +3,8 @@
 from sys import platform
 
 import numexpr  # required for pyinstaller
+from PyQt5 import QtCore
 
-from poker.gui.setup_form import SetupForm
 
 _ = numexpr
 import matplotlib
@@ -24,12 +24,9 @@ if not (platform == "linux" or platform == "linux2"):  # pylint: disable=conside
     matplotlib.use('Qt5Agg')
 from PyQt5.QtCore import *
 from poker.scraper.table_setup_actions_and_signals import TableSetupActionAndSignals
-from poker.gui.gui_launcher import TableSetupForm
+from poker.gui.gui_launcher import TableSetupForm, GeneticAlgo, SetupForm, StrategyEditorForm, AnalyserForm
 from poker.tools.mongo_manager import MongoManager
 
-from poker.gui.genetic_algorithm_form import *  # pylint: disable=wildcard-import
-from poker.gui.strategy_manager_form import *  # pylint: disable=wildcard-import
-from poker.gui.analyser_form import *  # pylint: disable=wildcard-import
 from poker.tools.vbox_manager import VirtualBoxController
 from PyQt5.QtWidgets import QMessageBox
 import webbrowser
@@ -140,7 +137,9 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
             "FlopMinBetEquity": 100,
             "strategyIterationGames": 1,
             "RiverMinBetEquity": 100,
-            "maxPotAdjustment": 100
+            "maxPotAdjustment": 100,
+            "increased_preflop_betting": 1
+
         }
 
         self.ui = ui_main_window
@@ -282,10 +281,7 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
         self.p_edited = StrategyHandler()
         self.p_edited.read_strategy()
         self.signal_progressbar_reset.emit()
-        self.stragegy_editor_form = QtWidgets.QWidget()
-        self.ui_editor = Ui_editor_form()
-        self.ui_editor.setupUi(self.stragegy_editor_form)
-        self.stragegy_editor_form.show()
+        self.ui_editor = StrategyEditorForm()
 
         self.curveplot_preflop = CurvePlot(self.ui_editor, self.p_edited, layout='verticalLayout_preflop')
         self.curveplot_flop = CurvePlot(self.ui_editor, self.p_edited, layout='verticalLayout_flop')
@@ -322,14 +318,8 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
         self.ui.button_genetic_algorithm.setEnabled(False)
         g = GeneticAlgorithm(False, l)
         r = g.get_results()
-
-        self.genetic_algorithm_dialog = QtWidgets.QDialog()
-        self.genetic_algorithm_form = GeneticAlgorithmForm()
-        self.genetic_algorithm_form.setupUi(self.genetic_algorithm_dialog)
-        self.genetic_algorithm_dialog.show()
-
+        self.genetic_algorithm_form = GeneticAlgo()
         self.genetic_algorithm_form.textBrowser.setText(str(r))
-        self.genetic_algorithm_dialog.show()
 
         self.genetic_algorithm_form.buttonBox.accepted.connect(lambda: GeneticAlgorithm(True, l))
 
@@ -384,7 +374,6 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
         password = config.config.get('main', 'password')
         db = config.config.get('main', 'db')
 
-        self.ui_setup.db.setText(db)
         self.ui_setup.login.setText(login)
         self.ui_setup.password.setText(password)
 
@@ -392,10 +381,8 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
         config = get_config()
         config.config.set('main', 'control', self.ui_setup.comboBox_vm.currentText())
         config.config.set('main', 'montecarlo_timeout', self.ui_setup.comboBox_2.currentText())
-        config.config.set('main', 'db', self.ui_setup.db.text())
         config.config.set('main', 'login', self.ui_setup.login.text())
         config.config.set('main', 'password', self.ui_setup.password.text())
-        config.config.set('main', 'db', self.ui_setup.db.text())
         config.update_file()
         self.ui_setup.close()
 

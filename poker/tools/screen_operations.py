@@ -194,6 +194,34 @@ def cv2_to_pil(img):
     return Image.fromarray(img)
 
 
+def rotate_image(image, angle):
+    image_center = tuple(np.array(image.shape[1::-1]) / 2)
+    rot_mat = cv2.getRotationMatrix2D(image_center, angle, 1.0)
+    result = cv2.warpAffine(image, rot_mat, image.shape[1::-1], flags=cv2.INTER_LINEAR)
+    return result
+
+
+def brisk():
+    """potential alternative to template matching"""
+    # img = rotate_image(img, -7)
+    # scale = 1.07
+    # img = cv2.resize(img, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
+    BRISK = cv2.BRISK_create()
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  # Gray
+    w, h = gray.shape
+    scale_factor = 3
+    gray = cv2.resize(gray, (h * scale_factor, w * scale_factor), interpolation=cv2.INTER_AREA)
+    keypoints1, descriptors1 = BRISK.detectAndCompute(gray, None)
+    keypoints2, descriptors2 = BRISK.detectAndCompute(cropped_screenshot, None)
+    BFMatcher = cv2.BFMatcher(normType=cv2.NORM_HAMMING,
+                              crossCheck=True)
+
+    # Matching descriptor vectors using Brute Force Matcher
+    matches = BFMatcher.match(queryDescriptors=descriptors1,
+                              trainDescriptors=descriptors2)
+    log.info(len(matches))
+
+
 def check_if_image_in_range(img, screenshot, x1, y1, x2, y2, extended=False):
     cropped_screenshot = screenshot.crop((x1, y1, x2, y2))
     cropped_screenshot = pil_to_cv2(cropped_screenshot)
@@ -208,7 +236,7 @@ def is_template_in_search_area(table_dict, screenshot, image_name, image_area, p
     else:
         search_area = table_dict[image_area]
     return check_if_image_in_range(template_cv2, screenshot,
-                                   search_area['x1'], search_area['y1'], search_area['x2'], search_area['y2'], 
+                                   search_area['x1'], search_area['y1'], search_area['x2'], search_area['y2'],
                                    extended=extended)
 
 

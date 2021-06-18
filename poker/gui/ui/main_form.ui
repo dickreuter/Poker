@@ -9,9 +9,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>643</width>
-    <height>773</height>
+    <width>626</width>
+    <height>947</height>
    </rect>
+  </property>
+  <property name="baseSize">
+   <size>
+    <width>4</width>
+    <height>0</height>
+   </size>
   </property>
   <property name="font">
    <font>
@@ -25,7 +31,40 @@
    <bool>true</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QGridLayout" name="gridLayout">
+   <property name="acceptDrops">
+    <bool>false</bool>
+   </property>
+   <layout class="QGridLayout" name="_2">
+    <property name="bottomMargin">
+     <number>8</number>
+    </property>
+    <item row="0" column="1">
+     <widget class="QPushButton" name="button_table_setup">
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="toolTip">
+       <string>Learn to recognize a different table</string>
+      </property>
+      <property name="text">
+       <string>Table Setup</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="5">
+     <widget class="QPushButton" name="pushButton_help">
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Documentation</string>
+      </property>
+     </widget>
+    </item>
     <item row="8" column="0" colspan="3">
      <layout class="QVBoxLayout" name="vLayout">
       <item>
@@ -33,26 +72,27 @@
       </item>
      </layout>
     </item>
-    <item row="0" column="2" colspan="2">
-     <widget class="QLabel" name="label_11">
-      <property name="font">
-       <font>
-        <pointsize>16</pointsize>
-        <weight>75</weight>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>DeepMind PokerBot</string>
-      </property>
-     </widget>
-    </item>
     <item row="9" column="3" colspan="3">
      <layout class="QVBoxLayout" name="vLayout4">
       <item>
        <widget class="QWidget" name="widget_2" native="true"/>
       </item>
      </layout>
+    </item>
+    <item row="0" column="0">
+     <widget class="QPushButton" name="pushButton_setup">
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Setup which virtual machine the bot should access. You need to install Virtualbox to use this function (available for free). The pokerstars software will then run in the virtualbox and the pokerbot needs to run outside of the virtualbox.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="text">
+       <string>Settings</string>
+      </property>
+     </widget>
     </item>
     <item row="5" column="0" colspan="3">
      <layout class="QVBoxLayout" name="verticalLayout_7">
@@ -142,137 +182,167 @@
       </item>
      </layout>
     </item>
-    <item row="8" column="3" colspan="3">
-     <layout class="QVBoxLayout" name="vLayout2">
-      <item>
-       <widget class="QWidget" name="widget_4" native="true"/>
-      </item>
-     </layout>
-    </item>
-    <item row="0" column="0">
-     <widget class="QPushButton" name="pushButton_setup">
+    <item row="0" column="4">
+     <widget class="QPushButton" name="open_chat">
       <property name="font">
        <font>
         <pointsize>10</pointsize>
        </font>
       </property>
-      <property name="toolTip">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Setup which virtual machine the bot should access. You need to install Virtualbox to use this function (available for free). The pokerstars software will then run in the virtualbox and the pokerbot needs to run outside of the virtualbox.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-      </property>
       <property name="text">
-       <string>Settings</string>
+       <string>Telegram Chat</string>
       </property>
      </widget>
     </item>
-    <item row="5" column="3" colspan="3">
-     <layout class="QGridLayout" name="gridLayout_2">
-      <item row="5" column="0">
-       <widget class="QProgressBar" name="progress_bar">
-        <property name="toolTip">
-         <string>Shows progress when the buttons appear</string>
-        </property>
-        <property name="value">
-         <number>0</number>
-        </property>
-        <property name="textVisible">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="0">
-       <widget class="QComboBox" name="comboBox_current_strategy">
+    <item row="3" column="0" colspan="2">
+     <layout class="QVBoxLayout" name="verticalLayout_4">
+      <item>
+       <widget class="QLabel" name="label_2">
         <property name="font">
          <font>
           <pointsize>10</pointsize>
          </font>
         </property>
-        <property name="toolTip">
-         <string>Choose the strategy that the bot should use to play</string>
-        </property>
-        <property name="sizeAdjustPolicy">
-         <enum>QComboBox::AdjustToContents</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="last_decision">
-        <property name="font">
-         <font>
-          <pointsize>12</pointsize>
-          <weight>75</weight>
-          <bold>true</bold>
-         </font>
-        </property>
-        <property name="toolTip">
-         <string>Last made decision by the bot</string>
-        </property>
-        <property name="autoFillBackground">
-         <bool>false</bool>
-        </property>
-        <property name="frameShape">
-         <enum>QFrame::Panel</enum>
-        </property>
-        <property name="frameShadow">
-         <enum>QFrame::Sunken</enum>
-        </property>
         <property name="text">
-         <string>Last Decision</string>
-        </property>
-        <property name="scaledContents">
-         <bool>false</bool>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-        <property name="margin">
-         <number>1</number>
-        </property>
-        <property name="indent">
-         <number>-1</number>
+         <string>Bot absolute equity</string>
         </property>
        </widget>
       </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="status">
-        <property name="font">
-         <font>
-          <pointsize>8</pointsize>
-         </font>
-        </property>
-        <property name="toolTip">
-         <string/>
-        </property>
-        <property name="frameShadow">
-         <enum>QFrame::Sunken</enum>
-        </property>
-        <property name="text">
-         <string>I'm ready!</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignCenter</set>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="0">
-       <widget class="QComboBox" name="table_selection">
+      <item>
+       <widget class="QLabel" name="label_19">
         <property name="font">
          <font>
           <pointsize>10</pointsize>
          </font>
         </property>
-        <property name="toolTip">
-         <string>Change the table interpratation. Restart required to take effect.</string>
+        <property name="text">
+         <string>Bot range equity</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_20">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Bot relative equity</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_9">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Bot preflop sheet</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_13">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Opponent range</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_14">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Bot cards</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_16">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Table cards</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_17">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Collusion cards</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_15">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Montecarlo runs</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_18">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Other player has initiative</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Hand number</string>
         </property>
        </widget>
       </item>
      </layout>
     </item>
-    <item row="9" column="0" colspan="3">
-     <layout class="QVBoxLayout" name="vLayout3">
-      <item>
-       <widget class="QWidget" name="widget" native="true"/>
-      </item>
-     </layout>
+    <item row="0" column="2" colspan="2">
+     <widget class="QLabel" name="label_11">
+      <property name="font">
+       <font>
+        <pointsize>16</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>DeepMind PokerBot</string>
+      </property>
+     </widget>
     </item>
     <item row="3" column="5">
      <layout class="QVBoxLayout" name="verticalLayout_6">
@@ -405,142 +475,6 @@
         </property>
         <property name="text">
          <string/>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item row="3" column="3" colspan="2">
-     <layout class="QVBoxLayout" name="verticalLayout_5">
-      <item>
-       <widget class="QLabel" name="label_10">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>BB wins per 100 hands</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_6">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Assumed players</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label1">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Minimum call equity after adj</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_5">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Minimum bet equity after adj</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_7">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Required call (or pot multiple)</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_8">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Required bet (or pot multiple)</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_21">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Pot of this round</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_23">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Player pot / round pot multiple</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_3">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Final maximum call threshold</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_4">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Final maximum bet threshold</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_12">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Outs</string>
         </property>
        </widget>
       </item>
@@ -682,180 +616,258 @@
       </item>
      </layout>
     </item>
-    <item row="3" column="0" colspan="2">
-     <layout class="QVBoxLayout" name="verticalLayout_4">
-      <item>
-       <widget class="QLabel" name="label_2">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
+    <item row="5" column="3" colspan="3">
+     <layout class="QGridLayout" name="gridLayout_2">
+      <item row="5" column="0">
+       <widget class="QProgressBar" name="progress_bar">
+        <property name="toolTip">
+         <string>Shows progress when the buttons appear</string>
         </property>
-        <property name="text">
-         <string>Bot absolute equity</string>
+        <property name="value">
+         <number>0</number>
         </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_19">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Bot range equity</string>
+        <property name="textVisible">
+         <bool>false</bool>
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QLabel" name="label_20">
+      <item row="7" column="0">
+       <widget class="QComboBox" name="comboBox_current_strategy">
         <property name="font">
          <font>
           <pointsize>10</pointsize>
          </font>
         </property>
-        <property name="text">
-         <string>Bot relative equity</string>
+        <property name="toolTip">
+         <string>Choose the strategy that the bot should use to play</string>
+        </property>
+        <property name="sizeAdjustPolicy">
+         <enum>QComboBox::AdjustToContents</enum>
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QLabel" name="label_9">
+      <item row="2" column="0">
+       <widget class="QLabel" name="last_decision">
         <property name="font">
          <font>
-          <pointsize>10</pointsize>
+          <pointsize>12</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
          </font>
         </property>
+        <property name="toolTip">
+         <string>Last made decision by the bot</string>
+        </property>
+        <property name="autoFillBackground">
+         <bool>false</bool>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::Panel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Sunken</enum>
+        </property>
         <property name="text">
-         <string>Bot preflop sheet</string>
+         <string>Last Decision</string>
+        </property>
+        <property name="scaledContents">
+         <bool>false</bool>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+        <property name="margin">
+         <number>1</number>
+        </property>
+        <property name="indent">
+         <number>-1</number>
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QLabel" name="label_13">
+      <item row="4" column="0">
+       <widget class="QLabel" name="status">
         <property name="font">
          <font>
-          <pointsize>10</pointsize>
+          <pointsize>8</pointsize>
          </font>
         </property>
+        <property name="toolTip">
+         <string/>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Sunken</enum>
+        </property>
         <property name="text">
-         <string>Opponent range</string>
+         <string>I'm ready!</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QLabel" name="label_14">
+      <item row="6" column="0">
+       <widget class="QComboBox" name="table_selection">
         <property name="font">
          <font>
           <pointsize>10</pointsize>
          </font>
         </property>
-        <property name="text">
-         <string>Bot cards</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_16">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Table cards</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_17">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Collusion cards</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_15">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Montecarlo runs</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_18">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Other player has initiative</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="label">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Hand number</string>
+        <property name="toolTip">
+         <string>Change the table interpratation. Restart required to take effect.</string>
         </property>
        </widget>
       </item>
      </layout>
     </item>
-    <item row="0" column="1">
-     <widget class="QPushButton" name="button_table_setup">
-      <property name="font">
-       <font>
-        <pointsize>10</pointsize>
-       </font>
-      </property>
-      <property name="toolTip">
-       <string>Learn to recognize a different table</string>
-      </property>
-      <property name="text">
-       <string>Table Setup</string>
-      </property>
-     </widget>
+    <item row="9" column="0" colspan="3">
+     <layout class="QVBoxLayout" name="vLayout3">
+      <item>
+       <widget class="QWidget" name="widget" native="true"/>
+      </item>
+     </layout>
     </item>
-    <item row="0" column="5">
-     <widget class="QPushButton" name="pushButton_help">
-      <property name="font">
-       <font>
-        <pointsize>10</pointsize>
-       </font>
-      </property>
-      <property name="text">
-       <string>Documentation</string>
-      </property>
-     </widget>
+    <item row="3" column="3" colspan="2">
+     <layout class="QVBoxLayout" name="verticalLayout_5">
+      <item>
+       <widget class="QLabel" name="label_10">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>BB wins per 100 hands</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_6">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Assumed players</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label1">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Minimum call equity after adj</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_5">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Minimum bet equity after adj</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_7">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Required call (or pot multiple)</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_8">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Required bet (or pot multiple)</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_21">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Pot of this round</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_23">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Player pot / round pot multiple</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_3">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Final maximum call threshold</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_4">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Final maximum bet threshold</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_12">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Outs</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
-    <item row="0" column="4">
-     <widget class="QPushButton" name="open_chat">
-      <property name="font">
-       <font>
-        <pointsize>10</pointsize>
-       </font>
-      </property>
-      <property name="text">
-       <string>Telegram Chat</string>
-      </property>
-     </widget>
+    <item row="8" column="3" colspan="3">
+     <layout class="QVBoxLayout" name="vLayout2">
+      <item>
+       <widget class="QWidget" name="widget_4" native="true"/>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>

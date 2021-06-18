@@ -17,6 +17,7 @@ class BarPlotter(FigureCanvas):
         self.ui.vLayout2.insertWidget(1, self)
 
     def drawfigure(self, l, strategy):
+        self.fig.clf()
         self.axes = self.fig.add_subplot(111)  # create an axis
 
         data = l.get_stacked_bar_data('Template', strategy, 'stackedBar', last_stage='All')

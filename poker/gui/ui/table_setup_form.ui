@@ -323,55 +323,6 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="3" column="1">
-                  <widget class="QPushButton" name="my_cards_area_show">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>10</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                   <property name="baseSize">
-                    <size>
-                     <width>16</width>
-                     <height>16</height>
-                    </size>
-                   </property>
-                   <property name="font">
-                    <font>
-                     <kerning>true</kerning>
-                    </font>
-                   </property>
-                   <property name="text">
-                    <string>Show</string>
-                   </property>
-                   <property name="checkable">
-                    <bool>false</bool>
-                   </property>
-                   <property name="checked">
-                    <bool>false</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="QPushButton" name="table_cards_area_show">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="text">
-                    <string>Show</string>
-                   </property>
-                  </widget>
-                 </item>
                 </layout>
                </widget>
               </item>
@@ -381,13 +332,33 @@
                  <string>Values</string>
                 </property>
                 <layout class="QGridLayout" name="gridLayout_7">
-                 <item row="5" column="1">
-                  <widget class="QPushButton" name="current_round_pot_show">
-                   <property name="enabled">
-                    <bool>false</bool>
+                 <item row="0" column="0">
+                  <widget class="QPushButton" name="game_number">
+                   <property name="toolTip">
+                    <string>Game number for collusion, in partypoker available on top right</string>
                    </property>
                    <property name="text">
-                    <string>Show</string>
+                    <string>Game Number</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QPushButton" name="all_in_call_value">
+                   <property name="toolTip">
+                    <string>The all in call value may be in a different place in case the all in call button appears. Make sure to select the value narrowly and test it with the recognize number button</string>
+                   </property>
+                   <property name="text">
+                    <string>All in call value</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="0">
+                  <widget class="QPushButton" name="call_value">
+                   <property name="toolTip">
+                    <string>Value on the call button, make sure to select narrowly and then test by pressing the recognize number button</string>
+                   </property>
+                   <property name="text">
+                    <string>Call value</string>
                    </property>
                   </widget>
                  </item>
@@ -404,33 +375,13 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="6" column="1">
-                  <widget class="QPushButton" name="total_pot_area_show">
-                   <property name="enabled">
-                    <bool>false</bool>
-                   </property>
-                   <property name="text">
-                    <string>Show</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="0">
-                  <widget class="QPushButton" name="call_value">
+                 <item row="5" column="0">
+                  <widget class="QPushButton" name="current_round_pot">
                    <property name="toolTip">
-                    <string>Value on the call button, make sure to select narrowly and then test by pressing the recognize number button</string>
+                    <string>The pot of the current rount (e.g. flop). Select the area very narrowly and test it by pressing the recognize number button</string>
                    </property>
                    <property name="text">
-                    <string>Call value</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="0">
-                  <widget class="QPushButton" name="game_number">
-                   <property name="toolTip">
-                    <string>Game number for collusion, in partypoker available on top right</string>
-                   </property>
-                   <property name="text">
-                    <string>Game Number</string>
+                    <string>Current Round Pot value</string>
                    </property>
                   </widget>
                  </item>
@@ -447,26 +398,6 @@
                    </property>
                    <property name="text">
                     <string>Total Pot value</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="0">
-                  <widget class="QPushButton" name="all_in_call_value">
-                   <property name="toolTip">
-                    <string>The all in call value may be in a different place in case the all in call button appears. Make sure to select the value narrowly and test it with the recognize number button</string>
-                   </property>
-                   <property name="text">
-                    <string>All in call value</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="5" column="0">
-                  <widget class="QPushButton" name="current_round_pot">
-                   <property name="toolTip">
-                    <string>The pot of the current rount (e.g. flop). Select the area very narrowly and test it by pressing the recognize number button</string>
-                   </property>
-                   <property name="text">
-                    <string>Current Round Pot value</string>
                    </property>
                   </widget>
                  </item>
@@ -2715,8 +2646,8 @@ Then check the console output for error messages.</string>
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>942</width>
-               <height>69</height>
+               <width>940</width>
+               <height>68</height>
               </rect>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_8">
@@ -2761,8 +2692,8 @@ Then check the console output for error messages.</string>
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>942</width>
-               <height>623</height>
+               <width>940</width>
+               <height>620</height>
               </rect>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_3">
