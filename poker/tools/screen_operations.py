@@ -173,8 +173,9 @@ def crop_screenshot_with_topleft_corner(original_screenshot, topleft_corner):
         log.debug(f"Found to left corner at {tlc}")
         cropped_screenshot = original_screenshot.crop((tlc[0], tlc[1], tlc[0] + 1600, tlc[1] + 1200))
         return cropped_screenshot, tlc
-    elif count >1:
-        log.warning("Multiple top left corners found. That doesn't work unfortunately at this point. Make sure only one table is visible.")
+    elif count > 1:
+        log.warning(
+            "Multiple top left corners found. That doesn't work unfortunately at this point. Make sure only one table is visible.")
         return None, None
     else:
         log.warning("No top left corner found")
@@ -199,27 +200,6 @@ def rotate_image(image, angle):
     rot_mat = cv2.getRotationMatrix2D(image_center, angle, 1.0)
     result = cv2.warpAffine(image, rot_mat, image.shape[1::-1], flags=cv2.INTER_LINEAR)
     return result
-
-
-def brisk():
-    """potential alternative to template matching"""
-    # img = rotate_image(img, -7)
-    # scale = 1.07
-    # img = cv2.resize(img, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
-    BRISK = cv2.BRISK_create()
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  # Gray
-    w, h = gray.shape
-    scale_factor = 3
-    gray = cv2.resize(gray, (h * scale_factor, w * scale_factor), interpolation=cv2.INTER_AREA)
-    keypoints1, descriptors1 = BRISK.detectAndCompute(gray, None)
-    keypoints2, descriptors2 = BRISK.detectAndCompute(cropped_screenshot, None)
-    BFMatcher = cv2.BFMatcher(normType=cv2.NORM_HAMMING,
-                              crossCheck=True)
-
-    # Matching descriptor vectors using Brute Force Matcher
-    matches = BFMatcher.match(queryDescriptors=descriptors1,
-                              trainDescriptors=descriptors2)
-    log.info(len(matches))
 
 
 def check_if_image_in_range(img, screenshot, x1, y1, x2, y2, extended=False):

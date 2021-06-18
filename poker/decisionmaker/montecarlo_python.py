@@ -1,21 +1,17 @@
 __author__ = 'Nicolas Dickreuter'
-
-import os
-
-from poker.tools.helper import get_dir
-
-'''
-Runs a Montecarlo simulation to calculate the probability of winning with a certain pokerhand and a given amount of players
-'''
+"""Runs a Montecarlo simulation to calculate the probability of winning with a certain pokerhand and a given amount of players"""
+import json
 import logging
 import operator
+import os
 import time
 # import winsound
 from collections import Counter
 from copy import copy
-import json
 
 import numpy as np
+
+from poker.tools.helper import get_dir
 
 
 # pylint: disable=unidiomatic-typecheck
