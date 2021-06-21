@@ -12,9 +12,15 @@ https://sourceforge.net/projects/partypoker-pokerstars-pokerbot/
 .. figure:: doc/fullscreen1.png
 
 
+for Pokerstars, make sure your client looks like the below:
+
+.. figure:: doc/ps.jpg
+
+
 Related projects:
 Training the bot by playing against itself is a separate project which can be found here:
 https://github.com/dickreuter/neuron_poker
+
 
 
 Running the bot:
@@ -68,7 +74,7 @@ You can also get a free subscription if you make some (meaningful) contribution 
 Running via python source code
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 - Download pycharm as an IDE
-- Install python 3.8 or Anaconda (=python with packages)
+- Install python 3.7 or Anaconda (=python with packages)
 - Create an environment with ``conda create -n poker python=3.8`` or use pycharm's functionality to create a new virtual environment. Chefck youtube for details.
 - Install all the packages with ``pip install -r requirements.txt``
 - You also may need to get c++ runtime distributable: https://visualstudio.microsoft.com/downloads/
@@ -223,4 +229,4 @@ Still having problems?
 ~~~~~~~~~~~~~~~~~~~~~~
 
 - Check the log file. In the folder where you installed the pokerbot, there is a subfolder with the log files in /log. There are also screenshots in /log/screenshots that may be able to help debug the problem.
-- Create a issue on the link at the top of this github page https://github.com/dickreuter/Poker/issues or email dickreuter@gmail.com
+- Create a issue on the link at the top of this github page https://github.com/dickreuter/Poker/issues or email join the chat here: https://t.me/joinchat/HlwI8xietZJ7QNAO_P5g1Q
