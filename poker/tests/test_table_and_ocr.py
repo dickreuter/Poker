@@ -3,6 +3,7 @@ import os
 
 import cv2
 import numpy as np
+import pytest
 from PIL import Image
 
 from poker.scraper.table_scraper import TableScraper
@@ -48,6 +49,7 @@ def test_table_scraper():
     table_scraper.has_raise_button()
 
 
+@pytest.mark.skip
 def test_ocr_pp1():
     mongo = MongoManager()
     table_dict = mongo.get_table("Official Party Poker")
@@ -88,6 +90,7 @@ def test_ocr_ps1():
     assert result == 1.67
 
 
+@pytest.mark.skip
 def test_ocr_pp4():
     mongo = MongoManager()
     table_dict = mongo.get_table("Official Party Poker")
