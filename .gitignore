@@ -158,6 +158,10 @@ dmypy.json
 cython_debug/
 
 /mongodb-backup*/
+/poker/data/
+/poker/scraper/test_cards/
+/poker/scraper/training_cards/
+/poker/scraper/validate_cards/
 .vscode/
 *.xlsx
 best_strategies.js

@@ -12,15 +12,12 @@ https://sourceforge.net/projects/partypoker-pokerstars-pokerbot/
 .. figure:: doc/fullscreen1.png
 
 
-for Pokerstars, make sure your client looks like the below:
+For Pokerstars you will need to make some adjustments to the client. It needs to look exactly as the below, in order to run it with
+the Official Pokerstars Table scraper:
+
+* Make sure to match the card styles (4 color), covered card styles, and table styles.
 
 .. figure:: doc/ps-example.png
-Match the card styles (4 color), covered card styles, and table styles.
-
-
-Related projects:
-Training the bot by playing against itself is a separate project which can be found here:
-https://github.com/dickreuter/neuron_poker
 
 
 
@@ -56,7 +53,8 @@ Note:
 * Do not obstruct the view of the table as the bot is based on image recognition
 * Only one table window should be visible.
 * For best performance minimize all windows in the vm, except the table window itself
-* 
+* Don't use any dpi scaling in the virtualbox
+* In setup, try to select your virtual machine instead of direct mouse control. That way mouse movements won't obstruct you.
 
 Full version:
 --------------
@@ -76,7 +74,7 @@ Running via python source code
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 - Download pycharm as an IDE
 - Install python 3.7 or Anaconda (=python with packages)
-- Create an environment with ``conda create -n poker python=3.8`` or use pycharm's functionality to create a new virtual environment. Chefck youtube for details.
+- Create an environment with ``conda create -n poker python=3.7`` or use pycharm's functionality to create a new virtual environment. Chefck youtube for details.
 - Install all the packages with ``pip install -r requirements.txt``
 - You also may need to get c++ runtime distributable: https://visualstudio.microsoft.com/downloads/
 - Install tesseract from https://github.com/UB-Mannheim/tesseract/wiki which is needed for OCR of the numbers that are scraped
@@ -230,4 +228,10 @@ Still having problems?
 ~~~~~~~~~~~~~~~~~~~~~~
 
 - Check the log file. In the folder where you installed the pokerbot, there is a subfolder with the log files in /log. There are also screenshots in /log/screenshots that may be able to help debug the problem.
-- Create a issue on the link at the top of this github page https://github.com/dickreuter/Poker/issues or email join the chat here: https://t.me/joinchat/HlwI8xietZJ7QNAO_P5g1Q
+- Create a issue on the link at the top of this github page https://github.com/dickreuter/Poker/issues or email dickreuter@gmail.com
+
+
+Related projects
+~~~~~~~~~~~~~~~~
+Training the bot by playing against itself is a separate project which can be found here:
+https://github.com/dickreuter/neuron_poker
