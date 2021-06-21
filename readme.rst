@@ -14,7 +14,8 @@ https://sourceforge.net/projects/partypoker-pokerstars-pokerbot/
 
 for Pokerstars, make sure your client looks like the below:
 
-.. figure:: doc/ps.jpg
+.. figure:: doc/ps-example.png
+Match the card styles (4 color), covered card styles, and table styles.
 
 
 Related projects:
