@@ -1,5 +1,4 @@
 import datetime
-import inspect
 import logging
 import sys
 import threading
@@ -216,7 +215,6 @@ class TableScreenBased(Table):
         else:
             log.debug("Did not find two player cards: " + str(self.mycards))
             return False
-
 
     def init_get_other_players_info(self):
         other_player = dict()

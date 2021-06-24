@@ -7,7 +7,7 @@ import pytest
 from PIL import Image
 
 from poker.scraper.table_scraper import TableScraper
-from poker.tools.helper import get_dir
+from poker.tools.helper import get_dir, ON_CI
 from poker.tools.mongo_manager import MongoManager
 from poker.tools.screen_operations import find_template_on_screen, get_table_template_image, \
     crop_screenshot_with_topleft_corner, get_ocr_float
@@ -49,7 +49,7 @@ def test_table_scraper():
     table_scraper.has_raise_button()
 
 
-@pytest.mark.skip
+@pytest.mark.skipif(ON_CI, reason='not working with older tensorflow for linux')
 def test_ocr_pp1():
     mongo = MongoManager()
     table_dict = mongo.get_table("Official Party Poker")
@@ -90,7 +90,7 @@ def test_ocr_ps1():
     assert result == 1.67
 
 
-@pytest.mark.skip
+@pytest.mark.skipif(ON_CI, reason='not working with older tensorflow for linux')
 def test_ocr_pp4():
     mongo = MongoManager()
     table_dict = mongo.get_table("Official Party Poker")
