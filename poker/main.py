@@ -37,7 +37,7 @@ warnings.filterwarnings("ignore", message="All-NaN axis encountered")
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-version = 6.11
+version = 6.12
 ui = None
 
 
@@ -151,6 +151,7 @@ class ThreadManager(threading.Thread):
                     table_scraper_name = config.config.get('main','table_scraper_name')
                     log.info(f"Loading table scraper info for {table_scraper_name}")
                     table_dict = mongo.get_table(table_scraper_name)
+                    nn_model = None
                     if 'use_neural_network' in table_dict and table_dict['use_neural_network'] == '2':
                         nn_model = model_from_json(table_dict['model'])
                         mongo.load_table_nn_weights(table_scraper_name)
