@@ -21,3 +21,5 @@ lmfit
 openpyxl
 numexpr
 fastapi
+tensorflow-gpu
+tqdm

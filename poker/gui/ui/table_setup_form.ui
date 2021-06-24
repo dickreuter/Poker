@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1366</width>
-    <height>878</height>
+    <width>1252</width>
+    <height>816</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -54,7 +54,7 @@
                       </sizepolicy>
                      </property>
                      <property name="toolTip">
-                      <string>Only select the raise text, without the chainging element of the raise amount</string>
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Only select the raise text, without the chainging element of the raise amount &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                      </property>
                      <property name="text">
                       <string>Raise Button</string>
@@ -113,6 +113,9 @@
                    </item>
                    <item row="6" column="0">
                     <widget class="QPushButton" name="fast_fold_button">
+                     <property name="toolTip">
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select the text of the fast fold button.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                     </property>
                      <property name="text">
                       <string>Fast Fold Button</string>
                      </property>
@@ -120,6 +123,9 @@
                    </item>
                    <item row="5" column="0">
                     <widget class="QPushButton" name="fold_button">
+                     <property name="toolTip">
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select small part of the fold button text.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                     </property>
                      <property name="text">
                       <string>Fold Button</string>
                      </property>
@@ -127,6 +133,9 @@
                    </item>
                    <item row="4" column="0">
                     <widget class="QPushButton" name="check_button">
+                     <property name="toolTip">
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select the check button, or a small part of it that is unique.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                     </property>
                      <property name="text">
                       <string>Check Button</string>
                      </property>
@@ -172,7 +181,7 @@
                    <item row="1" column="0">
                     <widget class="QPushButton" name="call_button">
                      <property name="toolTip">
-                      <string>Only select a small portion of the button (e.g. the call text), without the actual call amount</string>
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Only select a small portion of the button (e.g. the call text), without the actual call amount &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                      </property>
                      <property name="text">
                       <string>Call Button</string>
@@ -271,6 +280,15 @@
                    </item>
                    <item row="3" column="0">
                     <widget class="QPushButton" name="bet_button">
+                     <property name="minimumSize">
+                      <size>
+                       <width>0</width>
+                       <height>0</height>
+                      </size>
+                     </property>
+                     <property name="toolTip">
+                      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is optional for tables where the raise button is sometimes called bet button. Here as well, just select the text without the number, to ensure it's the same all the time.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                     </property>
                      <property name="text">
                       <string>Bet Button</string>
                      </property>
@@ -628,6 +646,87 @@
             <string>Cards</string>
            </attribute>
            <layout class="QGridLayout" name="gridLayout_11">
+            <item row="2" column="0">
+             <layout class="QVBoxLayout" name="verticalLayout_3">
+              <item>
+               <widget class="QLabel" name="label_9">
+                <property name="text">
+                 <string>For Tables where cards may be different at times (e.g. rotated)</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="use_neural_network">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If this is ticked, my cards will be recognized via neural network instead of exact temlate matching. This will have a higher tolerance for recognition and allow cards to be slightly different or rotated. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="text">
+                 <string>Neural Network based recognition for My Cards</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_2">
+                <item>
+                 <widget class="QPushButton" name="left_card_area">
+                  <property name="baseSize">
+                   <size>
+                    <width>4</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Exact location of the card the bot is holding. This should be as close to the same size as the card templates so it's easier for recognition with neural network. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                  <property name="text">
+                   <string>Left Card Location</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="right_card_area">
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Exact location of the card the bot is holding. This should be as close to the same size as the card templates so it's easier for recognition with neural network. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                  <property name="text">
+                   <string>Right Card Area</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_9"/>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_10">
+                <item>
+                 <widget class="QPushButton" name="empty_card">
+                  <property name="toolTip">
+                   <string>Blank area background, before the cards are distributed.</string>
+                  </property>
+                  <property name="text">
+                   <string>Empty Card</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="empty_card_show">
+                  <property name="enabled">
+                   <bool>false</bool>
+                  </property>
+                  <property name="toolTip">
+                   <string>View the selected template for empty card</string>
+                  </property>
+                  <property name="text">
+                   <string>V</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </item>
             <item row="0" column="0">
              <widget class="QGroupBox" name="groupBox_5">
               <property name="toolTip">
@@ -1832,23 +1931,11 @@
                  </item>
                  <item>
                   <layout class="QGridLayout" name="gridLayout_19">
-                   <item row="0" column="0" colspan="2">
-                    <widget class="QLabel" name="label_8">
-                     <property name="font">
-                      <font>
-                       <pointsize>16</pointsize>
-                      </font>
+                   <item row="1" column="1">
+                    <widget class="QPushButton" name="card_2h_show">
+                     <property name="enabled">
+                      <bool>false</bool>
                      </property>
-                     <property name="text">
-                      <string>♥</string>
-                     </property>
-                     <property name="alignment">
-                      <set>Qt::AlignCenter</set>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="0">
-                    <widget class="QPushButton" name="card_2h">
                      <property name="maximumSize">
                       <size>
                        <width>35</width>
@@ -1856,7 +1943,7 @@
                       </size>
                      </property>
                      <property name="text">
-                      <string>2H</string>
+                      <string>V</string>
                      </property>
                     </widget>
                    </item>
@@ -1873,151 +1960,8 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="3" column="0">
-                    <widget class="QPushButton" name="card_4h">
-                     <property name="maximumSize">
-                      <size>
-                       <width>35</width>
-                       <height>16777215</height>
-                      </size>
-                     </property>
-                     <property name="text">
-                      <string>4H</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="4" column="0">
-                    <widget class="QPushButton" name="card_5h">
-                     <property name="maximumSize">
-                      <size>
-                       <width>35</width>
-                       <height>16777215</height>
-                      </size>
-                     </property>
-                     <property name="text">
-                      <string>5H</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="5" column="0">
-                    <widget class="QPushButton" name="card_6h">
-                     <property name="maximumSize">
-                      <size>
-                       <width>35</width>
-                       <height>16777215</height>
-                      </size>
-                     </property>
-                     <property name="text">
-                      <string>6H</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="6" column="0">
-                    <widget class="QPushButton" name="card_7h">
-                     <property name="maximumSize">
-                      <size>
-                       <width>35</width>
-                       <height>16777215</height>
-                      </size>
-                     </property>
-                     <property name="text">
-                      <string>7H</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="7" column="0">
-                    <widget class="QPushButton" name="card_8h">
-                     <property name="maximumSize">
-                      <size>
-                       <width>35</width>
-                       <height>16777215</height>
-                      </size>
-                     </property>
-                     <property name="text">
-                      <string>8H</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="8" column="0">
-                    <widget class="QPushButton" name="card_9h">
-                     <property name="maximumSize">
-                      <size>
-                       <width>35</width>
-                       <height>16777215</height>
-                      </size>
-                     </property>
-                     <property name="text">
-                      <string>9H</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="9" column="0">
-                    <widget class="QPushButton" name="card_th">
-                     <property name="maximumSize">
-                      <size>
-                       <width>35</width>
-                       <height>16777215</height>
-                      </size>
-                     </property>
-                     <property name="text">
-                      <string>TH</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="10" column="0">
-                    <widget class="QPushButton" name="card_jh">
-                     <property name="maximumSize">
-                      <size>
-                       <width>35</width>
-                       <height>16777215</height>
-                      </size>
-                     </property>
-                     <property name="text">
-                      <string>JH</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="11" column="0">
-                    <widget class="QPushButton" name="card_qh">
-                     <property name="maximumSize">
-                      <size>
-                       <width>35</width>
-                       <height>16777215</height>
-                      </size>
-                     </property>
-                     <property name="text">
-                      <string>QH</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="12" column="0">
-                    <widget class="QPushButton" name="card_kh">
-                     <property name="maximumSize">
-                      <size>
-                       <width>35</width>
-                       <height>16777215</height>
-                      </size>
-                     </property>
-                     <property name="text">
-                      <string>KH</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="13" column="0">
-                    <widget class="QPushButton" name="card_ah">
-                     <property name="maximumSize">
-                      <size>
-                       <width>35</width>
-                       <height>16777215</height>
-                      </size>
-                     </property>
-                     <property name="text">
-                      <string>AH</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="1">
-                    <widget class="QPushButton" name="card_2h_show">
+                   <item row="5" column="1">
+                    <widget class="QPushButton" name="card_6h_show">
                      <property name="enabled">
                       <bool>false</bool>
                      </property>
@@ -2048,11 +1992,8 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="3" column="1">
-                    <widget class="QPushButton" name="card_4h_show">
-                     <property name="enabled">
-                      <bool>false</bool>
-                     </property>
+                   <item row="6" column="0">
+                    <widget class="QPushButton" name="card_7h">
                      <property name="maximumSize">
                       <size>
                        <width>35</width>
@@ -2060,76 +2001,195 @@
                       </size>
                      </property>
                      <property name="text">
-                      <string>V</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="4" column="1">
-                    <widget class="QPushButton" name="card_5h_show">
-                     <property name="enabled">
-                      <bool>false</bool>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>35</width>
-                       <height>16777215</height>
-                      </size>
-                     </property>
-                     <property name="text">
-                      <string>V</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="5" column="1">
-                    <widget class="QPushButton" name="card_6h_show">
-                     <property name="enabled">
-                      <bool>false</bool>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>35</width>
-                       <height>16777215</height>
-                      </size>
-                     </property>
-                     <property name="text">
-                      <string>V</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="6" column="1">
-                    <widget class="QPushButton" name="card_7h_show">
-                     <property name="enabled">
-                      <bool>false</bool>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>35</width>
-                       <height>16777215</height>
-                      </size>
-                     </property>
-                     <property name="text">
-                      <string>V</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="7" column="1">
-                    <widget class="QPushButton" name="card_8h_show">
-                     <property name="enabled">
-                      <bool>false</bool>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>35</width>
-                       <height>16777215</height>
-                      </size>
-                     </property>
-                     <property name="text">
-                      <string>V</string>
+                      <string>7H</string>
                      </property>
                     </widget>
                    </item>
                    <item row="8" column="1">
                     <widget class="QPushButton" name="card_9h_show">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>35</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>V</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="7" column="0">
+                    <widget class="QPushButton" name="card_8h">
+                     <property name="maximumSize">
+                      <size>
+                       <width>35</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>8H</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="4" column="0">
+                    <widget class="QPushButton" name="card_5h">
+                     <property name="maximumSize">
+                      <size>
+                       <width>35</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>5H</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="14" column="1">
+                    <widget class="QPushButton" name="card_ah_show">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>35</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>V</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="8" column="0">
+                    <widget class="QPushButton" name="card_9h">
+                     <property name="maximumSize">
+                      <size>
+                       <width>35</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>9H</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="10" column="0">
+                    <widget class="QPushButton" name="card_jh">
+                     <property name="maximumSize">
+                      <size>
+                       <width>35</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>JH</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="0" column="0" colspan="2">
+                    <widget class="QLabel" name="label_8">
+                     <property name="font">
+                      <font>
+                       <pointsize>16</pointsize>
+                      </font>
+                     </property>
+                     <property name="text">
+                      <string>♥</string>
+                     </property>
+                     <property name="alignment">
+                      <set>Qt::AlignCenter</set>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="0">
+                    <widget class="QPushButton" name="card_4h">
+                     <property name="maximumSize">
+                      <size>
+                       <width>35</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>4H</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="11" column="0">
+                    <widget class="QPushButton" name="card_qh">
+                     <property name="maximumSize">
+                      <size>
+                       <width>35</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>QH</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="10" column="1">
+                    <widget class="QPushButton" name="card_jh_show">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>35</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>V</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="9" column="0">
+                    <widget class="QPushButton" name="card_th">
+                     <property name="maximumSize">
+                      <size>
+                       <width>35</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>TH</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="12" column="1">
+                    <widget class="QPushButton" name="card_kh_show">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>35</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>V</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="12" column="0">
+                    <widget class="QPushButton" name="card_kh">
+                     <property name="maximumSize">
+                      <size>
+                       <width>35</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>KH</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="7" column="1">
+                    <widget class="QPushButton" name="card_8h_show">
                      <property name="enabled">
                       <bool>false</bool>
                      </property>
@@ -2160,22 +2220,6 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="10" column="1">
-                    <widget class="QPushButton" name="card_jh_show">
-                     <property name="enabled">
-                      <bool>false</bool>
-                     </property>
-                     <property name="maximumSize">
-                      <size>
-                       <width>35</width>
-                       <height>16777215</height>
-                      </size>
-                     </property>
-                     <property name="text">
-                      <string>V</string>
-                     </property>
-                    </widget>
-                   </item>
                    <item row="11" column="1">
                     <widget class="QPushButton" name="card_qh_show">
                      <property name="enabled">
@@ -2192,8 +2236,21 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="12" column="1">
-                    <widget class="QPushButton" name="card_kh_show">
+                   <item row="14" column="0">
+                    <widget class="QPushButton" name="card_ah">
+                     <property name="maximumSize">
+                      <size>
+                       <width>35</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>AH</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="1">
+                    <widget class="QPushButton" name="card_4h_show">
                      <property name="enabled">
                       <bool>false</bool>
                      </property>
@@ -2208,8 +2265,50 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="13" column="1">
-                    <widget class="QPushButton" name="card_ah_show">
+                   <item row="5" column="0">
+                    <widget class="QPushButton" name="card_6h">
+                     <property name="maximumSize">
+                      <size>
+                       <width>35</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>6H</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="4" column="1">
+                    <widget class="QPushButton" name="card_5h_show">
+                     <property name="enabled">
+                      <bool>false</bool>
+                     </property>
+                     <property name="maximumSize">
+                      <size>
+                       <width>35</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>V</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <widget class="QPushButton" name="card_2h">
+                     <property name="maximumSize">
+                      <size>
+                       <width>35</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>2H</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="6" column="1">
+                    <widget class="QPushButton" name="card_7h_show">
                      <property name="enabled">
                       <bool>false</bool>
                      </property>
@@ -2286,6 +2385,22 @@
                 </layout>
                </item>
               </layout>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QPushButton" name="train_model">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="toolTip">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Train the Neural Network to recognize the cards. This can take several minutes. For faster speed install CUDA and CUDNN (To find out more google Tensorflow GPU setup). The whole process can take up to 30 minutes. Please be patient.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
+              <property name="text">
+               <string>Train Neural Network</string>
+              </property>
              </widget>
             </item>
            </layout>
@@ -2481,14 +2596,14 @@ Then check the console output for error messages.</string>
                   </sizepolicy>
                  </property>
                  <property name="toolTip">
-                  <string>Select a table to edit. You can only edit your own tables. To edit take a screenshot, crop it with the cop left corner, then select the area top left and bottom right and then choose the corresponding button</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select a table to edit. You can only edit your own tables. To edit take a screenshot, crop it with the cop left corner, then select the area top left and bottom right and then choose the corresponding button &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                 </widget>
                </item>
                <item>
                 <widget class="QPushButton" name="load">
                  <property name="toolTip">
-                  <string>Load the template to show which items have already been learned. They can still be overwritten by simply marking the area or image and then pressing the corresponding butotn.</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Load the template to show which items have already been learned. They can still be overwritten by simply marking the area or image and then pressing the corresponding button. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="text">
                   <string>Load template</string>
@@ -2498,7 +2613,7 @@ Then check the console output for error messages.</string>
                <item>
                 <widget class="QPushButton" name="button_delete">
                  <property name="toolTip">
-                  <string>Load the template to show which items have already been learned. They can still be overwritten by simply marking the area or image and then pressing the corresponding butotn.</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Load the template to show which items have already been learned. They can still be overwritten by simply marking the area or image and then pressing the corresponding button.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="text">
                   <string>delete</string>
@@ -2522,6 +2637,9 @@ Then check the console output for error messages.</string>
                    <verstretch>0</verstretch>
                   </sizepolicy>
                  </property>
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Please use clear naming so other can recognize what table this template can be used for. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
                 </widget>
                </item>
                <item>
@@ -2537,7 +2655,7 @@ Then check the console output for error messages.</string>
                <item>
                 <widget class="QPushButton" name="copy_to_new">
                  <property name="toolTip">
-                  <string>Take current template and create a new one that you can then edit</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Take current template and create a new one that you can then edit &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="text">
                   <string>copy to new</string>
@@ -2593,7 +2711,7 @@ Then check the console output for error messages.</string>
             <item>
              <widget class="QPushButton" name="tesseract">
               <property name="toolTip">
-               <string>Tries to use OCR on the last marked location to see if a number of name can be correctly recognized</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Tries to use OCR on the last marked location to see if a number of name can be correctly recognized. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
                <string>Recognize number</string>
@@ -2646,7 +2764,7 @@ Then check the console output for error messages.</string>
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>940</width>
+               <width>826</width>
                <height>68</height>
               </rect>
              </property>
@@ -2692,8 +2810,8 @@ Then check the console output for error messages.</string>
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>940</width>
-               <height>620</height>
+               <width>826</width>
+               <height>558</height>
               </rect>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_3">

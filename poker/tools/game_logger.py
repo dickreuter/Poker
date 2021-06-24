@@ -8,7 +8,7 @@ import pandas as pd
 import requests
 from fastapi.encoders import jsonable_encoder
 
-from poker.tools.helper import get_config
+from poker.tools.helper import COMPUTER_NAME, get_config
 from poker.tools.mongo_manager import MongoManager
 from poker.tools.singleton import Singleton
 
@@ -37,7 +37,8 @@ class GameLogger(metaclass=Singleton):
         password = config.config.get('main', 'password')
         response = requests.post(
             URL + "get_played_strategy_list", params={"login": login,
-                                                      "password": password})
+                                                      "password": password,
+                                                      "computer_name": COMPUTER_NAME})
         return response.json()
 
     def write_log_file(self, p, h, t, d):

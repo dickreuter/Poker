@@ -15,7 +15,11 @@ from logging import handlers
 import pandas as pd
 import requests
 
-codebase = os.path.abspath(os.path.join(__file__, '..', '..'))
+if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+    codebase = os.path.abspath(os.path.join(__file__, '..', '..', '..'))
+else:
+    codebase = os.path.abspath(os.path.join(__file__, '..', '..'))
+
 log = logging.getLogger(__name__)
 COMPUTER_NAME = os.getenv('COMPUTERNAME')
 
@@ -173,8 +177,6 @@ def get_dir(*paths):
 
     """
     if paths[0] == 'codebase':  # pylint: disable=no-else-return
-        if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
-            return os.path.dirname(codebase)
         return codebase
     else:
         # check if entry in config.ini
@@ -308,7 +310,7 @@ def _keys_to_tuple(args, kwargs):
 
 def open_payment_link():
     config = get_config()
-    URL = config.config.get('main','db')
+    URL = config.config.get('main', 'db')
     c = requests.post(URL + "get_internal").json()[0]
     payment_link = c['payment_link']
     webbrowser.open(payment_link, new=1)

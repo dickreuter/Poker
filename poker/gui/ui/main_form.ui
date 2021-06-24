@@ -2,21 +2,10 @@
 <ui version="4.0">
  <class>Pokerbot</class>
  <widget class="QMainWindow" name="Pokerbot">
-  <property name="enabled">
-   <bool>true</bool>
-  </property>
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>626</width>
-    <height>947</height>
-   </rect>
-  </property>
-  <property name="baseSize">
+  <property name="minimumSize">
    <size>
-    <width>4</width>
-    <height>0</height>
+    <width>0</width>
+    <height>900</height>
    </size>
   </property>
   <property name="font">
@@ -26,9 +15,6 @@
   </property>
   <property name="windowTitle">
    <string>Pokerbot</string>
-  </property>
-  <property name="autoFillBackground">
-   <bool>true</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="acceptDrops">
@@ -64,13 +50,6 @@
        <string>Documentation</string>
       </property>
      </widget>
-    </item>
-    <item row="8" column="0" colspan="3">
-     <layout class="QVBoxLayout" name="vLayout">
-      <item>
-       <widget class="QWidget" name="widget_3" native="true"/>
-      </item>
-     </layout>
     </item>
     <item row="9" column="3" colspan="3">
      <layout class="QVBoxLayout" name="vLayout4">
@@ -866,6 +845,13 @@
      <layout class="QVBoxLayout" name="vLayout2">
       <item>
        <widget class="QWidget" name="widget_4" native="true"/>
+      </item>
+     </layout>
+    </item>
+    <item row="8" column="0" colspan="3">
+     <layout class="QVBoxLayout" name="vLayout">
+      <item>
+       <widget class="QWidget" name="widget_3" native="true"/>
       </item>
      </layout>
     </item>

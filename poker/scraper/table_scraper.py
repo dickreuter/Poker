@@ -1,11 +1,17 @@
 """Recognize table"""
 import logging
 
-from poker.tools.screen_operations import take_screenshot, crop_screenshot_with_topleft_corner, \
-    is_template_in_search_area, binary_pil_to_cv2, ocr
+import cv2
+import numpy as np
+from tensorflow.keras.preprocessing.image import img_to_array
+
 from poker.scraper.table_setup_actions_and_signals import CARD_SUITES, CARD_VALUES
+from poker.tools.screen_operations import take_screenshot, crop_screenshot_with_topleft_corner, \
+    is_template_in_search_area, binary_pil_to_cv2, ocr, pil_to_cv2
 
 log = logging.getLogger(__name__)
+
+
 class TableScraper:
     def __init__(self, table_dict):
         self.table_dict = table_dict
@@ -55,6 +61,10 @@ class TableScraper:
     def get_my_cards2(self):
         """Get my cards"""
         self.my_cards = []
+
+        if 'use_neural_network' in self.table_dict and self.table_dict['use_neural_network'] == '2':
+            return self.get_my_cards_nn()
+
         for value in CARD_VALUES:
             for suit in CARD_SUITES:
                 if is_template_in_search_area(self.table_dict, self.screenshot,
@@ -65,6 +75,43 @@ class TableScraper:
             log.warning("My cards not recognized")
         log.info(f"My cards: {self.my_cards}")
         return True
+
+    def get_my_cards_nn(self):
+        left_card_area = self.table_dict['left_card_area']
+        right_card_area = self.table_dict['right_card_area']
+        left_card = self.screenshot.crop(
+            (left_card_area['x1'], left_card_area['y1'], left_card_area['x2'], left_card_area['y2']))
+        right_card = self.screenshot.crop(
+            (right_card_area['x1'], right_card_area['y1'], right_card_area['x2'], right_card_area['y2']))
+        self.gui_signals.signal_progressbar_increase.emit(5)
+        self.mycards = []
+
+        def predict(pil_image):
+            img = pil_to_cv2(pil_image)
+            img = cv2.resize(img, (15, 50))
+            x = img_to_array(img)
+            x = x.reshape((1,) + x.shape)
+            x = x * 0.02
+
+            prediction = np.argmax(self.nn_model.predict(x))
+            card = self.table_dict['class_mapping'][str(prediction)]
+            return card
+
+        card1 = predict(left_card)
+        card2 = predict(right_card)
+        self.mycards.append(card1)
+        self.mycards.append(card2)
+
+        for i in range(2):
+            if 'empty' in self.mycards:
+                self.mycards.remove('empty')
+
+        if len(self.mycards) == 2:
+            log.info("My cards: " + str(self.mycards))
+            return True
+        else:
+            log.debug("Did not find two player cards: " + str(self.mycards))
+            return False
 
     def get_table_cards2(self):
         """Get the cards on the table"""
@@ -179,7 +226,7 @@ class TableScraper:
     def has_bet_button(self):
         """Check if bet button is present"""
         self.bet_button = is_template_in_search_area(self.table_dict, self.screenshot,
-                                                       'bet_button', 'buttons_search_area')
+                                                     'bet_button', 'buttons_search_area')
         log.info(f"Bet button found: {self.bet_button}")
         return self.bet_button
 
@@ -201,7 +248,7 @@ class TableScraper:
         log.info(f"Call value: {self.call_value}")
         if round(self.call_value) >= 90:
             log.warning("Correcting call value from >90")
-            self.call_value -=90
+            self.call_value -= 90
         return self.call_value
 
     def get_raise_value(self):
@@ -210,7 +257,7 @@ class TableScraper:
         log.info(f"Raise value: {self.raise_value}")
         if round(self.raise_value) >= 90:
             log.warning("Correcting raise value from >90")
-            self.raise_value -=90
+            self.raise_value -= 90
         return self.raise_value
 
     def get_game_number_on_screen2(self):
