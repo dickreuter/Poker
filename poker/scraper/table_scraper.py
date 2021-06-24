@@ -1,13 +1,11 @@
 """Recognize table"""
 import logging
 
-import cv2
-import numpy as np
-from tensorflow.keras.preprocessing.image import img_to_array
-
+from poker.scraper.table_scraper_nn import predict
 from poker.scraper.table_setup_actions_and_signals import CARD_SUITES, CARD_VALUES
+from poker.tools.helper import get_dir
 from poker.tools.screen_operations import take_screenshot, crop_screenshot_with_topleft_corner, \
-    is_template_in_search_area, binary_pil_to_cv2, ocr, pil_to_cv2
+    is_template_in_search_area, binary_pil_to_cv2, ocr
 
 log = logging.getLogger(__name__)
 
@@ -86,25 +84,23 @@ class TableScraper:
         self.gui_signals.signal_progressbar_increase.emit(5)
         self.mycards = []
 
-        def predict(pil_image):
-            img = pil_to_cv2(pil_image)
-            img = cv2.resize(img, (15, 50))
-            x = img_to_array(img)
-            x = x.reshape((1,) + x.shape)
-            x = x * 0.02
-
-            prediction = np.argmax(self.nn_model.predict(x))
-            card = self.table_dict['class_mapping'][str(prediction)]
-            return card
-
-        card1 = predict(left_card)
-        card2 = predict(right_card)
+        card1 = predict(left_card, self.nn_model, self.table_dict['class_mapping'])
+        card2 = predict(right_card, self.nn_model, self.table_dict['class_mapping'])
         self.mycards.append(card1)
         self.mycards.append(card2)
 
+        try:
+            left_card.save(get_dir('log') + '/pics/' + card1 + '.png')
+        except:
+            pass
+        try:
+            right_card.save(get_dir('log') + '/pics/' + card2 + '.png')
+        except:
+            pass
+
         for i in range(2):
-            if 'empty' in self.mycards:
-                self.mycards.remove('empty')
+            if 'empty_card' in self.mycards:
+                self.mycards.remove('empty_card')
 
         if len(self.mycards) == 2:
             log.info("My cards: " + str(self.mycards))

@@ -76,10 +76,12 @@ class MongoManager(metaclass=Singleton):
         return response
 
     def load_table_nn_weights(self, table_name: str):
+        log.info("Downloading neural network weights for card recognition with tolerance...")
         weights_str = requests.post(URL + "get_tensorflow_weights", params={'table_name': table_name}).json()
         weights = base64.b64decode(weights_str)
         with open(SCRAPER_DIR + '/loaded_model.h5', 'wb') as fh:
             fh.write(weights)
+        log.info("Download complete")
 
     def load_table_image(self, image_name, table_name):
         """load table image"""

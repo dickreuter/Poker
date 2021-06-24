@@ -22,9 +22,9 @@ from poker.tools.helper import get_dir
 from poker.tools.mongo_manager import MongoManager
 
 SCRAPER_DIR = get_dir('scraper')
-TRAIN_FOLDER = "training_cards"
-VALIDATE_FOLDER = "validate_cards"
-TEST_FOLDER = "test_cards"
+TRAIN_FOLDER = get_dir('scraper', "training_cards")
+VALIDATE_FOLDER = get_dir('scraper', "validate_cards")
+TEST_FOLDER = get_dir('tests', "test_cards")
 
 log = logging.getLogger(__name__)
 
@@ -67,14 +67,13 @@ class CardNeuralNetwork():
     def create_test_images(self):
         shutil.rmtree(TRAIN_FOLDER, ignore_errors=True)
         shutil.rmtree(VALIDATE_FOLDER, ignore_errors=True)
-        shutil.rmtree(TEST_FOLDER, ignore_errors=True)
 
         log.info("Augmenting data with random pictures based on templates")
 
         datagen = ImageDataGenerator(
-            rotation_range=10,
-            width_shift_range=0.1,
-            height_shift_range=0.1,
+            rotation_range=15,
+            width_shift_range=0.2,
+            height_shift_range=0.2,
             shear_range=0.05,
             zoom_range=0.1,
             horizontal_flip=False,
@@ -92,7 +91,7 @@ class CardNeuralNetwork():
             else:
                 cards[key] = value
 
-        for folder in [TRAIN_FOLDER, VALIDATE_FOLDER, TEST_FOLDER]:
+        for folder in [TRAIN_FOLDER, VALIDATE_FOLDER]:
             card_ranks_original = '23456789TJQKA'
             original_suits = 'CDHS'
 
@@ -100,6 +99,7 @@ class CardNeuralNetwork():
             for c in card_ranks_original:
                 for s in original_suits:
                     namelist.append(c + s)
+            namelist.append('empty_card')
 
             for name in tqdm(namelist):
                 img = cards[name.lower()]  # this is a PIL image
@@ -115,13 +115,12 @@ class CardNeuralNetwork():
                 if not os.path.exists(directory):
                     os.makedirs(directory)
 
-                for _ in datagen.flow(x, batch_size=100,
-                                      save_to_dir=directory,
+                for _ in datagen.flow(x, save_to_dir=directory,
                                       save_prefix=name,
                                       save_format='png',
                                       ):
                     i += 1
-                    if i > 100:
+                    if i > 250:
                         break  # otherwise the generator would loop indefinitely
 
     def train_neural_network(self):
@@ -132,7 +131,7 @@ class CardNeuralNetwork():
             horizontal_flip=False).flow_from_directory(
             directory=os.path.join(SCRAPER_DIR, TRAIN_FOLDER),
             target_size=(img_height, img_width),
-            batch_size=100,
+            batch_size=128,
             class_mode='binary',
             color_mode='rgb')
 
@@ -143,20 +142,11 @@ class CardNeuralNetwork():
             horizontal_flip=False).flow_from_directory(
             directory=os.path.join(SCRAPER_DIR, VALIDATE_FOLDER),
             target_size=(img_height, img_width),
-            batch_size=100,
+            batch_size=128,
             class_mode='binary',
             color_mode='rgb')
 
-        self.test_generator = ImageDataGenerator(
-            rescale=0.02).flow_from_directory(
-            directory=os.path.join(SCRAPER_DIR, TEST_FOLDER),
-            target_size=(img_height, img_width),
-            batch_size=1,
-            shuffle=True,
-            class_mode='binary',
-            color_mode='rgb')
-
-        num_classes = 52
+        num_classes = 53
         input_shape = (50, 15, 3)
         epochs = 20
 
@@ -205,9 +195,9 @@ class CardNeuralNetwork():
                   validation_data=self.validation_generator,
                   callbacks=[early_stop])
         self.model = model
-        score = model.evaluate(self.test_generator, steps=52)
-        print('Test loss:', score[0])
-        print('Test accuracy:', score[1])
+        score = model.evaluate(self.validation_generator, steps=53)
+        print('Validation loss:', score[0])
+        print('Validation accuracy:', score[1])
 
     def save_model_to_disk(self):
         # serialize model to JSON
@@ -225,8 +215,8 @@ class CardNeuralNetwork():
 
     def save_model_to_db(self, table_name):
         log.info("Save model to database")
-        json_file = open(SCRAPER_DIR + '/model.json', 'r')
-        loaded_model_json = json_file.read()
+        with open(SCRAPER_DIR + '/model.json', 'r') as json_file:
+            loaded_model_json = json_file.read()
         with open(SCRAPER_DIR + "/model_classes.json") as json_file:
             self.class_mapping = json.load(json_file)
 
@@ -240,9 +230,8 @@ class CardNeuralNetwork():
     def load_model(self):
         log.info("Loading model from disk")
         # load json and create model
-        json_file = open(SCRAPER_DIR + '/model.json', 'r')
-        loaded_model_json = json_file.read()
-        json_file.close()
+        with open(SCRAPER_DIR + '/model.json', 'r') as json_file:
+            loaded_model_json = json_file.read()
         self.loaded_model = model_from_json(loaded_model_json)
         # load weights into new model
         self.loaded_model.load_weights(SCRAPER_DIR + "/model.h5")
@@ -251,31 +240,20 @@ class CardNeuralNetwork():
 
     def predict(self, file):
         print(file)
-        if type(file) == str:
-            img = cv2.imread(file)  # this is a PIL image
-            img = cv2.resize(img, (15, 50))
-            x = img_to_array(img)
-            x = x.reshape((1,) + x.shape)
-            x = x * 0.02
-        else:
-            x = file
-
-        prediction = np.argmax(self.loaded_model.predict(x))
-        return self.class_mapping[str(prediction)]
+        img = cv2.imread(file)
+        prediction = predict(img, self.loaded_model, self.class_mapping)
+        return prediction
 
 
-if __name__ == '__main__':
-    n = CardNeuralNetwork()
-    # n.create_test_images()
+# actual predict function
+def predict(pil_image, nn_model, mapping):
+    img = pil_to_cv2(pil_image)
+    img = adjust_colors(img)
+    img = cv2.resize(img, (15, 50))
+    x = img_to_array(img)
+    x = x.reshape((1,) + x.shape)
+    x = x * 0.02
 
-    n.train_neural_network()
-
-    n.load_model()
-    n.load_model()
-
-    for card in ['3H', 'AS', '5C', 'KS']:
-        filename = os.listdir(f'{TEST_FOLDER}/{card}/')[0]
-        filename = f'{TEST_FOLDER}/{card}/' + filename
-        prediction = n.predict(filename)
-        print(prediction)
-        print(f"Correct: {card == prediction}")
+    prediction = np.argmax(nn_model.predict(x))
+    card = mapping[str(prediction)]
+    return card

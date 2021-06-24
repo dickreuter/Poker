@@ -22,6 +22,7 @@ else:
 
 log = logging.getLogger(__name__)
 COMPUTER_NAME = os.getenv('COMPUTERNAME')
+ON_CI = os.environ.get('ENV') == 'CI'
 
 
 class Singleton(type):
