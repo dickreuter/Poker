@@ -7,10 +7,12 @@ import requests
 from PIL import Image
 from fastapi.encoders import jsonable_encoder
 
-from poker.tools.helper import COMPUTER_NAME, get_config
+from poker.tools.helper import COMPUTER_NAME, get_config, get_dir
 from poker.tools.singleton import Singleton
 
 TABLES_COLLECTION = 'tables'
+SCRAPER_DIR = get_dir('scraper')
+
 log = logging.getLogger(__name__)
 
 config = get_config()
@@ -22,8 +24,8 @@ class MongoManager(metaclass=Singleton):
 
     def __init__(self):
         """Initialize connection as singleton"""
-        self.login = config.config.get('main','login')
-        self.password = config.config.get('main','password')
+        self.login = config.config.get('main', 'login')
+        self.password = config.config.get('main', 'password')
 
     def save_image(self, table_name, label, image):
         """
@@ -54,6 +56,30 @@ class MongoManager(metaclass=Singleton):
                                                                    'table_name': table_name}).json()
         log.info(response)
         return True
+
+    def update_state(self, state, label, table_name):
+        """update table image"""
+        response = requests.post(URL + "update_state", params={'state': state,
+                                                               'label': label,
+                                                               'table_name': table_name}).json()
+        log.info(response)
+        return True
+
+    def update_tensorflow_model(self, table_name: str, hdf5_file: bytes, model_str: str, class_mapping: str):
+        response = requests.post(URL + "update_tensorflow_model",
+                                 files={'hdf5_file': hdf5_file},
+                                 data={'model_str': model_str,
+                                       'class_mapping': class_mapping,
+                                       'table_name': table_name
+                                       }
+                                 )
+        return response
+
+    def load_table_nn_weights(self, table_name: str):
+        weights_str = requests.post(URL + "get_tensorflow_weights", params={'table_name': table_name}).json()
+        weights = base64.b64decode(weights_str)
+        with open(SCRAPER_DIR + '/loaded_model.h5', 'wb') as fh:
+            fh.write(weights)
 
     def load_table_image(self, image_name, table_name):
         """load table image"""

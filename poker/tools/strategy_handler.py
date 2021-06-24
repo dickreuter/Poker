@@ -6,7 +6,7 @@ import time
 
 import requests
 
-from poker.tools.helper import get_config
+from poker.tools.helper import COMPUTER_NAME, get_config
 
 config = get_config()
 URL = config.config.get('main', 'db')
@@ -26,7 +26,8 @@ class StrategyHandler:
         login = config.config.get('main', 'login')
         password = config.config.get('main', 'password')
         lst = requests.post(URL + "get_playable_strategy_list", params={"login": login,
-                                                                        "password": password}).json()
+                                                                        "password": password,
+                                                                        "computer_name": COMPUTER_NAME}).json()
         return lst
 
     def check_defaults(self):

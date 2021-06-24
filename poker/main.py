@@ -10,6 +10,7 @@ import matplotlib
 import numpy as np
 import pandas as pd
 from PyQt5 import QtGui, QtWidgets
+from tensorflow.keras.models import model_from_json
 
 if platform not in ["linux", "linux2"]:
     matplotlib.use('Qt5Agg')
@@ -22,7 +23,7 @@ from poker.gui.action_and_signals import StrategyHandler, UIActionAndSignals
 from poker.gui.gui_launcher import UiPokerbot
 from poker.scraper.table_screen_based import TableScreenBased
 from poker.tools.game_logger import GameLogger
-from poker.tools.helper import init_logger, get_config
+from poker.tools.helper import init_logger, get_config, get_dir
 from poker.tools.mongo_manager import MongoManager
 from poker.tools.mouse_mover import MouseMoverTableBased
 from poker.tools.update_checker import UpdateChecker
@@ -36,7 +37,7 @@ warnings.filterwarnings("ignore", message="All-NaN axis encountered")
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-version = 6.09
+version = 6.11
 ui = None
 
 
@@ -150,8 +151,12 @@ class ThreadManager(threading.Thread):
                     table_scraper_name = config.config.get('main','table_scraper_name')
                     log.info(f"Loading table scraper info for {table_scraper_name}")
                     table_dict = mongo.get_table(table_scraper_name)
+                    if 'use_neural_network' in table_dict and table_dict['use_neural_network'] == '2':
+                        nn_model = model_from_json(table_dict['model'])
+                        mongo.load_table_nn_weights(table_scraper_name)
+                        nn_model.load_weights(get_dir('scraper') + '/loaded_model.h5')
 
-                table = TableScreenBased(strategy, table_dict, self.gui_signals, self.game_logger, version)
+                table = TableScreenBased(strategy, table_dict, self.gui_signals, self.game_logger, version, nn_model)
                 mouse = MouseMoverTableBased(table_dict)
                 mouse.move_mouse_away_from_buttons_jump()
 
@@ -161,7 +166,7 @@ class ThreadManager(threading.Thread):
                         table.get_lost_everything(history, table, strategy, self.gui_signals) and \
                         table.check_for_imback(mouse) and \
                         table.check_for_resume_hand(mouse) and \
-                        table.get_my_cards(history) and \
+                        table.get_my_cards() and \
                         table.get_new_hand(mouse, history, strategy) and \
                         table.get_table_cards(history) and \
                         table.upload_collusion_wrapper(strategy, history) and \

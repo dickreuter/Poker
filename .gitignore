@@ -173,3 +173,7 @@ desktop.ini
 config_default.ini
 pokerbot_downloader_initial.py
 config.ini
+/poker/tests/test_tensorflow.py
+/poker/scraper/model.h5
+/poker/scraper/model.json
+/poker/scraper/model_classes.json

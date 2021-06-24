@@ -207,7 +207,7 @@ class TableScreenBased(Table):
 
         return True
 
-    def get_my_cards(self, h):
+    def get_my_cards(self):
         self.get_my_cards2()
         self.mycards = self.my_cards
 
@@ -217,41 +217,6 @@ class TableScreenBased(Table):
             log.debug("Did not find two player cards: " + str(self.mycards))
             return False
 
-    def get_my_cards_nn(self, h):
-        func_dict = self.coo[inspect.stack()[0][3]][self.tbl]
-        self.gui_signals.signal_progressbar_increase.emit(5)
-        self.mycards = []
-        width = self.coo['card_sizes'][self.tbl][0]
-        height = self.coo['card_sizes'][self.tbl][1]
-        pil_image1 = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict[0], self.tlc[1] + func_dict[1],
-                                     self.tlc[0] + func_dict[0] + width, self.tlc[1] + func_dict[1] + height)
-        pil_image2 = self.crop_image(self.entireScreenPIL, self.tlc[0] + func_dict[2], self.tlc[1] + func_dict[3],
-                                     self.tlc[0] + func_dict[2] + width, self.tlc[1] + func_dict[3] + height)
-
-        card1 = h.n.recognize_card(pil_image1)
-        card2 = h.n.recognize_card(pil_image2)
-        self.mycards.append(card1)
-        self.mycards.append(card2)
-
-        try:
-            pil_image1.save('pics/pp/' + card1 + '.png')
-        except:
-            pass
-        try:
-            pil_image2.save('pics/pp/' + card2 + '.png')
-        except:
-            pass
-
-        for i in range(2):
-            if 'empty' in self.mycards:
-                self.mycards.remove('empty')
-
-        if len(self.mycards) == 2:
-            log.info("My cards: " + str(self.mycards))
-            return True
-        else:
-            log.debug("Did not find two player cards: " + str(self.mycards))
-            return False
 
     def init_get_other_players_info(self):
         other_player = dict()
