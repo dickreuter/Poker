@@ -480,7 +480,7 @@ class TableSetupActionAndSignals(QObject):
         log.info(f"Start trainig for {self.table_name}")
         from poker.scraper.table_scraper_nn import CardNeuralNetwork
         n = CardNeuralNetwork()
-        n.create_test_images()
+        n.create_test_images(self.table_name)
         n.train_neural_network()
         n.save_model_to_disk()
         n.save_model_to_db(self.table_name)

@@ -1,4 +1,3 @@
-import base64
 import io
 import json
 import logging
@@ -7,7 +6,6 @@ import shutil
 
 import cv2
 import numpy as np
-import requests
 from PIL import Image
 from tqdm import tqdm
 
@@ -56,7 +54,7 @@ img_width = 15
 class CardNeuralNetwork():
 
     @staticmethod
-    def create_test_images():
+    def create_test_images(table_name):
         shutil.rmtree(TRAIN_FOLDER, ignore_errors=True)
         shutil.rmtree(VALIDATE_FOLDER, ignore_errors=True)
 
@@ -72,17 +70,8 @@ class CardNeuralNetwork():
             horizontal_flip=False,
             fill_mode='nearest')
 
-        # mongo = MongoManager()
-        # table_dict = mongo.get_table('GG Poker2')
-        cards = {}
-        table = requests.post('http://dickreuter.com:7777/' + "get_table", params={'table_name': 'GG Poker2'}).json()
-        for key, value in table.items():
-            if isinstance(value, (dict, int, list, float)):
-                cards[key] = value
-            elif value[0:2] == 'iV':
-                cards[key] = base64.b64decode(value)
-            else:
-                cards[key] = value
+        mongo = MongoManager()
+        table = mongo.get_table(table_name)
 
         for folder in [TRAIN_FOLDER, VALIDATE_FOLDER]:
             card_ranks_original = '23456789TJQKA'
@@ -95,7 +84,7 @@ class CardNeuralNetwork():
             namelist.append('empty_card')
 
             for name in tqdm(namelist):
-                img = cards[name.lower()]  # this is a PIL image
+                img = table[name.lower()]  # this is a PIL image
                 x = binary_pil_to_cv2(img)
                 x = adjust_colors(x)
 

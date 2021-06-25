@@ -82,7 +82,7 @@ class MongoManager(metaclass=Singleton):
             weights = base64.b64decode(weights_str)
         except TypeError:
             log.error("No Trained Neural Network found. The cards need to be trained first.")
-            return False
+            return
 
         with open(SCRAPER_DIR + '/loaded_model.h5', 'wb') as fh:
             fh.write(weights)
