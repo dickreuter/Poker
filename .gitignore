@@ -159,9 +159,9 @@ cython_debug/
 
 /mongodb-backup*/
 /poker/data/
-/poker/scraper/test_cards/
-/poker/scraper/training_cards/
-/poker/scraper/validate_cards/
+/poker/pics/test_cards/
+/poker/pics/training_cards/
+/poker/pics/validate_cards/
 .vscode/
 *.xlsx
 best_strategies.js
@@ -174,6 +174,6 @@ config_default.ini
 pokerbot_downloader_initial.py
 config.ini
 /poker/tests/test_tensorflow.py
-/poker/scraper/model.h5
-/poker/scraper/model.json
-/poker/scraper/model_classes.json
+/poker/model.h5
+/poker/model.json
+/poker/model_classes.json

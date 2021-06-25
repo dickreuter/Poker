@@ -36,7 +36,7 @@ warnings.filterwarnings("ignore", message="All-NaN axis encountered")
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-version = 6.14
+version = 6.15
 ui = None
 
 
@@ -155,7 +155,7 @@ class ThreadManager(threading.Thread):
                         from tensorflow.keras.models import model_from_json
                         nn_model = model_from_json(table_dict['_model'])
                         mongo.load_table_nn_weights(table_scraper_name)
-                        nn_model.load_weights(get_dir('scraper') + '/loaded_model.h5')
+                        nn_model.load_weights(get_dir('codebase') + '/loaded_model.h5')
 
                 table = TableScreenBased(strategy, table_dict, self.gui_signals, self.game_logger, version, nn_model)
                 mouse = MouseMoverTableBased(table_dict)

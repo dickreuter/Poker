@@ -12,9 +12,9 @@ from tqdm import tqdm
 from poker.tools.helper import get_dir
 from poker.tools.mongo_manager import MongoManager
 
-SCRAPER_DIR = get_dir('scraper')
-TRAIN_FOLDER = get_dir('scraper', "training_cards")
-VALIDATE_FOLDER = get_dir('scraper', "validate_cards")
+SCRAPER_DIR = get_dir('pics')
+TRAIN_FOLDER = get_dir('pics', "training_cards")
+VALIDATE_FOLDER = get_dir('pics', "validate_cards")
 TEST_FOLDER = get_dir('tests', "test_cards")
 
 log = logging.getLogger(__name__)

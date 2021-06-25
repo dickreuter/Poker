@@ -11,7 +11,6 @@ from poker.tools.helper import COMPUTER_NAME, get_config, get_dir
 from poker.tools.singleton import Singleton
 
 TABLES_COLLECTION = 'tables'
-SCRAPER_DIR = get_dir('scraper')
 
 log = logging.getLogger(__name__)
 
@@ -84,7 +83,7 @@ class MongoManager(metaclass=Singleton):
             log.error("No Trained Neural Network found. The cards need to be trained first.")
             return
 
-        with open(SCRAPER_DIR + '/loaded_model.h5', 'wb') as fh:
+        with open(get_dir('codebase') + '/loaded_model.h5', 'wb') as fh:
             fh.write(weights)
         log.info("Download complete")
 
