@@ -10,7 +10,6 @@ import matplotlib
 import numpy as np
 import pandas as pd
 from PyQt5 import QtGui, QtWidgets
-from tensorflow.keras.models import model_from_json
 
 if platform not in ["linux", "linux2"]:
     matplotlib.use('Qt5Agg')
@@ -37,7 +36,7 @@ warnings.filterwarnings("ignore", message="All-NaN axis encountered")
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-version = 6.12
+version = 6.13
 ui = None
 
 
@@ -153,7 +152,8 @@ class ThreadManager(threading.Thread):
                     table_dict = mongo.get_table(table_scraper_name)
                     nn_model = None
                     if 'use_neural_network' in table_dict and table_dict['use_neural_network'] == '2':
-                        nn_model = model_from_json(table_dict['model'])
+                        from tensorflow.keras.models import model_from_json
+                        nn_model = model_from_json(table_dict['_model'])
                         mongo.load_table_nn_weights(table_scraper_name)
                         nn_model.load_weights(get_dir('scraper') + '/loaded_model.h5')
 

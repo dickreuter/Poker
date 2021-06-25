@@ -8,14 +8,7 @@ import shutil
 import cv2
 import numpy as np
 import requests
-import tensorflow.keras.losses
 from PIL import Image
-from tensorflow.keras.callbacks import TensorBoard
-from tensorflow.keras.constraints import MaxNorm
-from tensorflow.keras.layers import Conv2D, MaxPooling2D
-from tensorflow.keras.layers import Dropout, Flatten, Dense
-from tensorflow.keras.models import Sequential, model_from_json
-from tensorflow.keras.preprocessing.image import ImageDataGenerator, img_to_array
 from tqdm import tqdm
 
 from poker.tools.helper import get_dir
@@ -61,15 +54,15 @@ img_width = 15
 
 
 class CardNeuralNetwork():
-    def __init__(self):
-        pass
 
-    def create_test_images(self):
+    @staticmethod
+    def create_test_images():
         shutil.rmtree(TRAIN_FOLDER, ignore_errors=True)
         shutil.rmtree(VALIDATE_FOLDER, ignore_errors=True)
 
         log.info("Augmenting data with random pictures based on templates")
 
+        from tensorflow.keras.preprocessing.image import ImageDataGenerator
         datagen = ImageDataGenerator(
             rotation_range=15,
             width_shift_range=0.2,
@@ -124,6 +117,7 @@ class CardNeuralNetwork():
                         break  # otherwise the generator would loop indefinitely
 
     def train_neural_network(self):
+        from tensorflow.keras.preprocessing.image import ImageDataGenerator
         self.train_generator = ImageDataGenerator(
             rescale=0.02,
             shear_range=0.01,
@@ -149,7 +143,11 @@ class CardNeuralNetwork():
         num_classes = 53
         input_shape = (50, 15, 3)
         epochs = 20
-
+        from tensorflow.keras.callbacks import TensorBoard
+        from tensorflow.keras.constraints import MaxNorm
+        from tensorflow.keras.layers import Conv2D, MaxPooling2D
+        from tensorflow.keras.layers import Dropout, Flatten, Dense
+        from tensorflow.keras.models import Sequential
         model = Sequential()
         model.add(Conv2D(64, (3, 3), input_shape=input_shape, activation='relu', padding='same'))
         model.add(Dropout(0.2))
@@ -170,17 +168,19 @@ class CardNeuralNetwork():
         model.add(Dense(1024, activation='relu', kernel_constraint=MaxNorm(3)))
         model.add(Dropout(0.2))
         model.add(Dense(num_classes, activation='softmax'))
-
-        model.compile(loss=tensorflow.keras.losses.sparse_categorical_crossentropy,
-                      optimizer=tensorflow.keras.optimizers.Adam(),
+        from tensorflow.keras.losses import sparse_categorical_crossentropy
+        from tensorflow.keras import optimizers
+        model.compile(loss=sparse_categorical_crossentropy,
+                      optimizer=optimizers.Adam(),
                       metrics=['accuracy'])
 
         log.info(model.summary())
 
-        early_stop = tensorflow.keras.callbacks.EarlyStopping(monitor='val_loss',
-                                                              min_delta=0,
-                                                              patience=1,
-                                                              verbose=1, mode='auto')
+        from tensorflow.keras.callbacks import EarlyStopping
+        early_stop = EarlyStopping(monitor='val_loss',
+                                   min_delta=0,
+                                   patience=1,
+                                   verbose=1, mode='auto')
         tb = TensorBoard(log_dir='c:/tensorboard/pb',
                          histogram_freq=1,
                          write_graph=True,
@@ -232,6 +232,7 @@ class CardNeuralNetwork():
         # load json and create model
         with open(SCRAPER_DIR + '/model.json', 'r') as json_file:
             loaded_model_json = json_file.read()
+        from keras.models import model_from_json
         self.loaded_model = model_from_json(loaded_model_json)
         # load weights into new model
         self.loaded_model.load_weights(SCRAPER_DIR + "/model.h5")
@@ -250,6 +251,7 @@ def predict(pil_image, nn_model, mapping):
     img = pil_to_cv2(pil_image)
     img = adjust_colors(img)
     img = cv2.resize(img, (15, 50))
+    from tensorflow.keras.preprocessing.image import img_to_array
     x = img_to_array(img)
     x = x.reshape((1,) + x.shape)
     x = x * 0.02

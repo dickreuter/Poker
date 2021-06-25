@@ -84,8 +84,8 @@ class TableScraper:
         self.gui_signals.signal_progressbar_increase.emit(5)
         self.mycards = []
 
-        card1 = predict(left_card, self.nn_model, self.table_dict['class_mapping'])
-        card2 = predict(right_card, self.nn_model, self.table_dict['class_mapping'])
+        card1 = predict(left_card, self.nn_model, self.table_dict['_class_mapping'])
+        card2 = predict(right_card, self.nn_model, self.table_dict['_class_mapping'])
         self.mycards.append(card1)
         self.mycards.append(card2)
 

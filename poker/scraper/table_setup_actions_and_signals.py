@@ -8,7 +8,6 @@ from PyQt5 import QtGui
 from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal
 from PyQt5.QtWidgets import QMessageBox
 
-from poker.scraper.table_scraper_nn import CardNeuralNetwork
 from poker.tools.helper import COMPUTER_NAME, get_config
 from poker.tools.mongo_manager import MongoManager
 from poker.tools.screen_operations import get_table_template_image, get_ocr_float, take_screenshot, \
@@ -479,11 +478,11 @@ class TableSetupActionAndSignals(QObject):
     def train_model(self):
         self.table_name = self.ui.table_name.currentText()
         log.info(f"Start trainig for {self.table_name}")
-
+        from poker.scraper.table_scraper_nn import CardNeuralNetwork
         n = CardNeuralNetwork()
-        # n.create_test_images()
-        # n.train_neural_network()
-        # n.save_model_to_disk()
+        n.create_test_images()
+        n.train_neural_network()
+        n.save_model_to_disk()
         n.save_model_to_db(self.table_name)
 
     @pyqtSlot()
