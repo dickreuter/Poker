@@ -82,12 +82,12 @@ class TableScraper:
         right_card = self.screenshot.crop(
             (right_card_area['x1'], right_card_area['y1'], right_card_area['x2'], right_card_area['y2']))
         self.gui_signals.signal_progressbar_increase.emit(5)
-        self.mycards = []
+        self.my_cards = []
 
         card1 = predict(left_card, self.nn_model, self.table_dict['_class_mapping'])
         card2 = predict(right_card, self.nn_model, self.table_dict['_class_mapping'])
-        self.mycards.append(card1)
-        self.mycards.append(card2)
+        self.my_cards.append(card1)
+        self.my_cards.append(card2)
 
         try:
             left_card.save(get_dir('log') + '/pics/' + card1 + '.png')
@@ -99,14 +99,14 @@ class TableScraper:
             pass
 
         for i in range(2):
-            if 'empty_card' in self.mycards:
-                self.mycards.remove('empty_card')
+            if 'empty_card' in self.my_cards:
+                self.my_cards.remove('empty_card')
 
-        if len(self.mycards) == 2:
-            log.info("My cards: " + str(self.mycards))
+        if len(self.my_cards) == 2:
+            log.info("My cards: " + str(self.my_cards))
             return True
         else:
-            log.debug("Did not find two player cards: " + str(self.mycards))
+            log.debug("Did not find two player cards: " + str(self.my_cards))
             return False
 
     def get_table_cards2(self):

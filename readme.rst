@@ -58,6 +58,21 @@ the whole computer:
 * In setup, try to select your virtual machine instead of direct mouse control. That way mouse movements won't obstruct you.
 
 
+Strategy editor
+---------------
+A variety of factors are taken into consideration when the bot makes decisions and they can be adjusted in the strategy editor:
+
+- Equity (winning probability), which is calculated by a montecarlo simulation
+- Equity and minimum call/bet value need to be on the left of the corresponding curve in order for the bot not to fold
+- Various other factors, such as behaviour in the previous rounds are taken into consideration. Check out the strategy editor for more details.
+- Hover over each item to see a more detailed description
+
+.. figure:: doc/strategy2.png
+
+A variety of other options can be edited for each strategy:
+
+.. figure:: doc/ranges.png
+
 
 Full version:
 ~~~~~~~~~~~~~
@@ -77,22 +92,6 @@ The easiest way to contribute is by:
 - Adding new tables
 - Adding new strategies
 - Directly add fixes to the code and create a pull request
-
-
-Strategy editor
----------------
-A variety of factors are taken into consideration when the bot makes decisions and they can be adjusted in the strategy editor:
-
-- Equity (winning probability), which is calculated by a montecarlo simulation
-- Equity and minimum call/bet value need to be on the left of the corresponding curve in order for the bot not to fold
-- Various other factors, such as behaviour in the previous rounds are taken into consideration. Check out the strategy editor for more details.
-- Hover over each item to see a more detailed description
-
-.. figure:: doc/strategy2.png
-
-A variety of other options can be edited for each strategy:
-
-.. figure:: doc/ranges.png
 
 Strategy Analyzer
 -----------------
