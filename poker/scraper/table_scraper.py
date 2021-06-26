@@ -81,7 +81,6 @@ class TableScraper:
             (left_card_area['x1'], left_card_area['y1'], left_card_area['x2'], left_card_area['y2']))
         right_card = self.screenshot.crop(
             (right_card_area['x1'], right_card_area['y1'], right_card_area['x2'], right_card_area['y2']))
-        self.gui_signals.signal_progressbar_increase.emit(5)
         self.my_cards = []
 
         card1 = predict(left_card, self.nn_model, self.table_dict['_class_mapping'])

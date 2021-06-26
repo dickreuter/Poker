@@ -8,7 +8,7 @@ from PyQt5 import QtGui
 from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal
 from PyQt5.QtWidgets import QMessageBox
 
-from poker.tools.helper import COMPUTER_NAME, get_config
+from poker.tools.helper import COMPUTER_NAME, get_config, get_dir
 from poker.tools.mongo_manager import MongoManager
 from poker.tools.screen_operations import get_table_template_image, get_ocr_float, take_screenshot, \
     crop_screenshot_with_topleft_corner
@@ -491,7 +491,16 @@ class TableSetupActionAndSignals(QObject):
         self.table_name = self.ui.table_name.currentText()
         from poker.scraper.table_scraper import TableScraper
         table_dict = mongo.get_table(table_name=self.table_name)
+
         table_scraper = TableScraper(table_dict)
+        table_scraper.nn_model = None
+
+        if 'use_neural_network' in table_dict and table_dict['use_neural_network'] == '2':
+            from tensorflow.keras.models import model_from_json
+            table_scraper.nn_model = model_from_json(table_dict['_model'])
+            mongo.load_table_nn_weights(self.table_name)
+            table_scraper.nn_model.load_weights(get_dir('codebase') + '/loaded_model.h5')
+
         table_scraper.screenshot = self.original_screenshot
         table_scraper.crop_from_top_left_corner()
         table_scraper.is_my_turn()
@@ -509,6 +518,7 @@ class TableSetupActionAndSignals(QObject):
         table_scraper.has_call_button()
         table_scraper.has_raise_button()
         table_scraper.has_bet_button()
+        log.info("Test finished.")
 
 
 def pop_up(title, text, details=None, ok_cancel=False):
