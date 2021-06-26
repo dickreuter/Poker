@@ -9,18 +9,6 @@ You can download the binaries and run the executable directly from here:
 https://sourceforge.net/projects/partypoker-pokerstars-pokerbot/
 
 
-.. figure:: doc/fullscreen1.png
-
-
-For Pokerstars you will need to make some adjustments to the client. It needs to look exactly as the below, in order to run it with
-the Official Pokerstars Table scraper:
-
-* Make sure to match the card styles (4 color), covered card styles, and table styles.
-
-.. figure:: doc/ps-example.png
-
-
-
 Running the bot:
 ----------------
 
@@ -46,18 +34,37 @@ the whole computer:
 * Install Partypoker or Pokerstars in the virtual box environment
 * Install the pokerbot directly onto your computer (outside of the virtual box)
 
+Partypoker:
+~~~~~~~~~~~
+* Use Fast Forward Tables
+* Select Official PartyPoker table scraper
+.. figure:: doc/fullscreen1.png
 
-Note:
+Pokerstars:
+~~~~~~~~~~~
+* Use Zoom Tables
+* Select Official Poker Stars table scraper
+* For Pokerstars you will need to make some adjustments to the client. It needs to look exactly as the below, in order to run it with
+the Official Pokerstars Table scraper:
+* Make sure to match the card styles (4 color), covered card styles, and table styles.
 
-* Only works on windows
+.. figure:: doc/ps-example.png
+
+
+Additional Hints:
+~~~~~~~~~~~~~~~~~
+
+* The current version Only works on windows
 * Do not obstruct the view of the table as the bot is based on image recognition
 * Only one table window should be visible.
 * For best performance minimize all windows in the vm, except the table window itself
 * Don't use any dpi scaling in the virtualbox
 * In setup, try to select your virtual machine instead of direct mouse control. That way mouse movements won't obstruct you.
 
+
+
 Full version:
---------------
+~~~~~~~~~~~~~
 
 The full version allow you to:
 
@@ -70,8 +77,59 @@ https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-910576034F79037
 You can also get a free subscription if you make some (meaningful) contribution to the codebase.
 
 
+The easiest way to contribute is by:
+
+- Adding new tables.
+- Adding new strategies
+- Directly add fixes to the code and create a pull request
+
+
+Strategy editor
+---------------
+A variety of factors are taken into consideration when the bot makes decisions and they can be adjusted in the strategy editor:
+
+- Equity (winning probability), which is calculated by a montecarlo simulation
+- Equity and minimum call/bet value need to be on the left of the corresponding curve in order for the bot not to fold
+- Various other factors, such as behaviour in the previous rounds are taken into consideration. Check out the strategy editor for more details.
+- Hover over each item to see a more detailed description
+
+.. figure:: doc/strategy2.png
+
+Strategy Analyzer
+-----------------
+
+- You can see the profitability of each strategy in the strategy analyzer.
+- The bar chart indicates what action types have led to wins or losses at each stage (preflop, flop turn and river)
+
+.. figure:: doc/strategy_analyser1.jpg
+
+Analyze individual hands:
+
+.. figure:: doc/strategy_analyser_scatter.jpg
+
+
+Adding new tables
+~~~~~~~~~~~~~~~~~
+
+`Click here to see a Video description how to add a new table <https://www.dropbox.com/s/txpbtsi1drncq4x/20200531_194837.mp4?dl=0>`_
+
+The setup to add new tables looks like this:
+
+.. figure:: doc/scraper.png
+
+- Open the pokerbot and click on table setup to open the window that helps you create new tables.
+- Open the poker client next to it, make sure it's not dpi scaled, so the pokerbot can take screenshots.
+- Start with creating a new template, you can do this by entering a name for your template, for example Pokerstars 1-2 zoom poker. Click on 'Blank new'.
+- Now the first think you want to do is to take a screenshot of the pokerstars window with the table. You can do this by pressing on the Take screenshot button. You should not see in the lower window a full screenshot of what is on your screen.
+- The first step is now to mark the top left corner of the poker tables window, which will be the point of reference for everything else that will follow. To mark the top left corner, you need to mark it by first clicking on the top left part of it and then on the right lower part of it. once you have done this, it will appear in the second window. You can save it by clicking on the "save newly selected top left corner" button.
+- Now you can crop it by pressing on the crop from top left corner button. This will discard most of the screenshot and only keep the screenshot from the top left corner and everything a few hundred pixels to the right of it and below.
+- Next you will want to mark everything else in the window. Start with the Buttons search area. You can do this again by clicking on the top left area of the buttons and then on the bottom right area of where the buttons appear. Once you are happy with the selection, click on the "Buttons search area".
+- If you hover over the buttons, you will get a more detailed description of what you need to pay attention to.
+- Note that you will need to take many screenshots, crop them (don't select the top left corner again, as this you should only do once), instead load it and then crop the image. After that make your selection of the different images and save them by pressing on the corresponding button. You'll need to teach it every card and every button etc.
+
+
 Running via python source code
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------
 - Download pycharm as an IDE
 - Install python 3.7 or Anaconda (=python with packages)
 - Create an environment with ``conda create -n poker python=3.7`` or use pycharm's functionality to create a new virtual environment. Chefck youtube for details.
@@ -80,18 +138,6 @@ Running via python source code
 - Install tesseract from https://github.com/UB-Mannheim/tesseract/wiki which is needed for OCR of the numbers that are scraped
 - Install virtualbox from https://www.virtualbox.org/wiki/Downloads and put the poker client into the virtual box. That way it can be controlled without having to use the mouse in your main window.
 - Run ``main.py`` from pycharm after setting up the above created virtual environment as interpreter (check youtube)
-
-Strategies
-----------
-The decision is made by the Decision class in decisionmaker.py. A variety of factors are taken into consideration:
-
-- Equity (winning probability), which is calculated by Montecarlo_v3.py (will be replaced with a faster numpy-only version in Montecarlo_v4.py)
-- Equity and minimum call/bet value need to be on the left of the corresponding curve in order for the bot not to fold
-- Various other factors, such as behaviour in the previous rounds are taken into consideration. Check out the strategy editor ffor more details.
-
-.. figure:: doc/strategy2.png
-.. figure:: doc/strategy_analyser1.jpg
-.. figure:: doc/strategy_analyser_scatter.jpg
 
 
 Packages and modules:
@@ -131,43 +177,13 @@ Roadmap
 -------
 - [x] Build a framework that can play online
 - [x] Createa a tool that helps to map the tables and make maps shared over all users via mongodb
-- [x] Update the pokerbot to the new table format of partypoker
-- [x] Update the pokerbot to the new table format of pokerstars
-- [ ] Fix pylint errors and improve code quality
+- [x] Update the pokerbot to the new table format of Partypoker
+- [x] Update the pokerbot to the new table format of Pokerstars
+- [x] Update the pokerbot to the new table format of GGPoker
+- [x] Fix pylint errors and improve code quality
 - [ ] Update tests. Some are currently outdated. More tests are needed
-- [ ] Make travis work. Windows support is currently limited, so most likely the bot needs to be made linux compatible (and also mac)
 - [ ] Add more strategies
 - [ ] Combine the bot with the neuron_poker project and have it play based on learned strategies via self-play based on reinforcement learning
-
-
-How to contribute
------------------
-
-- The easiest way to contribute is by either:
-    - adding new tables.
-    - Adding new strategies
-    - Directly add fixes to the code and create a pull request
-
-
-Adding new tables
-~~~~~~~~~~~~~~~~~
-
-`Click here to see a Video description how to add a new table <https://www.dropbox.com/s/txpbtsi1drncq4x/20200531_194837.mp4?dl=0>`_
-
-The setup to add new tables looks like this:
-
-.. figure:: doc/scraper.png
-
-- Open the pokerbot and click on table setup to open the window that helps you create new tables.
-- Open the poker client next to it, make sure it's not dpi scaled, so the pokerbot can take screenshots.
-- Start with creating a new template, you can do this by entering a name for your template, for example Pokerstars 1-2 zoom poker. Click on 'Blank new'.
-- Now the first think you want to do is to take a screenshot of the pokerstars window with the table. You can do this by pressing on the Take screenshot button. You should not see in the lower window a full screenshot of what is on your screen.
-- The first step is now to mark the top left corner of the poker tables window, which will be the point of reference for everything else that will follow. To mark the top left corner, you need to mark it by first clicking on the top left part of it and then on the right lower part of it. once you have done this, it will appear in the second window. You can save it by clicking on the "save newly selected top left corner" button.
-- Now you can crop it by pressing on the crop from top left corner button. This will discard most of the screenshot and only keep the screenshot from the top left corner and everything a few hundred pixels to the right of it and below.
-- Next you will want to mark everything else in the window. Start with the Buttons search area. You can do this again by clicking on the top left area of the buttons and then on the bottom right area of where the buttons appear. Once you are happy with the selection, click on the "Buttons search area".
-- If you hover over the buttons, you will get a more detailed description of what you need to pay attention to.
-- Note that you will need to take many screenshots, crop them (don't select the top left corner again, as this you should only do once), instead load it and then crop the image. After that make your selection of the different images and save them by pressing on the corresponding button. You'll need to teach it every card and every button etc.
-
 
 
 Making fixes in the code
