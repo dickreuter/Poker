@@ -15,7 +15,8 @@ Partypoker:
 ~~~~~~~~~~~
 * Use Fast Forward Tables
 * Select Official PartyPoker table scraper
-.. figure:: doc/fullscreen1.png
+
+.. figure:: doc/partypoker.gif
 
 Pokerstars:
 ~~~~~~~~~~~
@@ -71,7 +72,7 @@ A variety of factors are taken into consideration when the bot makes decisions a
 
 A variety of other options can be edited for each strategy:
 
-.. figure:: doc/ranges.png
+.. figure:: doc/strategy_editor.gif
 
 
 Full version:
@@ -103,11 +104,11 @@ Strategy Analyzer
 
 Analyze individual hands:
 
-.. figure:: doc/strategy_analyser_scatter.jpg
+.. figure:: doc/strategy_analyzer.gif
 
 
-Adding new tables
-~~~~~~~~~~~~~~~~~
+Mapping new tables
+------------------
 
 The bot can learn to read new tables, either by using templates or by training a neural network that uses data augmentation based on the given templates.
 
@@ -130,9 +131,9 @@ The setup to add new tables looks like this:
 
 Running via python source code
 ------------------------------
-- Download pycharm as an IDE
-- Install python 3.7 or Anaconda (=python with packages)
-- Create an environment with ``conda create -n poker python=3.7`` or use pycharm's functionality to create a new virtual environment. Chefck youtube for details.
+- Download pycharm communite edition as an IDE from here: https://www.jetbrains.com/pycharm/download/#section=windows
+- Install python 3.7 or Anaconda (=python with packages) from here: https://www.python.org/downloads/release/python-379/
+- Create an environment with ``conda create -n poker python=3.7`` or use pycharm's functionality to create a new virtual environment. Check youtube for details.
 - Install all the packages with ``pip install -r requirements.txt``
 - You also may need to get c++ runtime distributable: https://visualstudio.microsoft.com/downloads/
 - Install tesseract from https://github.com/UB-Mannheim/tesseract/wiki which is needed for OCR of the numbers that are scraped
@@ -172,6 +173,12 @@ poker.tests
 -  ``test_pylint.py``: pylint and pydoc tests to ensure pep8 standards and static code analysis
 
 
+Graphical user interface (gui)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- Download QT for open source project: https://www.qt.io/download-open-source
+- Use the qt designer to edit any of the .ui files in gui/ui
+
 
 Roadmap
 -------
@@ -183,7 +190,8 @@ Roadmap
 - [x] Fix pylint errors and improve code quality
 - [ ] Update tests. Some are currently outdated. More tests are needed
 - [ ] Add more strategies
-- [ ] Combine the bot with the neuron_poker project and have it play based on learned strategies via self-play based on reinforcement learning
+- [ ] Switch from using pytesseract to tesserocr to speed up OCR, this should considerably speed up the bot
+- [ ] Better Analyze the collected data to improve strategies
 
 
 Making fixes in the code
