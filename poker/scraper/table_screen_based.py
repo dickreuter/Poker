@@ -148,7 +148,9 @@ class TableScreenBased(Table):
         return True
 
     def get_table_cards(self, h):
-        self.get_table_cards2()
+        if not self.get_table_cards2():
+            return False  # in case of 1 or 2 table cards are seen only
+
         self.cardsOnTable = self.table_cards
 
         self.gameStage = ''

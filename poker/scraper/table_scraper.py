@@ -117,8 +117,10 @@ class TableScraper:
                                               value.lower() + suit.lower(), 'table_cards_area'):
                     self.table_cards.append(value + suit)
         log.info(f"Table cards: {self.table_cards}")
-        assert len(self.table_cards) != 1, "Table cards can never be 1"
-        assert len(self.table_cards) != 2, "Table cards can never be 2"
+        if len(self.table_cards) == 1 or len(self.table_cards) == 2:
+            log.warning(f"Only recognized {len(self.table_cards)} cards on the table. "
+                        f"This can happen if cards are sliding in or if some of the templates are wrong")
+            return False
         return True
 
     def get_dealer_position2(self):  # pylint: disable=inconsistent-return-statements
