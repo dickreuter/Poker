@@ -1,4 +1,4 @@
-Deep mind pokerbot for pokerstars, partypoker and GG Poker
+Deep mind pokerbot for pokerstars, partypoker and GGPoker
 ==========================================================
 
 This pokerbot plays automatically on Pokerstars, Partypoker and GG Poker. Any other table can be mapped as well.
@@ -8,31 +8,8 @@ The mouse is moved automatically and the bot can potentially play for hours base
 You can download the binaries and run the executable directly from here:
 https://sourceforge.net/projects/partypoker-pokerstars-pokerbot/
 
-
 Running the bot:
 ----------------
-
-
-General setup:
-~~~~~~~~~~~~~~
-
-If you just want to run the bot, please do the following:
-
-* Install the binearies of the bot from here: https://sourceforge.net/projects/partypoker-pokerstars-pokerbot/
-
-You can then immediately run the bot. It will analyze the poker client, move the mouse and play in accordance
-with one of its pre-programmed strategies. Most of the strategies are based on zoom or Fast Forward tables.
-You are welcome to edit and imporve any strategies to optmize the play of the bot for your needs.
-
-In many instances it may be useful to put the poker client inside a virtual machine to avoid it from interfering
-with the bot. Also, the bot will then be able to control the mouse inside the virtual machine, without blocking
-the whole computer:
-
-* Download Virtualbox: https://www.virtualbox.org/
-* Download Windows 10 32 bit Iso File (x86_dvd.iso), for example from here https://www.softlay.com/operating-system/windows-7-ultimate-iso-download.html
-* Create a new virtual box environment and use the ISO file as a startup
-* Install Partypoker or Pokerstars in the virtual box environment
-* Install the pokerbot directly onto your computer (outside of the virtual box)
 
 Partypoker:
 ~~~~~~~~~~~
@@ -44,15 +21,34 @@ Pokerstars:
 ~~~~~~~~~~~
 * Use Zoom Tables
 * Select Official Poker Stars table scraper
-* For Pokerstars you will need to make some adjustments to the client. It needs to look exactly as the below, in order to run it with
-the Official Pokerstars Table scraper:
+* For Pokerstars you will need to make some adjustments to the client. It needs to look exactly as the below, in order to run it with the Official Pokerstars Table scraper:
 * Make sure to match the card styles (4 color), covered card styles, and table styles.
 
 .. figure:: doc/ps-example.png
 
 
-Additional Hints:
-~~~~~~~~~~~~~~~~~
+General setup:
+~~~~~~~~~~~~~~
+
+If you just want to run the bot, please do the following:
+
+Install the binearies of the bot from here: https://sourceforge.net/projects/partypoker-pokerstars-pokerbot/
+
+You can then immediately run the bot. It will analyze the poker client, move the mouse and play in accordance
+with one of its pre-programmed strategies. Most of the strategies are based on zoom or Fast Forward tables.
+You are welcome to edit and imporve any strategies to optmize the play of the bot for your needs.
+
+In most cases it may be useful to put the poker client inside a virtual machine to avoid it from interfering
+with the bot. Also, the bot will then be able to control the mouse inside the virtual machine, without blocking
+the whole computer:
+
+* Download Virtualbox: https://www.virtualbox.org/
+* Download Windows 10 32 bit Iso File (x86_dvd.iso), for example from here https://www.softlay.com/operating-system/windows-7-ultimate-iso-download.html
+* Create a new virtual box environment and use the ISO file as a startup
+* Install Partypoker or Pokerstars in the virtual box environment
+* Install the pokerbot directly onto your computer (outside of the virtual box)
+* In the Setup select your virtual box instance (instead of direct mouse control)
+* Join the telegram chat by pressing the chat button
 
 * The current version Only works on windows
 * Do not obstruct the view of the table as the bot is based on image recognition
@@ -66,7 +62,7 @@ Additional Hints:
 Full version:
 ~~~~~~~~~~~~~
 
-The full version allow you to:
+The full version allows you to:
 
 * Edit and create new Strategies
 * View all Strategies of all users
@@ -74,12 +70,11 @@ The full version allow you to:
 To purchase, please follow this link. You'll then receive a password within 24 hours.
 https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-910576034F790373KMC6UZOQ
 
-You can also get a free subscription if you make some (meaningful) contribution to the codebase.
-
+You can also get a free subscription if you make some meaningful contribution to the codebase.
 
 The easiest way to contribute is by:
 
-- Adding new tables.
+- Adding new tables
 - Adding new strategies
 - Directly add fixes to the code and create a pull request
 
@@ -94,6 +89,10 @@ A variety of factors are taken into consideration when the bot makes decisions a
 - Hover over each item to see a more detailed description
 
 .. figure:: doc/strategy2.png
+
+A variety of other options can be edited for each strategy:
+
+.. figure:: doc/ranges.png
 
 Strategy Analyzer
 -----------------
@@ -110,6 +109,8 @@ Analyze individual hands:
 
 Adding new tables
 ~~~~~~~~~~~~~~~~~
+
+The bot can learn to read new tables, either by using templates or by training a neural network that uses data augmentation based on the given templates.
 
 `Click here to see a Video description how to add a new table <https://www.dropbox.com/s/txpbtsi1drncq4x/20200531_194837.mp4?dl=0>`_
 
