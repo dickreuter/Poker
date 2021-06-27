@@ -171,7 +171,7 @@ class GameLogger(metaclass=Singleton):
     def get_strategy_return(self, strategy, days):
         response = requests.post(URL + "get_strategy_return", params={'strategy': strategy,
                                                                       'days': days}).json()
-        return response
+        return round(float(response), 2)
 
     def get_fundschange_chart(self, strategy):
         response = requests.post(

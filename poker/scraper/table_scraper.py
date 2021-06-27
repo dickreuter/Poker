@@ -62,19 +62,22 @@ class TableScraper:
 
         if 'use_neural_network' in self.table_dict and self.table_dict['use_neural_network'] == '2':
             return self.get_my_cards_nn()
-
-        for value in CARD_VALUES:
-            for suit in CARD_SUITES:
-                if is_template_in_search_area(self.table_dict, self.screenshot,
-                                              value.lower() + suit.lower(), 'my_cards_area', extended=True):
-                    self.my_cards.append(value + suit)
+        else:
+            for value in CARD_VALUES:
+                for suit in CARD_SUITES:
+                    if is_template_in_search_area(self.table_dict, self.screenshot,
+                                                  value.lower() + suit.lower(), 'my_cards_area', extended=True):
+                        self.my_cards.append(value + suit)
 
         if len(self.my_cards) != 2:
             log.warning("My cards not recognized")
         log.info(f"My cards: {self.my_cards}")
-        return True
 
     def get_my_cards_nn(self):
+        if not is_template_in_search_area(self.table_dict, self.screenshot,
+                                   'two_cards_top', 'two_cards_top_area'):
+            return False
+
         left_card_area = self.table_dict['left_card_area']
         right_card_area = self.table_dict['right_card_area']
         left_card = self.screenshot.crop(

@@ -81,7 +81,6 @@ class CardNeuralNetwork():
             for c in card_ranks_original:
                 for s in original_suits:
                     namelist.append(c + s)
-            namelist.append('empty_card')
 
             for name in tqdm(namelist):
                 img = table[name.lower()]  # this is a PIL image
@@ -129,7 +128,7 @@ class CardNeuralNetwork():
             class_mode='binary',
             color_mode='rgb')
 
-        num_classes = 53
+        num_classes = 52
         input_shape = (50, 15, 3)
         epochs = 20
         from tensorflow.keras.callbacks import TensorBoard
@@ -184,7 +183,7 @@ class CardNeuralNetwork():
                   validation_data=self.validation_generator,
                   callbacks=[early_stop])
         self.model = model
-        score = model.evaluate(self.validation_generator, steps=53)
+        score = model.evaluate(self.validation_generator, steps=52)
         print('Validation loss:', score[0])
         print('Validation accuracy:', score[1])
 

@@ -679,7 +679,7 @@
                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Exact location of the card the bot is holding. This should be as close to the same size as the card templates so it's easier for recognition with neural network. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
                   <property name="text">
-                   <string>Left Card Location</string>
+                   <string>Left Card Area</string>
                   </property>
                  </widget>
                 </item>
@@ -701,17 +701,27 @@
               <item>
                <layout class="QHBoxLayout" name="horizontalLayout_10">
                 <item>
-                 <widget class="QPushButton" name="empty_card">
+                 <widget class="QPushButton" name="two_cards_top_area">
                   <property name="toolTip">
-                   <string>Blank area background, before the cards are distributed.</string>
+                   <string>Area of the top of the 2 cards holding by the bot</string>
                   </property>
                   <property name="text">
-                   <string>Empty Card</string>
+                   <string>2 Cards top area</string>
                   </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QPushButton" name="empty_card_show">
+                 <widget class="QPushButton" name="two_cards_top">
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Template of top edge of the 2 cards held by the bot, indicating that he has received both cards and the neural network can start recognizing them&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                  <property name="text">
+                   <string>2 Cards top template</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="two_cards_top_show">
                   <property name="enabled">
                    <bool>false</bool>
                   </property>
