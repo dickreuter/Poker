@@ -61,7 +61,7 @@ class TableScraper:
         self.my_cards = []
 
         if 'use_neural_network' in self.table_dict and self.table_dict['use_neural_network'] == '2':
-            return self.get_my_cards_nn()
+            self.get_my_cards_nn()
         else:
             for value in CARD_VALUES:
                 for suit in CARD_SUITES:

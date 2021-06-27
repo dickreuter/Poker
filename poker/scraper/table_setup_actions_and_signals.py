@@ -221,7 +221,7 @@ class TableSetupActionAndSignals(QObject):
                                 'mouse_increase', 'mouse_resume_hand', 'mouse_call2', 'mouse_check', 'mouse_imback',
                                 'mouse_half_pot', 'table_cards_area', 'current_round_pot', 'total_pot_area',
                                 'my_cards_area', 'right_card_area', 'left_card_area', 'top_cards_top_area',
-                                'mouse_all_in', 'buttons_search_area', 'use_neural_network']
+                                'mouse_all_in', 'buttons_search_area', 'use_neural_network','two_cards_top_area']
             if button_name not in excluded_buttons:
                 button = getattr(self.ui, button_name + '_show')
                 button.setEnabled(checked)
