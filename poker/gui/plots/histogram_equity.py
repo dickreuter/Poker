@@ -19,7 +19,7 @@ class HistogramEquityWinLoss(FigureCanvas):
         data = l.get_histrogram_data('Template', p_name, game_stage, decision)
         wins = data[0]
         losses = data[1]
-        bins = np.linspace(0, 1, 50)
+        bins = np.linspace(0, 1, 20)
 
         self.fig.clf()
         self.axes = self.fig.add_subplot(111)  # create an axis

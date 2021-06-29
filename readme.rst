@@ -164,7 +164,7 @@ poker.decisionmaker
 -  ``montecarlo_numpy2.py``: fast numpy based montecarlo simulation to
    calculate equity. Not yet working correctly. Some tests are failing. Feel free to fix them.
 -  ``montecarlo_python.py``: relatively slow python based montecarlo for equity calculation. Supports
-   preflight ranges for other players.
+   preflop ranges for other players.
 
 poker.tests
 ^^^^^^^^^^^
@@ -180,14 +180,10 @@ Graphical user interface (gui)
 - Use the qt designer to edit any of the .ui files in gui/ui
 
 
-Roadmap
--------
-- [x] Build a framework that can play online
-- [x] Createa a tool that helps to map the tables and make maps shared over all users via mongodb
-- [x] Update the pokerbot to the new table format of Partypoker
-- [x] Update the pokerbot to the new table format of Pokerstars
-- [x] Update the pokerbot to the new table format of GGPoker
-- [x] Fix pylint errors and improve code quality
+Next Priorities
+---------------
+
+
 - [ ] Update tests. Some are currently outdated. More tests are needed
 - [ ] Add more strategies
 - [ ] Switch from using pytesseract to tesserocr to speed up OCR, this should considerably speed up the bot

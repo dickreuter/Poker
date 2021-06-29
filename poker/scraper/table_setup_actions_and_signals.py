@@ -8,6 +8,7 @@ from PyQt5 import QtGui
 from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal
 from PyQt5.QtWidgets import QMessageBox
 
+from poker.scraper.table_scraper_nn import TRAIN_FOLDER
 from poker.tools.helper import COMPUTER_NAME, get_config, get_dir
 from poker.tools.mongo_manager import MongoManager
 from poker.tools.screen_operations import get_table_template_image, get_ocr_float, take_screenshot, \
@@ -480,7 +481,14 @@ class TableSetupActionAndSignals(QObject):
         log.info(f"Start trainig for {self.table_name}")
         from poker.scraper.table_scraper_nn import CardNeuralNetwork
         n = CardNeuralNetwork()
-        n.create_test_images(self.table_name)
+        log.info(f"Creating augmented images in {TRAIN_FOLDER}")
+        n.create_augmented_images(self.table_name)
+        log.info(f"You may add additional training images into {TRAIN_FOLDER}. "
+                 f"Filename does not matter but make sure they are in the correct folder, "
+                 f"so the network knows the correct label.")
+        log.info("Note that to speed up training you may want to install cuda and cudnn drivers "
+                 "so you can train on a GPU if you have one.")
+        input("Press Enter to continue...")
         n.train_neural_network()
         n.save_model_to_disk()
         n.save_model_to_db(self.table_name)

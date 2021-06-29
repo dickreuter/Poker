@@ -54,7 +54,7 @@ img_width = 15
 class CardNeuralNetwork():
 
     @staticmethod
-    def create_test_images(table_name):
+    def create_augmented_images(table_name):
         shutil.rmtree(TRAIN_FOLDER, ignore_errors=True)
         shutil.rmtree(VALIDATE_FOLDER, ignore_errors=True)
 

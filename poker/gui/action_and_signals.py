@@ -256,7 +256,7 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
         self.gui_fundschange.drawfigure()
 
         self.ui_analyser.combobox_actiontype.addItems(
-            ['Fold', 'Check', 'Call', 'Bet', 'BetPlus', 'Bet half pot', 'Bet pot', 'Bet Bluff'])
+            ['All', 'Fold', 'Check', 'Call', 'Bet', 'BetPlus', 'Bet half pot', 'Bet pot', 'Bet Bluff'])
         self.ui_analyser.combobox_gamestage.addItems(['All', 'PreFlop', 'Flop', 'Turn', 'River'])
         self.ui_analyser.combobox_strategy.addItems(l.get_played_strategy_list())
 
@@ -274,7 +274,7 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
         self.ui_analyser.combobox_strategy.currentIndexChanged[str].connect(lambda: self.update_strategy_analyser(l, p))
 
         self.gui_bar2 = BarPlotter2(self.ui_analyser, l)
-        self.gui_bar2.drawfigure(l, self.ui_analyser.combobox_strategy.currentText())
+        self.gui_bar2.drawfigure(l, self.ui_analyser.combobox_strategy.currentText(), self.ui_analyser.combobox_actiontype.currentText())
         self.update_strategy_analyser(l, p)
 
     def open_strategy_editor(self):
@@ -408,7 +408,8 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
 
         self.gui_histogram.drawfigure(p_name, game_stage, decision, l)
         self.gui_bar2.drawfigure(l, self.ui_analyser.combobox_strategy.currentText(),
-                                 self.ui_analyser.combobox_gamestage.currentText())
+                                 self.ui_analyser.combobox_gamestage.currentText(),
+                                 self.ui_analyser.combobox_actiontype.currentText())
 
         p.read_strategy(p_name)
 

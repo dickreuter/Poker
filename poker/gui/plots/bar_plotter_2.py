@@ -13,15 +13,16 @@ class BarPlotter2(FigureCanvas):
         self.axes = self.fig.add_subplot(111)  # create an axis
         super(BarPlotter2, self).__init__(self.fig)
         self.drawfigure(lst, self.ui_analyser.combobox_strategy.currentText(),
-                        self.ui_analyser.combobox_gamestage.currentText())
+                        self.ui_analyser.combobox_gamestage.currentText(),
+                        self.ui_analyser.combobox_actiontype.currentText())
         self.ui_analyser.vLayout_bar.insertWidget(1, self)
 
-    def drawfigure(self, lst, strategy, last_stage='All'):
+    def drawfigure(self, lst, strategy, last_stage='All', last_action='All'):
         self.fig.clf()
         self.axes = self.fig.add_subplot(111)  # create an axis
 
         p_name = str(strategy)
-        data = lst.get_stacked_bar_data('Template', p_name, 'stackedBar', last_stage=last_stage)
+        data = lst.get_stacked_bar_data('Template', p_name, 'stackedBar', last_stage=last_stage, last_action=last_action)
 
         N = 11
         Bluff = data[0]

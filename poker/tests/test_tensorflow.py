@@ -29,7 +29,7 @@ def test_load_nn_model():
 def test_train_card_neural_network_and_predict():
     from poker.scraper.table_scraper_nn import CardNeuralNetwork
     n = CardNeuralNetwork()
-    n.create_test_images('GG Poker2')
+    n.create_augmented_images('GG Poker2')
     n.train_neural_network()
     n.save_model_to_disk()
     n.load_model()

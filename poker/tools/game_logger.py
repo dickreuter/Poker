@@ -143,11 +143,12 @@ class GameLogger(metaclass=Singleton):
                                                                       'computrname': computername}).json()
         return response['collusion_cards'], response['player_dropped_out']
 
-    def get_stacked_bar_data(self, p_name, p_value, chartType, last_stage='All'):
+    def get_stacked_bar_data(self, p_name, p_value, chartType, last_stage='All', last_action='All'):
 
         response = requests.post(URL + "get_stacked_bar_data",
                                  params={'p_value': p_value, 'chartType': chartType, 
-                                         'last_stage': last_stage}).json()
+                                         'last_stage': last_stage,
+                                         'last_action': last_action}).json()
         data = json.loads(response['d'])
         k = data.keys()
         v = data.values()
