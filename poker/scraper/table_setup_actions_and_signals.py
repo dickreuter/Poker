@@ -110,8 +110,7 @@ class TableSetupActionAndSignals(QObject):
                               'fast_fold_button',
                               'all_in_call_button',
                               'my_turn',
-                              'lost_everything', 'im_back', 'resume_hand', 'dealer_button', 'covered_card',
-                              'two_cards_top']
+                              'lost_everything', 'im_back', 'resume_hand', 'dealer_button', 'covered_card']
         for button in save_image_buttons:
             button_property = getattr(self.ui, button)
             button_property.clicked.connect(lambda state, x=button: self.save_image(x))
@@ -133,7 +132,7 @@ class TableSetupActionAndSignals(QObject):
                          'mouse_increase', 'mouse_call2', 'mouse_check',
                          'mouse_imback',
                          'mouse_half_pot', 'mouse_all_in', 'mouse_resume_hand', 'buttons_search_area',
-                         'left_card_area', 'right_card_area', 'two_cards_top_area'
+                         'left_card_area', 'right_card_area'
                          ]
 
         for button in range_buttons:
@@ -222,7 +221,7 @@ class TableSetupActionAndSignals(QObject):
                                 'mouse_increase', 'mouse_resume_hand', 'mouse_call2', 'mouse_check', 'mouse_imback',
                                 'mouse_half_pot', 'table_cards_area', 'current_round_pot', 'total_pot_area',
                                 'my_cards_area', 'right_card_area', 'left_card_area', 'top_cards_top_area',
-                                'mouse_all_in', 'buttons_search_area', 'use_neural_network','two_cards_top_area']
+                                'mouse_all_in', 'buttons_search_area', 'use_neural_network']
             if button_name not in excluded_buttons:
                 button = getattr(self.ui, button_name + '_show')
                 button.setEnabled(checked)
@@ -439,7 +438,7 @@ class TableSetupActionAndSignals(QObject):
                        'dealer_button', 'covered_card', 'covered_card_area', 'player_name_area', 'player_funds_area',
                        'player_pot_area', 'button_search_area', 'covered_card_area', 'player_name_area',
                        'player_funds_area', 'player_pot_area', 'button_search_area', 'left_card_area',
-                       'right_card_area', 'two_cards_top']
+                       'right_card_area']
 
         for key in all_buttons:
             log.info(f"UnFlattening button {key}")
