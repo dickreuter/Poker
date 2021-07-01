@@ -36,7 +36,7 @@ warnings.filterwarnings("ignore", message="All-NaN axis encountered")
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-version = 6.23
+version = 6.24
 ui = None
 
 
@@ -151,11 +151,13 @@ class ThreadManager(threading.Thread):
                     log.info(f"Loading table scraper info for {table_scraper_name}")
                     table_dict = mongo.get_table(table_scraper_name)
                     nn_model = None
+                    slow_table = False
                     if 'use_neural_network' in table_dict and table_dict['use_neural_network'] == '2':
                         from tensorflow.keras.models import model_from_json
                         nn_model = model_from_json(table_dict['_model'])
                         mongo.load_table_nn_weights(table_scraper_name)
                         nn_model.load_weights(get_dir('codebase') + '/loaded_model.h5')
+                        slow_table = True
 
                 table = TableScreenBased(strategy, table_dict, self.gui_signals, self.game_logger, version, nn_model)
                 mouse = MouseMoverTableBased(table_dict)
@@ -167,6 +169,7 @@ class ThreadManager(threading.Thread):
                         table.get_lost_everything(history, table, strategy, self.gui_signals) and \
                         table.check_for_imback(mouse) and \
                         table.check_for_resume_hand(mouse) and \
+                        table.check_for_button_if_slow_table(slow_table) and \
                         table.get_my_cards() and \
                         table.get_new_hand(mouse, history, strategy) and \
                         table.get_table_cards(history) and \

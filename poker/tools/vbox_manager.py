@@ -43,7 +43,7 @@ class VirtualBoxController(virtualbox.library.IMouse):
     def get_screenshot_vbox(self):
         h, w, _, _, _, _ = self.session.console.display.get_screen_resolution(0)
         png = self.session.console.display.take_screen_shot_to_array(0, h, w, virtualbox.library.BitmapFormat.png)
-        open('screenshot_vbox.png', 'wb').write(png)
+        open('screenshot_vbox.png', 'wb').write(png)  # pylint: disable=consider-using-with
         # image=Image.fromarray(png)
         # image.show()
         time.sleep(0.2)

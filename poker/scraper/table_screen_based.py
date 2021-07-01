@@ -34,6 +34,13 @@ class TableScreenBased(Table):
             time.sleep(1)
             return False
 
+    def check_for_button_if_slow_table(self, slow_table):
+        """For slow tables wich animations such as GG Poker ensure buttons appear before checking for cards"""
+        if slow_table:
+            return self.is_my_turn()
+        else:
+            return True
+
     def check_for_button(self):
         return self.is_my_turn()
 

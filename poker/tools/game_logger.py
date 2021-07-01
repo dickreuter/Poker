@@ -2,7 +2,7 @@ import datetime
 import json
 import os
 import threading
-from collections import Iterable
+from collections.abc import Iterable
 
 import pandas as pd
 import requests

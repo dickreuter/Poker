@@ -8,7 +8,7 @@ import pickle
 import sys
 import traceback
 import webbrowser
-from collections import Iterable
+from collections.abc import Iterable
 from configparser import ConfigParser, ExtendedInterpolation
 from logging import handlers
 

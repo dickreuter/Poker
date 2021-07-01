@@ -74,10 +74,6 @@ class TableScraper:
         log.info(f"My cards: {self.my_cards}")
 
     def get_my_cards_nn(self):
-        if not is_template_in_search_area(self.table_dict, self.screenshot,
-                                   'two_cards_top', 'two_cards_top_area'):
-            return False
-
         left_card_area = self.table_dict['left_card_area']
         right_card_area = self.table_dict['right_card_area']
         left_card = self.screenshot.crop(
