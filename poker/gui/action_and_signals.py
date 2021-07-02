@@ -147,7 +147,7 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
 
         # Main Window matplotlip widgets
         self.gui_funds = FundsPlotter(ui_main_window, p)
-        self.gui_bar = BarPlotter(ui_main_window, p)
+        self.gui_bar = BarPlotter2(ui_main_window, initialize=True)
         self.gui_curve = CurvePlot(ui_main_window, p)
         self.gui_pie = PiePlotter(ui_main_window, winnerCardTypeList={'Highcard': 22})
 
@@ -273,7 +273,7 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
             lambda: self.strategy_analyser_update_plots(l, p))
         self.ui_analyser.combobox_strategy.currentIndexChanged[str].connect(lambda: self.update_strategy_analyser(l, p))
 
-        self.gui_bar2 = BarPlotter2(self.ui_analyser, l)
+        self.gui_bar2 = BarPlotter2(self.ui_analyser)
         self.gui_bar2.drawfigure(l, self.ui_analyser.combobox_strategy.currentText(),
                                  self.ui_analyser.combobox_actiontype.currentText())
         self.update_strategy_analyser(l, p)
