@@ -274,7 +274,8 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
         self.ui_analyser.combobox_strategy.currentIndexChanged[str].connect(lambda: self.update_strategy_analyser(l, p))
 
         self.gui_bar2 = BarPlotter2(self.ui_analyser, l)
-        self.gui_bar2.drawfigure(l, self.ui_analyser.combobox_strategy.currentText(), self.ui_analyser.combobox_actiontype.currentText())
+        self.gui_bar2.drawfigure(l, self.ui_analyser.combobox_strategy.currentText(),
+                                 self.ui_analyser.combobox_actiontype.currentText())
         self.update_strategy_analyser(l, p)
 
     def open_strategy_editor(self):

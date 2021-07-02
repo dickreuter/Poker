@@ -699,41 +699,7 @@
                <layout class="QHBoxLayout" name="horizontalLayout_9"/>
               </item>
               <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_10">
-                <item>
-                 <widget class="QPushButton" name="two_cards_top_area">
-                  <property name="toolTip">
-                   <string>Area of the top of the 2 cards holding by the bot</string>
-                  </property>
-                  <property name="text">
-                   <string>2 Cards top area</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QPushButton" name="two_cards_top">
-                  <property name="toolTip">
-                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Template of top edge of the 2 cards held by the bot, indicating that he has received both cards and the neural network can start recognizing them&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                  </property>
-                  <property name="text">
-                   <string>2 Cards top template</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QPushButton" name="two_cards_top_show">
-                  <property name="enabled">
-                   <bool>false</bool>
-                  </property>
-                  <property name="toolTip">
-                   <string>View the selected template for empty card</string>
-                  </property>
-                  <property name="text">
-                   <string>V</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
+               <layout class="QHBoxLayout" name="horizontalLayout_10"/>
               </item>
              </layout>
             </item>

@@ -13,7 +13,6 @@ class BarPlotter(FigureCanvas):
         self.fig = Figure(dpi=50)
         self.axes = self.fig.add_subplot(111)  # create an axis
         super(BarPlotter, self).__init__(self.fig)
-        # self.drawfigure()
         self.ui.vLayout2.insertWidget(1, self)
 
     def drawfigure(self, l, strategy):
