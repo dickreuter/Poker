@@ -27,6 +27,12 @@ Pokerstars:
 
 .. figure:: doc/ps-example.png
 
+GGPoker:
+~~~~~~~~~~~
+Make sure your GGPoker setup looks as follows when using it with the Official GGPoker Table:
+
+.. figure:: doc/ggpk2.png
+
 
 General setup:
 ~~~~~~~~~~~~~~
@@ -99,8 +105,11 @@ Strategy Analyzer
 
 - You can see the profitability of each strategy in the strategy analyzer.
 - The bar chart indicates what action types have led to wins or losses at each stage (preflop, flop turn and river)
-
 .. figure:: doc/strategy_analyser1.jpg
+
+Looking at the stacked bar chart in more detail, gives you clues how to adjust the strategy to maximize your wins:
+
+.. figure:: doc/analyzer_bar2.png
 
 Analyze individual hands:
 

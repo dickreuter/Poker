@@ -72,7 +72,7 @@ class BarPlotter2(FigureCanvas):
         for i in range(1, len(clusters)):
             axes[i].set_yticklabels("")
             axes[i - 1].legend().set_visible(False)
-        axes[0].set_ylabel("y_label")
+        axes[0].set_ylabel("Payoff")
 
         legend = axes[-1].legend(loc='upper right', fontsize=8, framealpha=0).get_frame()
         legend.set_linewidth(2)
