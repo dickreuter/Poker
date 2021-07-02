@@ -26,14 +26,19 @@ class BarPlotter2(FigureCanvas):
             if initialize:
                 self.axes = self.fig.add_subplot(111)
 
-    def drawfigure(self, gamelogger, strategy, last_stage='All', action_type='All'):
+    def drawfigure(self, gamelogger, strategy, last_stage='All', action_type='All', show_rounds=False):
         self.fig.clf()
         try:
+            groups = ["gs", "rd", "fa", "ld"] if show_rounds else ["gs", "fa", "ld"]
+
             df = gamelogger.get_stacked_bar_data2('Template', str(strategy), 'stackedBar', last_stage=last_stage,
                                                   last_action=action_type)
-            df = df.groupby(["gs", "rd", "fa", "ld"])["Total"].sum().unstack(fill_value=0)
+            df = df.groupby(groups)["Total"].sum().unstack(fill_value=0)
             df = df.reindex(sorted(df.columns, reverse=True), axis=1)
-            df = df.sort_index(level=[1, 2], ascending=[True, False], axis=0)
+            if show_rounds:
+                df = df.sort_index(level=[1, 2], ascending=[True, False], axis=0)
+            else:
+                df = df.sort_index(level=[1], ascending=[True], axis=0)
         except json.decoder.JSONDecodeError:
             self.draw()
             return

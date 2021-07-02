@@ -129,20 +129,27 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_3">
-            <item>
-             <widget class="QWidget" name="widget_3" native="true"/>
-            </item>
-           </layout>
-          </item>
-          <item>
            <layout class="QVBoxLayout" name="vLayout_bar">
             <item>
              <widget class="QWidget" name="widget_2" native="true"/>
             </item>
            </layout>
           </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_3">
+            <item>
+             <widget class="QWidget" name="widget_3" native="true"/>
+            </item>
+           </layout>
+          </item>
          </layout>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="show_rounds">
+          <property name="text">
+           <string>Show rounds within stages</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>
