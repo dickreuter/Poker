@@ -26,6 +26,7 @@ Pokerstars:
 * Make sure to match the card styles (4 color), covered card styles, and table styles.
 
 .. figure:: doc/ps-example.png
+.. figure:: doc/ps-table-styles.png
 
 GGPoker:
 ~~~~~~~~~~~
