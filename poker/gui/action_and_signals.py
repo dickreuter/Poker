@@ -251,7 +251,7 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
         self.ui_analyser = AnalyserForm()
 
         self.gui_fundschange = FundsChangePlot(self.ui_analyser)
-        self.gui_fundschange.drawfigure()
+        self.gui_fundschange.drawfigure(self.ui_analyser.my_computer_only.isChecked())
 
         self.ui_analyser.combobox_actiontype.addItems(
             ['All', 'Fold', 'Check', 'Call', 'Bet', 'BetPlus', 'Bet half pot', 'Bet pot', 'Bet Bluff'])
@@ -271,11 +271,15 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
             lambda: self.strategy_analyser_update_plots(l, p))
         self.ui_analyser.combobox_strategy.currentIndexChanged[str].connect(lambda: self.update_strategy_analyser(l, p))
         self.ui_analyser.show_rounds.stateChanged[int].connect(lambda: self.update_strategy_analyser(l, p))
+        self.ui_analyser.my_computer_only.stateChanged[int].connect(lambda: self.update_strategy_analyser(l, p))
 
         self.gui_bar2 = BarPlotter2(self.ui_analyser)
-        self.gui_bar2.drawfigure(l, self.ui_analyser.combobox_strategy.currentText(),
+        self.gui_bar2.drawfigure(l,
+                                 self.ui_analyser.combobox_strategy.currentText(),
+                                 self.ui_analyser.combobox_gamestage.currentText(),
                                  self.ui_analyser.combobox_actiontype.currentText(),
-                                 self.ui_analyser.show_rounds.isChecked())
+                                 self.ui_analyser.show_rounds.isChecked(),
+                                 self.ui_analyser.my_computer_only.isChecked())
         self.update_strategy_analyser(l, p)
 
     def open_strategy_editor(self):
@@ -388,8 +392,9 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
         self.ui_setup.close()
 
     def update_strategy_analyser(self, l, p):
-        number_of_games = int(l.get_game_count(self.ui_analyser.combobox_strategy.currentText()))
-        total_return = l.get_strategy_return(self.ui_analyser.combobox_strategy.currentText(), 999999)
+        number_of_games = int(l.get_game_count(self.ui_analyser.combobox_strategy.currentText(), self.ui_analyser.my_computer_only.isChecked()))
+        total_return = l.get_strategy_return(self.ui_analyser.combobox_strategy.currentText(), 999999,
+                                             self.ui_analyser.my_computer_only.isChecked())
 
         try:
             winnings_per_bb_100 = total_return / p.selected_strategy['bigBlind'] / number_of_games * 100
@@ -398,7 +403,7 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
 
         self.ui_analyser.lcdNumber_2.display(number_of_games)
         self.ui_analyser.lcdNumber.display(winnings_per_bb_100)
-        self.gui_fundschange.drawfigure()
+        self.gui_fundschange.drawfigure(self.ui_analyser.my_computer_only.isChecked())
         self.strategy_analyser_update_plots(l, p)
         self.strategy_analyser_update_table(l)
 
@@ -408,10 +413,12 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
         decision = str(self.ui_analyser.combobox_actiontype.currentText())
 
         self.gui_histogram.drawfigure(p_name, game_stage, decision, l)
-        self.gui_bar2.drawfigure(l, self.ui_analyser.combobox_strategy.currentText(),
+        self.gui_bar2.drawfigure(l,
+                                 self.ui_analyser.combobox_strategy.currentText(),
                                  self.ui_analyser.combobox_gamestage.currentText(),
                                  self.ui_analyser.combobox_actiontype.currentText(),
-                                 self.ui_analyser.show_rounds.isChecked())
+                                 self.ui_analyser.show_rounds.isChecked(),
+                                 self.ui_analyser.my_computer_only.isChecked())
 
         p.read_strategy(p_name)
 

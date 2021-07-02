@@ -13,14 +13,13 @@ class FundsChangePlot(FigureCanvas):
         self.fig = Figure(dpi=50)
         self.axes = self.fig.add_subplot(111)  # create an axis
         super(FundsChangePlot, self).__init__(self.fig)
-        self.drawfigure()
         self.ui_analyser.vLayout_fundschange.insertWidget(1, self)
 
-    def drawfigure(self):
+    def drawfigure(self, my_computer_only):
         LogFilename = 'log'
         L = GameLogger(LogFilename)
         p_name = str(self.ui_analyser.combobox_strategy.currentText())
-        data = L.get_fundschange_chart(p_name)
+        data = L.get_fundschange_chart(p_name, my_computer_only)
         self.fig.clf()
         self.axes = self.fig.add_subplot(111)  # create an axis
         self.axes.clear()  # discards the old graph

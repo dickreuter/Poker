@@ -151,6 +151,13 @@
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QCheckBox" name="my_computer_only">
+          <property name="text">
+           <string>Played on my computer only</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="tab_2">

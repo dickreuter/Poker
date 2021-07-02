@@ -32,7 +32,6 @@ class GeneticAlgorithm:
 
     def load_log(self, p_name, L):
         self.gameResults = {}
-        L.get_stacked_bar_data('Template', p_name, 'stackedBar')
         self.recommendation = dict()
 
     def assess_call(self, p, L, decision, stage, coeff1, coeff2, coeff3, coeff4, change):
