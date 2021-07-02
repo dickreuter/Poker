@@ -70,7 +70,7 @@ class BarPlotter2(FigureCanvas):
             axes.append(self.axes)
             self.axes.set_title(cluster)
             self.axes.set_xlabel("")
-            self.axes.set_xticklabels(self.axes.get_xticklabels(), rotation=60, ha='right')
+            self.axes.set_xticklabels(self.axes.get_xticklabels(), rotation=25, ha='right', fontsize=10)
             self.axes.xaxis.set_tick_params(labelsize='small')
 
             self.axes.set_ylim(0, maxi + 1)

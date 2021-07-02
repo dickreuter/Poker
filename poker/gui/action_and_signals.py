@@ -5,12 +5,10 @@ from sys import platform
 import numexpr  # required for pyinstaller
 from PyQt5 import QtCore
 
-
 _ = numexpr
 import matplotlib
 
 from poker.gui.pandas_model import PandasModel
-from poker.gui.plots.bar_plotter import BarPlotter
 from poker.gui.plots.bar_plotter_2 import BarPlotter2
 from poker.gui.plots.curve_plot import CurvePlot
 from poker.gui.plots.funds_change_plot import FundsChangePlot
@@ -205,7 +203,7 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
         config = get_config()
 
         newly_selected_strategy = self.ui.comboBox_current_strategy.currentText()
-        config.config.set('main', 'last_strategy',  newly_selected_strategy)
+        config.config.set('main', 'last_strategy', newly_selected_strategy)
 
         table_selection = self.ui.table_selection.currentText()
         config.config.set('main', 'table_scraper_name', table_selection)
