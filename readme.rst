@@ -52,6 +52,7 @@ the whole computer:
 * Download Virtualbox: https://www.virtualbox.org/
 * Download Windows 10 32 bit Iso File (x86_dvd.iso), for example from here https://www.softlay.com/operating-system/windows-7-ultimate-iso-download.html
 * Create a new virtual box environment and use the ISO file as a startup
+* Make sure to give the Virtualbox only 1 CPU as the computing power is needed for the bot (mainly for OCR)
 * Install Partypoker or Pokerstars in the virtual box environment
 * Install the pokerbot directly onto your computer (outside of the virtual box)
 * In the Setup select your virtual box instance (instead of direct mouse control)
