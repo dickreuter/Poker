@@ -26,13 +26,15 @@ class BarPlotter2(FigureCanvas):
             if initialize:
                 self.axes = self.fig.add_subplot(111)
 
-    def drawfigure(self, gamelogger, strategy, last_stage='All', action_type='All', show_rounds=False, my_computer_only=False):
+    def drawfigure(self, gamelogger, strategy, last_stage='All', action_type='All', show_rounds=False,
+                   my_computer_only=False):
         self.fig.clf()
         try:
             groups = ["gs", "rd", "fa", "ld"] if show_rounds else ["gs", "fa", "ld"]
 
             df = gamelogger.get_stacked_bar_data2('Template', str(strategy), 'stackedBar', last_stage=last_stage,
                                                   last_action=action_type, my_computer_only=my_computer_only)
+            df = df[df['rd'].isin(['0', '1', '2'])]
             df = df.groupby(groups)["Total"].sum().unstack(fill_value=0)
             df = df.reindex(sorted(df.columns, reverse=True), axis=1)
             if show_rounds:
@@ -88,7 +90,7 @@ class BarPlotter2(FigureCanvas):
         axes[0].set_ylabel("Payoff")
 
         legend = axes[-1].legend(loc='upper right', fontsize=10, framealpha=.3).get_frame()
-        legend.set_linewidth(1)
+        legend.set_linewidth(.5)
         legend.set_edgecolor("black")
 
         self.draw()
