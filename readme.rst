@@ -101,6 +101,14 @@ A variety of other options can be edited for each strategy:
 
 .. figure:: doc/strategy_editor.gif
 
+Advice how to improve strategies:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* You will generally require at least 2000 hands played with a strategy to draw any conclusions. Even better 5000 hands. Anything less than 1000 hands is completely random.
+* Best buy in more than the minimum, this will improve the bots performance as it has more leeway to play. For example on a 0.01/0.02 table, buy in more than the minimum of $2. Ideally start with $4 or even more.
+* Look at the strategy analyzer and work your way backwards. First improve the River play, then once this is good move on to the Turn, then to the Flop etc. This is because the game is path dependent.
+* If you make changes in the ranges, you may need to adapt all minimum equities as it changes the equity calculation.
+* Good Luck!
 
 Full version:
 ~~~~~~~~~~~~~
