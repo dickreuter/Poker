@@ -67,6 +67,25 @@ the whole computer:
 * In setup, try to select your virtual machine instead of direct mouse control. That way mouse movements won't obstruct you.
 
 
+Strategy Analyzer
+-----------------
+
+- You can see the profitability of each strategy in the strategy analyzer.
+- The bar chart indicates what action types have led to wins or losses at each stage (preflop, flop turn and river)
+.. figure:: doc/strategy_analyser1.jpg
+
+Looking at the stacked bar chart in more detail, gives you clues how to adjust the strategy to maximize your wins:
+
+.. figure:: doc/analyzer_bar2.png
+
+Analyze individual rounds within each stage:
+
+.. figure:: doc/analyzer_bar3.png
+
+Analyze individual hands:
+.. figure:: doc/strategy_analyzer.gif
+
+
 Strategy editor
 ---------------
 A variety of factors are taken into consideration when the bot makes decisions and they can be adjusted in the strategy editor:
@@ -102,20 +121,6 @@ The easiest way to contribute is by:
 - Adding new strategies
 - Directly add fixes to the code and create a pull request
 
-Strategy Analyzer
------------------
-
-- You can see the profitability of each strategy in the strategy analyzer.
-- The bar chart indicates what action types have led to wins or losses at each stage (preflop, flop turn and river)
-.. figure:: doc/strategy_analyser1.jpg
-
-Looking at the stacked bar chart in more detail, gives you clues how to adjust the strategy to maximize your wins:
-
-.. figure:: doc/analyzer_bar2.png
-
-Analyze individual hands:
-
-.. figure:: doc/strategy_analyzer.gif
 
 
 Mapping new tables
