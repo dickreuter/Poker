@@ -82,6 +82,7 @@ Analyze individual rounds within each stage:
 .. figure:: doc/analyzer_bar3.png
 
 Analyze individual hands:
+
 .. figure:: doc/strategy_analyzer.gif
 
 
