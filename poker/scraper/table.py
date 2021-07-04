@@ -34,7 +34,7 @@ class Table(TableScraper):
                     time.sleep(.2)
                     if self.gui_signals.exit_thread == True: sys.exit()
 
-        time.sleep(0.1)
+            time.sleep(0.1)
         config = get_config()
         control = config.config.get('main', 'control')
         if control == 'Direct mouse control':
