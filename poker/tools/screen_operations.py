@@ -18,7 +18,11 @@ from poker.tools.vbox_manager import VirtualBoxController
 log = logging.getLogger(__name__)
 is_debug = False  # used for saving images for debug purposes
 
-tesserpath = os.path.join(get_dir('codebase'), '..', 'tessdata')
+if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+    tesserpath = os.path.join(get_dir('codebase'), 'tessdata')
+else:
+    tesserpath = os.path.join(get_dir('codebase'), '..', 'tessdata')
+
 api = PyTessBaseAPI(path=tesserpath,
                     psm=PSM.SINGLE_LINE,
                     oem=OEM.LSTM_ONLY)
@@ -62,15 +66,15 @@ def get_ocr_float(img_orig, fast=False):
     return get_ocr_number(img_orig, fast)
 
 
-def prepareImage(img_orig, binarize=True):
+def prepareImage(img_orig, binarize=True, threshold=76):
     """Prepare image for OCR"""
 
-    def binarize_array_opencv(image):
+    def binarize_array_opencv(image, threshold):
         """Binarize image from gray channel with 76 as threshold"""
         img = cv2.cvtColor(np.array(image), cv2.COLOR_BGR2RGB)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-        _, thresh2 = cv2.threshold(img, 76, 255, cv2.THRESH_BINARY_INV)
+        _, thresh2 = cv2.threshold(img, threshold, 255, cv2.THRESH_BINARY_INV)
         return Image.fromarray(thresh2)
 
     basewidth = 300
@@ -78,7 +82,7 @@ def prepareImage(img_orig, binarize=True):
     hsize = int((float(img_orig.size[1]) * float(wpercent)))
     img_resized = img_orig.convert('L').resize((basewidth, hsize), Image.LANCZOS)
     if binarize:
-        img_resized = binarize_array_opencv(img_resized)
+        img_resized = binarize_array_opencv(img_resized, threshold)
 
     if is_debug:
         pics_path = "log/pics"
@@ -107,14 +111,18 @@ def get_ocr_number2(img_orig, fast=False):
 
 def get_ocr_number(img_orig, fast=False):
     """Return float value from image. -1.0f when OCR failed"""
-    img_resized = prepareImage(img_orig)
+    img_resized = prepareImage(img_orig, binarize=True)
+    img_resized2 = prepareImage(img_orig, binarize=True, threshold=125)
     lst = []
 
     lst.append(
         get_ocr_number2(img_resized).
             strip().replace('$', '').replace('£', '').replace('B', '').replace(',', '.').replace('\n', '').replace(':',
                                                                                                                    ''))
-
+    lst.append(
+        get_ocr_number2(img_resized2).
+            strip().replace('$', '').replace('£', '').replace('B', '').replace(',', '.').replace('\n', '').replace(':',
+                                                                                                                   ''))
     try:
         return float(lst[-1])
     except ValueError:
