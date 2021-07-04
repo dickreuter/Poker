@@ -144,7 +144,8 @@ def get_ocr_number(img_orig, fast=False):
         try:
             return float(element)
         except ValueError:
-            log.warning(f"Not recognized: {element}")
+            pass
+            # log.warning(f"Not recognized: {element}")
     return -1.0
 
 
