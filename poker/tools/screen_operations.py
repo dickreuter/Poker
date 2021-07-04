@@ -9,13 +9,19 @@ import cv2
 import numpy as np
 from PIL import Image, ImageGrab
 from pytesseract import pytesseract
+from tesserocr import PyTessBaseAPI, PSM, OEM
 
-from poker.tools.helper import memory_cache
+from poker.tools.helper import memory_cache, get_dir
 from poker.tools.mongo_manager import MongoManager
 from poker.tools.vbox_manager import VirtualBoxController
 
 log = logging.getLogger(__name__)
 is_debug = False  # used for saving images for debug purposes
+
+tesserpath = os.path.join(get_dir('codebase'), '..', 'tessdata')
+api = PyTessBaseAPI(path=tesserpath,
+                    psm=PSM.SINGLE_LINE,
+                    oem=OEM.LSTM_ONLY)
 
 
 def find_template_on_screen(template, screenshot, threshold, extended=False):
@@ -91,15 +97,23 @@ def prepareImage(img_orig, binarize=True):
     return img_resized
 
 
+def get_ocr_number2(img_orig, fast=False):
+    """New OCR based on tesserocr rather than pytesseract, should be much faster"""
+    api.SetVariable("tessedit_char_whitelist", "0123456789.$£B")
+    api.SetImage(img_orig)
+    result = api.GetUTF8Text()
+    return result
+
+
 def get_ocr_number(img_orig, fast=False):
     """Return float value from image. -1.0f when OCR failed"""
     img_resized = prepareImage(img_orig)
     lst = []
-    config_ocr = '--psm 7 --oem 1 -c tessedit_char_whitelist=0123456789.,$£B'
 
     lst.append(
-        pytesseract.image_to_string(img_resized, 'eng', config=config_ocr).
-            strip().replace('$', '').replace('£', '').replace('B', '').replace(',', '.'))
+        get_ocr_number2(img_resized).
+            strip().replace('$', '').replace('£', '').replace('B', '').replace(',', '.').replace('\n', '').replace(':',
+                                                                                                                   ''))
 
     try:
         return float(lst[-1])
@@ -112,10 +126,9 @@ def get_ocr_number(img_orig, fast=False):
             j = 0
             while j < len(images):
                 lst.append(
-                    pytesseract.image_to_string(images[j], 'eng', config=config_ocr).
-                        strip().replace('$', '').replace('£', '').replace('B', ''))
+                    get_ocr_number2(images[j]).
+                        strip().replace('$', '').replace('£', '').replace('B', '').replace('\n', '').replace(':', ''))
                 j += 1
-            config_ocr = '--psm 8 --oem 1 -c tessedit_char_whitelist=0123456789.$£B'
             i += 1
 
     log.debug(lst)
@@ -123,7 +136,7 @@ def get_ocr_number(img_orig, fast=False):
         try:
             return float(element)
         except ValueError:
-            pass
+            log.warning(f"Not recognized: {element}")
     return -1.0
 
 
