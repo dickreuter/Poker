@@ -1,34 +1,13 @@
-language: python
-
-
-python:
-  - "3.7"
-
-os:
-  - linux
-
-env:
-  - ENV=CI
-
-install:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then MINICONDA_OS=Linux; else MINICONDA_OS=MacOSX; fi
-  - wget https://repo.anaconda.com/miniconda/Miniconda3-latest-$MINICONDA_OS-x86_64.sh -O miniconda.sh
-  - bash miniconda.sh -b -p "$HOME"/miniconda
-  - source "$HOME"/miniconda/etc/profile.d/conda.sh
-  - conda config --set always_yes yes --set changeps1 no --set auto_update_conda false
-  - python -m pip install --upgrade pip
-  - sudo apt-get update
-  - sudo apt-get -y install python3-pyqt5
-  - sudo apt-get install tesseract-ocr libtesseract-dev libleptonica-dev pkg-config
-  - pip install -r requirements.txt
-  - pip install tesserocr
-  - export LANG=en_US.UTF-8
-  - export COVERAGE_DIR=":$HOME/htmlcov"
-  - printenv | sort
-
-# command to run tests
-script: pytest --log-cli-level=warning
-
-after_success:
-  - codecov
-
+matrix:
+  include:
+    - name: "Python 3.7.4 on Windows"
+      os: windows           # Windows 10.0.17134 N/A Build 17134
+      language: shell       # 'language: python' is an error on Travis CI Windows
+      before_install:
+        - choco install python --version 3.7.4
+        - python --version
+        - python -m pip install --upgrade pip
+        - pip3 install --upgrade pytest
+        - pip3 install codecov
+        - pip3 install -r requirements.txt
+      env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
