@@ -7,9 +7,8 @@ matrix:
         - choco install python --version 3.7.4
         - python --version
         - python -m pip install --upgrade pip
-         -pip install certifi
         - pip install pillow
-        - pip install -r requirements.txt
+        - pip install -r requirements.txt --trusted-host=pypi.python.org --trusted-host=pypi.org --trusted-host=files.pythonhosted.org
         - pip install https://github.com/simonflueckiger/tesserocr-windows_build/releases/download/tesserocr-v2.4.0-tesseract-4.0.0/tesserocr-2.4.0-cp37-cp37m-win_amd64.whl
         - pip install --upgrade pytest
 
