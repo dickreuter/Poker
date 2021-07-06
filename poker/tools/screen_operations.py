@@ -117,11 +117,11 @@ def get_ocr_number(img_orig, fast=False):
 
     lst.append(
         get_ocr_number2(img_resized).
-            strip().replace('$', '').replace('£', '').replace('B', '').replace(',', '.').replace('\n', '').replace(':',
+            strip().replace('$', '').replace('£', '').replace('€', '').replace('B', '').replace(',', '.').replace('\n', '').replace(':',
                                                                                                                    ''))
     lst.append(
         get_ocr_number2(img_resized2).
-            strip().replace('$', '').replace('£', '').replace('B', '').replace(',', '.').replace('\n', '').replace(':',
+            strip().replace('$', '').replace('£', '').replace('€', '').replace('B', '').replace(',', '.').replace('\n', '').replace(':',
                                                                                                                    ''))
     try:
         return float(lst[-1])
@@ -135,7 +135,7 @@ def get_ocr_number(img_orig, fast=False):
             while j < len(images):
                 lst.append(
                     get_ocr_number2(images[j]).
-                        strip().replace('$', '').replace('£', '').replace('B', '').replace('\n', '').replace(':', ''))
+                        strip().replace('$', '').replace('£', '').replace('€', '').replace('B', '').replace('\n', '').replace(':', ''))
                 j += 1
             i += 1
 
