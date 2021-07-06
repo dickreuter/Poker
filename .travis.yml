@@ -7,7 +7,10 @@ matrix:
         - choco install python --version 3.7.4
         - python --version
         - python -m pip install --upgrade pip
-        - pip3 install --upgrade pytest
-        - pip3 install codecov
-        - pip3 install -r requirements.txt
+        - pip install -r requirements.txt
+        - pip install https://github.com/simonflueckiger/tesserocr-windows_build/releases/download/tesserocr-v2.4.0-tesseract-4.0.0/tesserocr-2.4.0-cp37-cp37m-win_amd64.whl
+        - pip install --upgrade pytest
+        
       env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
+
+      script: pytest --log-cli-level=warning
