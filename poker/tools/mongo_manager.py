@@ -3,6 +3,7 @@ import io
 import json
 import logging
 
+import pandas as pd
 import requests
 from PIL import Image
 from fastapi.encoders import jsonable_encoder
@@ -202,3 +203,8 @@ class MongoManager(metaclass=Singleton):
         """Delete a table"""
         requests.post(URL + "delete_table", params={'table_name': table_name,
                                                     'owner': owner})
+
+    def get_top_strategies(self):
+        response = requests.post(
+            URL + "get_top_strategies").json()
+        return pd.DataFrame(json.loads(response))

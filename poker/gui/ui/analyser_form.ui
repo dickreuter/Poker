@@ -17,10 +17,16 @@
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <layout class="QGridLayout" name="gridLayout_4">
-      <item row="1" column="0">
-       <widget class="QComboBox" name="combobox_strategy">
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choose the strategy you would like to analyse. '.*' means all strategies together.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <item row="3" column="1">
+       <widget class="QLCDNumber" name="lcdNumber">
+        <property name="lineWidth">
+         <number>1</number>
+        </property>
+        <property name="midLineWidth">
+         <number>0</number>
+        </property>
+        <property name="smallDecimalPoint">
+         <bool>false</bool>
         </property>
        </widget>
       </item>
@@ -28,6 +34,16 @@
        <widget class="QComboBox" name="combobox_actiontype">
         <property name="toolTip">
          <string>Choose what kind of decision you want to analyse in more detail.</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QComboBox" name="combobox_strategy">
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choose the strategy you would like to analyse. '.*' means all strategies together.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="maxVisibleItems">
+         <number>50</number>
         </property>
        </widget>
       </item>
@@ -43,16 +59,10 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
-       <widget class="QLCDNumber" name="lcdNumber">
-        <property name="lineWidth">
-         <number>1</number>
-        </property>
-        <property name="midLineWidth">
-         <number>0</number>
-        </property>
-        <property name="smallDecimalPoint">
-         <bool>false</bool>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="combobox_gamestage">
+        <property name="toolTip">
+         <string>Choose the game stage you want to focus on.</string>
         </property>
        </widget>
       </item>
@@ -63,9 +73,6 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
-       <widget class="QLCDNumber" name="lcdNumber_2"/>
-      </item>
       <item row="2" column="0">
        <widget class="QLabel" name="label_6">
         <property name="text">
@@ -73,12 +80,8 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QComboBox" name="combobox_gamestage">
-        <property name="toolTip">
-         <string>Choose the game stage you want to focus on.</string>
-        </property>
-       </widget>
+      <item row="3" column="0">
+       <widget class="QLCDNumber" name="lcdNumber_2"/>
       </item>
       <item row="0" column="0">
        <widget class="QLabel" name="label">
@@ -91,6 +94,19 @@
        <widget class="QLabel" name="label_2">
         <property name="text">
          <string>End Stage</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="2">
+       <widget class="QPushButton" name="show_league_table">
+        <property name="contextMenuPolicy">
+         <enum>Qt::ActionsContextMenu</enum>
+        </property>
+        <property name="statusTip">
+         <string>Shows best strategies that have played at least 500 hands</string>
+        </property>
+        <property name="text">
+         <string>Show League Table</string>
         </property>
        </widget>
       </item>

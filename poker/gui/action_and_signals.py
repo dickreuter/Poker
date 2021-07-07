@@ -7,6 +7,9 @@ from PyQt5 import QtCore
 
 _ = numexpr
 import matplotlib
+from matplotlib import pyplot as plt
+import seaborn as sns
+import numpy as np
 
 from poker.gui.pandas_model import PandasModel
 from poker.gui.plots.bar_plotter_2 import BarPlotter2
@@ -272,6 +275,7 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
         self.ui_analyser.combobox_strategy.currentIndexChanged[str].connect(lambda: self.update_strategy_analyser(l, p))
         self.ui_analyser.show_rounds.stateChanged[int].connect(lambda: self.update_strategy_analyser(l, p))
         self.ui_analyser.my_computer_only.stateChanged[int].connect(lambda: self.update_strategy_analyser(l, p))
+        self.ui_analyser.show_league_table.clicked.connect(lambda: self.show_league_table())
 
         self.gui_bar2 = BarPlotter2(self.ui_analyser)
         self.gui_bar2.drawfigure(l,
@@ -281,6 +285,26 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
                                  self.ui_analyser.show_rounds.isChecked(),
                                  self.ui_analyser.my_computer_only.isChecked())
         self.update_strategy_analyser(l, p)
+
+    @staticmethod
+    def show_league_table():
+        mongo = MongoManager()
+        top_df = mongo.get_top_strategies().sort_values('Return per bb in 100 Hands', ascending=False)
+
+        def colors_from_values(values, palette_name):
+            # normalize the values to range [0, 1]
+            normalized = (values - min(values)) / (max(values) - min(values))
+            # convert to indices
+            indices = np.round(normalized * (len(values) - 1)).astype(np.int32)
+            # use the indices to get the colors
+            palette = sns.color_palette(palette_name, len(values))
+            return np.array(palette).take(indices, axis=0)
+
+        ax, fig = plt.subplots(figsize=(25, 20))
+        sns.barplot(data=top_df, x='Return per bb in 100 Hands', y='_id', ci=None,
+                    palette=colors_from_values(top_df['count'], "YlOrRd")).set(
+            title='Top Strategies by individual player')
+        plt.show()
 
     def open_strategy_editor(self):
         self.p_edited = StrategyHandler()
@@ -392,7 +416,8 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
         self.ui_setup.close()
 
     def update_strategy_analyser(self, l, p):
-        number_of_games = int(l.get_game_count(self.ui_analyser.combobox_strategy.currentText(), self.ui_analyser.my_computer_only.isChecked()))
+        number_of_games = int(l.get_game_count(self.ui_analyser.combobox_strategy.currentText(),
+                                               self.ui_analyser.my_computer_only.isChecked()))
         total_return = l.get_strategy_return(self.ui_analyser.combobox_strategy.currentText(), 999999,
                                              self.ui_analyser.my_computer_only.isChecked())
 
