@@ -17,19 +17,6 @@
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
      <layout class="QGridLayout" name="gridLayout_4">
-      <item row="3" column="1">
-       <widget class="QLCDNumber" name="lcdNumber">
-        <property name="lineWidth">
-         <number>1</number>
-        </property>
-        <property name="midLineWidth">
-         <number>0</number>
-        </property>
-        <property name="smallDecimalPoint">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="2">
        <widget class="QComboBox" name="combobox_actiontype">
         <property name="toolTip">
@@ -47,18 +34,6 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
-       <widget class="QLabel" name="label_5">
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-         </font>
-        </property>
-        <property name="text">
-         <string>Return in bb per 100 hands</string>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="1">
        <widget class="QComboBox" name="combobox_gamestage">
         <property name="toolTip">
@@ -72,16 +47,6 @@
          <string>Action at End Stage</string>
         </property>
        </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_6">
-        <property name="text">
-         <string>Total played hands</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLCDNumber" name="lcdNumber_2"/>
       </item>
       <item row="0" column="0">
        <widget class="QLabel" name="label">
@@ -97,7 +62,42 @@
         </property>
        </widget>
       </item>
+      <item row="2" column="2">
+       <widget class="QLabel" name="label_5">
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>Return in bb per 100 hands</string>
+        </property>
+       </widget>
+      </item>
       <item row="3" column="2">
+       <widget class="QLCDNumber" name="lcdNumber">
+        <property name="lineWidth">
+         <number>1</number>
+        </property>
+        <property name="midLineWidth">
+         <number>0</number>
+        </property>
+        <property name="smallDecimalPoint">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLabel" name="label_6">
+        <property name="text">
+         <string>Total played hands</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QLCDNumber" name="lcdNumber_2"/>
+      </item>
+      <item row="2" column="0">
        <widget class="QPushButton" name="show_league_table">
         <property name="contextMenuPolicy">
          <enum>Qt::ActionsContextMenu</enum>

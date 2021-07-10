@@ -32,9 +32,9 @@ class MouseMover(VirtualBoxController):
         time.sleep(np.random.uniform(0.01, 0.1, 1)[0])
 
     def mouse_mover(self, x1, y1, x2, y2):
-        speed = .3
-        stepMin = 20
-        stepMax = 50
+        speed = .5
+        stepMin = 7
+        stepMax = 20
         rd1 = int(np.round(np.random.uniform(stepMin, stepMax, 1)[0]))
         rd2 = int(np.round(np.random.uniform(stepMin, stepMax, 1)[0]))
 
