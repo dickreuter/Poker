@@ -1,9 +1,10 @@
-__author__ = 'Nicolas Dickreuter'
 """Runs a Montecarlo simulation to calculate the probability of winning with a certain pokerhand and a given amount of players"""
+
 import json
 import logging
 import operator
 import os
+import sys
 import time
 # import winsound
 from collections import Counter
@@ -56,8 +57,13 @@ class MonteCarlo:
     def calc_score(self, hand):  # assign a calc_score to the hand so it can be compared with other hands
         card_ranks_original = '23456789TJQKA'
         original_suits = 'CDHS'
-        rcounts = {card_ranks_original.find(r): ''.join(hand).count(r) for r, _ in hand}.items()
-        score, card_ranks = zip(*sorted((cnt, rank) for rank, cnt in rcounts)[::-1])
+        try:
+            rcounts = {card_ranks_original.find(r): ''.join(hand).count(r) for r, _ in hand}.items()
+            score, card_ranks = zip(*sorted((cnt, rank) for rank, cnt in rcounts)[::-1])
+        except ValueError:
+            logger.error("Unable to perform montecarlo. This table most likely does not support collusion."
+                         "Please deactivate collusion in the strategy editor.")
+            sys.exit()
 
         potential_threeofakind = score[0] == 3
         potential_twopair = score == (2, 2, 1, 1, 1)
