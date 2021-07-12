@@ -61,8 +61,8 @@ class MonteCarlo:
             rcounts = {card_ranks_original.find(r): ''.join(hand).count(r) for r, _ in hand}.items()
             score, card_ranks = zip(*sorted((cnt, rank) for rank, cnt in rcounts)[::-1])
         except ValueError:
-            logger.error("Unable to perform montecarlo. This table most likely does not support collusion."
-                         "Please deactivate collusion in the strategy editor.")
+            self.logger.error("Unable to perform montecarlo. This table most likely does not support collusion."
+                              "Please deactivate collusion in the strategy editor.")
             sys.exit()
 
         potential_threeofakind = score[0] == 3
