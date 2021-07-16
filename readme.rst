@@ -50,7 +50,7 @@ with the bot. Also, the bot will then be able to control the mouse inside the vi
 the whole computer:
 
 * Download Virtualbox: https://www.virtualbox.org/
-* Download Windows 10 32 bit Iso File (x86_dvd.iso), for example from here https://www.softlay.com/operating-system/windows-7-ultimate-iso-download.html
+* Download Windows 10 Iso File for example from here https://www.softlay.com/apps/operating-system
 * Create a new virtual box environment and use the ISO file as a startup
 * Make sure to give the Virtualbox only 1 CPU as the computing power is needed for the bot (mainly for OCR)
 * Install Partypoker or Pokerstars in the virtual box environment
