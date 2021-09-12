@@ -177,3 +177,4 @@ config.ini
 /poker/model.h5
 /poker/model.json
 /poker/model_classes.json
+vcs.xml

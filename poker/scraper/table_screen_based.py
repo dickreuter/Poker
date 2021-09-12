@@ -407,7 +407,7 @@ class TableScreenBased(Table):
             except:
                 self.totalPotValue = 0
 
-        if self.totalPotValue == "":
+        if self.totalPotValue == "" or self.totalPotValue < 0:
             self.totalPotValue = 0
             log.warning("Total pot regex problem: " + str(self.totalPotValue))
             self.gui_signals.signal_status.emit("Unable to get pot value")
