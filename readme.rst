@@ -243,38 +243,41 @@ To contribute do the following:
 FAQ
 ---
 
-Why is the bot not working?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-- It only works on windows currently
-- It only works with fast forward games with real money on PartyPoker. Use the Supersonic3 table for Partypoker or McNaught table in Pokerstars
-- The poker table window has to be fully visible and cannot be scaled, otherwise it won't be detected properly
-- In Partypoker, when you open the table, choose table options and then choose **back to default size** to make sure the table is in default size.
+No top left corner
+~~~~~~~~~~~~~~~~~~
 
+- Make sure everything looks exactly like in the picture at the top of this documentation.
+    * The buttons need to look exactly like this and it needs to be in English and not scaled. Colours need to be standard.
+    * Most tables are mapped to real money. They won't work with play money.
+    * The poker table window has to be fully visible and cannot be scaled, otherwise it won't be detected properly.
+    * In Partypoker, when you open the table, choose table options and then choose **back to default size** to make sure the table is in default size.
 
-Errors related to the virtual machine
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- Tables are mapped for fast forward and zoom games with real money. Use the Supersonic3 table for Partypoker or McNaught table in Pokerstars.
+- If things still don't work, consider teaching it a new table as described above.
 
-- Go to setup and choose direct mouse control.
+Cards not recognized
+~~~~~~~~~~~~~~~~~~~~~
+
+- Make sure everything looks exactly like in the picture at the top of this documentation.
+    * Make sure to use real money. Tables are different for play money.
+    * Ensure you are seated at the position as shown in the picture above.
+    * Currently the bot only works for tables with 6 players.
+
 
 Do I need to use a virtual machine?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - For Pokerstars you definitely do, otherwise you will be blocked and your account will be frozen within minutes. For Partypoker I'm not sure. But best check the terms and conditions.
 
-The bot does not recognize the table and doesn't act
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Make sure everything looks exactly like in the picture above. The buttons need to look exactly like this and it needs to be in English and not scaled. Colours need to be standard.
-- If things still don't work, consider teaching it a new table
+Analyzing the log and reporting problems
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Still having problems?
-~~~~~~~~~~~~~~~~~~~~~~
-
-- Check the log file. In the folder where you installed the pokerbot, there is a subfolder with the log files in /log. There are also screenshots in /log/screenshots that may be able to help debug the problem.
-- Create a issue on the link at the top of this github page https://github.com/dickreuter/Poker/issues or email dickreuter@gmail.com
+- In the folder where you installed the pokerbot, there is a subfolder with the log files in /log. There are also screenshots in /log/screenshots that may be able to help debug the problem.
+- Create a issue on the link at the top of this github page https://github.com/dickreuter/Poker/issues or email dickreuter@gmail.com.
 
 
 Related projects
-~~~~~~~~~~~~~~~~
+----------------
 Training the bot by playing against itself is a separate project which can be found here:
 https://github.com/dickreuter/neuron_poker
