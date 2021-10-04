@@ -120,6 +120,9 @@ The full version allows you to:
 To purchase, please follow this link. You'll then receive a password within 24 hours.
 https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-910576034F790373KMC6UZOQ
 
+Alternatively you can contact me via email or telegram and request a password directly and pay bitcoin to:
+1Py5o4WLYMizXc8pFPqzD4yeCAm53BhJit
+
 You can also get a free subscription if you make some meaningful contribution to the codebase.
 
 The easiest way to contribute is by:
