@@ -5,7 +5,7 @@ import time
 from PIL import Image
 from PIL.ImageQt import ImageQt
 from PyQt5 import QtGui
-from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal
+from PyQt5.QtCore import Qt, QObject, pyqtSlot, pyqtSignal
 from PyQt5.QtWidgets import QMessageBox
 
 from poker.scraper.table_scraper_nn import TRAIN_FOLDER
@@ -62,6 +62,9 @@ class TableSetupActionAndSignals(QObject):
         self.signal_flatten_button.connect(self._flatten_button)
         self.signal_check_box.connect(self._check_box)
         self.ui.screenshot_label.mousePressEvent = self.get_position
+        self.ui.screenshot_widget.dragEnterEvent = self.drag_enter_event
+        self.ui.screenshot_widget.dragMoveEvent = self.drag_move_event
+        self.ui.screenshot_widget.dropEvent = self.drop_event
         self.ui.take_screenshot_button.clicked.connect(lambda: self.take_screenshot())
         # self.ui.take_screenshot_cropped_button.clicked.connect(lambda: self.take_screenshot_cropped())
         self.ui.test_all_button.clicked.connect(lambda: self.test_all())
@@ -318,6 +321,7 @@ class TableSetupActionAndSignals(QObject):
         log.info("Update screenshot picture")
 
         self.ui.screenshot_label.setPixmap(self.screenshot_image)
+        self.ui.screenshot_label.setStyleSheet('')
         self.ui.screenshot_label.adjustSize()
 
     def crop(self):
@@ -347,6 +351,33 @@ class TableSetupActionAndSignals(QObject):
         except KeyError:
             log.error("No top left corner saved yet. "
                       "Please mark a top left corner and click on the save newly selected top left corner.")
+
+    @pyqtSlot()
+    def drag_enter_event(self, event):
+        if event.mimeData().hasImage:
+            event.accept()
+        else:
+            event.ignore()
+
+    @pyqtSlot()
+    def drag_move_event(self, event):
+        if event.mimeData().hasImage:
+            event.accept()
+        else:
+            event.ignore()
+
+    @pyqtSlot()
+    def drop_event(self, event):
+        if event.mimeData().hasImage:
+            event.setDropAction(Qt.CopyAction)
+            file_path = event.mimeData().urls()[0].toLocalFile()
+
+            self.original_screenshot = Image.open(file_path)
+            self.signal_update_screenshot_pic.emit(self.original_screenshot)
+
+            event.accept()
+        else:
+            event.ignore()
 
     @pyqtSlot()
     def get_position(self, event):

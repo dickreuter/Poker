@@ -2781,7 +2781,7 @@ Then check the console output for error messages.</string>
             <property name="widgetResizable">
              <bool>true</bool>
             </property>
-            <widget class="QWidget" name="scrollAreaWidgetContents_2">
+            <widget class="QWidget" name="screenshot_widget">
              <property name="geometry">
               <rect>
                <x>0</x>
@@ -2789,6 +2789,9 @@ Then check the console output for error messages.</string>
                <width>826</width>
                <height>558</height>
               </rect>
+             </property>
+             <property name="acceptDrops">
+              <bool>true</bool>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_3">
               <item>
@@ -2799,8 +2802,16 @@ Then check the console output for error messages.</string>
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
+                <property name="styleSheet">
+                 <string notr="true">border: 4px dashed #aaa</string>
+                </property>
                 <property name="text">
-                 <string/>
+                 <string>Drop image here
+
+Or take screenshot via button above</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
                 </property>
                </widget>
               </item>
