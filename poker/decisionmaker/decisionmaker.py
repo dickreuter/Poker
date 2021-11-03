@@ -8,6 +8,7 @@ p contains values from the Strategy as defined in the xml file
 # pylint: disable=too-many-boolean-expressions,unused-argument,too-many-branches,chained-comparison,singleton-comparison
 
 from enum import Enum
+import random
 
 from .base import DecisionBase
 from .curvefitting import *
@@ -18,15 +19,9 @@ log = logging.getLogger(__name__)
 
 
 class DecisionTypes(Enum):
-    i_am_back, fold, check, call, bet1, bet2, bet3, bet4, bet_bluff, call_deception, check_deception = ['Imback',
-                                                                                                        'Fold', 'Check',
-                                                                                                        'Call', 'Bet',
-                                                                                                        'BetPlus',
-                                                                                                        'Bet half pot',
-                                                                                                        'Bet pot',
-                                                                                                        'Bet Bluff',
-                                                                                                        'Call Deception',
-                                                                                                        'Check Deception']
+    i_am_back, fold, check, call = ['Imback', 'Fold', 'Check', 'Call']
+    bet1, bet2, bet3, bet4, bet_bluff = ['Bet', 'BetPlus', 'Bet half pot', 'Bet pot', 'Bet Bluff']
+    call_deception, check_deception = ['Call Deception', 'Check Deception']
 
 
 class GameStages(Enum):
@@ -66,7 +61,7 @@ class Decision(DecisionBase):
                 t.minCall = float(t.currentCallValue)
             except:
                 t.minCall = float(0.0)
-                if t.checkButton == False:
+                if not t.checkButton:
                     log.warning(
                         "Failed to convert current Call value, saving error.png, deriving from bet value, result:")
                     self.DeriveCallButtonFromBetButton = True
@@ -271,11 +266,9 @@ class Decision(DecisionBase):
                 self.player_profile_adjustment = -2
             else:
                 self.player_profile_adjustment = 0
-        t.maxValue_bet = float(
-            p.selected_strategy['initialFunds2']) * t.potStretch
+        t.maxValue_bet = float(p.selected_strategy['initialFunds2']) * t.potStretch
         d = Curvefitting(np.array([t.equity]), minimum_curve_value, t.minBetAmountIfAboveLimit, t.maxValue_bet,
-                         t.minEquityBet,
-                         t.maxEquityBet, t.max_X, t.power2)
+                         t.minEquityBet, t.maxEquityBet, t.max_X, t.power2)
         self.maxBetE = round(d.y[0], 2)
 
         # min(self.maxCallE, self.maxCallEV)
@@ -327,28 +320,24 @@ class Decision(DecisionBase):
             log.debug("Found in preflop table: " + found_card)
 
             if found_card != '':
-                call_probability = sheet[sheet['Hand']
-                                         == found_card]['Call'].iloc[0]
-                bet_probability = sheet[sheet['Hand']
-                                        == found_card]['Raise'].iloc[0]
-                rnd = np.random.uniform(0, 100, 1)[0] / 100
-                log.debug("Random number: " + str(rnd))
-                log.debug("Call probability: " + str(call_probability))
-                log.debug("Raise probability: " + str(bet_probability))
+                call_probability = sheet[sheet['Hand'] == found_card]['Call'].iloc[0]
+                bet_probability = sheet[sheet['Hand'] == found_card]['Raise'].iloc[0]
+                rnd = random.random()
+                log.debug(f"Random number: {rnd}")
+                log.debug(f"Call probability: {call_probability}")
+                log.debug(f"Raise probability: {bet_probability}")
 
                 if rnd < call_probability:
                     self.decision = DecisionTypes.call
                     log.info('Preflop calling activated from preflop table')
 
-                elif rnd >= call_probability and rnd <= bet_probability + call_probability:
+                elif call_probability <= rnd <= bet_probability + call_probability:
                     if sheet_name in ['1', '2', '3', '4']:
                         self.decision = DecisionTypes.bet3
-                        log.info(
-                            'Preflop betting 3 activated from preflop table')
+                        log.info('Preflop betting 3 activated from preflop table')
                     else:
                         self.decision = DecisionTypes.bet4
-                        log.info(
-                            'Preflop betting 4 activated from preflop table')
+                        log.info('Preflop betting 4 activated from preflop table')
                         # 1, 2, 3, 4 = half pot
                         # 5 = pot and the
                         # rest POT
@@ -406,24 +395,26 @@ class Decision(DecisionBase):
             else:
                 if not (h.round_number > 0 and h.previous_decision == DecisionTypes.check_deception.value):
                     # bet1
-                    if self.finalBetLimit >= t.minBet and \
-                            (not t.checkButton or not t.other_player_has_initiative or p.selected_strategy[
-                                stage + '_betting_condidion_1'] == 0):
+                    if self.finalBetLimit >= t.minBet \
+                            and (not t.checkButton
+                                 or not t.other_player_has_initiative
+                                 or p.selected_strategy[stage + '_betting_condidion_1'] == 0):
                         self.decision = DecisionTypes.bet1
                         log.info("Bet1 condition met")
                     # bet2
-                    if self.finalBetLimit >= (t.minBet + t.bigBlind * float(p.selected_strategy['BetPlusInc'])) and ((
-                                                                                                                             t.gameStage == GameStages.Turn.value and t.totalPotValue > t.bigBlind * 3) or
-                                                                                                                     t.gameStage == GameStages.River.value) and \
-                            (not t.checkButton or not t.other_player_has_initiative or p.selected_strategy[
-                                stage + '_betting_condidion_1'] == 0):
+                    if self.finalBetLimit >= (t.minBet + t.bigBlind * float(p.selected_strategy['BetPlusInc'])) \
+                            and ((t.gameStage == GameStages.Turn.value and t.totalPotValue > t.bigBlind * 3)
+                                 or t.gameStage == GameStages.River.value) \
+                            and (not t.checkButton
+                                 or not t.other_player_has_initiative
+                                 or p.selected_strategy[stage + '_betting_condidion_1'] == 0):
                         self.decision = DecisionTypes.bet2
                         log.info("Bet2 condition met")
                     # bet3
                     log.debug(
-                        "Checking for betting half pot: " + str(
-                            float(t.totalPotValue) / 2) + " needs be be below or equal " + str(
-                            self.finalBetLimit))
+                        f"Checking for betting half pot: {float(t.totalPotValue) / 2} "
+                        f"needs be be below or equal {self.finalBetLimit}"
+                    )
                     if (self.finalBetLimit >= float(t.totalPotValue) / 2) \
                             and (t.minBet < float(t.totalPotValue) / 2) and \
                             (not t.checkButton or not t.other_player_has_initiative or p.selected_strategy[
@@ -481,9 +472,9 @@ class Decision(DecisionBase):
 
     def check_deception(self, t, p, h):
         # Flop
-        if t.equity > float(
-                p.selected_strategy['FlopCheckDeceptionMinEquity']) and t.gameStage == GameStages.Flop.value and (
-                self.decision == DecisionTypes.bet1 or self.decision == DecisionTypes.bet2 or self.decision == DecisionTypes.bet3 or self.decision == DecisionTypes.bet4):
+        if t.equity > float(p.selected_strategy['FlopCheckDeceptionMinEquity']) \
+                and t.gameStage == GameStages.Flop.value \
+                and self.decision in (DecisionTypes.bet1, DecisionTypes.bet2, DecisionTypes.bet3, DecisionTypes.bet4):
             self.UseFlopCheckDeception = True
             self.decision = DecisionTypes.check_deception
             log.debug("Check deception activated")
@@ -491,9 +482,10 @@ class Decision(DecisionBase):
             self.UseFlopCheckDeception = False
 
         # Turn
-        if h.previous_decision == DecisionTypes.call.value and t.equity > float(
-                p.selected_strategy['TurnCheckDeceptionMinEquity']) and t.gameStage == GameStages.Turn.value and (
-                self.decision == DecisionTypes.bet1 or self.decision == DecisionTypes.bet2 or self.decision == DecisionTypes.bet3 or self.decision == DecisionTypes.bet4):
+        if h.previous_decision == DecisionTypes.call.value \
+                and t.equity > float(p.selected_strategy['TurnCheckDeceptionMinEquity']) \
+                and t.gameStage == GameStages.Turn.value \
+                and self.decision in (DecisionTypes.bet1, DecisionTypes.bet2, DecisionTypes.bet3, DecisionTypes.bet4):
             self.UseTurnCheckDeception = True
             self.decision = DecisionTypes.check_deception
             log.debug("Check deception activated")
@@ -501,9 +493,10 @@ class Decision(DecisionBase):
             self.UseTurnCheckDeception = False
 
         # River
-        if h.previous_decision == DecisionTypes.call.value and t.equity > float(
-                p.selected_strategy['RiverCheckDeceptionMinEquity']) and t.gameStage == GameStages.River.value and (
-                self.decision == DecisionTypes.bet1 or self.decision == DecisionTypes.bet2 or self.decision == DecisionTypes.bet3 or self.decision == DecisionTypes.bet4):
+        if h.previous_decision == DecisionTypes.call.value \
+                and t.equity > float(p.selected_strategy['RiverCheckDeceptionMinEquity']) \
+                and t.gameStage == GameStages.River.value \
+                and self.decision in (DecisionTypes.bet1, DecisionTypes.bet2, DecisionTypes.bet3, DecisionTypes.bet4):
             self.UseRiverCheckDeception = True
             self.decision = DecisionTypes.check_deception
             log.debug("Check deception activated")
@@ -536,23 +529,17 @@ class Decision(DecisionBase):
 
     def admin(self, t, p, h):
         if t.gameStage != GameStages.PreFlop.value:
-            if int(p.selected_strategy[
-                       'minimum_bet_size']) == 2 and self.decision == DecisionTypes.bet1:
+            if int(p.selected_strategy['minimum_bet_size']) == 2 and self.decision == DecisionTypes.bet1:
                 self.decision = DecisionTypes.bet2
-            if int(p.selected_strategy[
-                       'minimum_bet_size']) == 3 and self.decision == DecisionTypes.bet1:
+            if int(p.selected_strategy['minimum_bet_size']) == 3 and self.decision == DecisionTypes.bet1:
                 self.decision = DecisionTypes.bet3
-            if int(p.selected_strategy[
-                       'minimum_bet_size']) == 3 and self.decision == DecisionTypes.bet2:
+            if int(p.selected_strategy['minimum_bet_size']) == 3 and self.decision == DecisionTypes.bet2:
                 self.decision = DecisionTypes.bet3
-            if int(p.selected_strategy[
-                       'minimum_bet_size']) == 4 and self.decision == DecisionTypes.bet1:
+            if int(p.selected_strategy['minimum_bet_size']) == 4 and self.decision == DecisionTypes.bet1:
                 self.decision = DecisionTypes.bet4
-            if int(p.selected_strategy[
-                       'minimum_bet_size']) == 4 and self.decision == DecisionTypes.bet2:
+            if int(p.selected_strategy['minimum_bet_size']) == 4 and self.decision == DecisionTypes.bet2:
                 self.decision = DecisionTypes.bet4
-            if int(p.selected_strategy[
-                       'minimum_bet_size']) == 4 and self.decision == DecisionTypes.bet3:
+            if int(p.selected_strategy['minimum_bet_size']) == 4 and self.decision == DecisionTypes.bet3:
                 self.decision = DecisionTypes.bet4
 
         if t.checkButton == False and t.minCall == 0.0 and p.selected_strategy['use_pot_multiples'] == 0:
@@ -604,24 +591,24 @@ class Decision(DecisionBase):
                      f"* multiplier {p.selected_strategy['always_call_low_stack_multiplier']}")
             self.finalCallLimit = 99999999
 
-        if t.gameStage == GameStages.PreFlop.value:
+        if p.selected_strategy['preflop_override'] and t.gameStage == GameStages.PreFlop.value:
             self.preflop_table_analyser(t, h, p)
+            log.info('Preflop table is used for this decision')
+        else:
+            if t.gameStage == GameStages.PreFlop.value:
+                log.info('Make preflop decision based on equity, not using preflop table')
 
-        if not (p.selected_strategy['preflop_override'] and t.gameStage == GameStages.PreFlop.value):
-            log.info(
-                'Make preflop decision based on equity, not using preflot table')
             self.calling(t, p, h)
             self.betting(t, p, h)
             if t.checkButton:
                 self.check_deception(t, p, h)
 
-            if t.allInCallButton == False and t.equity >= float(p.selected_strategy[
-                                                                    'secondRiverBetPotMinEquity']) and t.gameStage == GameStages.River.value and h.histGameStage == GameStages.River.value:
+            if not t.allInCallButton \
+                    and t.equity >= float(p.selected_strategy['secondRiverBetPotMinEquity']) \
+                    and t.gameStage == GameStages.River.value \
+                    and h.histGameStage == GameStages.River.value:
                 self.decision = DecisionTypes.bet4
-
                 # self.bully(t,p,h,logger)
-        else:
-            log.info('Preflop table not used for this decision')
 
         self.admin(t, p, h)
         self.bluff(t, p, h)
