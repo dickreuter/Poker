@@ -1,4 +1,5 @@
 """Learn to read a table"""
+import io
 import logging
 import time
 
@@ -132,16 +133,6 @@ class TableSetupActionAndSignals(QObject):
             'call_value', 'raise_value', 'all_in_call_value', 'game_number', 'current_round_pot',
             'total_pot_area', 'my_turn_search_area', 'lost_everything_search_area',
             'table_cards_area', 'my_cards_area', 'buttons_search_area',
-        ]
-
-        for button in range_buttons:
-            button_property = getattr(self.ui, button)
-            button_property.clicked.connect(lambda state, x=button: self.save_coordinates(x))
-
-            button_show_property = getattr(self.ui, button + '_show')
-            button_show_property.clicked.connect(lambda state, x=button: self.show_coordinates(x))
-
-        range_buttons = [
             'mouse_fold', 'mouse_fast_fold', 'mouse_raise', 'mouse_full_pot', 'mouse_call',
             'mouse_increase', 'mouse_call2', 'mouse_check', 'mouse_imback',
             'mouse_half_pot', 'mouse_all_in', 'mouse_resume_hand',
@@ -151,6 +142,9 @@ class TableSetupActionAndSignals(QObject):
         for button in range_buttons:
             button_property = getattr(self.ui, button)
             button_property.clicked.connect(lambda state, x=button: self.save_coordinates(x))
+
+            button_show_property = getattr(self.ui, button + '_show')
+            button_show_property.clicked.connect(lambda state, x=button: self.show_coordinates(x))
 
         # range buttons for each players
         range_buttons = ['covered_card_area', 'player_name_area', 'player_funds_area', 'player_pot_area',
@@ -231,11 +225,7 @@ class TableSetupActionAndSignals(QObject):
             except AttributeError:
                 log.info(f"Ignoring flattening of {button_name}")
 
-            excluded_buttons = ['mouse_fold', 'mouse_fast_fold', 'mouse_raise', 'mouse_full_pot', 'mouse_call',
-                                'mouse_increase', 'mouse_resume_hand', 'mouse_call2', 'mouse_check', 'mouse_imback',
-                                'mouse_half_pot', 'mouse_all_in', 'right_card_area', 'left_card_area',
-                                'use_neural_network']
-            if button_name not in excluded_buttons:
+            if button_name != 'use_neural_network':
                 button = getattr(self.ui, button_name + '_show')
                 button.setEnabled(checked)
 
@@ -514,6 +504,10 @@ class TableSetupActionAndSignals(QObject):
         log.info(f"Loading table {self.table_name}")
         table = mongo.get_table(table_name=self.table_name)
         log.info(table.keys())
+
+        # show topleft_corner image in preview
+        self.preview = Image.open(io.BytesIO(table['topleft_corner']))
+        self._update_preview_label(self.preview)
 
         check_boxes = ['use_neural_network']
         for check_box in check_boxes:
