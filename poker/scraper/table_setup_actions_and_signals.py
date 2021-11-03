@@ -262,7 +262,7 @@ class TableSetupActionAndSignals(QObject):
                 log.error(f"Missing table entry for {label} {player}. "
                           f"Please select it from the screenshot and press the corresponding button to add it to the "
                           f"table template. ")
-                return 0
+                return
         else:
             search_area = table_dict[label]
 

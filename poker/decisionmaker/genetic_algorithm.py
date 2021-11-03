@@ -1,6 +1,6 @@
-'''
+"""
 Assesses the log file and checks how the parameters in strategies.xml need to be adjusted to optimize playing
-'''
+"""
 import logging
 
 from poker.tools.game_logger import GameLogger
@@ -33,7 +33,7 @@ class GeneticAlgorithm:
     def load_log(self, p_name, L):
         self.gameResults = {}
         L.get_stacked_bar_data('Template', p_name, 'stackedBar')
-        self.recommendation = dict()
+        self.recommendation = {}
 
     def assess_call(self, p, L, decision, stage, coeff1, coeff2, coeff3, coeff4, change):
         A = L.d[decision, stage, 'Won'] > L.d[decision, stage, 'Lost'] * coeff1  # Call won > call lost * c1

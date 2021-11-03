@@ -18,7 +18,7 @@ URL = config.config.get('main', 'db')
 
 class GameLogger(metaclass=Singleton):
     def __init__(self):
-        self.d = dict()  # TODO: refactor it
+        self.d = {}  # TODO: refactor it
         self.FinalDataFrame = None
 
     def clean_database(self):
@@ -89,15 +89,15 @@ class GameLogger(metaclass=Singleton):
             h.totalGames += 1
         if h.histGameStage != '':
 
-            summary_dict = dict()
-            summary_dict['rounds'] = []
+            summary_dict = {'rounds': []}
             i = 0
             mongo = MongoManager()
             rounds = mongo.get_rounds(h.lastGameID)
             for _round in rounds:
-                round_name_value = dict()
-                round_name_value['round_number'] = str(i)
-                round_name_value['round_values'] = _round
+                round_name_value = {
+                    'round_number': str(i),
+                    'round_values': _round
+                }
                 summary_dict['rounds'].append(round_name_value)
                 i += 1
 

@@ -226,13 +226,14 @@ class TableScreenBased(Table):
             return False
 
     def init_get_other_players_info(self):
-        other_player = dict()
-        other_player['utg_position'] = ''
-        other_player['name'] = ''
-        other_player['status'] = ''
-        other_player['funds'] = ''
-        other_player['pot'] = ''
-        other_player['decision'] = ''
+        other_player = {
+            'utg_position': '',
+            'name': '',
+            'status': '',
+            'funds': '',
+            'pot': '',
+            'decision': ''
+        }
         self.other_players = []
         for i in range(self.total_players - 1):
             self.gui_signals.signal_status.emit(f"Check other players {i}")
