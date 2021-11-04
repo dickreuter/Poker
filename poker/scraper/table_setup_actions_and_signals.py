@@ -1,11 +1,12 @@
 """Learn to read a table"""
+import io
 import logging
 import time
 
 from PIL import Image
 from PIL.ImageQt import ImageQt
 from PyQt5 import QtGui
-from PyQt5.QtCore import QObject, pyqtSlot, pyqtSignal
+from PyQt5.QtCore import Qt, QObject, pyqtSlot, pyqtSignal
 from PyQt5.QtWidgets import QMessageBox
 
 from poker.scraper.table_scraper_nn import TRAIN_FOLDER
@@ -62,6 +63,9 @@ class TableSetupActionAndSignals(QObject):
         self.signal_flatten_button.connect(self._flatten_button)
         self.signal_check_box.connect(self._check_box)
         self.ui.screenshot_label.mousePressEvent = self.get_position
+        self.ui.screenshot_widget.dragEnterEvent = self.drag_enter_event
+        self.ui.screenshot_widget.dragMoveEvent = self.drag_move_event
+        self.ui.screenshot_widget.dropEvent = self.drop_event
         self.ui.take_screenshot_button.clicked.connect(lambda: self.take_screenshot())
         # self.ui.take_screenshot_cropped_button.clicked.connect(lambda: self.take_screenshot_cropped())
         self.ui.test_all_button.clicked.connect(lambda: self.test_all())
@@ -96,8 +100,8 @@ class TableSetupActionAndSignals(QObject):
         log.info("Saving complete")
 
     def _connect_cards_with_save_slot(self):
-        deck = []  # contains cards in the deck
-        _ = [deck.append(x.lower() + y.lower()) for x in CARD_VALUES for y in CARD_SUITES]
+        # contains cards in the deck
+        deck = [x.lower() + y.lower() for x in CARD_VALUES for y in CARD_SUITES]
 
         for card in deck:
             button_property = getattr(self.ui, 'card_' + card)
@@ -125,19 +129,22 @@ class TableSetupActionAndSignals(QObject):
         button_show_property.clicked.connect(lambda state: self.load_image('covered_card'))
 
     def _connect_range_buttons_with_save_coordinates(self):
-        range_buttons = ['call_value', 'raise_value', 'all_in_call_value', 'game_number', 'current_round_pot',
-                         'total_pot_area', 'my_turn_search_area', 'lost_everything_search_area',
-                         'table_cards_area', 'my_cards_area',
-                         'mouse_fold', 'mouse_fast_fold', 'mouse_raise', 'mouse_full_pot', 'mouse_call',
-                         'mouse_increase', 'mouse_call2', 'mouse_check',
-                         'mouse_imback',
-                         'mouse_half_pot', 'mouse_all_in', 'mouse_resume_hand', 'buttons_search_area',
-                         'left_card_area', 'right_card_area'
-                         ]
+        range_buttons = [
+            'call_value', 'raise_value', 'all_in_call_value', 'game_number', 'current_round_pot',
+            'total_pot_area', 'my_turn_search_area', 'lost_everything_search_area',
+            'table_cards_area', 'my_cards_area', 'buttons_search_area',
+            'mouse_fold', 'mouse_fast_fold', 'mouse_raise', 'mouse_full_pot', 'mouse_call',
+            'mouse_increase', 'mouse_call2', 'mouse_check', 'mouse_imback',
+            'mouse_half_pot', 'mouse_all_in', 'mouse_resume_hand',
+            'left_card_area', 'right_card_area'
+        ]
 
         for button in range_buttons:
             button_property = getattr(self.ui, button)
             button_property.clicked.connect(lambda state, x=button: self.save_coordinates(x))
+
+            button_show_property = getattr(self.ui, button + '_show')
+            button_show_property.clicked.connect(lambda state, x=button: self.show_coordinates(x))
 
         # range buttons for each players
         range_buttons = ['covered_card_area', 'player_name_area', 'player_funds_area', 'player_pot_area',
@@ -145,6 +152,9 @@ class TableSetupActionAndSignals(QObject):
         for button in range_buttons:
             button_property = getattr(self.ui, button)
             button_property.clicked.connect(lambda state, x=button: self.save_coordinates(x, self.selected_player))
+
+            button_show_property = getattr(self.ui, button + '_show')
+            button_show_property.clicked.connect(lambda state, x=button: self.show_coordinates(x, self.selected_player))
 
     def save_topleft_corner(self):
         self.table_name = self.ui.table_name.currentText()
@@ -215,14 +225,7 @@ class TableSetupActionAndSignals(QObject):
             except AttributeError:
                 log.info(f"Ignoring flattening of {button_name}")
 
-            excluded_buttons = ['topleft_corner', 'game_number', 'call_value', 'raise_value', 'all_in_call_value',
-                                'my_turn_search_area', 'lost_everything_search_area',
-                                'mouse_fold', 'mouse_fast_fold', 'mouse_raise', 'mouse_full_pot', 'mouse_call',
-                                'mouse_increase', 'mouse_resume_hand', 'mouse_call2', 'mouse_check', 'mouse_imback',
-                                'mouse_half_pot', 'table_cards_area', 'current_round_pot', 'total_pot_area',
-                                'my_cards_area', 'right_card_area', 'left_card_area', 'top_cards_top_area',
-                                'mouse_all_in', 'buttons_search_area', 'use_neural_network']
-            if button_name not in excluded_buttons:
+            if button_name != 'use_neural_network':
                 button = getattr(self.ui, button_name + '_show')
                 button.setEnabled(checked)
 
@@ -241,6 +244,32 @@ class TableSetupActionAndSignals(QObject):
             self.ui.table_name.setCurrentIndex(self.ui.table_name.count() - 1)
         else:
             pop_up("Unable to create new table with that name", "Please choose a different name.")
+
+    @pyqtSlot(object, str, str)
+    def show_coordinates(self, label, player=None):
+        if not self.cropped:
+            pop_up("Image not yet cropped",
+                   "Before you can load image by coordinates, "
+                   "you need to mark or load a top left corner, then crop the image.")
+            return
+
+        self.table_name = self.ui.table_name.currentText()
+        table_dict = mongo.get_table(table_name=self.table_name)
+        if player:
+            try:
+                search_area = table_dict[label][player]
+            except KeyError:
+                log.error(f"Missing table entry for {label} {player}. "
+                          f"Please select it from the screenshot and press the corresponding button to add it to the "
+                          f"table template. ")
+                return
+        else:
+            search_area = table_dict[label]
+
+        x1, y1, x2, y2 = search_area['x1'], search_area['y1'], search_area['x2'], search_area['y2']
+        self.preview = self.original_screenshot.crop((x1, y1, x2, y2))
+        log.info("image cropped")
+        self._update_preview_label(self.preview)
 
     @pyqtSlot(object, str, str)
     def save_coordinates(self, label, player=None):
@@ -318,6 +347,7 @@ class TableSetupActionAndSignals(QObject):
         log.info("Update screenshot picture")
 
         self.ui.screenshot_label.setPixmap(self.screenshot_image)
+        self.ui.screenshot_label.setStyleSheet('')
         self.ui.screenshot_label.adjustSize()
 
     def crop(self):
@@ -347,6 +377,33 @@ class TableSetupActionAndSignals(QObject):
         except KeyError:
             log.error("No top left corner saved yet. "
                       "Please mark a top left corner and click on the save newly selected top left corner.")
+
+    @pyqtSlot()
+    def drag_enter_event(self, event):
+        if event.mimeData().hasImage:
+            event.accept()
+        else:
+            event.ignore()
+
+    @pyqtSlot()
+    def drag_move_event(self, event):
+        if event.mimeData().hasImage:
+            event.accept()
+        else:
+            event.ignore()
+
+    @pyqtSlot()
+    def drop_event(self, event):
+        if event.mimeData().hasImage:
+            event.setDropAction(Qt.CopyAction)
+            file_path = event.mimeData().urls()[0].toLocalFile()
+
+            self.original_screenshot = Image.open(file_path)
+            self.signal_update_screenshot_pic.emit(self.original_screenshot)
+
+            event.accept()
+        else:
+            event.ignore()
 
     @pyqtSlot()
     def get_position(self, event):
@@ -420,8 +477,8 @@ class TableSetupActionAndSignals(QObject):
         self.table_name = self.ui.table_name.currentText()
 
         # unflatten buttons and disable 'show' buttons
-        deck = []  # contains cards in the deck
-        _ = [deck.append(x.lower() + y.lower()) for x in CARD_VALUES for y in CARD_SUITES]
+        # contains cards in the deck
+        deck = [x.lower() + y.lower() for x in CARD_VALUES for y in CARD_SUITES]
 
         for card in deck:
             log.info(f"UnFlattening button {'card_' + card}")
@@ -447,6 +504,10 @@ class TableSetupActionAndSignals(QObject):
         log.info(f"Loading table {self.table_name}")
         table = mongo.get_table(table_name=self.table_name)
         log.info(table.keys())
+
+        # show topleft_corner image in preview
+        self.preview = Image.open(io.BytesIO(table['topleft_corner']))
+        self._update_preview_label(self.preview)
 
         check_boxes = ['use_neural_network']
         for check_box in check_boxes:

@@ -57,8 +57,8 @@ class CurrentHandPreflopState:
 
         self.bot_preflop_position_utg = t.position_utg_plus
         self.bot_preflop_decision = decision_str
-        self.preflop_sheet_name = t.preflop_sheet_name
-        self.preflop_bot_ranges = d.preflop_bot_ranges
+        self.preflop_sheet_name = getattr(t, 'preflop_sheet_name', None)
+        self.preflop_bot_ranges = getattr(d, 'preflop_bot_ranges', None)
 
         self.rounds = h.round_number
         if not np.isnan(t.first_raiser_utg):

@@ -180,7 +180,8 @@ disable=print-statement,
         consider-using-sys-exit,
         no-else-return,
         cyclic-import,
-        too-many-instance-attributes
+        too-many-instance-attributes,
+        unspecified-encoding
 
 
 
