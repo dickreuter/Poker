@@ -90,12 +90,12 @@ class TableSetupActionAndSignals(QObject):
     def _save_use_nerual_network_checkbox(self):
         owner = mongo.get_table_owner(self.table_name)
         if owner != COMPUTER_NAME:
-            # pop_up("Not authorized.",
-            #        "You can only edit your own tables. Please create a new copy or start with a new blank table")
+            pop_up("Not authorized.",
+                   "You can only edit your own tables. Please create a new copy or start with a new blank table")
             return
         label = 'use_neural_network'
-        log.info("Saving use neural network tickbox")
         is_set = self.ui.use_neural_network.checkState()
+        log.info(f"Saving use neural network tickbox {is_set}")
         mongo.update_state(state=is_set, label=label, table_name=self.table_name)
         log.info("Saving complete")
 
@@ -219,8 +219,8 @@ class TableSetupActionAndSignals(QObject):
             button_name = label
 
         if label[0] != '_':
-            button = getattr(self.ui, button_name)
             try:
+                button = getattr(self.ui, button_name)
                 button.setFlat(checked)
             except AttributeError:
                 log.info(f"Ignoring flattening of {button_name}")

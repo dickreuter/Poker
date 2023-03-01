@@ -1,4 +1,4 @@
-pandas==1.2.4
+pandas
 pytest
 pylint
 pydocstyle
@@ -21,6 +21,6 @@ lmfit
 openpyxl
 numexpr
 fastapi
-tensorflow-gpu
+tensorflow
 tqdm
 seaborn
