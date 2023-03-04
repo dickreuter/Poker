@@ -5,6 +5,7 @@ import logging
 import multiprocessing
 import os
 import pickle
+import socket
 import sys
 import traceback
 import webbrowser
@@ -21,7 +22,14 @@ else:
     codebase = os.path.abspath(os.path.join(__file__, '..', '..'))
 
 log = logging.getLogger(__name__)
-COMPUTER_NAME = os.getenv('COMPUTERNAME')
+
+# check if os is windows or mac
+IS_WINDOWS = sys.platform == 'win32'
+IS_MAC = sys.platform == 'darwin'
+
+COMPUTER_NAME = socket.gethostname()
+
+
 ON_CI = os.environ.get('ENV') == 'CI'
 
 
@@ -36,10 +44,12 @@ class Singleton(type):
 
     _instances = {}
 
-    def __call__(cls, *args, **kwargs):  # called at instantiation of an object that uses this metaclass
+    # called at instantiation of an object that uses this metaclass
+    def __call__(cls, *args, **kwargs):
         """Is called at instantiation of a class that refers to this metaclass."""
         if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+            cls._instances[cls] = super(
+                Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
     @staticmethod
@@ -61,7 +71,8 @@ class CustomConfigParser():
     def __init__(self, config_override_filename=None):
         """Load the configuration (usually config.ini)."""
         if config_override_filename and not os.path.isfile(config_override_filename):
-            raise ValueError("Unable to find config file {}".format(config_override_filename))
+            raise ValueError("Unable to find config file {}".format(
+                config_override_filename))
 
         main_file = os.path.join(get_dir('codebase'), 'config.ini')
 
@@ -126,7 +137,8 @@ def init_logger(screenlevel, filename=None, logdir=None, modulename=''):
     stream_handler = logging.StreamHandler(sys.stdout)
     stream_handler.setLevel(screenlevel)
     if filename and not filename == 'None':
-        filename = filename.replace("{date}", datetime.date.today().strftime("%Y%m%d"))
+        filename = filename.replace(
+            "{date}", datetime.date.today().strftime("%Y%m%d"))
         all_logs_filename = os.path.join(logdir, filename + '.log')
         error_filename = os.path.join(logdir, filename + '_errors.log')
         info_filename = os.path.join(logdir, filename + '_info.log')
@@ -135,13 +147,16 @@ def init_logger(screenlevel, filename=None, logdir=None, modulename=''):
         print("Saving info file to: {}".format(info_filename))
         print("Saving error only file to: {}".format(error_filename))
 
-        file_handler2 = handlers.RotatingFileHandler(all_logs_filename, maxBytes=300000, backupCount=20)
+        file_handler2 = handlers.RotatingFileHandler(
+            all_logs_filename, maxBytes=300000, backupCount=20)
         file_handler2.setLevel(logging.DEBUG)
 
-        error_handler = handlers.RotatingFileHandler(error_filename, maxBytes=300000, backupCount=20)
+        error_handler = handlers.RotatingFileHandler(
+            error_filename, maxBytes=300000, backupCount=20)
         error_handler.setLevel(logging.WARNING)
 
-        info_handler = handlers.RotatingFileHandler(info_filename, maxBytes=30000000, backupCount=100)
+        info_handler = handlers.RotatingFileHandler(
+            info_filename, maxBytes=30000000, backupCount=100)
         info_handler.setLevel(logging.INFO)
 
         # formatter when using --log command line and writing log to a file
@@ -187,18 +202,21 @@ def get_dir(*paths):
             if len(paths) > 1:
                 specified_path = os.path.join(specified_path, *paths[1:])
             thirdparty_dir = config.config.get('Thirdparty', 'thirdparty_dir')
-            full_path = os.path.abspath(os.path.join(codebase, thirdparty_dir, specified_path))
+            full_path = os.path.abspath(os.path.join(
+                codebase, thirdparty_dir, specified_path))
             return full_path
         except:  # pylint: disable=bare-except
             # otherwise just return absolute path in codebase
-            return os.path.abspath(os.path.join(codebase, *paths))  # if path has multiple entries
+            # if path has multiple entries
+            return os.path.abspath(os.path.join(codebase, *paths))
 
 
 def exception_hook(*exc_info):
     """Catches all unhandled exceptions."""
     # Print the error and traceback
     print("--- exception hook ----")
-    text = "".join(traceback.format_exception(*exc_info))  # pylint: disable=E1120
+    text = "".join(traceback.format_exception(
+        *exc_info))  # pylint: disable=E1120
     log.error("Unhandled exception: %s", text)
 
 
@@ -249,7 +267,8 @@ def multi_threading(pool_fn, pool_args, disable_multiprocessing=False, dataframe
     """
     from multiprocessing.pool import ThreadPool
     parallel, cores = get_multiprocessing_config()
-    log.debug("Start with parallel={} and cores={}, queue size={}".format(parallel, cores, len(pool_args)))
+    log.debug("Start with parallel={} and cores={}, queue size={}".format(
+        parallel, cores, len(pool_args)))
     if parallel and not disable_multiprocessing:
         threadpool = ThreadPool(cores)
         if dataframe_mode:
@@ -280,14 +299,18 @@ def memory_cache(func):
                 args_tuple = _keys_to_tuple(args, kwargs)
                 try:
                     res = self.cache[self.func.__name__, args_tuple]
-                    log.debug("+++ Using memory cacheed item for {} function +++ ".format(self.func.__name__))
+                    log.debug(
+                        "+++ Using memory cacheed item for {} function +++ ".format(self.func.__name__))
                     return res
                 except KeyError:
-                    log.debug("--- Caching item for {} function in memory ---".format(self.func.__name__))
-                    self.cache[self.func.__name__, args_tuple] = res = self.func(*args, **kwargs)
+                    log.debug(
+                        "--- Caching item for {} function in memory ---".format(self.func.__name__))
+                    self.cache[self.func.__name__,
+                               args_tuple] = res = self.func(*args, **kwargs)
                     return res
             except Exception as err:  # pylint: disable=broad-except
-                raise RuntimeError("Error calling cached function {} ".format(self.func.__name__), err)
+                raise RuntimeError(
+                    "Error calling cached function {} ".format(self.func.__name__), err)
 
     return Memoise(func)
 

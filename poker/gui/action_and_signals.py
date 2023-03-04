@@ -64,7 +64,6 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
         self.ui_analyser = None
 
         gl = GameLogger()
-        gl.clean_database()
 
         self.strategy_handler = StrategyHandler()
         self.strategy_handler.read_strategy()

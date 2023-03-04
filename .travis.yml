@@ -1,32 +1,18 @@
-language: python
-
-
-python:
-  - "3.7"
-
 os:
-  - linux
+  - windows
 
-env:
-  - ENV=CI
+language: shell
 
+before_install:
+  # Install Conda
+  - choco install miniconda3 --params="/AddToPath:1"
+  - source $HOME/miniconda3/etc/profile.d/conda.sh
+  
 install:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then MINICONDA_OS=Linux; else MINICONDA_OS=MacOSX; fi
-  - wget https://repo.anaconda.com/miniconda/Miniconda3-latest-$MINICONDA_OS-x86_64.sh -O miniconda.sh
-  - bash miniconda.sh -b -p "$HOME"/miniconda
-  - source "$HOME"/miniconda/etc/profile.d/conda.sh
-  - conda config --set always_yes yes --set changeps1 no --set auto_update_conda false
-  - python -m pip install --upgrade pip
-  - sudo apt-get update
-  - sudo apt-get -y install python3-pyqt5
-  - sudo apt-get install tesseract-ocr libtesseract-dev libleptonica-dev pkg-config
-  - pip install -r requirements.txt
-  - pip install tesserocr
-  - export LANG=en_US.UTF-8
-  - export COVERAGE_DIR=":$HOME/htmlcov"
-  - printenv | sort
-
-# command to run tests
+  # Create a Conda environment from environment.yml
+  - conda env create --file environment.yml
+  - conda activate my_env
+  
 script: pytest --log-cli-level=warning
 
 after_success:

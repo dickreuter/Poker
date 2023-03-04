@@ -21,10 +21,6 @@ class GameLogger(metaclass=Singleton):
         self.d = {}  # TODO: refactor it
         self.FinalDataFrame = None
 
-    def clean_database(self):
-        if os.environ['COMPUTERNAME'] == 'NICOLAS-ASUS' or os.environ['COMPUTERNAME'] == 'Home-PC-ND':
-            response = requests.post(URL + "clean_database")
-
     def isIterable(self, x):
         # use str instead of basestring if Python3
         if isinstance(x, Iterable) and not isinstance(x, str):
