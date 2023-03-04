@@ -36,7 +36,7 @@ warnings.filterwarnings("ignore", message="All-NaN axis encountered")
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-version = 6.37
+version = 6.38
 ui = None
 
 
@@ -153,7 +153,11 @@ class ThreadManager(threading.Thread):
                     slow_table = False
                     if 'use_neural_network' in table_dict and table_dict['use_neural_network'] == '2':
                         from tensorflow.keras.models import model_from_json
-                        nn_model = model_from_json(table_dict['_model'])
+                        try:
+                            nn_model = model_from_json(table_dict['_model'])
+                        except KeyError:
+                            raise Exception("This table does not have a neural network model. Please train one first or untick neural network for this table.")
+                            
                         mongo.load_table_nn_weights(table_scraper_name)
                         nn_model.load_weights(get_dir('codebase') + '/loaded_model.h5')
                         slow_table = True
