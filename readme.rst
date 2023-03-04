@@ -158,10 +158,8 @@ The setup to add new tables looks like this:
 Running via python source code
 ------------------------------
 - Download pycharm communite edition as an IDE from here: https://www.jetbrains.com/pycharm/download/#section=windows
-- Install python 3.7 or Anaconda (=python with packages) from here: https://www.python.org/downloads/release/python-379/
-- Create an environment with ``conda create -n poker python=3.7`` or use pycharm's functionality to create a new virtual environment. Check youtube for details.
-- Install all the packages with ``pip install -r requirements.txt``
-- Install tesserocr: `pip install https://github.com/simonflueckiger/tesserocr-windows_build/releases/download/tesserocr-v2.4.0-tesseract-4.0.0/tesserocr-2.4.0-cp37-cp37m-win_amd64.whl`
+- Install anaconda https://www.anaconda.com/products/distribution
+- Create an environment with ``conda env create -f environment.yml``
 - You also may need to get c++ runtime distributable: https://visualstudio.microsoft.com/downloads/
 - Install virtualbox from https://www.virtualbox.org/wiki/Downloads and put the poker client into the virtual box. That way it can be controlled without having to use the mouse in your main window.
 - Run ``main.py`` from pycharm after setting up the above created virtual environment as interpreter (check youtube)

@@ -80,7 +80,8 @@ def prepareImage(img_orig, binarize=True, threshold=76):
     basewidth = 300
     wpercent = (basewidth / float(img_orig.size[0]))
     hsize = int((float(img_orig.size[1]) * float(wpercent)))
-    img_resized = img_orig.convert('L').resize((basewidth, hsize), Image.LANCZOS)
+    img_resized = img_orig.convert('L').resize(
+        (basewidth, hsize), Image.LANCZOS)
     if binarize:
         img_resized = binarize_array_opencv(img_resized, threshold)
 
@@ -117,25 +118,26 @@ def get_ocr_number(img_orig, fast=False):
 
     lst.append(
         get_ocr_number2(img_resized).
-            strip().replace('$', '').replace('£', '').replace('€', '').replace('B', '').replace(',', '.').replace('\n', '').replace(':',
-                                                                                                                   ''))
+        strip().replace('$', '').replace('£', '').replace('€', '').replace('B', '').replace(',', '.').replace('\n', '').replace(':',
+                                                                                                                                ''))
     lst.append(
         get_ocr_number2(img_resized2).
-            strip().replace('$', '').replace('£', '').replace('€', '').replace('B', '').replace(',', '.').replace('\n', '').replace(':',
-                                                                                                                   ''))
+        strip().replace('$', '').replace('£', '').replace('€', '').replace('B', '').replace(',', '.').replace('\n', '').replace(':',
+                                                                                                                                ''))
     try:
         return float(lst[-1])
     except ValueError:
         if fast:
             return -1
-        images = [img_orig, img_resized]  # , img_min, img_mod, img_med, img_sharp]
+        # , img_min, img_mod, img_med, img_sharp]
+        images = [img_orig, img_resized]
         i = 0
         while i < 2:
             j = 0
             while j < len(images):
                 lst.append(
                     get_ocr_number2(images[j]).
-                        strip().replace('$', '').replace('£', '').replace('€', '').replace('B', '').replace('\n', '').replace(':', ''))
+                    strip().replace('$', '').replace('£', '').replace('€', '').replace('B', '').replace('\n', '').replace(':', ''))
                 j += 1
             i += 1
 
@@ -179,7 +181,8 @@ def take_screenshot(virtual_box=False):
             screenshot = vb.get_screenshot_vbox()
             log.debug("Screenshot taken from virtual machine")
         except:
-            log.warning("No virtual machine found. Press SETUP to re initialize the VM controller")
+            log.warning(
+                "No virtual machine found. Press SETUP to re initialize the VM controller")
             # gui_signals.signal_open_setup.emit(p,L)
             screenshot = ImageGrab.grab()
     return screenshot
@@ -193,7 +196,8 @@ def crop_screenshot_with_topleft_corner(original_screenshot, topleft_corner):
     if count == 1:
         tlc = points[0]
         log.debug(f"Found to left corner at {tlc}")
-        cropped_screenshot = original_screenshot.crop((tlc[0], tlc[1], tlc[0] + 1600, tlc[1] + 1200))
+        cropped_screenshot = original_screenshot.crop(
+            (tlc[0], tlc[1], tlc[0] + 1600, tlc[1] + 1200))
         return cropped_screenshot, tlc
     elif count > 1:
         log.warning(
@@ -220,14 +224,16 @@ def cv2_to_pil(img):
 def rotate_image(image, angle):
     image_center = tuple(np.array(image.shape[1::-1]) / 2)
     rot_mat = cv2.getRotationMatrix2D(image_center, angle, 1.0)
-    result = cv2.warpAffine(image, rot_mat, image.shape[1::-1], flags=cv2.INTER_LINEAR)
+    result = cv2.warpAffine(
+        image, rot_mat, image.shape[1::-1], flags=cv2.INTER_LINEAR)
     return result
 
 
 def check_if_image_in_range(img, screenshot, x1, y1, x2, y2, extended=False):
     cropped_screenshot = screenshot.crop((x1, y1, x2, y2))
     cropped_screenshot = pil_to_cv2(cropped_screenshot)
-    count, _, _, _ = find_template_on_screen(img, cropped_screenshot, 0.01, extended=extended)
+    count, _, _, _ = find_template_on_screen(
+        img, cropped_screenshot, 0.01, extended=extended)
     return count >= 1
 
 
@@ -237,9 +243,14 @@ def is_template_in_search_area(table_dict, screenshot, image_name, image_area, p
         search_area = table_dict[image_area][player]
     else:
         search_area = table_dict[image_area]
-    return check_if_image_in_range(template_cv2, screenshot,
-                                   search_area['x1'], search_area['y1'], search_area['x2'], search_area['y2'],
-                                   extended=extended)
+    try:
+        is_in_range = check_if_image_in_range(template_cv2, screenshot,
+                                              search_area['x1'], search_area['y1'], search_area['x2'], search_area['y2'],
+                                              extended=extended)
+    except:
+        raise(Exception("The table is missing a template for " + image_name))
+
+    return is_in_range
 
 
 def ocr(screenshot, image_area, table_dict, player=None, fast=False):
@@ -266,5 +277,6 @@ def ocr(screenshot, image_area, table_dict, player=None, fast=False):
             return 0
     else:
         search_area = table_dict[image_area]
-    cropped_screenshot = screenshot.crop((search_area['x1'], search_area['y1'], search_area['x2'], search_area['y2']))
+    cropped_screenshot = screenshot.crop(
+        (search_area['x1'], search_area['y1'], search_area['x2'], search_area['y2']))
     return get_ocr_float(cropped_screenshot, fast)

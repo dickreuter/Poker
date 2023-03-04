@@ -65,12 +65,9 @@ class TableScraper:
         else:
             for value in CARD_VALUES:
                 for suit in CARD_SUITES:
-                    try:
-                        if is_template_in_search_area(self.table_dict, self.screenshot,
-                                                    value.lower() + suit.lower(), 'my_cards_area', extended=True):
-                            self.my_cards.append(value + suit)
-                    except:
-                        raise(Exception("The table is missing a template for " + value + suit))
+                    if is_template_in_search_area(self.table_dict, self.screenshot,
+                                                value.lower() + suit.lower(), 'my_cards_area', extended=True):
+                        self.my_cards.append(value + suit)
 
         if len(self.my_cards) != 2:
             log.warning("My cards not recognized")
