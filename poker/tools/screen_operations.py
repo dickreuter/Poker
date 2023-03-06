@@ -247,9 +247,11 @@ def is_template_in_search_area(table_dict, screenshot, image_name, image_area, p
         is_in_range = check_if_image_in_range(template_cv2, screenshot,
                                               search_area['x1'], search_area['y1'], search_area['x2'], search_area['y2'],
                                               extended=extended)
-    except:
-        raise(Exception(f"The table has an invalid or missing template for {image_name}). 
-                        This could also mean that the search area is smaller than the corresponding template. Please check the table template and make sure that the search area is larger than the template. ")
+    except Exception as exc:
+        raise RuntimeError(f"The table has an invalid or missing template for {image_name}."
+                           "This could also mean that the search area is smaller than the corresponding template. "
+                           "Please check the table template and make sure that the search area is larger than the template. "
+                           ) from exc
 
     return is_in_range
 
