@@ -3,7 +3,7 @@
 from sys import platform
 
 import numexpr  # required for pyinstaller
-from PyQt5 import QtCore
+from PyQt6 import QtCore
 
 _ = numexpr
 import matplotlib
@@ -23,13 +23,13 @@ from poker.tools.helper import COMPUTER_NAME, open_payment_link
 
 if not (platform == "linux" or platform == "linux2"):  # pylint: disable=consider-using-in
     matplotlib.use('Qt5Agg')
-from PyQt5.QtCore import *
+from PyQt6.QtCore import *
 from poker.scraper.table_setup_actions_and_signals import TableSetupActionAndSignals
 from poker.gui.gui_launcher import TableSetupForm, GeneticAlgo, SetupForm, StrategyEditorForm, AnalyserForm
 from poker.tools.mongo_manager import MongoManager
 
 from poker.tools.vbox_manager import VirtualBoxController
-from PyQt5.QtWidgets import QMessageBox
+from PyQt6.QtWidgets import QMessageBox
 import webbrowser
 from poker.decisionmaker.genetic_algorithm import *  # pylint: disable=wildcard-import
 import os

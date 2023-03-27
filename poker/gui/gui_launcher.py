@@ -1,5 +1,5 @@
-from PyQt5 import uic
-from PyQt5.QtWidgets import QMainWindow, QDialog
+from PyQt6 import uic
+from PyQt6.QtWidgets import QMainWindow, QDialog
 
 
 class AnalyserForm(QMainWindow):

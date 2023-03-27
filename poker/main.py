@@ -9,7 +9,7 @@ from sys import platform
 import matplotlib
 import numpy as np
 import pandas as pd
-from PyQt5 import QtGui, QtWidgets
+from PyQt6 import QtGui, QtWidgets
 
 if platform not in ["linux", "linux2"]:
     matplotlib.use('Qt5Agg')

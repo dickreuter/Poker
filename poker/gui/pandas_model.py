@@ -1,4 +1,5 @@
-from PyQt5 import QtCore
+from PyQt6 import QtCore
+from PyQt6.QtCore import Qt
 
 
 class PandasModel(QtCore.QAbstractTableModel):
@@ -16,7 +17,7 @@ class PandasModel(QtCore.QAbstractTableModel):
     def columnCount(self, parent=None):
         return self._data.columns.size
 
-    def data(self, index, role=QtCore.Qt.DisplayRole):
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         if index.isValid():
             if role == QtCore.Qt.DisplayRole:
                 return str(self._data.values[index.row()][index.column()])

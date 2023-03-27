@@ -5,9 +5,9 @@ import time
 
 from PIL import Image
 from PIL.ImageQt import ImageQt
-from PyQt5 import QtGui
-from PyQt5.QtCore import Qt, QObject, pyqtSlot, pyqtSignal
-from PyQt5.QtWidgets import QMessageBox
+from PyQt6 import QtGui
+from PyQt6.QtCore import Qt, QObject, pyqtSlot, pyqtSignal
+from PyQt6.QtWidgets import QMessageBox
 
 from poker.scraper.table_scraper_nn import TRAIN_FOLDER
 from poker.tools.helper import COMPUTER_NAME, get_config, get_dir
