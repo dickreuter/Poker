@@ -23,6 +23,8 @@ mongo = MongoManager()
 CARD_VALUES = "23456789TJQKA"
 CARD_SUITES = "CDHS"
 
+SAVE=False
+
 
 # pylint: disable=unnecessary-lambda
 
@@ -80,7 +82,7 @@ class TableSetupActionAndSignals(QObject):
         self.ui.tesseract.clicked.connect(lambda: self._recognize_number())
         self.ui.topleft_corner.clicked.connect(lambda: self.save_topleft_corner())
         self.ui.current_player.currentIndexChanged[str].connect(lambda: self._update_selected_player())
-        self.ui.use_neural_network.stateChanged[int].connect(lambda: self._save_use_nerual_network_checkbox())
+        self.ui.use_neural_network.clicked.connect(lambda: self._save_use_nerual_network_checkbox())
 
     @pyqtSlot()
     def _update_selected_player(self):
@@ -91,7 +93,7 @@ class TableSetupActionAndSignals(QObject):
         owner = mongo.get_table_owner(self.table_name)
         if owner != COMPUTER_NAME:
             pop_up("Not authorized.",
-                   "You can only edit your own tables. Please create a new copy or start with a new blank table")
+                "You can only edit your own tables. Please create a new copy or start with a new blank table")
             return
         label = 'use_neural_network'
         is_set = self.ui.use_neural_network.checkState()
@@ -512,7 +514,7 @@ class TableSetupActionAndSignals(QObject):
         check_boxes = ['use_neural_network']
         for check_box in check_boxes:
             try:
-                self.signal_check_box.emit(check_box, table[check_box])
+                self.signal_check_box.emit(check_box, int(table[check_box]))
             except KeyError:
                 log.info(f"No available data for {check_box}")
                 self.signal_check_box.emit(check_box, 0)
