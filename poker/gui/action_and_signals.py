@@ -186,9 +186,9 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
         ui_main_window.table_selection.addItems(available_tables)
         playable_list = p.get_playable_strategy_list()
         ui_main_window.comboBox_current_strategy.addItems(playable_list)
-        ui_main_window.comboBox_current_strategy.currentIndexChanged[str].connect(
+        ui_main_window.comboBox_current_strategy.currentIndexChanged[int].connect(
             lambda: self.signal_update_selected_strategy(p))
-        ui_main_window.table_selection.currentIndexChanged[str].connect(
+        ui_main_window.table_selection.currentIndexChanged[int].connect(
             lambda: self.signal_update_selected_strategy(p))
         config = get_config()
         initial_selection = config.config.get('main', 'last_strategy')
