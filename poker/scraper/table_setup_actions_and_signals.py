@@ -23,9 +23,6 @@ mongo = MongoManager()
 CARD_VALUES = "23456789TJQKA"
 CARD_SUITES = "CDHS"
 
-SAVE=False
-
-
 # pylint: disable=unnecessary-lambda
 
 class TableSetupActionAndSignals(QObject):

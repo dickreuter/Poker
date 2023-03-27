@@ -36,7 +36,7 @@ warnings.filterwarnings("ignore", message="All-NaN axis encountered")
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-version = 6.40
+version = 6.41
 ui = None
 
 
@@ -306,7 +306,7 @@ def run_poker():
     t1.start()
 
     try:
-        sys.exit(app.exec_())
+        sys.exit(app.exec())
     except:
         print("Preparing to exit...")
         gui_signals.exit_thread = True
