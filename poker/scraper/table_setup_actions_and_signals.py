@@ -78,7 +78,7 @@ class TableSetupActionAndSignals(QObject):
         self.ui.button_delete.clicked.connect(lambda: self.delete())
         self.ui.tesseract.clicked.connect(lambda: self._recognize_number())
         self.ui.topleft_corner.clicked.connect(lambda: self.save_topleft_corner())
-        self.ui.current_player.currentIndexChanged[str].connect(lambda: self._update_selected_player())
+        self.ui.current_player.currentIndexChanged[int].connect(lambda: self._update_selected_player())
         self.ui.use_neural_network.clicked.connect(lambda: self._save_use_nerual_network_checkbox())
 
     @pyqtSlot()
