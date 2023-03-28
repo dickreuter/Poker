@@ -260,18 +260,18 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
         self.ui_analyser.combobox_gamestage.addItems(['All', 'PreFlop', 'Flop', 'Turn', 'River'])
         self.ui_analyser.combobox_strategy.addItems(l.get_played_strategy_list())
 
-        index = self.ui_analyser.combobox_strategy.findText(p.current_strategy, QtCore.Qt.MatchFixedString)
+        index = self.ui_analyser.combobox_strategy.findText(p.current_strategy, QtCore.Qt.MatchFlag.MatchFixedString)
         if index >= 0:
             self.ui_analyser.combobox_strategy.setCurrentIndex(index)
 
         self.gui_histogram = HistogramEquityWinLoss(self.ui_analyser)
         self.gui_scatterplot = ScatterPlot(self.ui_analyser)
 
-        self.ui_analyser.combobox_gamestage.currentIndexChanged[str].connect(
+        self.ui_analyser.combobox_gamestage.currentIndexChanged[int].connect(
             lambda: self.strategy_analyser_update_plots(l, p))
-        self.ui_analyser.combobox_actiontype.currentIndexChanged[str].connect(
+        self.ui_analyser.combobox_actiontype.currentIndexChanged[int].connect(
             lambda: self.strategy_analyser_update_plots(l, p))
-        self.ui_analyser.combobox_strategy.currentIndexChanged[str].connect(lambda: self.update_strategy_analyser(l, p))
+        self.ui_analyser.combobox_strategy.currentIndexChanged[int].connect(lambda: self.update_strategy_analyser(l, p))
         self.ui_analyser.show_rounds.stateChanged[int].connect(lambda: self.update_strategy_analyser(l, p))
         self.ui_analyser.my_computer_only.stateChanged[int].connect(lambda: self.update_strategy_analyser(l, p))
         self.ui_analyser.show_league_table.clicked.connect(lambda: self.show_league_table())
