@@ -394,7 +394,7 @@ class TableSetupActionAndSignals(QObject):
     @pyqtSlot()
     def drop_event(self, event):
         if event.mimeData().hasImage:
-            event.setDropAction(Qt.CopyAction)
+            event.setDropAction(Qt.DropAction.CopyAction)
             file_path = event.mimeData().urls()[0].toLocalFile()
 
             self.original_screenshot = Image.open(file_path)
@@ -596,6 +596,6 @@ def pop_up(title, text, details=None, ok_cancel=False):
         msg.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
     if details:
         msg.setDetailedText(details)
-    response = msg.exec_()
+    response = msg.exec()
     log.info(response)
     return response

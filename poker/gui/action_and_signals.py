@@ -36,6 +36,7 @@ import os
 import logging
 
 
+
 # pylint: disable=unnecessary-lambda
 
 class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
@@ -478,14 +479,14 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
         for key, value in self.strategy_items_with_multipliers.items():
             func = getattr(self.ui_editor, key)
             func.setValue(100)
-            v = float(self.strategy_handler.selected_strategy[key]) * value
+            v = int(self.strategy_handler.selected_strategy[key]) * value
             func.setValue(v)
             # print (key)
 
         self.ui_editor.pushButton_save_current_strategy.setEnabled(False)
         try:
-            if self.strategy_handler.selected_strategy['computername'] == os.environ['COMPUTERNAME'] or \
-                    os.environ['COMPUTERNAME'] == 'NICOLAS-ASUS' or os.environ['COMPUTERNAME'] == 'Home-PC-ND':
+            if self.strategy_handler.selected_strategy['computername'] == COMPUTER_NAME or \
+                    COMPUTER_NAME == 'NICOLAS-ASUS' or COMPUTER_NAME == 'Home-PC-ND':
                 self.ui_editor.pushButton_save_current_strategy.setEnabled(True)
         except Exception as e:
             pass
@@ -585,7 +586,7 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
             func = getattr(self.ui_editor, key)
             self.strategy_dict[key] = func.value() / value
         self.strategy_dict['Strategy'] = name
-        self.strategy_dict['computername'] = os.environ['COMPUTERNAME']
+        self.strategy_dict['computername'] = COMPUTER_NAME
 
         self.strategy_dict['use_relative_equity'] = int(self.ui_editor.use_relative_equity.isChecked())
         self.strategy_dict['use_pot_multiples'] = int(self.ui_editor.use_pot_multiples.isChecked())

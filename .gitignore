@@ -178,3 +178,8 @@ config.ini
 /poker/model.json
 /poker/model_classes.json
 vcs.xml
+poker/loaded_model.h5
+poker/.DS_Store
+package.sh
+.DS_Store
+.gitignore
