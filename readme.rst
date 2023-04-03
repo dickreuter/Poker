@@ -56,7 +56,7 @@ the whole computer:
 * Install Partypoker or Pokerstars in the virtual box environment
 * Install the pokerbot directly onto your computer (outside of the virtual box)
 * In the Setup select your virtual box instance (instead of direct mouse control)
-* Join the discord chat by pressing the chat button
+* Join the discord chat by pressing the chat button or joining this link: https://discord.gg/xB9sR3Q7r3
 
 * The current version Only works on windows
 * Do not obstruct the view of the table as the bot is based on image recognition
