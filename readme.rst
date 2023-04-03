@@ -138,7 +138,9 @@ Mapping new tables
 
 The bot can learn to read new tables, either by using templates or by training a neural network that uses data augmentation based on the given templates.
 
-`Click here to see a Video description how to add a new table <https://rb.gy/jut3ws>`_
+.. raw:: html
+    
+    <iframe width="560" height="315" src="https://www.youtube.com/embed/r3E4kzmWHxw" title="YouTube video player" frameborder="1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
 The setup to add new tables looks like this:
 
