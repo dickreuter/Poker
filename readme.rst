@@ -56,7 +56,7 @@ the whole computer:
 * Install Partypoker or Pokerstars in the virtual box environment
 * Install the pokerbot directly onto your computer (outside of the virtual box)
 * In the Setup select your virtual box instance (instead of direct mouse control)
-* Join the telegram chat by pressing the chat button
+* Join the discord chat by pressing the chat button
 
 * The current version Only works on windows
 * Do not obstruct the view of the table as the bot is based on image recognition
@@ -120,7 +120,7 @@ The full version allows you to:
 To purchase, please follow this link. You'll then receive a password within 24 hours.
 https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-910576034F790373KMC6UZOQ
 
-Alternatively you can contact me via email or telegram and request a password directly and pay bitcoin to:
+Alternatively you can contact me via email or discord and request a password directly and pay bitcoin to:
 1Py5o4WLYMizXc8pFPqzD4yeCAm53BhJit
 
 You can also get a free subscription if you make some meaningful contribution to the codebase.

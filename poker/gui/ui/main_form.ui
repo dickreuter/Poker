@@ -169,7 +169,7 @@
        </font>
       </property>
       <property name="text">
-       <string>Telegram Chat</string>
+       <string>Discord Chat</string>
       </property>
      </widget>
     </item>

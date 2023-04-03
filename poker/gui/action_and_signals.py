@@ -361,7 +361,7 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
         # self.help_form.show()
 
     def open_chat(self):
-        url = "https://t.me/joinchat/HlwI8xietZJ7QNAO_P5g1Q"
+        url = "https://discord.gg/xB9sR3Q7r3"
         webbrowser.open(url, new=2)
 
     def open_table_setup(self):
