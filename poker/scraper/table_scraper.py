@@ -60,7 +60,7 @@ class TableScraper:
         """Get my cards"""
         self.my_cards = []
 
-        if 'use_neural_network' in self.table_dict and self.table_dict['use_neural_network'] == '2':
+        if 'use_neural_network' in self.table_dict and (self.table_dict['use_neural_network'] == '2' or self.table_dict['use_neural_network'] == 'CheckState.Checked'):
             self.get_my_cards_nn()
         else:
             for value in CARD_VALUES:

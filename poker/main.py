@@ -36,7 +36,7 @@ warnings.filterwarnings("ignore", message="All-NaN axis encountered")
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-version = 6.44
+version = 6.45
 ui = None
 
 
@@ -151,7 +151,7 @@ class ThreadManager(threading.Thread):
                     table_dict = mongo.get_table(table_scraper_name)
                     nn_model = None
                     slow_table = False
-                    if 'use_neural_network' in table_dict and table_dict['use_neural_network'] == '2':
+                    if 'use_neural_network' in table_dict and (table_dict['use_neural_network'] == '2' or table_dict['use_neural_network'] == 'CheckState.Checked'):
                         from tensorflow.keras.models import model_from_json
                         try:
                             nn_model = model_from_json(table_dict['_model'])

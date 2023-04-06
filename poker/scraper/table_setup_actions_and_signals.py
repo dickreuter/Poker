@@ -563,7 +563,7 @@ class TableSetupActionAndSignals(QObject):
         table_scraper = TableScraper(table_dict)
         table_scraper.nn_model = None
 
-        if 'use_neural_network' in table_dict and table_dict['use_neural_network'] == '2':
+        if 'use_neural_network' in table_dict and (table_dict['use_neural_network'] == '2' or table_dict['use_neural_network'] == 'CheckState.Checked'):
             from tensorflow.keras.models import model_from_json
             table_scraper.nn_model = model_from_json(table_dict['_model'])
             mongo.load_table_nn_weights(self.table_name)
