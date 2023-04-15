@@ -113,13 +113,16 @@ class MongoManager(metaclass=Singleton):
 
         table_converted = {}
         for key, value in table.items():
-            if isinstance(value, (dict, int, list, float)):
-                table_converted[key] = value
-            elif value[0:2] == 'iV':
-                table_converted[key] = base64.b64decode(value)
-            else:
-                table_converted[key] = value
-
+            try:
+                if isinstance(value, (dict, int, list, float)):
+                    table_converted[key] = value
+                elif value[0:2] == 'iV':
+                    table_converted[key] = base64.b64decode(value)
+                else:
+                    table_converted[key] = value
+            except TypeError:
+                pass
+            
         return table_converted
 
     def get_table_owner(self, table_name):
