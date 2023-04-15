@@ -635,7 +635,7 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
                 msg.setText("To save strategies you need to purchase a subscription")
                 open_payment_link()
             msg.setWindowTitle("Strategy editor")
-            msg.setStandardButtons(QMessageBox.Ok)
+            msg.setStandardButtons(QMessageBox.StandardButton.Ok)
             retval = msg.exec()
             self.logger.info("Strategy saved successfully")
 
@@ -644,6 +644,6 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
             msg.setIcon(QMessageBox.Warning)
             msg.setText("There has been a problem and the strategy is not saved. Check if the name is already taken.")
             msg.setWindowTitle("Strategy editor")
-            msg.setStandardButtons(QMessageBox.Ok)
+            msg.setStandardButtons(QMessageBox.StandardButton.Ok)
             retval = msg.exec()
             self.logger.warning("Strategy not saved")

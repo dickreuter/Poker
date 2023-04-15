@@ -595,7 +595,7 @@ def pop_up(title, text, details=None, ok_cancel=False):
     msg.setWindowTitle(title)
     msg.setText(text)
     if ok_cancel:
-        msg.setStandardButtons(QMessageBox.StandardButtons.Ok | QMessageBox.StandardButtons.Cancel)
+        msg.setStandardButtons(QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel)
     if details:
         msg.setDetailedText(details)
     response = msg.exec()
