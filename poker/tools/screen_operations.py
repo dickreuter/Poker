@@ -240,7 +240,11 @@ def check_if_image_in_range(img, screenshot, x1, y1, x2, y2, extended=False):
 def is_template_in_search_area(table_dict, screenshot, image_name, image_area, player=None, extended=False):
     template_cv2 = binary_pil_to_cv2(table_dict[image_name])
     if player:
-        search_area = table_dict[image_area][player]
+        try:
+            search_area = table_dict[image_area][player]
+        except KeyError as exc:
+            raise KeyError(f"The table mapping is missing data for player {player} and {image_area}."
+                           "Please fix the table mapping.") from exc
     else:
         search_area = table_dict[image_area]
     try:
