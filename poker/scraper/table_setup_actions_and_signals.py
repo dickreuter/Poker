@@ -8,6 +8,7 @@ from PIL.ImageQt import ImageQt
 from PyQt6 import QtGui
 from PyQt6.QtCore import Qt, QObject, pyqtSlot, pyqtSignal
 from PyQt6.QtWidgets import QMessageBox
+from time import sleep
 
 from poker.scraper.table_scraper_nn import TRAIN_FOLDER
 from poker.tools.helper import COMPUTER_NAME, get_config, get_dir
@@ -301,7 +302,9 @@ class TableSetupActionAndSignals(QObject):
         """Take a screenshot"""
         log.info("Clearing window")
         self.signal_update_screenshot_pic.emit(Image.new('RGB', (3, 3)))
-
+        self._update_preview_label(Image.new('RGB', (3, 3)))
+        pop_up("Confirmation", "Press ok to take screenshot")
+        
         log.info("Taking screenshot")
         config = get_config()
         control = config.config.get('main', 'control')
