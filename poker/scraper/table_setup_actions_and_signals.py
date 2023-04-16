@@ -514,7 +514,10 @@ class TableSetupActionAndSignals(QObject):
         check_boxes = ['use_neural_network']
         for check_box in check_boxes:
             try:
-                nn=1 if table[check_box]=='CheckState.Checked' or table[check_box]>0 else 0
+                if isinstance(table[check_box], int):
+                    nn = 1 if table[check_box]>0 else 0
+                if isinstance(table[check_box], str):
+                    nn = 1 if table[check_box]=='CheckState.Checked' else 0
                 self.signal_check_box.emit(check_box, int(nn))
             except KeyError:
                 log.info(f"No available data for {check_box}")
