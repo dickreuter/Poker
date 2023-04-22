@@ -197,7 +197,7 @@ def crop_screenshot_with_topleft_corner(original_screenshot, topleft_corner):
         tlc = points[0]
         log.debug(f"Found to left corner at {tlc}")
         cropped_screenshot = original_screenshot.crop(
-            (tlc[0], tlc[1], tlc[0] + 1800, tlc[1] + 1400))
+            (tlc[0], tlc[1], tlc[0] + 1500, tlc[1] + 1100))
         return cropped_screenshot, tlc
     elif count > 1:
         log.warning(

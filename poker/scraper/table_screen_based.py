@@ -109,6 +109,7 @@ class TableScreenBased(Table):
             return True
 
         if resume_hand:
+            log.info("Resume hand found. Clicking resume hand button...")
             self.gui_signals.signal_status.emit("Resume hand")
             mouse.mouse_action("resume_hand", self.tlc)
             return False
