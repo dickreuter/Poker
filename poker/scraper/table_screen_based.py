@@ -185,33 +185,34 @@ class TableScreenBased(Table):
         return True
 
     def check_fast_fold(self, h, p, mouse):
-        self.gui_signals.signal_status.emit("Check for fast fold")
-        self.gui_signals.signal_progressbar_reset.emit()
-        if self.gameStage == "PreFlop":
-            m = MonteCarlo()
-            crd1, crd2 = m.get_two_short_notation(self.mycards)
-            crd1 = crd1.upper()
-            crd2 = crd2.upper()
-            sheet_name = str(self.position_utg_plus + 1)
-            if sheet_name == '6': return True
-            sheet = h.preflop_sheet[sheet_name]
-            sheet['Hand'] = sheet['Hand'].apply(lambda x: str(x).upper())
-            handlist = set(sheet['Hand'].tolist())
+        # temporarily deactivated
+        # self.gui_signals.signal_status.emit("Check for fast fold")
+        # self.gui_signals.signal_progressbar_reset.emit()
+        # if self.gameStage == "PreFlop":
+        #     m = MonteCarlo()
+        #     crd1, crd2 = m.get_two_short_notation(self.mycards)
+        #     crd1 = crd1.upper()
+        #     crd2 = crd2.upper()
+        #     sheet_name = str(self.position_utg_plus + 1)
+        #     if sheet_name == '6': return True
+        #     sheet = h.preflop_sheet[sheet_name]
+        #     sheet['Hand'] = sheet['Hand'].apply(lambda x: str(x).upper())
+        #     handlist = set(sheet['Hand'].tolist())
 
-            found_card = ''
+        #     found_card = ''
 
-            if crd1 in handlist:
-                found_card = crd1
-            elif crd2 in handlist:
-                found_card = crd2
-            elif crd1[0:2] in handlist:
-                found_card = crd1[0:2]
+        #     if crd1 in handlist:
+        #         found_card = crd1
+        #     elif crd2 in handlist:
+        #         found_card = crd2
+        #     elif crd1[0:2] in handlist:
+        #         found_card = crd1[0:2]
 
-            if found_card == '':
-                mouse_target = "Fold"
-                mouse.mouse_action(mouse_target, self.tlc)
-                log.info("-------- FAST FOLD -------")
-                return False
+        #     if found_card == '':
+        #         mouse_target = "Fold"
+        #         mouse.mouse_action(mouse_target, self.tlc)
+        #         log.info("-------- FAST FOLD -------")
+        #         return False
 
         return True
 
