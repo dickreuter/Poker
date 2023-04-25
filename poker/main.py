@@ -36,7 +36,7 @@ warnings.filterwarnings("ignore", message="All-NaN axis encountered")
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-version = 6.53
+version = 6.54
 ui = None
 
 
@@ -227,9 +227,9 @@ class ThreadManager(threading.Thread):
                 mouse.mouse_action(mouse_target, table.tlc, action_options)
 
                 # for pokerstars, high fold straight after all in call (fold button matches the stay in game)
-                if mouse_target == 'Call2' and table.allInCallButton:
-                    mouse_target = 'Fold'
-                    mouse.mouse_action(mouse_target, table.tlc, action_options)
+                # if mouse_target == 'Call2' and table.allInCallButton:
+                #     mouse_target = 'Fold'
+                #     mouse.mouse_action(mouse_target, table.tlc, action_options)
 
                 table.time_action_completed = datetime.datetime.utcnow()
 
