@@ -119,11 +119,11 @@ def get_ocr_number(img_orig, fast=False):
     lst.append(
         get_ocr_number2(img_resized).
         strip().replace('$', '').replace('£', '').replace('€', '').replace('B', '').replace(',', '.').replace('\n', '').replace(':',
-                                                                                                                                ''))
+                                                                                                                                   ''))
     lst.append(
         get_ocr_number2(img_resized2).
         strip().replace('$', '').replace('£', '').replace('€', '').replace('B', '').replace(',', '.').replace('\n', '').replace(':',
-                                                                                                                                ''))
+                                                                                                                                   ''))
     try:
         return float(lst[-1])
     except ValueError:
@@ -252,9 +252,14 @@ def is_template_in_search_area(table_dict, screenshot, image_name, image_area, p
                                               search_area['x1'], search_area['y1'], search_area['x2'], search_area['y2'],
                                               extended=extended)
     except Exception as exc:
-        raise RuntimeError(f"The table has an invalid or missing template for {image_name}."
-                           "This could also mean that the search area is smaller than the corresponding template. "
-                           "Please check the table template and make sure that the search area is larger than the template. "
+        x = search_area['x2'] - search_area['x1']
+        y = search_area['y2'] - search_area['y1']
+        xt = template_cv2.shape[0]
+        yt = template_cv2.shape[1]
+        if x < xt or y < yt:
+            raise RuntimeError(f"Search area for {image_name} {player} is too small. It is {x}x{y} but the template is {xt}x{yt}."
+                               ) from exc
+        raise RuntimeError(f"The table has an missing template for {image_name}."
                            ) from exc
 
     return is_in_range

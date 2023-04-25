@@ -628,7 +628,7 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
                 self.ui_editor.Strategy.setCurrentIndex(0)
                 self.ui.comboBox_current_strategy.insertItem(0, name)
             msg = QMessageBox()
-            msg.setIcon(QMessageBox.Information)
+            msg.setIcon(QMessageBox.Information())
             if success:
                 msg.setText("Saved")
             else:

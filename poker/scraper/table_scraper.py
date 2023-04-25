@@ -140,8 +140,10 @@ class TableScraper:
 
     def is_my_turn(self):
         """Check if it's my turn"""
-        return is_template_in_search_area(self.table_dict, self.screenshot,
+        my_turn = is_template_in_search_area(self.table_dict, self.screenshot,
                                           'my_turn', 'my_turn_search_area')
+        log.info(f"Is it my turn? {my_turn}")
+        return my_turn
 
     def get_players_in_game(self):
         """
