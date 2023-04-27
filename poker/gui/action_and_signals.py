@@ -479,7 +479,7 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
         for key, value in self.strategy_items_with_multipliers.items():
             func = getattr(self.ui_editor, key)
             func.setValue(100)
-            v = int(self.strategy_handler.selected_strategy[key]) * value
+            v = int(self.strategy_handler.selected_strategy[key] * value)
             func.setValue(v)
             # print (key)
 
@@ -628,7 +628,7 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
                 self.ui_editor.Strategy.setCurrentIndex(0)
                 self.ui.comboBox_current_strategy.insertItem(0, name)
             msg = QMessageBox()
-            msg.setIcon(QMessageBox.Information())
+            # msg.setIcon(QMessageBox.information())
             if success:
                 msg.setText("Saved")
             else:
@@ -641,7 +641,6 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
 
         else:
             msg = QMessageBox()
-            msg.setIcon(QMessageBox.Warning)
             msg.setText("There has been a problem and the strategy is not saved. Check if the name is already taken.")
             msg.setWindowTitle("Strategy editor")
             msg.setStandardButtons(QMessageBox.StandardButton.Ok)
