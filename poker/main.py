@@ -10,6 +10,7 @@ import matplotlib
 import numpy as np
 import pandas as pd
 from PyQt6 import QtGui, QtWidgets
+from PyQt6.QtWidgets import QMessageBox
 
 if platform not in ["linux", "linux2"]:
     matplotlib.use('Qt5Agg')
@@ -36,7 +37,7 @@ warnings.filterwarnings("ignore", message="All-NaN axis encountered")
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-version = 6.56
+version = 6.57
 ui = None
 
 
@@ -224,7 +225,11 @@ class ThreadManager(threading.Thread):
                 elif mouse_target == 'BetPlus':
                     action_options['increases_num'] = strategy.selected_strategy['BetPlusInc']
 
-                mouse.mouse_action(mouse_target, table.tlc, action_options)
+                if self.gui_signals.ui.auto_act.isChecked():
+                    mouse.mouse_action(mouse_target, table.tlc, action_options)
+                else:
+                    input("=== Press Enter to continue ===")
+                    
 
                 # for pokerstars, high fold straight after all in call (fold button matches the stay in game)
                 # if mouse_target == 'Call2' and table.allInCallButton:

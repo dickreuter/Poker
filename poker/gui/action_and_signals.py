@@ -646,3 +646,10 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
             msg.setStandardButtons(QMessageBox.StandardButton.Ok)
             retval = msg.exec()
             self.logger.warning("Strategy not saved")
+
+    def recommendation_pop_up(self, mouse_target):
+            msg = QMessageBox()
+            msg.setText(f"Execute the {mouse_target} and then press OK to continue")
+            msg.setWindowTitle(f"Recommendation: {mouse_target}")
+            msg.setStandardButtons(QMessageBox.StandardButton.Ok)
+            retval = msg.exec()
