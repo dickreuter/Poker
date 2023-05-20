@@ -1,0 +1,17 @@
+version: "3.4"
+
+services:
+  app:
+    build:
+      context: .
+      target: app
+    tty: true
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - $XAUTHORITY:/tmp/.XAuthority
+      - ./:/srv/app
+    restart: unless-stopped
+    environment:
+      - DISPLAY=${DISPLAY}
+      - XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR}
+    network_mode: host
