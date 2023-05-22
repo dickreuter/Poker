@@ -157,11 +157,11 @@ The setup to add new tables looks like this:
 Running via docker
 ------------------------------
 
-$ git clone https://github.com/dickreuter/Poker.git
-$ cd Poker
-$ docker compose up -d
-$ xhost local:root # This permits the root user on the local machine to connect to X windows display
-$ docker-compose exec app python3 main.py # once the container is running you can launch the bot with this command
+- ``$ git clone https://github.com/dickreuter/Poker.git``
+- ``$ cd Poker``
+- ``$ docker compose up -d``
+- ``$ xhost local:root # This permits the root user on the local machine to connect to X windows display``
+- ``$ docker-compose exec app python3 main.py # once the container is running you can launch the bot with this command``
 
 Running via python source code
 ------------------------------
