@@ -154,6 +154,14 @@ The setup to add new tables looks like this:
 - If you hover over the buttons, you will get a more detailed description of what you need to pay attention to.
 - Note that you will need to take many screenshots, crop them (don't select the top left corner again, as this you should only do once), instead load it and then crop the image. After that make your selection of the different images and save them by pressing on the corresponding button. You'll need to teach it every card and every button etc.
 
+Running via docker
+------------------------------
+
+$ git clone https://github.com/dickreuter/Poker.git
+$ cd Poker
+$ docker compose up -d
+$ xhost local:root # This permits the root user on the local machine to connect to X windows display
+$ docker-compose exec app python3 main.py # once the container is running you can launch the bot with this command
 
 Running via python source code
 ------------------------------
