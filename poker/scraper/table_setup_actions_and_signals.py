@@ -226,8 +226,11 @@ class TableSetupActionAndSignals(QObject):
                 log.info(f"Ignoring flattening of {button_name}")
 
             if button_name != 'use_neural_network':
-                button = getattr(self.ui, button_name + '_show')
-                button.setEnabled(checked)
+                try:
+                    button = getattr(self.ui, button_name + '_show')
+                    button.setEnabled(checked)
+                except:
+                    pass
 
     def blank_new(self):
         ok = mongo.create_new_table(self.ui.new_name.text())

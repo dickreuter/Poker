@@ -101,7 +101,7 @@ class CardNeuralNetwork():
                                       save_format='png',
                                       ):
                     i += 1
-                    if i > 250:
+                    if i > 500:
                         break  # otherwise the generator would loop indefinitely
 
     def train_neural_network(self):
@@ -130,32 +130,34 @@ class CardNeuralNetwork():
 
         num_classes = 52
         input_shape = (50, 15, 3)
-        epochs = 20
-        from tensorflow.keras.callbacks import TensorBoard
+        epochs = 50
+        from tensorflow.keras.callbacks import TensorBoard, EarlyStopping, LearningRateScheduler
         from tensorflow.keras.constraints import MaxNorm
-        from tensorflow.keras.layers import Conv2D, MaxPooling2D
+        from tensorflow.keras.layers import Conv2D, MaxPooling2D, BatchNormalization
         from tensorflow.keras.layers import Dropout, Flatten, Dense
         from tensorflow.keras.models import Sequential
+        from tensorflow.keras.losses import sparse_categorical_crossentropy
+        from tensorflow.keras import optimizers
+        from tensorflow.math import exp
         model = Sequential()
         model.add(Conv2D(64, (3, 3), input_shape=input_shape, activation='relu', padding='same'))
-        model.add(Dropout(0.2))
-        model.add(Conv2D(64, (2, 2), activation='relu', padding='same'))
+        model.add(Conv2D(64, (3, 3), activation='relu', padding='same'))
         model.add(MaxPooling2D(pool_size=(2, 2)))
+        model.add(Dropout(0.3))
         model.add(Conv2D(128, (3, 3), activation='relu', padding='same'))
-        model.add(Dropout(0.2))
         model.add(Conv2D(128, (3, 3), activation='relu', padding='same'))
         model.add(MaxPooling2D(pool_size=(2, 2)))
+        model.add(Dropout(0.4))
         model.add(Conv2D(256, (3, 3), activation='relu', padding='same'))
-        model.add(Dropout(0.2))
         model.add(Conv2D(256, (3, 3), activation='relu', padding='same'))
         model.add(MaxPooling2D(pool_size=(2, 2)))
+        model.add(Dropout(0.5))
         model.add(Flatten())
-        model.add(Dropout(0.2))
         model.add(Dense(2048, activation='relu', kernel_constraint=MaxNorm(3)))
-        model.add(Dropout(0.2))
+        model.add(Dropout(0.5))
         model.add(Dense(1024, activation='relu', kernel_constraint=MaxNorm(3)))
-        model.add(Dropout(0.2))
-        model.add(Dense(num_classes, activation='softmax'))
+        model.add(Dropout(0.5))
+        model.add(Dense(num_classes, activation='softmax'))        
         from tensorflow.keras.losses import sparse_categorical_crossentropy
         from tensorflow.keras import optimizers
         model.compile(loss=sparse_categorical_crossentropy,
@@ -164,11 +166,10 @@ class CardNeuralNetwork():
 
         log.info(model.summary())
 
-        from tensorflow.keras.callbacks import EarlyStopping
-        early_stop = EarlyStopping(monitor='val_loss',
-                                   min_delta=0,
-                                   patience=1,
-                                   verbose=1, mode='auto')
+        early_stop = EarlyStopping(monitor='val_accuracy',
+                                min_delta=0,
+                                patience=5, # increased patience as sometimes more epochs are beneficial
+                                verbose=1, mode='auto')
         tb = TensorBoard(log_dir='c:/tensorboard/pb',
                          histogram_freq=1,
                          write_graph=True,
