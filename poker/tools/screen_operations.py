@@ -13,6 +13,7 @@ from tesserocr import PyTessBaseAPI, PSM, OEM
 
 from poker.tools.helper import memory_cache, get_dir
 from poker.tools.mongo_manager import MongoManager
+from poker.tools.swc import swc_ocr
 from poker.tools.vbox_manager import VirtualBoxController
 
 log = logging.getLogger(__name__)
@@ -26,6 +27,9 @@ else:
 api = PyTessBaseAPI(path=tesserpath,
                     psm=PSM.SINGLE_LINE,
                     oem=OEM.LSTM_ONLY)
+
+
+IMG_COUNTER = 0
 
 
 def find_template_on_screen(template, screenshot, threshold, extended=False):
@@ -61,9 +65,12 @@ def get_table_template_image(table_name='default', label='topleft_corner'):
     return template_cv2
 
 
-def get_ocr_float(img_orig, fast=False):
+def get_ocr_float(img_orig, table_name, fast=False):
     """Return float value from image. -1.0f when OCR failed"""
-    return get_ocr_number(img_orig, fast)
+    if table_name and table_name.lower().startswith("swc poker"):
+        return swc_ocr(img_orig)
+    else:
+        return get_ocr_number(img_orig, fast)
 
 
 def prepareImage(img_orig, binarize=True, threshold=76):
@@ -104,7 +111,7 @@ def prepareImage(img_orig, binarize=True, threshold=76):
 
 def get_ocr_number2(img_orig, fast=False):
     """New OCR based on tesserocr rather than pytesseract, should be much faster"""
-    api.SetVariable("tessedit_char_whitelist", "0123456789.$£B")
+    api.SetVariable("tessedit_char_whitelist", "0123456789.,$£B")
     api.SetImage(img_orig)
     result = api.GetUTF8Text()
     return result
@@ -265,7 +272,7 @@ def is_template_in_search_area(table_dict, screenshot, image_name, image_area, p
     return is_in_range
 
 
-def ocr(screenshot, image_area, table_dict, player=None, fast=False):
+def ocr(screenshot, image_area, table_dict, player=None, fast=False, table_name=None):
     """
     get ocr of area of screenshot
 
@@ -291,4 +298,12 @@ def ocr(screenshot, image_area, table_dict, player=None, fast=False):
         search_area = table_dict[image_area]
     cropped_screenshot = screenshot.crop(
         (search_area['x1'], search_area['y1'], search_area['x2'], search_area['y2']))
-    return get_ocr_float(cropped_screenshot, fast)
+    result = get_ocr_float(cropped_screenshot, table_name, fast)
+
+
+    if result == -1 and image_area == 'player_pot_area':
+        global IMG_COUNTER
+        path = "log/pics/player_pot_area_player_" + str(player) + "_" + str(IMG_COUNTER) + ".png"
+        cropped_screenshot.save(path)
+        IMG_COUNTER += 1
+    return result

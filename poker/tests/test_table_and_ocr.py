@@ -111,14 +111,14 @@ def test_ocr_pp4():
 def test_orc_problems1():
     """Tricky OCR situations"""
     img = Image.open(os.path.join(get_dir('codebase'), r"tests/ocr/num1.png"))
-    result = get_ocr_float(img)
+    result = get_ocr_float(img, None)
     assert result == 3.94
 
 
 def test_orc_problems2():
     """Tricky OCR situations"""
     img = Image.open(os.path.join(get_dir('codebase'), r"tests/ocr/num2.png"))
-    result = get_ocr_float(img)
+    result = get_ocr_float(img, None)
     assert result == 3.94
 
 
