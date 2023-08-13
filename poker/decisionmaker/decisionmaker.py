@@ -199,7 +199,7 @@ class Decision(DecisionBase):
         if not t.other_player_has_initiative and not t.checkButton:
             opponent_raised_without_initiative = 1
             log.info(
-                "Other player has no initiative and there is no check button. Activate increased required equity for betting")
+                "Other player has no initiative and there is no check button. Activate increased required equity for betting if corresponding tickbox in strategy is checked.")
         else:
             opponent_raised_without_initiative = 0
             log.debug("Increase required equity for betting not acviated")

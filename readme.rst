@@ -1,4 +1,4 @@
-Deep mind pokerbot for pokerstars, partypoker and GGPoker
+DeeperMind pokerbot for pokerstars, partypoker and GGPoker
 ==========================================================
 
 This pokerbot plays automatically on Pokerstars, Partypoker and GG Poker. Any other table can be mapped as well.

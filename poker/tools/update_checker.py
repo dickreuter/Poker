@@ -43,7 +43,7 @@ class UpdateChecker:
 
         if current_version > version:
             if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
-                print("Downloading latest version of the DeepMind Pokerbot...")
+                print("Downloading latest version of the DeeperMind Pokerbot...")
                 print("\n")
                 print("Version changes:")
                 for latest_update in latest_updates:

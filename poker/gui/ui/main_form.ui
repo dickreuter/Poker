@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>570</width>
+    <width>609</width>
     <height>900</height>
    </rect>
   </property>
@@ -341,7 +341,7 @@
        </font>
       </property>
       <property name="text">
-       <string>DeepMind PokerBot</string>
+       <string>DeeperMind PokerBot</string>
       </property>
      </widget>
     </item>

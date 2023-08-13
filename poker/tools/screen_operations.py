@@ -233,7 +233,7 @@ def check_if_image_in_range(img, screenshot, x1, y1, x2, y2, extended=False):
     cropped_screenshot = screenshot.crop((x1, y1, x2, y2))
     cropped_screenshot = pil_to_cv2(cropped_screenshot)
     count, _, _, _ = find_template_on_screen(
-        img, cropped_screenshot, 0.01, extended=extended)
+        img, cropped_screenshot, 0.008, extended=extended)
     return count >= 1
 
 
