@@ -1,0 +1,66 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 1em;
+  min-height: 25em;
+  min-width: 10em;
+}
+
+.card:hover {
+  background-color: blue;
+  color: white; /* Changing the text color to white for better visibility on blue background */
+  transition: background-color .5s ease; /* Smooth transition effect */
+}
+
+.titleimage {
+  display: flex;
+  flex-direction: column;
+}
+
+.items li {
+  text-align: left;
+  font-size: .8em;
+}
+
+.items li input[type="checkbox"] {
+  margin-right: 0.5em;
+}
+
+.barchart {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* horizontally centered */
+  justify-content: center; /* vertically centered */
+  min-height: 100vh; /* or adjust as previously suggested */
+}
+
+.dropdowns-container {
+  display: flex;
+  justify-content: center; /* centers the dropdowns horizontally */
+  gap: 10px; /* provides spacing between dropdowns */
+}
+
+.tablechart {
+  padding-top: 3em;
+}

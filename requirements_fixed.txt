@@ -173,3 +173,4 @@ widgetsnbextension==4.0.7
 wrapt==1.14.1
 xlib==0.21
 xlrd==2.0.1
+PyJWT==1.7.0
