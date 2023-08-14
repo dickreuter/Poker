@@ -6,7 +6,7 @@ It works with image recognition, montecarlo simulation and a basic genetic algor
 The mouse is moved automatically and the bot can potentially play for hours based on a large number of parameters.
 
 You can download the binaries and run the executable directly from here:
-https://sourceforge.net/projects/partypoker-pokerstars-pokerbot/
+http://www.deepermind-pokerbot.com
 
 Running the bot:
 ----------------
@@ -39,7 +39,7 @@ General setup:
 
 If you just want to run the bot, please do the following:
 
-Install the binearies of the bot from here: https://sourceforge.net/projects/partypoker-pokerstars-pokerbot/
+Install the binearies of the bot from here: http://www.deepermind-pokerbot.com
 
 You can then immediately run the bot. It will analyze the poker client, move the mouse and play in accordance
 with one of its pre-programmed strategies. Most of the strategies are based on zoom or Fast Forward tables.
@@ -118,7 +118,7 @@ The full version allows you to:
 * View all Strategies of all users
 
 To purchase, please follow this link. You'll then receive a password within 24 hours.
-https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-910576034F790373KMC6UZOQ
+http://www.deepermind-pokerbot.com/purchase
 
 Alternatively you can contact me via email or discord and request a password directly and pay bitcoin to:
 1Py5o4WLYMizXc8pFPqzD4yeCAm53BhJit
@@ -138,7 +138,7 @@ Mapping new tables
 
 The bot can learn to read new tables, either by using templates or by training a neural network that uses data augmentation based on the given templates.
 
-`Click this link to see a Video description how to add a new table <https://rb.gy/jut3ws>`_
+`Click this link to see a Video description how to add a new table <https://rb.gy/jut3ws>`_ or watch the video on www.deepermind-pokerbot.com
 
 The setup to add new tables looks like this:
 
