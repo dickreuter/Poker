@@ -23,7 +23,7 @@
 
 .card {
   padding: 1em;
-  min-height: 25em;
+  min-height: 30em;
   min-width: 10em;
 }
 
@@ -63,4 +63,53 @@
 
 .tablechart {
   padding-top: 3em;
+}
+.custom-card-size {
+  max-width: 15em;
+  /* optionally, you can also set a max-height if needed */
+  /* max-height: 400px; */
+}
+
+/* Changes the color of the link on hover */
+.nav-link:hover {
+  color: #007BFF;  /* Blue color, can be replaced with any other color */
+  text-decoration: none;  /* Removes the underline which is usually there by default on hover */
+  transition: color 0.5s ease;  /* Smooth transition effect */
+}
+
+/* Adds an underline effect on hover */
+.nav-item:hover .nav-link::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 2px;
+  background-color: #007BFF;  /* Blue color, can be replaced with any other color */
+  transition: width 0.3s ease;
+}
+
+/* Changes the background color on hover */
+.nav-item:hover {
+  background-color: #f8f9fa;  /* Light grey, can be replaced with any other color */
+  transition: background-color 0.3s ease;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg) scale(.7);
+  }
+  to {
+    transform: rotate(360deg) scale(.7);
+  }
+}
+
+.rotating {
+  animation: spin 2s linear infinite;
+}
+
+.description {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2em;
 }

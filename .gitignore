@@ -210,3 +210,4 @@ dist-ssr
 *.sln
 *.sw?
 *.js
+notebooks/PlayingCards-1/*

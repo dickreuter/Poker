@@ -1,8 +1,8 @@
-import { FormControl, InputLabel, MenuItem, Select } from '@material-ui/core';
-import { Skeleton } from '@mui/material';
+import { CircularProgress, FormControl, InputLabel, MenuItem, Select } from '@material-ui/core';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import React, { useEffect, useState } from 'react';
+import { pirate } from '../assets/Images';
 import GroupedStackedBarChart from './GroupedBarChart';
 
 
@@ -65,6 +65,7 @@ const StrategyAnalyzer: React.FC = () => {
 
     const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setLoadingBarChartData(true);
+        setFirstVisit(false);
         setSelectedStrategy(event.target.value);
     };
 
@@ -127,17 +128,22 @@ const StrategyAnalyzer: React.FC = () => {
                     </Select>
                 </FormControl>
             </div>
-            {loadingBarChartData ? (
+            {loadingBarChartData && firstVisit ? (
+                // <div className='rotating'>
                 <div>
-                    <div style={{ padding: '20px' }}>
-                        <Skeleton variant="text" width={400} height={100} />
-                        <Skeleton variant="rectangular" width={400} height={300} />
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+                        <img src={pirate} style={{ transform: 'scale(.7)' }} />
                     </div>
                 </div>
             ) :
-                (<div style={{ marginTop: '20px' }}>
-                    {barChartData.length > 0 && <GroupedStackedBarChart data={JSON.parse(barChartData)} />}
-                </div>)}
+                loadingBarChartData ? (
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+                        <CircularProgress />
+                    </div>
+                ) :
+                    (<div style={{ marginTop: '20px' }}>
+                        {barChartData.length > 0 && <GroupedStackedBarChart data={JSON.parse(barChartData)} />}
+                    </div>)}
 
 
         </div>

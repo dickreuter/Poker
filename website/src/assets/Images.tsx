@@ -1,0 +1,1 @@
+export { default as pirate } from "./pirate.png";

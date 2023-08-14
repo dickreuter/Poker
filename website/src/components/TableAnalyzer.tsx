@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { CircularProgress } from '@mui/material';
-import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import axios from 'axios';
+import 'bootstrap/dist/css/bootstrap.css';
+import { useEffect, useState } from 'react';
+import { Bar, BarChart, CartesianGrid, Legend, Tooltip, XAxis, YAxis } from 'recharts';
 
 function TableAnalyzer() {
   const API_URL = import.meta.env.REACT_APP_API_URL || 'http://dickreuter.com:7777';
@@ -31,26 +31,26 @@ function TableAnalyzer() {
 
   if (loading) {
     return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-            <CircularProgress />
-        </div>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <CircularProgress />
+      </div>
     );
-}
+  }
 
   return (
     <div className="tablechart">
       <h2>Recently played tables</h2>
       <BarChart width={600} height={900} data={data} layout="vertical">
         <CartesianGrid strokeDasharray="3 3" />
-        <YAxis 
-          dataKey="name" 
-          type="category" 
-          width={100} 
+        <YAxis
+          dataKey="name"
+          type="category"
+          width={100}
           tick={{ fontSize: 8 }}
         />
-        <XAxis 
-          type="number" 
-          allowDataOverflow={true} 
+        <XAxis
+          type="number"
+          allowDataOverflow={true}
           tick={{ fontSize: 8 }}
         />
         <Tooltip />

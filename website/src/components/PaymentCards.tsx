@@ -1,18 +1,20 @@
 import CloudDownloadOutlinedIcon from '@mui/icons-material/CloudDownloadOutlined';
-import 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import 'bootstrap/dist/css/bootstrap.css';
 import Button from '@mui/material/Button';
 
 function PaymentCards() {
+    const dl_link = "https://onedrive.live.com/download?cid=A3B69BDCC03E82A9&resid=A3B69BDCC03E82A9%21111289&authkey=AEftpEpz8jxnBdI"
+
     const goToLink = (link: string) => {
         window.location.href = link;
     }
     return (
-        <>
+        <><br />
             <div className="container">
                 <div className="row">
                     <div className="col-sm">
                         {/* <div className="shadow-lg p-0 mb-2 bg-white rounded"> */}
-                        <div className="card shadow-lg rounded">
+                        <div className="card shadow-lg rounded custom-card-size">
                             <div className="card-body">
                                 <div> Free</div>
                                 <div> Trial </div>
@@ -21,9 +23,12 @@ function PaymentCards() {
                                 </div>
                                 <div className="items">
                                     <ul><br />
-                                        <li>Full working bot</li>
-                                        <li>All tables</li>
+                                        <li>Scrape Table and Analyze</li>
+                                        <li>Auto Click on best action</li>
+                                        <li>Select table templates</li>
                                         <li>Map your own tables</li>
+                                        <li>Analyze results</li>
+                                        <li>Track payoff</li>
                                     </ul>
                                 </div>
                             </div>
@@ -31,7 +36,7 @@ function PaymentCards() {
                         </div>
                     </div>
                     <div className="col-sm">
-                        <div className="card shadow-lg rounded">
+                        <div className="card shadow-lg rounded custom-card-size">
                             <div className="card-body">
                                 <div> Monthly</div>
                                 <div> $25 / month </div>
@@ -40,11 +45,16 @@ function PaymentCards() {
                                 </div>
                                 <div className="items">
                                     <ul><br />
-                                        <li>Full working bot</li>
-                                        <li>All tables</li>
+                                        <li>Scrape Table and Analyze</li>
+                                        <li>Auto Click on best action</li>
+                                        <li>Select table templates</li>
                                         <li>Map your own tables</li>
-                                        <li>Strategy editor</li>
-                                        <li>All Strategies</li>
+                                        <li>Analyze results</li>
+                                        <li>Track payoff</li>
+
+                                        <li>Support chat</li>
+                                        <li>Edit strategies</li>
+                                        <li>Create custom strategies</li>
                                     </ul>
                                 </div>
                             </div>
@@ -52,7 +62,7 @@ function PaymentCards() {
                         </div>
                     </div>
                     <div className="col-sm">
-                        <div className="card shadow-lg rounded">
+                        <div className="card shadow-lg rounded custom-card-size">
                             <div className="card-body">
                                 <div> Yearly</div>
                                 <div> $49 / year </div>
@@ -62,18 +72,23 @@ function PaymentCards() {
                                 </div>
                                 <div className="items">
                                     <ul><br />
-                                        <li>Full working bot</li>
-                                        <li>All tables</li>
+                                    <li>Scrape Table and Analyze</li>
+                                        <li>Auto Click on best action</li>
+                                        <li>Select table templates</li>
                                         <li>Map your own tables</li>
-                                        <li>Strategy editor</li>
-                                        <li>All Strategies</li>
+                                        <li>Analyze results</li>
+                                        <li>Track payoff</li>
+
+                                        <li>Support chat</li>
+                                        <li>Edit strategies</li>
+                                        <li>Create custom strategies</li>
                                     </ul>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div className="col-sm">
-                        <div className="card shadow-lg rounded">
+                        <div className="card shadow-lg rounded custom-card-size">
                             <div className="card-body">
                                 <div> Lifetime</div>
                                 <div> $99 / life </div>
@@ -83,11 +98,16 @@ function PaymentCards() {
                                 </div>
                                 <div className="items">
                                     <ul><br />
-                                        <li>Full working bot</li>
-                                        <li>All tables</li>
+                                    <li>Scrape Table and Analyze</li>
+                                        <li>Auto Click on best action</li>
+                                        <li>Select table templates</li>
                                         <li>Map your own tables</li>
-                                        <li>Strategy editor</li>
-                                        <li>All Strategies</li>
+                                        <li>Analyze results</li>
+                                        <li>Track payoff</li>
+
+                                        <li>Support chat</li>
+                                        <li>Edit strategies</li>
+                                        <li>Create custom strategies</li>
                                     </ul>
                                 </div>
                             </div>
