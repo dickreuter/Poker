@@ -211,3 +211,20 @@ dist-ssr
 *.sw?
 *.js
 notebooks/PlayingCards-1/*
+website/src/components/__init__.py
+website/src/vite-env.d.ts
+website/.vite/deps/react.js.map
+website/.vite/deps/react-dom_client.js.map
+website/.vite/deps/package.json
+website/.vite/deps/chunk-HQYZZ6R6.js.map
+website/.vite/deps/_metadata.json
+website/tsconfig.node.json
+website/tsconfig.json
+website/README.md
+website/package-lock.json
+website/.eslintrc.cjs
+notebooks/Screenshot_14.png
+notebooks/IMG_5772.png
+notebooks/image (5).png
+notebooks/bet365231.PNG
+Poker.code-workspace
