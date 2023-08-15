@@ -4,18 +4,21 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import React, { useEffect, useState } from 'react';
 import { pirate } from '../assets/Images';
 import GroupedStackedBarChart from './GroupedBarChart';
+import ScatterPlot from './ScatterPlot';
 
 
 const StrategyAnalyzer: React.FC = () => {
-    const API_URL = import.meta.env.REACT_APP_API_URL || 'http://dickreuter.com:7777';
+    const API_URL = import.meta.env.VITE_REACT_APP_API_URL || 'http://dickreuter.com:7777';
     const [strategies, setStrategies] = useState<string[]>([]);
     const [selectedStrategy, setSelectedStrategy] = useState<string | null>(null);
     const [endStage, setEndStage] = useState<string>('All');
     const [actionAtEndStage, setActionAtEndStage] = useState<string>('All');
     const [barChartData, setBarChartData] = useState<any[]>([]);
     const [loadingStrategies, setLoadingStrategies] = useState<boolean>(true);
+    const [loadingScatter, setLoadingScatter] = useState<boolean>(true);
     const [loadingBarChartData, setLoadingBarChartData] = useState<boolean>(true);
     const [firstVisit, setFirstVisit] = useState<boolean>(true);
+    const [scatterplotData, setScatterplotData] = useState<string[]>([]);
 
 
     const fetchData = async () => {
@@ -38,6 +41,26 @@ const StrategyAnalyzer: React.FC = () => {
             }
         }
     };
+    const fetchScatterplotData = async () => {
+        if (selectedStrategy) {
+            try {
+                const response = await axios.post(`${API_URL}/get_scatterplot_data`, null, {
+                    params: {
+                        p_value: selectedStrategy,
+                        game_stage: endStage,
+                        decision: actionAtEndStage
+                    }
+                });
+                setScatterplotData(response.data);
+            } catch (error) {
+                console.error("Error fetching scatterplot data:", error);
+            }
+            finally {
+                setLoadingScatter(false); // Set loading to false after fetching scatterplot data
+            }
+        }
+    };
+
 
     useEffect(() => {
         async function fetchStrategies() {
@@ -61,10 +84,12 @@ const StrategyAnalyzer: React.FC = () => {
 
     useEffect(() => {
         fetchData();
+        fetchScatterplotData();
     }, [selectedStrategy, endStage, actionAtEndStage]);
 
     const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setLoadingBarChartData(true);
+        setLoadingScatter(true);
         setFirstVisit(false);
         setSelectedStrategy(event.target.value);
     };
@@ -141,9 +166,18 @@ const StrategyAnalyzer: React.FC = () => {
                         <CircularProgress />
                     </div>
                 ) :
-                    (<div style={{ marginTop: '20px' }}>
-                        {barChartData.length > 0 && <GroupedStackedBarChart data={JSON.parse(barChartData)} />}
-                    </div>)}
+                    (
+                        <>
+                            <div style={{ marginTop: '20px' }}>
+                                {barChartData.length > 0 && <GroupedStackedBarChart data={JSON.parse(barChartData)} />}
+                            </div>
+
+                            <div style={{ marginTop: '20px' }}>
+                                <ScatterPlot data={scatterplotData} />
+                            </div>
+                        </>
+
+                    )}
 
 
         </div>

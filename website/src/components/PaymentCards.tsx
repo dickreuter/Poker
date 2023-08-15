@@ -17,7 +17,7 @@ function PaymentCards() {
                         <div className="card shadow-lg rounded custom-card-size">
                             <div className="card-body">
                                 <div> Free</div>
-                                <div> Trial </div>
+                                <div> Version </div>
                                 <div><Button onClick={() => goToLink(dl_link)}
                                     variant="contained">Download</Button>
                                 </div>
@@ -91,7 +91,7 @@ function PaymentCards() {
                         <div className="card shadow-lg rounded custom-card-size">
                             <div className="card-body">
                                 <div> Lifetime</div>
-                                <div> $99 / life </div>
+                                <div> $499 / life </div>
                                 <div>
                                     <Button onClick={() => goToLink('https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=PQX6RA3CEEED6')}
                                         variant="contained">Buy</Button>

@@ -27,7 +27,8 @@
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.15.0",
-    "recharts": "^2.7.3"
+    "recharts": "^2.7.3",
+    "victory": "^36.6.11"
   },
   "devDependencies": {
     "@types/react": "^18.2.15",
