@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, Legend, Tooltip, XAxis, YAxis } from 'recharts';
 
 function TableAnalyzer() {
-  const API_URL = import.meta.env.REACT_APP_API_URL || 'http://dickreuter.com:7777';
+  const API_URL = import.meta.env.VITE_REACT_APP_API_URL || 'http://dickreuter.com:7777';
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true); // New state for loading
 
@@ -39,7 +39,7 @@ function TableAnalyzer() {
 
   return (
     <div className="tablechart">
-      <h2>Recently played tables</h2>
+      <div className="h4">Recently used table mappings</div>
       <BarChart width={600} height={900} data={data} layout="vertical">
         <CartesianGrid strokeDasharray="3 3" />
         <YAxis

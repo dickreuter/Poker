@@ -29,6 +29,9 @@ function PaymentCards() {
                                         <li>Map your own tables</li>
                                         <li>Analyze results</li>
                                         <li>Track payoff</li>
+                                        <br/>
+                                        <li>Trial strategies</li>
+
                                     </ul>
                                 </div>
                             </div>
@@ -51,8 +54,10 @@ function PaymentCards() {
                                         <li>Map your own tables</li>
                                         <li>Analyze results</li>
                                         <li>Track payoff</li>
+                                        <br/>
 
                                         <li>Support chat</li>
+                                        <li>Access to all strategies</li>
                                         <li>Edit strategies</li>
                                         <li>Create custom strategies</li>
                                     </ul>
@@ -78,8 +83,10 @@ function PaymentCards() {
                                         <li>Map your own tables</li>
                                         <li>Analyze results</li>
                                         <li>Track payoff</li>
+                                        <br/>
 
                                         <li>Support chat</li>
+                                        <li>Access to all strategies</li>
                                         <li>Edit strategies</li>
                                         <li>Create custom strategies</li>
                                     </ul>
@@ -104,8 +111,10 @@ function PaymentCards() {
                                         <li>Map your own tables</li>
                                         <li>Analyze results</li>
                                         <li>Track payoff</li>
+                                        <br/>
 
                                         <li>Support chat</li>
+                                        <li>Access to all strategies</li>
                                         <li>Edit strategies</li>
                                         <li>Create custom strategies</li>
                                     </ul>

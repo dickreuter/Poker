@@ -2,9 +2,10 @@ import { CircularProgress, FormControl, InputLabel, MenuItem, Select } from '@ma
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import React, { useEffect, useState } from 'react';
-import { pirate } from '../assets/Images';
 import GroupedStackedBarChart from './GroupedBarChart';
-import ScatterPlot from './ScatterPlot';
+import LeagueTablePlot from './LeagueTablePlot';
+import ScatterplotComponent from './ScatterPlot';
+import { pirate } from '../assets/Images';
 
 
 const StrategyAnalyzer: React.FC = () => {
@@ -16,12 +17,14 @@ const StrategyAnalyzer: React.FC = () => {
     const [barChartData, setBarChartData] = useState<any[]>([]);
     const [loadingStrategies, setLoadingStrategies] = useState<boolean>(true);
     const [loadingScatter, setLoadingScatter] = useState<boolean>(true);
+    const [loadingLeague, setLoadingLeague] = useState<boolean>(true);
     const [loadingBarChartData, setLoadingBarChartData] = useState<boolean>(true);
     const [firstVisit, setFirstVisit] = useState<boolean>(true);
     const [scatterplotData, setScatterplotData] = useState<string[]>([]);
+    const [leagueData, setLeagueData] = useState<any[]>([]);
 
 
-    const fetchData = async () => {
+    async function fetchStackedBarData() {
         if (selectedStrategy) {
             try {
                 const response = await axios.post(`${API_URL}/get_stacked_bar_data_react`, null, {
@@ -40,7 +43,7 @@ const StrategyAnalyzer: React.FC = () => {
                 setLoadingBarChartData(false); // Set loading to false after fetching bar chart data
             }
         }
-    };
+    }
     const fetchScatterplotData = async () => {
         if (selectedStrategy) {
             try {
@@ -60,6 +63,21 @@ const StrategyAnalyzer: React.FC = () => {
             }
         }
     };
+
+    useEffect(() => {
+        async function fetchLeagueData() {
+            try {
+                const response = await axios.post(`${API_URL}/get_top_strategies`);
+                setLeagueData(response.data);
+                // console.log(`League data: ${JSON.stringify(response.data)}`);
+            } catch (error) {
+                console.error("Error fetching league data:", error);
+            } finally {
+                setLoadingLeague(false);
+            }
+        }
+        fetchLeagueData();
+    }, []);
 
 
     useEffect(() => {
@@ -83,7 +101,7 @@ const StrategyAnalyzer: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        fetchData();
+        fetchStackedBarData();
         fetchScatterplotData();
     }, [selectedStrategy, endStage, actionAtEndStage]);
 
@@ -156,8 +174,22 @@ const StrategyAnalyzer: React.FC = () => {
             {loadingBarChartData && firstVisit ? (
                 // <div className='rotating'>
                 <div>
-                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
-                        <img src={pirate} style={{ transform: 'scale(.7)' }} />
+                    <div>
+                        {loadingLeague ? (
+                            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+                                <img src={pirate} style={{ transform: 'scale(.7)' }} />
+                            </div>
+                        ) :
+                            (<>
+                                <div className="h3" role="status">
+                                    Strategy league table by strategy and user
+                                </div>
+                                <LeagueTablePlot data={leagueData} />
+                            </>
+                            )
+                        }
+
+
                     </div>
                 </div>
             ) :
@@ -173,13 +205,11 @@ const StrategyAnalyzer: React.FC = () => {
                             </div>
 
                             <div style={{ marginTop: '20px' }}>
-                                <ScatterPlot data={scatterplotData} />
+                                <ScatterplotComponent data={scatterplotData} />
                             </div>
                         </>
 
                     )}
-
-
         </div>
     );
 };

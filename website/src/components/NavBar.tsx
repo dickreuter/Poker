@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 function NavBar() {
     return (
         <nav className="navbar navbar-expand-sm fixed-top navbar-light bg-light">
-            <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+            <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo03" aria-controls="navbarTogglerDemo03" aria-expanded="false" aria-label="Toggle navigation">
                 <span className="navbar-toggler-icon"></span>
             </button>
             <a className="navbar-brand" href="/">DeeperMind PokerBot</a>
@@ -18,10 +18,10 @@ function NavBar() {
                         <Link className="nav-link" to="/purchase">Purchase</Link>
                     </li>
                     <li className="nav-item">
-                        <Link className="nav-link" to="/strategyanalyzer">Strategy Analyzer</Link>
+                        <Link className="nav-link" to="/strategyanalyzer">Strategies</Link>
                     </li>
                     <li className="nav-item">
-                        <Link className="nav-link" to="/tableanalyzer">Table Analyzer</Link>
+                        <Link className="nav-link" to="/tableanalyzer">Table mappings</Link>
                     </li>
 
                     <li className="nav-item">

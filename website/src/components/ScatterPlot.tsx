@@ -65,7 +65,7 @@ const ScatterplotComponent: React.FC<ScatterplotProps> = ({ data }) => {
                 x="x"
                 y="y"
                 size={5}  // Set a constant dot size. Adjust this value as needed.
-                labels={({ datum }) => `Equity: ${datum.x}\nMinimum Call: ${datum.y}\nPayoff: ${datum.z}`}
+                labels={({ datum }) => `Equity: ${datum.x}\nMinimum Call: ${datum.y}`}
                 labelComponent={<VictoryTooltip />}
                 style={{ data: { fill: "green" } }}
             />
