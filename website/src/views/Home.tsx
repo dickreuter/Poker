@@ -1,5 +1,5 @@
 import 'bootstrap/dist/css/bootstrap.css';
-import PaymentCards from './PaymentCards';
+import PaymentCards from './Purchase';
 
 function Home() {
 

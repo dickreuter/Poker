@@ -1,10 +1,11 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom"
 import './App.css'
-import NavBar from './components/NavBar'
-import PaymentCards from './components/PaymentCards'
-import StrategyAnalyzer from './components/StrategyAnalyzer'
-import TableAnalyzer from './components/TableAnalyzer'
-import Home from "./components/Home"
+import NavBar from './routes/NavBar'
+import PaymentCards from './views/Purchase'
+import StrategyAnalyzer from './views/StrategyAnalyzer'
+import TableAnalyzer from './views/TableAnalyzer'
+import Home from "./views/Home"
+import Routing from "./routes/Routing"
 
 
 function App() {
@@ -13,12 +14,7 @@ function App() {
     <>
       <BrowserRouter>
       <NavBar />
-      <Routes>
-          <Route path="strategyanalyzer" element={<StrategyAnalyzer />} />
-          <Route path="tableanalyzer" element={<TableAnalyzer />} />
-          <Route path="/" element={<Home />} />
-          <Route path="/purchase" element={<PaymentCards />} />
-      </Routes>
+      <Routing/>
     </BrowserRouter>
     </>
   )

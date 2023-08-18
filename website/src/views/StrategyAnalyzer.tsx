@@ -2,9 +2,9 @@ import { CircularProgress, FormControl, InputLabel, MenuItem, Select } from '@ma
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import React, { useEffect, useState } from 'react';
-import GroupedStackedBarChart from './GroupedBarChart';
-import LeagueTablePlot from './LeagueTablePlot';
-import ScatterplotComponent from './ScatterPlot';
+import GroupedStackedBarChart from '../components/GroupedBarChart';
+import LeagueTablePlot from '../components/LeagueTablePlot';
+import ScatterplotComponent from '../components/ScatterPlot';
 import { pirate } from '../assets/Images';
 
 
