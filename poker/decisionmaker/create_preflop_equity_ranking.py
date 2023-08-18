@@ -31,7 +31,7 @@ if __name__ == '__main__':
                     cards_on_table = []
                     players = 2
                     start_time = time.time() + 2
-                    Simulation.run_montecarlo(logger, my_cards, cards_on_table, players, 1, maxRuns=15000, timeout=start_time,
+                    Simulation.run_montecarlo(logger, my_cards, cards_on_table, players, 1, max_runs=15000, timeout=start_time,
                                               ghost_cards='', opponent_range=.5)
                     print("--- %s seconds ---" % (time.time() - start_time))
                     equity = Simulation.equity  # considering draws as wins

@@ -235,7 +235,7 @@ class MonteCarlo:
         return table_card_list
 
     # pylint: disable=too-many-arguments
-    def run_montecarlo(self, logger, original_player_card_list, original_table_card_list, player_amount, ui, maxRuns,
+    def run_montecarlo(self, logger, original_player_card_list, original_table_card_list, player_amount, ui, max_runs,
                        timeout, ghost_cards, opponent_range=1, use_range_of_range=False):
 
         self.use_range_of_range = use_range_of_range
@@ -255,7 +255,7 @@ class MonteCarlo:
             OriginalDeck.pop(OriginalDeck.index(ghost_cards[0]))
             OriginalDeck.pop(OriginalDeck.index(ghost_cards[1]))
 
-        for m in range(maxRuns):
+        for m in range(max_runs):
             runs += 1
             Deck = copy(OriginalDeck)
             PlayerCardList = copy(original_player_card_list)
@@ -318,7 +318,7 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
     elif t.gameStage == "Flop":
 
         if t.isHeadsUp:
-            for i in range(5):
+            for i in range(p.total_players-1):
                 if t.other_players[i]['status'] == 1:
                     break
             n = t.other_players[i]['utg_position']
@@ -332,7 +332,7 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
     else:
 
         if t.isHeadsUp:
-            for i in range(5):
+            for i in range(p.total_players-1):
                 if t.other_players[i]['status'] == 1:
                     break
             n = t.other_players[i]['utg_position']
@@ -343,7 +343,8 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
 
         t.assumedPlayers = t.other_active_players + 1
 
-    t.assumedPlayers = min(max(t.assumedPlayers, 2), 4)
+    max_assumed_players = p.total_players-2
+    t.assumedPlayers = min(max(t.assumedPlayers, 2), max_assumed_players)
 
     t.PlayerCardList = []
     t.PlayerCardList.append(t.mycards)
@@ -371,19 +372,19 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
         m.collusion_cards = ''
 
     if t.gameStage == "PreFlop":
-        maxRuns = 3000
+        max_runs = 3000
     elif t.gameStage == "Flop":
-        maxRuns = 5000
+        max_runs = 5000
     elif t.gameStage == "Turn":
-        maxRuns = 4000
+        max_runs = 4000
     elif t.gameStage == "River":
-        maxRuns = 3000
+        max_runs = 3000
     else:
         raise NotImplementedError("Game Stage not implemented")
 
     if t.gameStage != 'PreFlop':
         try:
-            for abs_pos in range(5):
+            for abs_pos in range(p.total_players-1):
                 if t.other_players[abs_pos]['status'] == 1:
                     sheet_name = preflop_state.get_reverse_sheetname(abs_pos, t, h)
                     ranges = preflop_state.get_rangecards_from_sheetname(abs_pos, sheet_name, t, h, p)
@@ -396,12 +397,12 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
         except Exception as e:
             logger.error("Opponent reverse table failed: " + str(e))
 
-    ui_action_and_signals.signal_status.emit("Running range Monte Carlo: " + str(maxRuns))
+    ui_action_and_signals.signal_status.emit("Running range Monte Carlo: " + str(max_runs))
     logger.debug("Running Monte Carlo")
     t.montecarlo_timeout = float(config.config.get('main', 'montecarlo_timeout'))
     timeout = t.mt_tm + t.montecarlo_timeout
     logger.debug("Used opponent range for montecarlo: " + str(opponent_range))
-    logger.debug("maxRuns: " + str(maxRuns))
+    logger.debug("maxRuns: " + str(max_runs))
     logger.debug("Player amount: " + str(t.assumedPlayers))
 
     # calculate range equity
@@ -426,12 +427,12 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
         t.range_equity = .5
 
     ui_action_and_signals.signal_progressbar_increase.emit(10)
-    ui_action_and_signals.signal_status.emit("Running card Monte Carlo: " + str(maxRuns))
+    ui_action_and_signals.signal_status.emit("Running card Monte Carlo: " + str(max_runs))
 
     # run montecarlo for absolute equity
     use_range_of_range = p.selected_strategy['range_of_range']
     t.abs_equity, _ = m.run_montecarlo(logger, t.PlayerCardList_and_others, t.cardsOnTable, int(t.assumedPlayers), ui,
-                                       maxRuns=maxRuns,
+                                       max_runs=max_runs,
                                        ghost_cards=ghost_cards, timeout=timeout,
                                        opponent_range=opponent_range,
                                        use_range_of_range=use_range_of_range)
@@ -481,7 +482,7 @@ if __name__ == '__main__':
     start_time = time.time()
     timeout = start_time + secs
     ghost_cards = ''
-    Simulation.run_montecarlo(logging, my_cards, cards_on_table, player_amount=players, ui=None, maxRuns=maxruns,
+    Simulation.run_montecarlo(logging, my_cards, cards_on_table, player_amount=players, ui=None, max_runs=maxruns,
                               ghost_cards=ghost_cards, timeout=timeout, opponent_range=0.25)
     print("--- %s seconds ---" % (time.time() - start_time))
     print("Runs: " + str(Simulation.runs))
