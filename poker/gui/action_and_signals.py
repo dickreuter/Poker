@@ -94,6 +94,9 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
             "range_utg3": 100,
             "range_utg4": 100,
             "range_utg5": 100,
+            "range_utg6": 100,
+            "range_utg7": 100,
+            "range_utg8": 100,
             "range_preflop": 100,
             "PreFlopCallPower": 1,
             "secondRiverBetPotMinEquity": 100,
@@ -199,7 +202,10 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
         ui_main_window.comboBox_current_strategy.setCurrentIndex(idx)
 
         table_scraper_name = config.config.get('main', 'table_scraper_name')
-        idx = available_tables.index(table_scraper_name)
+        try:
+            idx = available_tables.index(table_scraper_name)
+        except ValueError:
+            idx = 0
         ui_main_window.table_selection.setCurrentIndex(idx)
 
     def signal_update_selected_strategy(self, p):

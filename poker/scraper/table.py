@@ -94,11 +94,11 @@ class Table(TableScraper):
         return cropped_example
 
     def get_utg_from_abs_pos(self, abs_pos, dealer_pos):
-        utg_pos = (abs_pos - dealer_pos + 4) % 6
+        utg_pos = (abs_pos - dealer_pos + 4) % self.total_players
         return utg_pos
 
     def get_abs_from_utg_pos(self, utg_pos, dealer_pos):
-        abs_pos = (utg_pos + dealer_pos - 4) % 6
+        abs_pos = (utg_pos + dealer_pos - 4) % self.total_players
         return abs_pos
 
     def get_raisers_and_callers(self, p, reference_pot):

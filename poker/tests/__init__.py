@@ -32,7 +32,7 @@ def init_table(file, round_number=0, strategy='Default1'):
     p.read_strategy(strategy_override=strategy)
     h = main.History()
     u = UpdateChecker()
-    c = requests.post(URL + "get_internal")[0]
+    c = requests.post(URL + "get_internal").json()[0]
     preflop_url = c['preflop_url']
     # preflop_url = 'decisionmaker/preflop.xlsx'
     h.preflop_sheet = pd.read_excel(
@@ -43,7 +43,7 @@ def init_table(file, round_number=0, strategy='Default1'):
     t.get_top_left_corner(p)
     t.get_dealer_position()
     t.get_my_funds(h, p)
-    t.get_my_cards_nn(h)
+    t.get_my_cards_nn()
     # t.get_table_cards_nn(h)
     t.get_round_number(h)
     h.round_number = round_number

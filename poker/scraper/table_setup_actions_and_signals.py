@@ -32,6 +32,7 @@ class TableSetupActionAndSignals(QObject):
     signal_update_label = pyqtSignal(str, str)
     signal_flatten_button = pyqtSignal(str, bool)
     signal_check_box = pyqtSignal(str, int)
+    signal_set_dropdown = pyqtSignal(str, int)
 
     def __init__(self, ui):
         """Initial"""
@@ -62,6 +63,7 @@ class TableSetupActionAndSignals(QObject):
         self.signal_update_label.connect(self._update_label)
         self.signal_flatten_button.connect(self._flatten_button)
         self.signal_check_box.connect(self._check_box)
+        self.signal_set_dropdown.connect(self._set_dropdown)
         self.ui.screenshot_label.mousePressEvent = self.get_position
         self.ui.screenshot_widget.dragEnterEvent = self.drag_enter_event
         self.ui.screenshot_widget.dragMoveEvent = self.drag_move_event
@@ -71,6 +73,7 @@ class TableSetupActionAndSignals(QObject):
         self.ui.test_all_button.clicked.connect(lambda: self.test_all())
         self._connect_cards_with_save_slot()
         self._connect_range_buttons_with_save_coordinates()
+        self._connect_save_max_players_with_save_slot()
         self.ui.blank_new.clicked.connect(lambda: self.blank_new())
         self.ui.copy_to_new.clicked.connect(lambda: self.copy_to_new())
         self.ui.crop.clicked.connect(lambda: self.crop())
@@ -81,11 +84,24 @@ class TableSetupActionAndSignals(QObject):
         self.ui.topleft_corner.clicked.connect(lambda: self.save_topleft_corner())
         self.ui.current_player.currentIndexChanged[int].connect(lambda: self._update_selected_player())
         self.ui.use_neural_network.clicked.connect(lambda: self._save_use_nerual_network_checkbox())
+        self.ui.max_players.currentIndexChanged[int].connect(lambda: self._save_max_players())
 
     @pyqtSlot()
     def _update_selected_player(self):
         self.selected_player = self.ui.current_player.currentText()
         log.info(f"Updated selected player to {self.selected_player}")
+
+    def _save_max_players(self):
+        label = 'max_players'
+        self.table_name = self.ui.table_name.currentText()
+        owner = mongo.get_table_owner(self.table_name)
+        if owner != COMPUTER_NAME:
+            pop_up("Not authorized.",
+                   "You can only edit your own tables. Please create a new copy or start with a new blank table")
+            return
+        log.info(f"Saving {label}")
+        mongo.save_coordinates(self.table_name, label, {'value': int(self.ui.max_players.currentText())})
+        log.info("Saving complete")
 
     def _save_use_nerual_network_checkbox(self):
         owner = mongo.get_table_owner(self.table_name)
@@ -127,6 +143,12 @@ class TableSetupActionAndSignals(QObject):
 
         button_show_property = getattr(self.ui, 'covered_card_show')
         button_show_property.clicked.connect(lambda state: self.load_image('covered_card'))
+        
+    def _connect_save_max_players_with_save_slot(self):
+        dropdown = 'max_players'
+        dropdown_property = getattr(self.ui, dropdown)
+        dropdown_property.currentIndexChanged.connect(lambda state, x=dropdown: self._save_max_players())
+            
 
     def _connect_range_buttons_with_save_coordinates(self):
         range_buttons = [
@@ -211,6 +233,11 @@ class TableSetupActionAndSignals(QObject):
     def _check_box(self, label, checked):
         checkbox = getattr(self.ui, label)
         checkbox.setChecked(checked)
+        
+    @pyqtSlot(str, int)
+    def _set_dropdown(self, label, index):
+        dropdown = getattr(self.ui, label)
+        dropdown.setCurrentIndex(index)
 
     def flatten_button(self, label, checked=True):
         if len(label) == 2:
@@ -273,7 +300,7 @@ class TableSetupActionAndSignals(QObject):
         self.preview = self.original_screenshot.crop((x1, y1, x2, y2))
         log.info("image cropped")
         self._update_preview_label(self.preview)
-
+        
     @pyqtSlot(object, str, str)
     def save_coordinates(self, label, player=None):
         if not self.cropped:
@@ -525,6 +552,14 @@ class TableSetupActionAndSignals(QObject):
             except KeyError:
                 log.info(f"No available data for {check_box}")
                 self.signal_check_box.emit(check_box, 0)
+                
+        dropdowns = ['max_players']
+        for dropdown in dropdowns:
+            try:
+                self.ui.max_players.setCurrentIndex(int(table[dropdown]['value'])-1)
+            except KeyError:
+                log.warning(f"No available data for {dropdown}")
+                self.ui.max_players.setCurrentIndex(0)
 
         exceptions = ["table_name"]
         players_buttons = ['covered_card_area', 'player_name_area', 'player_funds_area', 'player_pot_area',

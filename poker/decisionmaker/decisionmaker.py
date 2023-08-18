@@ -96,6 +96,7 @@ class Decision(DecisionBase):
         else:
             outs = 0
         self.out_adjustment = outs * out_multiplier * .01
+        self.out_adjustment = 0 # currently hard code outs adjustments to zero
 
         self.outs = outs
 
@@ -508,7 +509,7 @@ class Decision(DecisionBase):
 
     def bully(self, t, p, h):
         if t.isHeadsUp:
-            for i in range(5):
+            for i in range(t.total_players-1):
                 if t.other_players[i]['status'] == 1:
                     break
             opponentFunds = t.other_players[i]['funds']
