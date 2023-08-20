@@ -10,7 +10,8 @@ import matplotlib
 import numpy as np
 import pandas as pd
 from PyQt6 import QtGui, QtWidgets
-from PyQt6.QtWidgets import QMessageBox
+
+from poker.restapi_local import local_restapi
 
 if platform not in ["linux", "linux2"]:
     matplotlib.use('Qt5Agg')
@@ -37,7 +38,7 @@ warnings.filterwarnings("ignore", message="All-NaN axis encountered")
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-version = 6.60
+version = 6.61
 ui = None
 
 
@@ -309,6 +310,9 @@ def run_poker():
 
     t1 = ThreadManager(1, "Thread-1", 1, gui_signals, updater)
     t1.start()
+    
+    t2 = threading.Thread(target=local_restapi)
+    t2.start()
 
     try:
         sys.exit(app.exec())

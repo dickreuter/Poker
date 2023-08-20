@@ -39,7 +39,10 @@ def init_table(file, round_number=0, strategy='Default1'):
         preflop_url, sheet_name=None, engine='openpyxl')
     game_logger = GameLogger()
     t = main.TableScreenBased(p, {}, gui_signals, game_logger, 0.0)
-    t.entireScreenPIL = Image.open(file)
+
+    current_file_dir = os.path.dirname(os.path.abspath(__file__))
+    adjusted_path = os.path.join(current_file_dir, 'screenshots', file)
+    t.entireScreenPIL = Image.open(adjusted_path)
     t.get_top_left_corner(p)
     t.get_dealer_position()
     t.get_my_funds(h, p)

@@ -11,7 +11,7 @@ from poker.tools.strategy_handler import StrategyHandler
 
 class TestDecision(unittest.TestCase):
     def test_no_test_bluff(self):
-        table, strategy, _, history, _ = init_table('tests/screenshots/Screenshot_2023-08-12_114453.png')
+        table, strategy, _, history, _ = init_table('Screenshot_2023-08-12_114453.png')
         strategy = StrategyHandler()
         strategy.read_strategy('Trial 1')
         l = MagicMock()
@@ -35,7 +35,7 @@ class TestDecision(unittest.TestCase):
         self.assertEqual(d.decision, DecisionTypes.check)
 
     def test_no_test_position_adjustment(self):
-        table, strategy, _, history, _ = init_table('tests/screenshots/467381034_PreFlop_0.png', strategy='Pokemon4')
+        table, strategy, _, history, _ = init_table('467381034_PreFlop_0.png', strategy='Pokemon4')
         table.gameStage = "PreFlop"
         strategy = StrategyHandler()
         strategy.read_strategy('Nickpick12')
@@ -52,7 +52,7 @@ class TestDecision(unittest.TestCase):
         self.assertAlmostEqual(d.preflop_adjustment, 0.1, delta=0.01)
 
     def test_no_test_preflop_round2(self):
-        table, strategy, _, history, _ = init_table('tests/screenshots/378278828_PreFlop_1.png', round_number=1)
+        table, strategy, _, history, _ = init_table('378278828_PreFlop_1.png', round_number=1)
         strategy = StrategyHandler()
         strategy.read_strategy('Pokemon4')
         l = MagicMock()
@@ -67,7 +67,7 @@ class TestDecision(unittest.TestCase):
         # self.assertEqual(table.preflop_sheet_name, '42R3')
 
     def test_no_test_preflop_round2_2(self):
-        table, strategy, _, history, _ = init_table('tests/screenshots/107232845_PreFlop_1.png', round_number=1)
+        table, strategy, _, history, _ = init_table('107232845_PreFlop_1.png', round_number=1)
         strategy = StrategyHandler()
         strategy.read_strategy('Pokemon4')
         l = MagicMock()
@@ -82,7 +82,7 @@ class TestDecision(unittest.TestCase):
         # self.assertEqual(table.preflop_sheet_name, '22R5')
 
     def test_no_test_preflop_round2_3(self):
-        table, strategy, _, history, _ = init_table('tests/screenshots/897376414_PreFlop_1.png', round_number=1)
+        table, strategy, _, history, _ = init_table('897376414_PreFlop_1.png', round_number=1)
         strategy = StrategyHandler()
         strategy.read_strategy('Pokemon4')
         l = MagicMock()
@@ -97,7 +97,7 @@ class TestDecision(unittest.TestCase):
         # self.assertEqual(t.preflop_sheet_name, '12R3')
 
     def test_no_test_preflop_call_before_raise(self):
-        table, strategy, _, history, _ = init_table('tests/screenshots/1791526_PreFlop_0.png', round_number=0)
+        table, strategy, _, history, _ = init_table('1791526_PreFlop_0.png', round_number=0)
         strategy = StrategyHandler()
         strategy.read_strategy('Pokemon4')
         l = MagicMock()
@@ -115,7 +115,7 @@ class TestDecision(unittest.TestCase):
         self.assertEqual(table.preflop_sheet_name, '6R5C3')
 
     def test_incorrect_second_raiser(self):
-        table, strategy, _, history, _ = init_table('tests/screenshots/Q9o-first_raiser.png', strategy='Snowie3')
+        table, strategy, _, history, _ = init_table('Q9o-first_raiser.png', strategy='Snowie3')
         l = MagicMock()
         table.checkButton = False
         d = Decision(table, history, strategy, l)
@@ -131,7 +131,7 @@ class TestDecision(unittest.TestCase):
         self.assertEqual(table.preflop_sheet_name, '5R4')
 
     def test_incorrect_preflop_table1(self):
-        table, strategy, _, history, _ = init_table('tests/screenshots/K9o.png', strategy='Snowie3')
+        table, strategy, _, history, _ = init_table('K9o.png', strategy='Snowie3')
         l = MagicMock()
         table.checkButton = False
         d = Decision(table, history, strategy, l)
@@ -145,7 +145,7 @@ class TestDecision(unittest.TestCase):
         self.assertEqual(table.preflop_sheet_name, '6R5')
 
     def test_incorrect_preflop_table2(self):
-        table, strategy, _, history, _ = init_table('tests/screenshots/3Ts.png', strategy='Snowie3')
+        table, strategy, _, history, _ = init_table('3Ts.png', strategy='Snowie3')
         l = MagicMock()
         table.checkButton = False
         d = Decision(table, history, strategy, l)
@@ -157,7 +157,7 @@ class TestDecision(unittest.TestCase):
         self.assertEqual(table.preflop_sheet_name, '6R1C2')
 
     def test_second_round_with_raiser(self):
-        table, strategy, _, history, _ = init_table('tests/screenshots/QQ.png', strategy='Snowie3', round_number=1)
+        table, strategy, _, history, _ = init_table('QQ.png', strategy='Snowie3', round_number=1)
         l = MagicMock()
         table.checkButton = False
         d = Decision(table, history, strategy, l)
@@ -169,7 +169,7 @@ class TestDecision(unittest.TestCase):
         self.assertEqual(table.preflop_sheet_name, '22R6')
 
     def test_first_round_2R1(self):
-        table, strategy, _, history, _ = init_table('tests/screenshots/JJ.png', strategy='Snowie3', round_number=0)
+        table, strategy, _, history, _ = init_table('JJ.png', strategy='Snowie3', round_number=0)
         l = MagicMock()
         table.checkButton = False
         d = Decision(table, history, strategy, l)
@@ -181,7 +181,7 @@ class TestDecision(unittest.TestCase):
         self.assertEqual(table.preflop_sheet_name, '2R1')
 
     def test_first_round_4R1(self):
-        table, strategy, _, history, _ = init_table('tests/screenshots/AJ.png', strategy='Snowie3', round_number=0)
+        table, strategy, _, history, _ = init_table('AJ.png', strategy='Snowie3', round_number=0)
         l = MagicMock()
         table.checkButton = False
         d = Decision(table, history, strategy, l)
@@ -193,7 +193,7 @@ class TestDecision(unittest.TestCase):
         self.assertEqual(table.preflop_sheet_name, '4R1')
 
     def test_first_round_98h(self):
-        table, strategy, _, history, _ = init_table('tests/screenshots/98h.png', strategy='Snowie3', round_number=0)
+        table, strategy, _, history, _ = init_table('98h.png', strategy='Snowie3', round_number=0)
         table.checkButton = False
         l = MagicMock()
         d = Decision(table, history, strategy, l)
@@ -205,7 +205,7 @@ class TestDecision(unittest.TestCase):
         self.assertEqual(table.preflop_sheet_name, '4R3')
 
     def test_sheet_12R4R6(self):
-        table, strategy, _, history, _ = init_table('tests/screenshots/12R4R6.png', round_number=1)
+        table, strategy, _, history, _ = init_table('12R4R6.png', round_number=1)
         l = MagicMock()
         table.checkButton = False
         d = Decision(table, history, strategy, l)
