@@ -318,7 +318,7 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
     elif t.gameStage == "Flop":
 
         if t.isHeadsUp:
-            for i in range(p.total_players-1):
+            for i in range(t.total_players-1):
                 if t.other_players[i]['status'] == 1:
                     break
             n = t.other_players[i]['utg_position']
@@ -332,7 +332,7 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
     else:
 
         if t.isHeadsUp:
-            for i in range(p.total_players-1):
+            for i in range(t.total_players-1):
                 if t.other_players[i]['status'] == 1:
                     break
             n = t.other_players[i]['utg_position']
@@ -343,7 +343,7 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
 
         t.assumedPlayers = t.other_active_players + 1
 
-    max_assumed_players = p.total_players-2
+    max_assumed_players = t.total_players-2
     t.assumedPlayers = min(max(t.assumedPlayers, 2), max_assumed_players)
 
     t.PlayerCardList = []
@@ -384,7 +384,7 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
 
     if t.gameStage != 'PreFlop':
         try:
-            for abs_pos in range(p.total_players-1):
+            for abs_pos in range(t.total_players-1):
                 if t.other_players[abs_pos]['status'] == 1:
                     sheet_name = preflop_state.get_reverse_sheetname(abs_pos, t, h)
                     ranges = preflop_state.get_rangecards_from_sheetname(abs_pos, sheet_name, t, h, p)

@@ -1,0 +1,56 @@
+.screenshotWindow {
+    width: 100%;
+    height: 700px;
+    border: 1px solid black;
+    margin-left: 20px;
+    display: inline-block;
+    overflow: auto;
+}
+  
+.previewWindow {
+    width: 100%;
+    height: 700px;
+    max-height: 700px;
+    overflow: scroll;
+}
+
+.page {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    align-items: flex-start; /* add this line */
+  }
+  
+.tm_button {
+    font-size: .8rem;
+    width: 200px;      
+    height: 25px;    
+    display: inline-block;
+    text-align: center; 
+    line-height: 10px; 
+    white-space: nowrap; 
+    overflow: hidden;   
+    text-overflow: ellipsis;
+}
+
+.tm_button2 {
+    font-size: .8rem;
+    width: 100px;      
+    height: 25px;    
+    display: inline-block;
+    text-align: center; 
+    line-height: 10px; 
+    white-space: nowrap; 
+    overflow: hidden;   
+    text-overflow: ellipsis;
+}
+
+.toplevel-container {
+    vertical-align: top;
+}
+
+canvas {
+    border: 2px dashed red;
+    background-color: #f0f0f0;
+}
