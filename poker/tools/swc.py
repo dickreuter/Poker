@@ -7,8 +7,7 @@ import numpy as np
 from PIL import Image
 from tesserocr import PyTessBaseAPI, PSM, OEM
 
-from poker.tools.helper import get_dir
-from poker.tools.screen_operations import pil_to_cv2, cv2_to_pil
+from poker.tools.helper import get_dir, pil_to_cv2, cv2_to_pil
 
 log = logging.getLogger(__name__)
 

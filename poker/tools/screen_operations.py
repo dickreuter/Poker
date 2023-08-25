@@ -11,7 +11,7 @@ from PIL import Image, ImageGrab
 from pytesseract import pytesseract
 from tesserocr import PyTessBaseAPI, PSM, OEM
 
-from poker.tools.helper import memory_cache, get_dir
+from poker.tools.helper import memory_cache, get_dir, pil_to_cv2, cv2_to_pil
 from poker.tools.mongo_manager import MongoManager
 from poker.tools.swc import swc_ocr
 from poker.tools.vbox_manager import VirtualBoxController
@@ -218,14 +218,6 @@ def crop_screenshot_with_topleft_corner(original_screenshot, topleft_corner):
 
 def binary_pil_to_cv2(img):
     return cv2.cvtColor(np.array(Image.open(io.BytesIO(img))), cv2.COLOR_BGR2RGB)
-
-
-def pil_to_cv2(img):
-    return cv2.cvtColor(np.array(img), cv2.COLOR_BGR2RGB)
-
-
-def cv2_to_pil(img):
-    return Image.fromarray(img)
 
 
 def rotate_image(image, angle):

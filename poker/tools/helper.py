@@ -13,7 +13,10 @@ from collections.abc import Iterable
 from configparser import ConfigParser, ExtendedInterpolation
 from logging import handlers
 
+import cv2
+import numpy as np
 import pandas as pd
+from PIL import Image
 import requests
 
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
@@ -338,3 +341,11 @@ def open_payment_link():
     c = requests.post(URL + "get_internal").json()[0]
     payment_link = c['payment_link']
     webbrowser.open(payment_link, new=1)
+
+
+def pil_to_cv2(img):
+    return cv2.cvtColor(np.array(img), cv2.COLOR_BGR2RGB)
+
+
+def cv2_to_pil(img):
+    return Image.fromarray(img)
