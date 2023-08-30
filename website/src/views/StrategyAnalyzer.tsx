@@ -6,6 +6,8 @@ import GroupedStackedBarChart from '../components/GroupedBarChart';
 import LeagueTablePlot from '../components/LeagueTablePlot';
 import ScatterplotComponent from '../components/ScatterPlot';
 import { pirate } from '../assets/Images';
+import FundsChangeLineChart from '../components/FundsChanceChart';
+import Loading from '../components/Loading';
 
 
 const StrategyAnalyzer: React.FC = () => {
@@ -17,11 +19,14 @@ const StrategyAnalyzer: React.FC = () => {
     const [barChartData, setBarChartData] = useState<any[]>([]);
     const [loadingStrategies, setLoadingStrategies] = useState<boolean>(true);
     const [loadingScatter, setLoadingScatter] = useState<boolean>(true);
+    const [loadingFundsChange, setLoadingFundsChange] = useState<boolean>(true);
     const [loadingLeague, setLoadingLeague] = useState<boolean>(true);
     const [loadingBarChartData, setLoadingBarChartData] = useState<boolean>(true);
     const [firstVisit, setFirstVisit] = useState<boolean>(true);
     const [scatterplotData, setScatterplotData] = useState<string[]>([]);
+    const [fundsChangeData, setFundsChangeData] = useState<string[]>([]);
     const [leagueData, setLeagueData] = useState<any[]>([]);
+    const computer_name = 'All'
 
 
     async function fetchStackedBarData() {
@@ -60,6 +65,25 @@ const StrategyAnalyzer: React.FC = () => {
             }
             finally {
                 setLoadingScatter(false); // Set loading to false after fetching scatterplot data
+            }
+        }
+    };
+    const fetchFundChangeData = async () => {
+        if (selectedStrategy) {
+            try {
+                const response = await axios.post(`${API_URL}/get_fundschange_chart`, null, {
+                    params: {
+                        strategy: selectedStrategy,
+                        computer_name: computer_name
+                    }
+                });
+                setFundsChangeData(response.data);
+                console.log(`Fundschange data before passing: ${JSON.stringify(fundsChangeData)}`);
+            } catch (error) {
+                console.error("Error fetching fundschange chart:", error);
+            }
+            finally {
+                setLoadingFundsChange(false); // Set loading to false after fetching fundschange data
             }
         }
     };
@@ -103,6 +127,7 @@ const StrategyAnalyzer: React.FC = () => {
     useEffect(() => {
         fetchStackedBarData();
         fetchScatterplotData();
+        fetchFundChangeData();
     }, [selectedStrategy, endStage, actionAtEndStage]);
 
     const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -171,46 +196,52 @@ const StrategyAnalyzer: React.FC = () => {
                     </Select>
                 </FormControl>
             </div>
+
             {loadingBarChartData && firstVisit ? (
                 // <div className='rotating'>
                 <div>
-                    <div>
-                        {loadingLeague ? (
-                            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
-                                <img src={pirate} style={{ transform: 'scale(.7)' }} />
-                            </div>
-                        ) :
-                            (<>
-                                <div className="h3" role="status">
-                                    Strategy league table by strategy and user
-                                </div>
-                                <LeagueTablePlot data={leagueData} />
-                            </>
-                            )
-                        }
 
-
-                    </div>
-                </div>
-            ) :
-                loadingBarChartData ? (
-                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
-                        <CircularProgress />
-                    </div>
-                ) :
-                    (
+                    {loadingLeague ? (
+                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+                            <img src={pirate} style={{ transform: 'scale(.7)' }} />
+                        </div>
+                    ) : (
                         <>
-                            <div style={{ marginTop: '20px' }}>
-                                {barChartData.length > 0 && <GroupedStackedBarChart data={JSON.parse(barChartData)} />}
+                            <div className="h3" role="status">
+                                Strategy league table by strategy and user
                             </div>
-
-                            <div style={{ marginTop: '20px' }}>
-                                <ScatterplotComponent data={scatterplotData} />
-                            </div>
+                            <LeagueTablePlot data={leagueData} />
                         </>
-
-                    )}
-        </div>
+                    )
+                    }
+                </div>
+            ) : loadingBarChartData ? (
+                <Loading />
+            ) : (
+                <div style={{ marginTop: '20px' }}>
+                    {barChartData.length > 0 && <GroupedStackedBarChart data={JSON.parse(barChartData)} />}
+                </div>
+            )
+            }
+            {
+                loadingScatter ? (
+                    <Loading />
+                ) : (
+                    <div style={{ marginTop: '20px' }}>
+                        <ScatterplotComponent data={scatterplotData} />
+                    </div>
+                )
+            }
+            {
+                loadingFundsChange ? (
+                    <Loading />
+                ) : (
+                    <div style={{ marginTop: '20px' }}>
+                        <FundsChangeLineChart data={fundsChangeData} />
+                    </div>
+                )
+            }
+        </div >
     );
 };
 
