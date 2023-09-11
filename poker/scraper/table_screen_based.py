@@ -270,7 +270,7 @@ class TableScreenBased(Table):
 
     def get_other_player_funds(self, p):
         if p.selected_strategy['gather_player_names'] == 1:
-            for i in range(1, self.total_players):
+            for i in range(1, self.total_players - 1):
                 self.gui_signals.signal_status.emit(f"Check other players funds {i}")
                 self.gui_signals.signal_progressbar_increase.emit(1)
                 value = self.player_funds[i]
