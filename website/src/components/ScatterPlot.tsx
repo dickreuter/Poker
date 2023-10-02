@@ -30,7 +30,7 @@ const parseData = (rawData: RawData): { wins: ScatterData[], losses: ScatterData
             x: Number(entry.equity),
             y: parseFloat(entry.minCall)
         }));
-    
+
         losses = JSON.parse(rawData.losses).map((entry: any) => ({
             // z: parseFloat(entry.FinalFundsChange),
             x: Number(entry.equity),
@@ -46,11 +46,14 @@ const parseData = (rawData: RawData): { wins: ScatterData[], losses: ScatterData
 const ScatterplotComponent: React.FC<ScatterplotProps> = ({ data }) => {
     const parsedData = parseData(data);
 
-    return (
+    return (<>
+        <div className="h4">
+            Wins and Losses for given equity and required minimum call
+        </div>
         <VictoryChart
             domainPadding={20}
             width={800}
-            height={300}
+            height={200}
             domain={{ x: [0, 1] }, { y: [0, 2] }}
         >
             <VictoryAxis
@@ -79,6 +82,7 @@ const ScatterplotComponent: React.FC<ScatterplotProps> = ({ data }) => {
                 style={{ data: { fill: "red" } }}
             />
         </VictoryChart>
+    </>
     );
 }
 

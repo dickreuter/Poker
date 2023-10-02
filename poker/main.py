@@ -38,7 +38,7 @@ warnings.filterwarnings("ignore", message="All-NaN axis encountered")
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-version = 6.63
+version = 6.64
 ui = None
 
 
@@ -312,6 +312,7 @@ def run_poker():
     t1.start()
     
     t2 = threading.Thread(target=local_restapi)
+    t2.daemon = True
     t2.start()
 
     try:

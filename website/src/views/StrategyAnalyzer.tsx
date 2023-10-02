@@ -6,8 +6,9 @@ import GroupedStackedBarChart from '../components/GroupedBarChart';
 import LeagueTablePlot from '../components/LeagueTablePlot';
 import ScatterplotComponent from '../components/ScatterPlot';
 import { pirate } from '../assets/Images';
-import FundsChangeLineChart from '../components/FundsChanceChart';
+import FundsChangeLineChart from '../components/FundsChangeChart';
 import Loading from '../components/Loading';
+import DataTable from '../components/TableData';
 
 
 const StrategyAnalyzer: React.FC = () => {
@@ -22,9 +23,11 @@ const StrategyAnalyzer: React.FC = () => {
     const [loadingFundsChange, setLoadingFundsChange] = useState<boolean>(true);
     const [loadingLeague, setLoadingLeague] = useState<boolean>(true);
     const [loadingBarChartData, setLoadingBarChartData] = useState<boolean>(true);
+    const [loadingTable, setLoadingTable] = useState<boolean>(true);
     const [firstVisit, setFirstVisit] = useState<boolean>(true);
     const [scatterplotData, setScatterplotData] = useState<string[]>([]);
     const [fundsChangeData, setFundsChangeData] = useState<string[]>([]);
+    const [tableData, setTableData] = useState<string[]>([]);
     const [leagueData, setLeagueData] = useState<any[]>([]);
     const computer_name = 'All'
 
@@ -87,6 +90,24 @@ const StrategyAnalyzer: React.FC = () => {
             }
         }
     };
+    const fetchTableData = async () => {
+        if (selectedStrategy) {
+            try {
+                const response = await axios.post(`${API_URL}/get_worst_games`, null, {
+                    params: {
+                        strategy: selectedStrategy,
+                    }
+                });
+                setTableData(response.data);
+                console.log(`Tabledata data before passing: ${JSON.stringify(fundsChangeData)}`);
+            } catch (error) {
+                console.error("Error fetching tabledata:", error);
+            }
+            finally {
+                setLoadingTable(false);
+            }
+        }
+    };
 
     useEffect(() => {
         async function fetchLeagueData() {
@@ -128,11 +149,14 @@ const StrategyAnalyzer: React.FC = () => {
         fetchStackedBarData();
         fetchScatterplotData();
         fetchFundChangeData();
+        fetchTableData();
     }, [selectedStrategy, endStage, actionAtEndStage]);
 
     const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setLoadingBarChartData(true);
         setLoadingScatter(true);
+        setLoadingTable(true);
+        setLoadingFundsChange(true);
         setFirstVisit(false);
         setSelectedStrategy(event.target.value);
     };
@@ -196,51 +220,74 @@ const StrategyAnalyzer: React.FC = () => {
                     </Select>
                 </FormControl>
             </div>
+            <div className="pt-2">
+                {loadingBarChartData && firstVisit ? (
+                    // <div className='rotating'>
+                    <div>
 
-            {loadingBarChartData && firstVisit ? (
-                // <div className='rotating'>
-                <div>
-
-                    {loadingLeague ? (
-                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
-                            <img src={pirate} style={{ transform: 'scale(.7)' }} />
-                        </div>
-                    ) : (
-                        <>
-                            <div className="h3" role="status">
-                                Strategy league table by strategy and user
+                        {loadingLeague ? (
+                            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+                                <img src={pirate} style={{ transform: 'scale(.7)' }} />
                             </div>
-                            <LeagueTablePlot data={leagueData} />
-                        </>
+                        ) : (
+                            <>
+                                <div className="h3" role="status">
+                                    Strategy league table by strategy and user
+                                </div>
+                                <LeagueTablePlot data={leagueData} />
+                            </>
+                        )
+                        }
+                    </div>
+                ) : loadingBarChartData ? (
+                    <Loading />
+                ) : (
+                    <div style={{ marginTop: '20px' }}>
+                        {barChartData.length > 0 && <GroupedStackedBarChart data={JSON.parse(barChartData)} />}
+                    </div>
+                )
+                }
+            </div>
+            <div className="pt-5">
+                {
+                    loadingScatter ? (
+                        !firstVisit ? (
+                            <Loading />
+                        ) : (<></>)
+                    ) : (
+                        <div style={{ marginTop: '20px' }}>
+                            <ScatterplotComponent data={scatterplotData} />
+                        </div>
                     )
-                    }
-                </div>
-            ) : loadingBarChartData ? (
-                <Loading />
-            ) : (
-                <div style={{ marginTop: '20px' }}>
-                    {barChartData.length > 0 && <GroupedStackedBarChart data={JSON.parse(barChartData)} />}
-                </div>
-            )
-            }
-            {
-                loadingScatter ? (
-                    <Loading />
-                ) : (
-                    <div style={{ marginTop: '20px' }}>
-                        <ScatterplotComponent data={scatterplotData} />
-                    </div>
-                )
-            }
-            {
-                loadingFundsChange ? (
-                    <Loading />
-                ) : (
-                    <div style={{ marginTop: '20px' }}>
-                        <FundsChangeLineChart data={fundsChangeData} />
-                    </div>
-                )
-            }
+                }
+            </div>
+            <div className="pt-5">
+                {
+                    loadingFundsChange ? (
+                        !firstVisit ? (
+                            <Loading />
+                        ) : (<></>)
+                    ) : (
+                        <div style={{ marginTop: '20px' }}>
+                            <FundsChangeLineChart data={fundsChangeData} />
+                        </div>
+                    )
+                }
+            </div>
+            <div className="pt-5">
+                {
+                    loadingTable ? (
+                        !firstVisit ? (
+                            <Loading />
+                        ) : (<></>)
+                    ) : (
+                        <div style={{ marginTop: '20px' }}>
+                            <DataTable data={tableData} />
+                        </div>
+                    )
+                }
+            </div>
+
         </div >
     );
 };

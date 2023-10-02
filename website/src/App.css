@@ -53,6 +53,7 @@
   align-items: center; /* horizontally centered */
   justify-content: center; /* vertically centered */
   min-height: 100vh; /* or adjust as previously suggested */
+  margin-top: 3em;
 }
 
 .dropdowns-container {

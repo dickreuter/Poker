@@ -8,7 +8,6 @@ from time import sleep
 import cv2
 import numpy as np
 from PIL import Image, ImageGrab
-from pytesseract import pytesseract
 from tesserocr import PyTessBaseAPI, PSM, OEM
 
 from poker.tools.helper import memory_cache, get_dir
@@ -149,14 +148,6 @@ def get_ocr_number(img_orig, fast=False):
             pass
             # log.warning(f"Not recognized: {element}")
     return -1.0
-
-
-def get_ocr_string(img_orig):
-    """Return string value from image."""
-    img_resized = prepareImage(img_orig)
-    config_ocr = '--psm 7 --oem 1'
-
-    return pytesseract.image_to_string(img_resized, 'eng', config=config_ocr).strip()
 
 
 def take_screenshot(virtual_box=False):

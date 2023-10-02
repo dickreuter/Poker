@@ -9,7 +9,6 @@ opencv-python
 pillow
 pyinstaller
 pymongo
-pyqt5
 pyqt6
 pytesseract
 virtualbox
@@ -27,4 +26,6 @@ tqdm
 seaborn
 PyJWT==1.7.0
 flask_jwt_extended
-fastapi_jwt_auth
+fastapi_auth
+uvicorn
+tesserocr

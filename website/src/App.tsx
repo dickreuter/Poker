@@ -1,21 +1,27 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom"
+import ReactGA from 'react-ga'
+import { BrowserRouter } from "react-router-dom"
 import './App.css'
 import NavBar from './routes/NavBar'
-import PaymentCards from './views/Purchase'
-import StrategyAnalyzer from './views/StrategyAnalyzer'
-import TableAnalyzer from './views/TableAnalyzer'
-import Home from "./views/Home"
 import Routing from "./routes/Routing"
+import { useEffect } from 'react'
+
+
+const TRACKING_ID = "UA-7794836-7"; // OUR_TRACKING_ID
+ReactGA.initialize(TRACKING_ID);
 
 
 function App() {
 
+  useEffect(() => {
+    ReactGA.pageview(window.location.pathname + window.location.search);
+  }, []);
+
   return (
     <>
       <BrowserRouter>
-      <NavBar />
-      <Routing/>
-    </BrowserRouter>
+        <NavBar />
+        <Routing />
+      </BrowserRouter>
     </>
   )
 }

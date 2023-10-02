@@ -51,35 +51,40 @@ class GroupedStackedBarChart extends Component {
             return a.fa === 'Won' ? -1 : 1;
         });
 
-        
+
 
         return (
-            <BarChart
-                width={800}
-                height={500}
-                data={data}
-                layout="horizontal"
-                barCategoryGap={0}
-                barGap={10}
-                onMouseMove={this.handleMouseMove}
-            >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="gs" tick={<CustomizedAxisTick data={data} />} height={70} interval={0} />
-                <YAxis />
-                <Legend />
-                <Tooltip/>
-                
-                
-                {actions.map(action => (
-                    <Bar
-                        key={action}
-                        dataKey={action}
-                        stackId="a"
-                        fill={getFillColor(action)}
-                        cursor={{ fill: 'transparent' }}
-                    />
-                ))}
-            </BarChart>
+            <>
+                <div className="h4">
+                    Wins and Losses per stage for given action type
+                </div>
+                <BarChart
+                    width={800}
+                    height={400}
+                    data={data}
+                    layout="horizontal"
+                    barCategoryGap={0}
+                    barGap={10}
+                    onMouseMove={this.handleMouseMove}
+                >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="gs" tick={<CustomizedAxisTick data={data} />} height={70} interval={0} />
+                    <YAxis />
+                    <Legend />
+                    <Tooltip />
+
+
+                    {actions.map(action => (
+                        <Bar
+                            key={action}
+                            dataKey={action}
+                            stackId="a"
+                            fill={getFillColor(action)}
+                            cursor={{ fill: 'transparent' }}
+                        />
+                    ))}
+                </BarChart>
+            </>
         );
     }
 }

@@ -1,22 +1,23 @@
 import inspect
+import json
 import logging
 import os
 import sys
 from unittest.mock import MagicMock
 
-import json
 import pandas as pd
-from PIL import Image
 import requests
+from PIL import Image
 
+from poker import main
 from poker.tools.game_logger import GameLogger
+from poker.tools.helper import COMPUTER_NAME, get_config
+from poker.tools.mongo_manager import MongoManager
 from poker.tools.strategy_handler import StrategyHandler
 from poker.tools.update_checker import UpdateChecker
-from poker import main
-from poker.tools.helper import COMPUTER_NAME, get_config
 
 config = get_config()
-URL = config.config.get('main','db')
+URL = config.config.get('main', 'db')
 
 currentdir = os.path.dirname(os.path.abspath(
     inspect.getfile(inspect.currentframe())))
@@ -24,7 +25,7 @@ parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 
 
-def init_table(file, round_number=0, strategy='Default1'):
+def init_table(file, round_number=0, strategy='Default1', table_scraper_name='Official GGPoker 6player'):
     # LOG_FILENAME = 'testing.log'
     logger = logging.getLogger('tester')
     gui_signals = MagicMock()
@@ -38,6 +39,8 @@ def init_table(file, round_number=0, strategy='Default1'):
     h.preflop_sheet = pd.read_excel(
         preflop_url, sheet_name=None, engine='openpyxl')
     game_logger = GameLogger()
+    mongo = MongoManager()
+    table_dict = mongo.get_table(table_scraper_name)
     t = main.TableScreenBased(p, {}, gui_signals, game_logger, 0.0)
 
     current_file_dir = os.path.dirname(os.path.abspath(__file__))
