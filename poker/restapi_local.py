@@ -28,4 +28,4 @@ def local_restapi():
         screenshot.save(image_bytes_io, format="PNG")
         return Response(content=image_bytes_io.getvalue(), media_type="image/png")
 
-    uvicorn.run(app, host="0.0.0.0", port=8005)
+    uvicorn.run(app, host="127.0.0.1", port=8005)
