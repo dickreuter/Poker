@@ -15,7 +15,7 @@ class TableScraper:
         self.table_dict = table_dict
         self.screenshot = None
 
-        self.total_players = 6 if not 'max_players' in self.table_dict else self.table_dict['max_players']
+        self.total_players = 6 if not 'max_players' in self.table_dict else self.table_dict['max_players']['value']
         self.my_cards = None
         self.table_cards = None
         self.current_round_pot = None
