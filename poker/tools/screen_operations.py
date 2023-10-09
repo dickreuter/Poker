@@ -103,7 +103,7 @@ def prepareImage(img_orig, binarize=True, threshold=76):
 
 def get_ocr_number2(img_orig, fast=False):
     """New OCR based on tesserocr rather than pytesseract, should be much faster"""
-    api.SetVariable("tessedit_char_whitelist", "0123456789.$£B")
+    api.SetVariable("tessedit_char_whitelist", "0123456789,.$£B")
     api.SetImage(img_orig)
     result = api.GetUTF8Text()
     return result
@@ -117,12 +117,10 @@ def get_ocr_number(img_orig, fast=False):
 
     lst.append(
         get_ocr_number2(img_resized).
-        strip().replace('$', '').replace('£', '').replace('€', '').replace('B', '').replace(',', '.').replace('\n', '').replace(':',
-                                                                                                                                   ''))
+        strip().replace('$', '').replace('£', '').replace('€', '').replace('B', '').replace(',', ''))
     lst.append(
         get_ocr_number2(img_resized2).
-        strip().replace('$', '').replace('£', '').replace('€', '').replace('B', '').replace(',', '.').replace('\n', '').replace(':',
-                                                                                                                                   ''))
+        strip().replace('$', '').replace('£', '').replace('€', '').replace('B', '').replace(',', ''))
     try:
         return float(lst[-1])
     except ValueError:
@@ -136,7 +134,7 @@ def get_ocr_number(img_orig, fast=False):
             while j < len(images):
                 lst.append(
                     get_ocr_number2(images[j]).
-                    strip().replace('$', '').replace('£', '').replace('€', '').replace('B', '').replace('\n', '').replace(':', ''))
+                    strip().replace('$', '').replace('£', '').replace('€', '').replace('B', '').replace(',', ''))
                 j += 1
             i += 1
 
