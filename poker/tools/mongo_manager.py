@@ -10,6 +10,7 @@ from fastapi.encoders import jsonable_encoder
 
 from poker.tools.helper import COMPUTER_NAME, get_config, get_dir
 from poker.tools.singleton import Singleton
+from requests.exceptions import JSONDecodeError
 
 TABLES_COLLECTION = 'tables'
 
@@ -110,6 +111,10 @@ class MongoManager(metaclass=Singleton):
                 URL + "get_table", params={'table_name': table_name}).json()
         except IndexError:
             raise RuntimeError("No table found for given name.")
+        except JSONDecodeError:
+            raise RuntimeError("JSONDecodeError: Most likely this table has using neural network enabled" \
+                               "but no neural network has been trained yet. Either train a neural network" \
+                               "for this table, or untick the use neural network checkbox for the given table.")
 
         table_converted = {}
         for key, value in table.items():

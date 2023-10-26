@@ -228,3 +228,7 @@ notebooks/IMG_5772.png
 notebooks/image (5).png
 notebooks/bet365231.PNG
 Poker.code-workspace
+*.png*.dmg
+*.autosave
+*.code-workspace
+*.png
