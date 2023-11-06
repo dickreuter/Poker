@@ -117,23 +117,11 @@ class StrategyHandler:
 
     def read_strategy(self, strategy_override=''):
         config = get_config()
-        login = config.config.get('main', 'login')
-        password = config.config.get('main', 'password')
         last_strategy = config.config.get('main', 'last_strategy')
         self.current_strategy = last_strategy if strategy_override == '' else strategy_override
-        try:
-            output = requests.post(
-                URL + "get_strategy", params={'name': self.current_strategy,
-                                              "login": login,
-                                              "password": password}).json()[0]
-        except:
-            log.error(f"This Strategy is not available for this user: {login}")
-            time.sleep(1)
-            output = requests.post(URL + "get_strategy",
-                                   params={'name': 'Default',
-                                           "login": 'guest',
-                                           "password": 'guest'}).json()[0]
-        self.selected_strategy = output
+
+        strategy_json_file = f"strategy_config/{last_strategy.lower().replace(' ', '_')}.json"
+        self.selected_strategy = json.load(open(strategy_json_file))
 
         self.check_defaults()
         return True

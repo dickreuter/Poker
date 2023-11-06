@@ -199,11 +199,18 @@ class ThreadManager(threading.Thread):
 
             if not self.gui_signals.pause_thread:
                 config = get_config()
+
+                tstart = time.time()
                 m = run_montecarlo_wrapper(strategy, self.gui_signals, config, ui, table, self.game_logger,
                                            preflop_state, history)
                 self.gui_signals.signal_progressbar_increase.emit(20)
+                log.info(f"Monte Carlo runs took {time.time() - tstart} s")
+
+                tstart = time.time()
                 d = Decision(table, history, strategy, self.game_logger)
                 d.make_decision(table, history, strategy, self.game_logger)
+                log.info(f"Decision took {time.time() - tstart} s")
+
                 self.gui_signals.signal_progressbar_increase.emit(10)
                 if self.gui_signals.exit_thread: sys.exit()
 
@@ -223,6 +230,8 @@ class ThreadManager(threading.Thread):
 
                 if mouse_target == 'Call' and table.allInCallButton:
                     mouse_target = 'Call2'
+                if mouse_target == 'Fold' and table.has_check_button():
+                    mouse_target = 'Check'
                 elif mouse_target == 'BetPlus':
                     action_options['increases_num'] = strategy.selected_strategy['BetPlusInc']
 
@@ -239,6 +248,7 @@ class ThreadManager(threading.Thread):
 
                 table.time_action_completed = datetime.datetime.utcnow()
 
+                tstart = time.time()
                 filename = str(history.GameID) + "_" + str(table.gameStage) + "_" + str(history.round_number) + ".png"
                 log.debug("Saving screenshot: " + filename)
                 pil_image = table.crop_image(table.entireScreenPIL, table.tlc[0], table.tlc[1], table.tlc[0] + 1500,
@@ -251,6 +261,7 @@ class ThreadManager(threading.Thread):
                                             args=[strategy, history, table, d])
                 t_log_db.daemon = True
                 t_log_db.start()
+                log.info(f"Logging took {time.time() - tstart} s")
                 # self.game_logger.write_log_file(strategy, history, table, d)
 
                 history.previousPot = table.totalPotValue
@@ -267,8 +278,12 @@ class ThreadManager(threading.Thread):
                 history.previous_round_pot_value = table.round_pot_value
                 history.last_round_bluff = False if table.currentBluff == 0 else True
                 if table.gameStage == 'PreFlop':
+                    tstart = time.time()
                     preflop_state.update_values(table, d.decision, history, d)
+                    log.info(f"Update preflop state took {time.time() - tstart} s")
+                tstart = time.time()
                 mongo.increment_plays(table_scraper_name)
+                log.info(f"Increment plays took {time.time() - tstart} s")
                 log.info("=========== round end ===========")
 
 

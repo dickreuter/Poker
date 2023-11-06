@@ -10,6 +10,7 @@ import numpy as np
 from PIL import Image, ImageGrab
 from tesserocr import PyTessBaseAPI, PSM, OEM
 
+from poker.tools.helper import get_config
 from poker.tools.helper import memory_cache, get_dir
 from poker.tools.mongo_manager import MongoManager
 from poker.tools.vbox_manager import VirtualBoxController
@@ -114,15 +115,22 @@ def get_ocr_number(img_orig, fast=False):
     img_resized = prepareImage(img_orig, binarize=True)
     img_resized2 = prepareImage(img_orig, binarize=True, threshold=125)
     lst = []
+    
+    config = get_config()
+    european_style_decimal = config.config.get('main', 'european_style_decimal')
 
-    lst.append(
-        get_ocr_number2(img_resized).
-        strip().replace('$', '').replace('£', '').replace('€', '').replace('B', '').replace(',', '.').replace('\n', '').replace(':',
-                                                                                                                                ''))
-    lst.append(
-        get_ocr_number2(img_resized2).
-        strip().replace('$', '').replace('£', '').replace('€', '').replace('B', '').replace(',', '.').replace('\n', '').replace(':',
-                                                                                                                      ''))
+    num1 = get_ocr_number2(img_resized).strip().replace('$', '').replace('£', '').replace('€', '').replace('B', 
+            '').replace(',', '.').replace('\n', '').replace(':', '')
+    if european_style_decimal == 'true':
+        num1 = num1.replace('.', '')
+
+    num2 = get_ocr_number2(img_resized2).strip().replace('$', '').replace('£', '').replace('€', '').replace('B',
+        '').replace(',', '.').replace('\n', '').replace(':', '')
+    if european_style_decimal == 'true':
+        num2 = num2.replace('.', '')
+
+    lst.append(num1)
+    lst.append(num2)
     try:
         return float(lst[-1])
     except ValueError:

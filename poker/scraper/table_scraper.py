@@ -138,6 +138,11 @@ class TableScraper:
         return is_template_in_search_area(self.table_dict, self.screenshot,
                                           'fast_fold_button', 'my_turn_search_area')
 
+    def fold(self):
+        """Find out if fold button is present"""
+        return is_template_in_search_area(self.table_dict, self.screenshot,
+                                          'fold_button', 'buttons_search_area')
+
     def is_my_turn(self):
         """Check if it's my turn"""
         my_turn = is_template_in_search_area(self.table_dict, self.screenshot,
@@ -244,18 +249,18 @@ class TableScraper:
         """Read the call value from the call button"""
         self.call_value = ocr(self.screenshot, 'call_value', self.table_dict)
         log.info(f"Call value: {self.call_value}")
-        if round(self.call_value) >= 90:
-            log.warning("Correcting call value from >90")
-            self.call_value -= 90
+        # if round(self.call_value) >= 90:
+        #     log.warning("Correcting call value from >90")
+        #     self.call_value -= 90
         return self.call_value
 
     def get_raise_value(self):
         """Read the value of the raise button"""
         self.raise_value = ocr(self.screenshot, 'raise_value', self.table_dict)
         log.info(f"Raise value: {self.raise_value}")
-        if round(self.raise_value) >= 90:
-            log.warning("Correcting raise value from >90")
-            self.raise_value -= 90
+        # if round(self.raise_value) >= 90:
+        #     log.warning("Correcting raise value from >90")
+        #     self.raise_value -= 90
         return self.raise_value
 
     def get_game_number_on_screen2(self):
