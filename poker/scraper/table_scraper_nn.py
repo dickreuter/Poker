@@ -62,11 +62,11 @@ class CardNeuralNetwork():
 
         from tensorflow.keras.preprocessing.image import ImageDataGenerator
         datagen = ImageDataGenerator(
-            rotation_range=15,
-            width_shift_range=0.2,
-            height_shift_range=0.2,
-            shear_range=0.05,
-            zoom_range=0.1,
+            rotation_range=10,
+            width_shift_range=0.05,
+            height_shift_range=0.05,
+            shear_range=0.02,
+            zoom_range=0.05,
             horizontal_flip=False,
             fill_mode='nearest')
 

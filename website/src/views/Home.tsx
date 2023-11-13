@@ -13,7 +13,7 @@ function Home() {
                 <img src="https://github.com/dickreuter/Poker/blob/e53d795e563abdc3e32656306ac46d1dcffc8816/doc/partypoker.gif?raw=true" style={{ transform: 'scale(1)' }} />
             </div> */}
             <div>
-            <iframe src="https://app.colossyan.com/embed/c7b9e132-cc19-4ff5-b311-2ffb48fc3204" width="850" height="470" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+            <iframe src="https://app.colossyan.com/embed/a9de627b-0752-49c2-b9a6-dbc8dbf6e0f1" width="560" height="315" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
             {/* <iframe width="850" height="470" src="https://www.youtube.com/embed/EOqDSSeBXmQ?si=mNoG1KZMOmhlHQ7a" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe> */}
             </div>
             {/* <div className="pirateimage">

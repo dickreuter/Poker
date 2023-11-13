@@ -33,6 +33,9 @@ function NavBar() {
                     <li className="nav-item">
                         <a className="nav-link" href="https://github.com/dickreuter/Poker/blob/master/readme.rst">Documentation</a>
                     </li>
+                    <li className="nav-item">
+                        <a className="nav-link" href="http://www.betfair-bot.com">Betfair Bot</a>
+                    </li>
                 </ul>
             </div>
         </nav>
