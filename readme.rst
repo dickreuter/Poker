@@ -154,6 +154,23 @@ The setup to add new tables looks like this:
 - If you hover over the buttons, you will get a more detailed description of what you need to pay attention to.
 - Note that you will need to take many screenshots, crop them (don't select the top left corner again, as this you should only do once), instead load it and then crop the image. After that make your selection of the different images and save them by pressing on the corresponding button. You'll need to teach it every card and every button etc.
 
+Notes to keep in mind:
+------------------------------
+
+**IT IS NOT RECOMMENDED TO CONDUCT TESTS WITH REAL ACCOUNTS UNTIL YOU VERIFY THE CORRECT FUNCTIONING OF THE BOT (ALSO TO AVOID LOSS OF ACCOUNTS AND CAPITAL)**
+
+- Minimum system requirements to run the bot:
+- Windows 10 x64 or later (It may work in previous versions but its correct operation has not been verified)
+- RAM memory 4 GB or more
+- hard drive space 1.6 GB (as always the more the better)
+- Micro processor with 4 cores and 4 threads or higher
+- GPU is not necessary (neural training gives the option to do it on GPU)
+- screen resolution 1920*1800 (it can work with less but its correct operation has not been verified)
+
+- consider the consumption of Virtual box if used and add them to the system explained above
+- Poker apps usually run on W7 or higher
+- VirtualBox version 7.0.12 or higher with its respective expansion pack
+
 Running via docker
 ------------------------------
 
