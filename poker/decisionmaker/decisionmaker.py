@@ -96,7 +96,6 @@ class Decision(DecisionBase):
         else:
             outs = 0
         self.out_adjustment = outs * out_multiplier * .01
-        self.out_adjustment = 0 # currently hard code outs adjustments to zero
 
         self.outs = outs
 
