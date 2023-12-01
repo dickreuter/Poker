@@ -188,7 +188,7 @@ class Decision(DecisionBase):
 
         t.maxValue_call = float(
             p.selected_strategy['initialFunds']) * t.potStretch
-        minimum_curve_value = 0 if p.selected_strategy['use_pot_multiples'] else t.smallBlind
+        minimum_curve_value = 0
         minimum_curve_value2 = 0 if p.selected_strategy[
             'use_pot_multiples'] else t.minCallAmountIfAboveLimit
         d = Curvefitting(np.array([t.equity]), minimum_curve_value, minimum_curve_value2, t.maxValue_call,
