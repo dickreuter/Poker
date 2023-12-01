@@ -279,7 +279,7 @@ class TableScreenBased(Table):
 
         return True
 
-    def get_other_player_pots(self):
+    def get_other_player_pots(self, table_name):
         self.gui_signals.signal_status.emit(f"Get table pots")
         self.gui_signals.signal_progressbar_increase.emit(2)
         self.get_pots()
@@ -287,7 +287,7 @@ class TableScreenBased(Table):
         exclude = set(range(self.total_players)) - set(self.players_in_game)
         self.gui_signals.signal_status.emit(f"Get player pots of players in game {self.players_in_game}")
         self.gui_signals.signal_progressbar_increase.emit(5)
-        self.get_player_pots(skip=list(exclude.union({0})))
+        self.get_player_pots(skip=list(exclude.union({0})), table_name=table_name)
 
         for n in range(1, self.total_players):
             if self.player_pots[n] != "":
@@ -315,7 +315,7 @@ class TableScreenBased(Table):
 
         return True
 
-    def get_other_player_status(self, p, h):
+    def get_other_player_status(self, p, h, table_name):
         self.gui_signals.signal_status.emit("Get other playsrs' status")
         self.gui_signals.signal_progressbar_increase.emit(2)
         self.get_players_in_game()
@@ -350,7 +350,7 @@ class TableScreenBased(Table):
         else:
             reference_pot = self.get_bot_pot(p)
 
-        self.get_other_player_pots()
+        self.get_other_player_pots(table_name)
         # get first raiser in (tested for preflop)
         self.first_raiser, \
         self.second_raiser, \
@@ -420,7 +420,7 @@ class TableScreenBased(Table):
         log.info("Final Total Pot Value: " + str(self.totalPotValue))
         return True
 
-    def get_round_pot_value(self, h):
+    def get_round_pot_value(self, h, table_name):
 
         self.round_pot_value = self.current_round_pot
 
@@ -430,13 +430,19 @@ class TableScreenBased(Table):
             except:
                 self.round_pot_value = 0
 
-        if self.round_pot_value == "":
+        if self.round_pot_value == "" or self.round_pot_value == -1:
             self.round_pot_value = 0
-            self.gui_signals.signal_status.emit("Unable to get round pot value")
-            log.warning("unable to get round pot value")
-            # self.round_pot_value = h.previous_round_pot_value
-            self.screenshot.save("pics/ErrRoundPotValue.png")
 
+            if not table_name.lower().startswith("swc poker"):
+                self.gui_signals.signal_status.emit("Unable to get round pot value")
+                log.warning("unable to get round pot value")
+                # self.round_pot_value = h.previous_round_pot_value
+                self.screenshot.save("pics/ErrRoundPotValue.png")
+
+        if table_name.lower().startswith("swc poker"):
+            self.round_pot_value = self.total_pot - self.round_pot_value
+
+        log.info(f"Current round pot {self.round_pot_value} (after processing)")
         self.gui_signals.signal_progressbar_increase.emit(5)
         return True
 

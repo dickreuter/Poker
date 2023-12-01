@@ -190,18 +190,20 @@ class TableScraper:
     def get_pots(self):
         """Get current and total pot"""
         self.current_round_pot = ocr(self.screenshot, 'current_round_pot', self.table_dict, fast=True)
-        log.info(f"Current round pot {self.current_round_pot}")
+        log.info(f"Current round pot {self.current_round_pot} (before processing)")
         self.total_pot = ocr(self.screenshot, 'total_pot_area', self.table_dict)
         log.info(f"Total pot {self.total_pot}")
 
-    def get_player_pots(self, skip=[]):  # pylint: disable=dangerous-default-value
+    def get_player_pots(self, skip=[], table_name=None):  # pylint: disable=dangerous-default-value
         """Get pots of the players"""
         self.player_pots = []
         for i in range(self.total_players):
             if i in skip:
                 funds = 0
             else:
-                funds = ocr(self.screenshot, 'player_pot_area', self.table_dict, str(i))
+                funds = ocr(self.screenshot, 'player_pot_area', self.table_dict, str(i), False, table_name)
+                if funds == -1:
+                    funds = 0
             self.player_pots.append(funds)
         log.info(f"Player pots: {self.player_pots}")
 
@@ -232,6 +234,7 @@ class TableScraper:
         """Check if check button is present"""
         self.check_button = is_template_in_search_area(self.table_dict, self.screenshot,
                                                        'check_button', 'buttons_search_area')
+        self.screenshot.save("pics/check_button.png")
         log.info(f"Check button found: {self.check_button}")
         return self.check_button
 

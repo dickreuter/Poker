@@ -186,11 +186,11 @@ class ThreadManager(threading.Thread):
                         table.get_round_number(history) and \
                         table.check_for_checkbutton() and \
                         table.init_get_other_players_info() and \
-                        table.get_other_player_status(strategy, history) and \
+                        table.get_other_player_status(strategy, history, table_dict['table_name']) and \
                         table.get_other_player_names(strategy) and \
                         table.get_other_player_funds(strategy) and \
                         table.get_total_pot_value(history) and \
-                        table.get_round_pot_value(history) and \
+                        table.get_round_pot_value(history, table_dict['table_name']) and \
                         table.check_for_call() and \
                         table.check_for_betbutton() and \
                         table.check_for_allincall() and \
@@ -243,7 +243,7 @@ class ThreadManager(threading.Thread):
                 log.debug("Saving screenshot: " + filename)
                 pil_image = table.crop_image(table.entireScreenPIL, table.tlc[0], table.tlc[1], table.tlc[0] + 1500,
                                              table.tlc[1] + 1100)
-                pil_image.save("log/screenshots/" + filename)
+                # pil_image.save("log/screenshots/" + filename)
 
                 self.gui_signals.signal_status.emit("Logging data")
 
