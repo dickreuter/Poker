@@ -41,6 +41,8 @@ function PaymentCards() {
                                         <li>Track payoff</li>
                                         <br />
                                         <li>Trial strategies</li>
+                                        <br />
+                                        <li>Get free trial for betfair-bot.com </li>
 
                                     </ul>
                                 </div>
@@ -70,6 +72,8 @@ function PaymentCards() {
                                         <li>Access to all strategies</li>
                                         <li>Edit strategies</li>
                                         <li>Create custom strategies</li>
+                                        <br />
+                                        <li>Get free licence for betfair-bot.com </li>
                                     </ul>
                                 </div>
                             </div>
@@ -99,6 +103,8 @@ function PaymentCards() {
                                         <li>Access to all strategies</li>
                                         <li>Edit strategies</li>
                                         <li>Create custom strategies</li>
+                                        <br />
+                                        <li>Get free licence for betfair-bot.com </li>
                                     </ul>
                                 </div>
                             </div>
@@ -142,6 +148,8 @@ function PaymentCards() {
                                         <li>Access to all strategies</li>
                                         <li>Edit strategies</li>
                                         <li>Create custom strategies</li>
+                                        <br />
+                                        <li>Get free licence for betfair-bot.com </li>
                                     </ul>
                                 </div>
                             </div>
@@ -170,6 +178,8 @@ function PaymentCards() {
                                         <li>Access to all strategies</li>
                                         <li>Edit strategies</li>
                                         <li>Create custom strategies</li>
+                                        <br />
+                                        <li>Get free licence for betfair-bot.com </li>
                                     </ul>
                                 </div>
                             </div>

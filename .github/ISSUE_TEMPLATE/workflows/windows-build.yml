@@ -1,0 +1,41 @@
+name: Windows Build
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.11.5'
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: Run PyInstaller
+      run: |
+        cd poker
+        pyinstaller main.spec
+        # Add other necessary steps here
+
+    - name: Install NSIS
+      run: |
+        choco install nsis
+
+    - name: Run NSIS
+      run: makensis -V3 DeepMindPokerbot.nsi
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: compiled-app
+        path: path/to/your/compiled/app
