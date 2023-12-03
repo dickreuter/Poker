@@ -17,8 +17,31 @@ jobs:
       with:
         python-version: '3.11.5'
 
+    - name: Install Tesseract 3.04.00
+      run: |
+        choco install tesseract --version=3.04.00
+        echo "C:\Program Files\Tesseract-OCR" >> $GITHUB_PATH
+
+    - name: Refresh Environment
+      run: |
+        Import-Module "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
+        Update-SessionEnvironment
+
+    - name: Check PATH
+      run: |
+        echo "PATH: $env:PATH"
+
+    - name: List Tesseract Directory
+      run: |
+        ls "C:\Program Files\Tesseract-OCR"
+
+    - name: Test Tesseract Command
+      run: |
+        & "C:\Program Files\Tesseract-OCR\tesseract.exe" --version
+
     - name: Install dependencies
       run: |
+        $env:Path += ";C:\Program Files\Tesseract-OCR"
         pip install -r requirements.txt
 
     - name: Run PyInstaller
