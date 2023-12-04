@@ -11,7 +11,7 @@ class AnalyserForm(QMainWindow):
         self.show()
 
 
-class TableSetupForm(QMainWindow):
+class TableSetupForm(QDialog):
 
     def __init__(self):
         super(TableSetupForm, self).__init__()
