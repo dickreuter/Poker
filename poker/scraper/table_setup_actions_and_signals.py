@@ -771,7 +771,7 @@ class TableSetupActionAndSignals(QObject):
             mongo.load_table_nn_weights(self.table_name)
             table_scraper.nn_model.load_weights(get_dir('codebase') + '/loaded_model.h5')
 
-        table_scraper.screenshot = self.original_screenshot
+        table_scraper.screenshot = self.screenshot_list[self.selected_screenshot_idx]
         table_scraper.crop_from_top_left_corner()
         table_scraper.is_my_turn()
         table_scraper.lost_everything()
