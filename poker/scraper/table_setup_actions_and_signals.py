@@ -536,9 +536,14 @@ class TableSetupActionAndSignals(QObject):
         self.load_topleft_corner()
 
         log.info("Cropping top left corner of '" + str(len(self.screenshot_list)) + "' images")
+        cropped_images = []
         for i in range(len(self.screenshot_list)):
-            self.screenshot_list[i], self.tlc = crop_screenshot_with_topleft_corner(self.screenshot_list[i],
-                                                                                    self.top_left_corner_img)
+            cropped, self.tlc = crop_screenshot_with_topleft_corner(self.screenshot_list[i],
+                                                                    self.top_left_corner_img)
+            if cropped != None:
+                cropped_images.append(cropped)
+        
+        self.screenshot_list = cropped_images
         if self.tlc is None:
             log.warning("No (or multiple) top left corner found")
             pop_up("Top left corner problem: ",

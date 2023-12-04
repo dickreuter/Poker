@@ -196,7 +196,7 @@ def crop_screenshot_with_topleft_corner(original_screenshot, topleft_corner):
         return None, None
     else:
         log.warning("No top left corner found")
-        sleep(5)
+        # sleep(5)
         return None, None
 
 
