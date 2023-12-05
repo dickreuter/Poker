@@ -16,7 +16,7 @@ from poker.scraper.table_scraper_nn import TRAIN_FOLDER
 from poker.tools.helper import COMPUTER_NAME, get_config, get_dir
 from poker.tools.mongo_manager import MongoManager
 from poker.tools.screen_operations import get_table_template_image, get_ocr_float, take_screenshot, \
-    crop_screenshot_with_topleft_corner, check_cropping
+    crop_screenshot_with_topleft_corner, check_cropping, normalize_rect
 from poker.tools.vbox_manager import VirtualBoxController
 
 log = logging.getLogger(__name__)
@@ -638,9 +638,8 @@ class TableSetupActionAndSignals(QObject):
         # self.ui.screenshot_label.show()
         self.screenshot_clicks += 1
         if self.screenshot_clicks % 2 == 0:
-            self.x2 = x
-            self.y2 = y
-         
+            self.x1, self.y1, self.x2, self.y2 = normalize_rect(self.x1, self.y1, x, y)
+            
             if self.x2 > self.x1 and self.y2 > self.y1:
                 log.info(f"Clicked on {x}, {y}. Cropping... {(self.x1, self.y1, self.x2, self.y2)}")
                 self.preview = self.screenshot_list[self.selected_screenshot_idx].crop(

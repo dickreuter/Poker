@@ -178,7 +178,16 @@ def take_screenshot(virtual_box=False):
             # gui_signals.signal_open_setup.emit(p,L)
             screenshot = ImageGrab.grab()
     return screenshot
+
+def normalize_rect(x1, y1, x2, y2):
+    x1_ = min(x1, x2)
+    x2_ = max(x1, x2)
     
+    y1_ = min(y1,y2)
+    y2_ = max(y1,y2)
+
+    return x1_, y1_, x2_, y2_
+
 def check_cropping(screenshot_list, top_left_corner_img):
     """Checks if screenshots are cropped and match the template 'icon'"""
     try:
