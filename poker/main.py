@@ -12,6 +12,7 @@ import pandas as pd
 from PyQt6 import QtGui, QtWidgets
 
 from poker.restapi_local import local_restapi
+from poker.tools import constants as const
 
 if platform not in ["linux", "linux2"]:
     matplotlib.use('Qt5Agg')
@@ -241,8 +242,8 @@ class ThreadManager(threading.Thread):
 
                 filename = str(history.GameID) + "_" + str(table.gameStage) + "_" + str(history.round_number) + ".png"
                 log.debug("Saving screenshot: " + filename)
-                pil_image = table.crop_image(table.entireScreenPIL, table.tlc[0], table.tlc[1], table.tlc[0] + 1500,
-                                             table.tlc[1] + 1100)
+                pil_image = table.crop_image(table.entireScreenPIL, table.tlc[0], table.tlc[1], table.tlc[0] + const.CROP_WIDTH,
+                                             table.tlc[1] + const.CROP_HEIGHT)
                 pil_image.save("log/screenshots/" + filename)
 
                 self.gui_signals.signal_status.emit("Logging data")

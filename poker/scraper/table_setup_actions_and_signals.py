@@ -11,11 +11,12 @@ from PyQt6 import QtGui, QtWidgets
 from PyQt6.QtCore import Qt, QObject, pyqtSlot, pyqtSignal, QTimer
 from PyQt6.QtWidgets import QMessageBox, QSlider
 
+from poker.tools import constants as const
 from poker.scraper.table_scraper_nn import TRAIN_FOLDER
 from poker.tools.helper import COMPUTER_NAME, get_config, get_dir
 from poker.tools.mongo_manager import MongoManager
 from poker.tools.screen_operations import get_table_template_image, get_ocr_float, take_screenshot, \
-    crop_screenshot_with_topleft_corner
+    crop_screenshot_with_topleft_corner, check_cropping
 from poker.tools.vbox_manager import VirtualBoxController
 
 log = logging.getLogger(__name__)
@@ -32,7 +33,6 @@ CARD_SUITES = "CDHS"
 class TableSetupActionAndSignals(QObject):
     """Actions and signals for table logic for QT"""
     signal_update_screenshot_pic = pyqtSignal(int)
-    signal_update_screenshot_slider = pyqtSignal(int)
     signal_update_label = pyqtSignal(str, str)
     signal_flatten_button = pyqtSignal(str, bool)
     signal_check_box = pyqtSignal(str, int)
@@ -75,7 +75,6 @@ class TableSetupActionAndSignals(QObject):
     def connect_signals_with_slots(self):
         """Connect signals with slots"""
         self.signal_update_screenshot_pic.connect(self.update_screenshot_pic)
-        self.signal_update_screenshot_slider.connect(self.update_ui_with_screenshot_amount)
         self.signal_update_label.connect(self._update_label)
         self.signal_flatten_button.connect(self._flatten_button)
         self.signal_check_box.connect(self._check_box)
@@ -117,12 +116,26 @@ class TableSetupActionAndSignals(QObject):
                 pngs = [f for f in files if pathlib.Path(f).suffix == ".png"]
                 images = [Image.open(png) for png in pngs]
 
+                self.load_topleft_corner()
+                new_cropped = check_cropping(images, self.top_left_corner_img)
+                
+                if len(self.screenshot_list) == 0:
+                    self.cropped =  new_cropped
+                else:
+                    self.cropped =  self.cropped and new_cropped
+
+                if not self.cropped: 
+                    log.info("Images are not cropped or do not fit to the loaded template.")
+
                 if self.append_screenshots:
                     self.screenshot_list.extend(images)
                 else:
                     self.screenshot_list = images
+                    self.cropped = False
 
-                self.signal_update_screenshot_slider.emit(len(self.screenshot_list))
+                
+
+                self.update_ui_with_screenshot_amount(len(self.screenshot_list))
             except Exception as e:
                 log.error("Error loading screenshots")
                 log.exception(e)
@@ -176,7 +189,8 @@ class TableSetupActionAndSignals(QObject):
 
         self.selected_screenshot_idx = value
 
-        if len(self.screenshot_list) > 0 and self.selected_screenshot_idx < len(self.screenshot_list):
+        if len(self.screenshot_list) > 0 \
+           and self.selected_screenshot_idx < len(self.screenshot_list):
             self.signal_update_screenshot_pic.emit(self.selected_screenshot_idx)
 
     @pyqtSlot()
@@ -490,7 +504,7 @@ class TableSetupActionAndSignals(QObject):
 
         # log.info("Screenshots taken: " + str(len(self.screenshot_list)))
         log.info("Emitting update signal")
-        self.signal_update_screenshot_slider.emit(len(self.screenshot_list))
+        self.update_ui_with_screenshot_amount(len(self.screenshot_list))
         log.info("signal emission complete")
 
     @pyqtSlot(object)
@@ -513,16 +527,16 @@ class TableSetupActionAndSignals(QObject):
     def update_screenshot_pic(self, index):
         """Update label with screenshot picture"""
 
-        log.info("Convert to to pixmap")
+        log.debug("Convert to to pixmap")
         qim = ImageQt(self.screenshot_list[index]).copy()
         self.screenshot_image = QtGui.QPixmap.fromImage(qim)
-        log.info("Update screenshot picture")
+        log.debug("Update screenshot picture")
         self.ui.screenshot_label.setStyleSheet("")
         self.ui.screenshot_label.setPixmap(self.screenshot_image)
 
     @pyqtSlot(int)
     def update_ui_with_screenshot_amount(self, amount):
-        log.info("update_screenshot_slider: " + str(amount))
+        log.debug("update_screenshot_slider: " + str(amount))
         self.ui.screenshot_slider.setMinimum(0)
         self.ui.screenshot_slider.setMaximum(amount - 1)
         self.ui.screenshot_slider.setValue(amount - 1)
@@ -539,7 +553,7 @@ class TableSetupActionAndSignals(QObject):
         cropped_images = []
         for i in range(len(self.screenshot_list)):
             cropped, self.tlc = crop_screenshot_with_topleft_corner(self.screenshot_list[i],
-                                                                    self.top_left_corner_img)
+                                                                    self.top_left_corner_img, False)
             if cropped != None:
                 cropped_images.append(cropped)
         
@@ -550,7 +564,7 @@ class TableSetupActionAndSignals(QObject):
                    "No or multiple top left corners visible. Please ensure only a single top left corner is visible.")
             return
         else:
-            log.info("Selected idx: " + str(self.selected_screenshot_idx))
+            log.debug("Selected idx: " + str(self.selected_screenshot_idx))
             self.signal_update_screenshot_pic.emit(self.selected_screenshot_idx)
             self.cropped = True
 
@@ -560,6 +574,7 @@ class TableSetupActionAndSignals(QObject):
         try:
             self.top_left_corner_img = get_table_template_image(self.table_name, 'topleft_corner')
         except KeyError:
+            self.top_left_corner_img = None
             log.error("No top left corner saved yet. "
                       "Please mark a top left corner and click on the save newly selected top left corner.")
 
@@ -582,14 +597,26 @@ class TableSetupActionAndSignals(QObject):
         if event.mimeData().hasImage:
             event.setDropAction(Qt.DropAction.CopyAction)
             file_path = event.mimeData().urls()[0].toLocalFile()
-
+            image = Image.open(file_path)
+            
             if not self.append_screenshots:
                 self.screenshot_list = []
 
-            self.screenshot_list.append(Image.open(file_path))
+            self.load_topleft_corner()
+            new_cropped = check_cropping([image], self.top_left_corner_img)
+            
+            if len(self.screenshot_list) == 0:
+               self.cropped = new_cropped
+            else:
+               self.cropped = self.cropped and new_cropped
+            
+            if not self.cropped: 
+                    log.info("Images are not cropped or do not fit to the loaded template.")
+            
+            self.screenshot_list.append(image)
 
             self.signal_update_screenshot_pic.emit(-1)
-            self.signal_update_screenshot_slider.emit(len(self.screenshot_list))
+            self.update_ui_with_screenshot_amount(len(self.screenshot_list))
             event.accept()
         else:
             event.ignore()
@@ -613,6 +640,7 @@ class TableSetupActionAndSignals(QObject):
         if self.screenshot_clicks % 2 == 0:
             self.x2 = x
             self.y2 = y
+         
             if self.x2 > self.x1 and self.y2 > self.y1:
                 log.info(f"Clicked on {x}, {y}. Cropping... {(self.x1, self.y1, self.x2, self.y2)}")
                 self.preview = self.screenshot_list[self.selected_screenshot_idx].crop(
@@ -697,6 +725,11 @@ class TableSetupActionAndSignals(QObject):
         # show topleft_corner image in preview
         self.preview = Image.open(io.BytesIO(table['topleft_corner']))
         self._update_preview_label(self.preview)
+        self.load_topleft_corner()
+
+        self.cropped = check_cropping(self.screenshot_list, self.top_left_corner_img)
+        if not self.cropped: 
+            log.info("Images are not cropped or do not fit to the loaded template.")
 
         check_boxes = ['use_neural_network']
         for check_box in check_boxes:

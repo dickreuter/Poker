@@ -3026,6 +3026,9 @@ Then check the console output for error messages.</string>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
+              <property name="toolTip">
+               <string/>
+              </property>
               <property name="minimum">
                <number>1</number>
               </property>
@@ -3076,7 +3079,7 @@ Then check the console output for error messages.</string>
             <item>
              <widget class="QCheckBox" name="append_checkbox">
               <property name="toolTip">
-               <string>If checked, current screenshot will be kept</string>
+               <string>If checked, current screenshot(s) will be kept.</string>
               </property>
               <property name="text">
                <string>Append Screenshots</string>
@@ -3088,6 +3091,9 @@ Then check the console output for error messages.</string>
             </item>
             <item>
              <widget class="QPushButton" name="load_screenshots_button">
+              <property name="toolTip">
+               <string>Load screenshots (PNGs) from selected folder.</string>
+              </property>
               <property name="text">
                <string>Load screenshots</string>
               </property>
@@ -3095,6 +3101,10 @@ Then check the console output for error messages.</string>
             </item>
             <item>
              <widget class="QPushButton" name="save_screenshots_button">
+              <property name="toolTip">
+               <string>Save screenshots as PNGs to a folder.
+Saving screenshots will not override exisiting screenshots.</string>
+              </property>
               <property name="text">
                <string>Save Screenshots</string>
               </property>
@@ -3223,6 +3233,9 @@ Then check the console output for error messages.</string>
                <number>0</number>
               </property>
               <property name="bottomMargin">
+               <number>0</number>
+              </property>
+              <property name="spacing">
                <number>0</number>
               </property>
               <item row="0" column="0">
