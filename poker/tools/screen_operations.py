@@ -11,6 +11,7 @@ from PIL import Image, ImageGrab
 from tesserocr import PyTessBaseAPI, PSM, OEM
 
 from poker.tools.helper import memory_cache, get_dir
+from poker.tools import constants as const
 from poker.tools.mongo_manager import MongoManager
 from poker.tools.vbox_manager import VirtualBoxController
 
@@ -178,8 +179,39 @@ def take_screenshot(virtual_box=False):
             screenshot = ImageGrab.grab()
     return screenshot
 
+def normalize_rect(x1, y1, x2, y2):
+    x1_ = min(x1, x2)
+    x2_ = max(x1, x2)
+    
+    y1_ = min(y1,y2)
+    y2_ = max(y1,y2)
 
-def crop_screenshot_with_topleft_corner(original_screenshot, topleft_corner):
+    return x1_, y1_, x2_, y2_
+
+def check_cropping(screenshot_list, top_left_corner_img):
+    """Checks if screenshots are cropped and match the template 'icon'"""
+    try:
+        log.info("Checking cropping for '" + str(len(screenshot_list)) + "' images.")
+        
+        if len(screenshot_list) == 0: return False
+        if top_left_corner_img.size == 0: return False
+
+        any_too_big = any((s.width > const.CROP_WIDTH and s.height > const.CROP_HEIGHT) for s in screenshot_list)
+        if any_too_big: return False
+        
+        for screenshot in screenshot_list:
+            img = cv2.cvtColor(np.array(screenshot), cv2.COLOR_BGR2RGB)
+            count, _, _, _ = find_template_on_screen(top_left_corner_img, img, 0.01)
+            if count != 1: return False
+    except Exception as e:
+        log.exception(e)
+        return False
+    finally:
+        log.info("Done.")
+
+    return True
+
+def crop_screenshot_with_topleft_corner(original_screenshot, topleft_corner, useSleep = True):
     log.debug("Cropping top left corner")
     img = cv2.cvtColor(np.array(original_screenshot), cv2.COLOR_BGR2RGB)
     count, points, _, _ = find_template_on_screen(topleft_corner, img, 0.01)
@@ -188,7 +220,7 @@ def crop_screenshot_with_topleft_corner(original_screenshot, topleft_corner):
         tlc = points[0]
         log.debug(f"Found to left corner at {tlc}")
         cropped_screenshot = original_screenshot.crop(
-            (tlc[0], tlc[1], tlc[0] + 1500, tlc[1] + 1100))
+            (tlc[0], tlc[1], tlc[0] + const.CROP_WIDTH, tlc[1] + const.CROP_HEIGHT))
         return cropped_screenshot, tlc
     elif count > 1:
         log.warning(
@@ -196,7 +228,7 @@ def crop_screenshot_with_topleft_corner(original_screenshot, topleft_corner):
         return None, None
     else:
         log.warning("No top left corner found")
-        sleep(5)
+        if useSleep: sleep(5)
         return None, None
 
 

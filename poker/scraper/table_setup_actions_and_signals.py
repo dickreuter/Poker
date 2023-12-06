@@ -1,20 +1,22 @@
 """Learn to read a table"""
 import io
 import logging
+import os
+import pathlib
 import time
 
 from PIL import Image
 from PIL.ImageQt import ImageQt
-from PyQt6 import QtGui
-from PyQt6.QtCore import Qt, QObject, pyqtSlot, pyqtSignal
-from PyQt6.QtWidgets import QMessageBox
-from time import sleep
+from PyQt6 import QtGui, QtWidgets
+from PyQt6.QtCore import Qt, QObject, pyqtSlot, pyqtSignal, QTimer
+from PyQt6.QtWidgets import QMessageBox, QSlider
 
+from poker.tools import constants as const
 from poker.scraper.table_scraper_nn import TRAIN_FOLDER
 from poker.tools.helper import COMPUTER_NAME, get_config, get_dir
 from poker.tools.mongo_manager import MongoManager
 from poker.tools.screen_operations import get_table_template_image, get_ocr_float, take_screenshot, \
-    crop_screenshot_with_topleft_corner
+    crop_screenshot_with_topleft_corner, check_cropping, normalize_rect
 from poker.tools.vbox_manager import VirtualBoxController
 
 log = logging.getLogger(__name__)
@@ -24,11 +26,13 @@ mongo = MongoManager()
 CARD_VALUES = "23456789TJQKA"
 CARD_SUITES = "CDHS"
 
+
 # pylint: disable=unnecessary-lambda
+
 
 class TableSetupActionAndSignals(QObject):
     """Actions and signals for table logic for QT"""
-    signal_update_screenshot_pic = pyqtSignal(object)
+    signal_update_screenshot_pic = pyqtSignal(int)
     signal_update_label = pyqtSignal(str, str)
     signal_flatten_button = pyqtSignal(str, bool)
     signal_check_box = pyqtSignal(str, int)
@@ -43,7 +47,6 @@ class TableSetupActionAndSignals(QObject):
 
         self.preview = None
         self.table_name = None
-        self.original_screenshot = None
         self.screenshot_image = None
         self.x1 = None
         self.x2 = None
@@ -53,9 +56,21 @@ class TableSetupActionAndSignals(QObject):
         self.tlc = None
         self.selected_player = '0'
         self.cropped = False
-
+        self.nth_second = 1
+        self.x_times = 1
+        self.selected_screenshot_idx = -1
+        self.is_recording = False
+        self.append_screenshots = True
         available_tables = mongo.get_available_tables(COMPUTER_NAME)
         self.ui.table_name.addItems(available_tables)
+
+        self.screenshot_list = []
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.take_screenshot_guard)
+
+        self.ui.screenshot_slider.setTickPosition(QSlider.TickPosition.TicksBelow)
+        self.ui.screenshot_slider.setMinimum(-1)
+        self.ui.screenshot_slider.setMaximum(-1)
 
     def connect_signals_with_slots(self):
         """Connect signals with slots"""
@@ -68,8 +83,8 @@ class TableSetupActionAndSignals(QObject):
         self.ui.screenshot_widget.dragEnterEvent = self.drag_enter_event
         self.ui.screenshot_widget.dragMoveEvent = self.drag_move_event
         self.ui.screenshot_widget.dropEvent = self.drop_event
-        self.ui.take_screenshot_button.clicked.connect(lambda: self.take_screenshot())
-        # self.ui.take_screenshot_cropped_button.clicked.connect(lambda: self.take_screenshot_cropped())
+        self.ui.take_screenshot_button.clicked.connect(lambda: self.take_screenshot_timed())
+        self.ui.screenshot_slider.valueChanged.connect(lambda v: self.show_screenshot_at_slider_pos(v))
         self.ui.test_all_button.clicked.connect(lambda: self.test_all())
         self._connect_cards_with_save_slot()
         self._connect_range_buttons_with_save_coordinates()
@@ -85,6 +100,108 @@ class TableSetupActionAndSignals(QObject):
         self.ui.current_player.currentIndexChanged[int].connect(lambda: self._update_selected_player())
         self.ui.use_neural_network.clicked.connect(lambda: self._save_use_nerual_network_checkbox())
         self.ui.max_players.currentIndexChanged[int].connect(lambda: self._save_max_players())
+        self.ui.spinBox_nthSecond.valueChanged.connect(lambda: self._update_nth_second())
+        self.ui.spinBox_xTimes.valueChanged.connect(lambda: self._update_x_times())
+        self.ui.load_screenshots_button.clicked.connect(lambda: self.load_screenshots())
+        self.ui.save_screenshots_button.clicked.connect(lambda: self.save_screenshots())
+        self.ui.append_checkbox.stateChanged.connect(lambda state: self.set_append(state))
+
+    def load_screenshots(self):
+        folder_str = QtWidgets.QFileDialog.getExistingDirectory(None, 'Select Folder')
+        if folder_str != "":
+            try:
+                folder_path = pathlib.Path(folder_str)
+                files = [pathlib.Path.joinpath(folder_path, f) for f in os.listdir(folder_str) if
+                         os.path.isfile(pathlib.Path.joinpath(folder_path, f))]
+                pngs = [f for f in files if pathlib.Path(f).suffix == ".png"]
+                images = [Image.open(png) for png in pngs]
+
+                self.load_topleft_corner()
+                new_cropped = check_cropping(images, self.top_left_corner_img)
+                
+                if len(self.screenshot_list) == 0:
+                    self.cropped =  new_cropped
+                else:
+                    self.cropped =  self.cropped and new_cropped
+
+                if not self.cropped: 
+                    log.info("Images are not cropped or do not fit to the loaded template.")
+
+                if self.append_screenshots:
+                    self.screenshot_list.extend(images)
+                else:
+                    self.screenshot_list = images
+                    self.cropped = False
+
+                
+
+                self.update_ui_with_screenshot_amount(len(self.screenshot_list))
+            except Exception as e:
+                log.error("Error loading screenshots")
+                log.exception(e)
+                pop_up("Error", "Loading screenshots failed.")
+
+    def save_screenshots(self):
+        folder_str = QtWidgets.QFileDialog.getExistingDirectory(None, 'Select Folder')
+        if folder_str != "":
+            try:
+                folder_path = pathlib.Path(folder_str)
+                files = [pathlib.Path.joinpath(folder_path, f) for f in os.listdir(folder_str) if
+                         os.path.isfile(pathlib.Path.joinpath(folder_path, f))]
+                max_index = self.get_max_file_index(files)
+                for i in range(0, len(self.screenshot_list)):
+                    self.screenshot_list[i].save("{0}\\screenshot_{1:04}.png".format(folder_str, max_index + 1 + i))
+
+                pop_up("Saving screenshots", "Saving screenshots finished.")
+            except Exception as e:
+                log.error("Error saving screenshots")
+                log.exception(e)
+                pop_up("Error", "Saving screenshots failed.")
+
+    def int_try_parse(self, value):
+        try:
+            return int(value), True
+        except ValueError:
+            return value, False
+
+    def get_max_file_index(self, files):
+        pngs = [f for f in files if pathlib.Path(f).suffix == ".png"]
+        if len(pngs) == 0: return 0
+
+        names = [pathlib.Path(f).stem for f in pngs]
+        split = [n.split("_") for n in names if len(n.split("_")) > 1]
+        if len(split) == 0: return 0
+
+        split = [pathlib.Path(s[1]).stem for s in split]
+        indices = [int(i) for i in split if self.int_try_parse(i)]
+        if len(indices) > 0:
+            return max(indices)
+        else:
+            0
+
+    def set_append(self, state):
+        self.append_screenshots = state == 2
+
+    @pyqtSlot(int)
+    def show_screenshot_at_slider_pos(self, value):
+        log.debug("Slider position: " + str(value))
+        log.debug("screenshot_list length: " + str(len(self.screenshot_list)))
+
+        self.selected_screenshot_idx = value
+
+        if len(self.screenshot_list) > 0 \
+           and self.selected_screenshot_idx < len(self.screenshot_list):
+            self.signal_update_screenshot_pic.emit(self.selected_screenshot_idx)
+
+    @pyqtSlot()
+    def _update_x_times(self):
+        self.x_times = self.ui.spinBox_xTimes.value()
+        log.info("Amount of screenshots to take: " + str(self.x_times))
+
+    @pyqtSlot()
+    def _update_nth_second(self):
+        self.nth_second = self.ui.spinBox_nthSecond.value()
+        log.info("Take screenshot every " + str(self.nth_second) + "s")
 
     @pyqtSlot()
     def _update_selected_player(self):
@@ -107,7 +224,7 @@ class TableSetupActionAndSignals(QObject):
         owner = mongo.get_table_owner(self.table_name)
         if owner != COMPUTER_NAME:
             pop_up("Not authorized.",
-                "You can only edit your own tables. Please create a new copy or start with a new blank table")
+                   "You can only edit your own tables. Please create a new copy or start with a new blank table")
             return
         label = 'use_neural_network'
         is_set = self.ui.use_neural_network.checkState()
@@ -143,12 +260,11 @@ class TableSetupActionAndSignals(QObject):
 
         button_show_property = getattr(self.ui, 'covered_card_show')
         button_show_property.clicked.connect(lambda state: self.load_image('covered_card'))
-        
+
     def _connect_save_max_players_with_save_slot(self):
         dropdown = 'max_players'
         dropdown_property = getattr(self.ui, dropdown)
         dropdown_property.currentIndexChanged.connect(lambda state, x=dropdown: self._save_max_players())
-            
 
     def _connect_range_buttons_with_save_coordinates(self):
         range_buttons = [
@@ -233,7 +349,7 @@ class TableSetupActionAndSignals(QObject):
     def _check_box(self, label, checked):
         checkbox = getattr(self.ui, label)
         checkbox.setChecked(checked)
-        
+
     @pyqtSlot(str, int)
     def _set_dropdown(self, label, index):
         dropdown = getattr(self.ui, label)
@@ -297,10 +413,10 @@ class TableSetupActionAndSignals(QObject):
             search_area = table_dict[label]
 
         x1, y1, x2, y2 = search_area['x1'], search_area['y1'], search_area['x2'], search_area['y2']
-        self.preview = self.original_screenshot.crop((x1, y1, x2, y2))
+        self.preview = self.screenshot_list[self.selected_screenshot_idx].crop((x1, y1, x2, y2))
         log.info("image cropped")
         self._update_preview_label(self.preview)
-        
+
     @pyqtSlot(object, str, str)
     def save_coordinates(self, label, player=None):
         if not self.cropped:
@@ -327,31 +443,68 @@ class TableSetupActionAndSignals(QObject):
             label = label + '.' + player
         mongo.save_coordinates(self.table_name, label, {'x1': self.x1, 'y1': self.y1, 'x2': self.x2, 'y2': self.y2})
 
-    @pyqtSlot(object)
+    def take_screenshot_timed(self):
+        if not self.is_recording:
+            self.is_recording = True
+        else:
+            self.is_recording = False
+            self.timer.stop()
+            self.ui.take_screenshot_button.setText("Take screenshot")
+            return
+
+        # Take first screenshot immediately
+        self.screenshot_list = []
+        self.ui.screenshot_slider.setMinimum(-1)
+        self.ui.screenshot_slider.setMaximum(-1)
+
+        self.take_screenshot()
+        if self.x_times == 1:
+            self.is_recording = False
+            pop_up("Information", "Screenshots finished")
+            return
+
+        log.info("Starting screenshot loop")
+        self.timer.start(self.nth_second * 1000)
+
+    def take_screenshot_guard(self):
+
+        if len(self.screenshot_list) == self.x_times:
+            self.timer.stop()
+            self.ui.take_screenshot_button.setText("Take screenshot")
+            self.is_recording = False
+            pop_up("Information", "Screenshots finished")
+        elif len(self.screenshot_list) < self.x_times:
+            self.take_screenshot()
+            self.ui.take_screenshot_button.setText("Cancel (" + str(self.x_times + 1 - len(self.screenshot_list)) + ")")
+        else:
+            # shouldn't be reached
+            self.timer.stop()
+            self.is_recording = False
+            log.debug("Timer race condition?")
+
     def take_screenshot(self):
         """Take a screenshot"""
         log.info("Clearing window")
-        self.signal_update_screenshot_pic.emit(Image.new('RGB', (3, 3)))
+
         self._update_preview_label(Image.new('RGB', (3, 3)))
-        pop_up("Confirmation", "Press ok to take screenshot")
-        
+
         log.info("Taking screenshot")
         config = get_config()
         control = config.config.get('main', 'control')
         if control == 'Direct mouse control':
-            self.original_screenshot = take_screenshot()
-
+            self.screenshot_list.append(take_screenshot())
         else:
             try:
                 vb = VirtualBoxController()
-                self.original_screenshot = vb.get_screenshot_vbox()
+                self.screenshot_list.append(vb.get_screenshot_vbox())
                 log.debug("Screenshot taken from virtual machine")
             except:
                 log.warning("No virtual machine found. Press SETUP to re initialize the VM controller")
-                self.original_screenshot = take_screenshot()
+                self.screenshot_list.append(take_screenshot())
 
+        # log.info("Screenshots taken: " + str(len(self.screenshot_list)))
         log.info("Emitting update signal")
-        self.signal_update_screenshot_pic.emit(self.original_screenshot)
+        self.update_ui_with_screenshot_amount(len(self.screenshot_list))
         log.info("signal emission complete")
 
     @pyqtSlot(object)
@@ -370,35 +523,49 @@ class TableSetupActionAndSignals(QObject):
 
         self.crop()
 
-    @pyqtSlot(object)
-    def update_screenshot_pic(self, screenshot):
+    @pyqtSlot(int)
+    def update_screenshot_pic(self, index):
         """Update label with screenshot picture"""
-        log.info("Convert to to pixmap")
-        qim = ImageQt(screenshot).copy()
-        self.screenshot_image = QtGui.QPixmap.fromImage(qim)
-        log.info("Update screenshot picture")
 
+        log.debug("Convert to to pixmap")
+        qim = ImageQt(self.screenshot_list[index]).copy()
+        self.screenshot_image = QtGui.QPixmap.fromImage(qim)
+        log.debug("Update screenshot picture")
+        self.ui.screenshot_label.setStyleSheet("")
         self.ui.screenshot_label.setPixmap(self.screenshot_image)
-        self.ui.screenshot_label.setStyleSheet('')
-        self.ui.screenshot_label.adjustSize()
+
+    @pyqtSlot(int)
+    def update_ui_with_screenshot_amount(self, amount):
+        log.debug("update_screenshot_slider: " + str(amount))
+        self.ui.screenshot_slider.setMinimum(0)
+        self.ui.screenshot_slider.setMaximum(amount - 1)
+        self.ui.screenshot_slider.setValue(amount - 1)
 
     def crop(self):
-        if not self.original_screenshot:
+        if len(self.screenshot_list) == 0:
             pop_up("No screenshot taken yet",
                    "Please take a screenshot first by pressing on the take screenshot button. Then mark a new top "
                    "left corner or load a previously saved one. After that you can crop the image.")
             return
         self.load_topleft_corner()
-        log.debug("Cropping top left corner")
-        self.original_screenshot, self.tlc = crop_screenshot_with_topleft_corner(self.original_screenshot,
-                                                                                 self.top_left_corner_img)
-        if self.original_screenshot is None:
+
+        log.info("Cropping top left corner of '" + str(len(self.screenshot_list)) + "' images")
+        cropped_images = []
+        for i in range(len(self.screenshot_list)):
+            cropped, self.tlc = crop_screenshot_with_topleft_corner(self.screenshot_list[i],
+                                                                    self.top_left_corner_img, False)
+            if cropped != None:
+                cropped_images.append(cropped)
+        
+        self.screenshot_list = cropped_images
+        if self.tlc is None:
             log.warning("No (or multiple) top left corner found")
             pop_up("Top left corner problem: ",
                    "No or multiple top left corners visible. Please ensure only a single top left corner is visible.")
             return
         else:
-            self.signal_update_screenshot_pic.emit(self.original_screenshot)
+            log.debug("Selected idx: " + str(self.selected_screenshot_idx))
+            self.signal_update_screenshot_pic.emit(self.selected_screenshot_idx)
             self.cropped = True
 
     def load_topleft_corner(self):
@@ -407,6 +574,7 @@ class TableSetupActionAndSignals(QObject):
         try:
             self.top_left_corner_img = get_table_template_image(self.table_name, 'topleft_corner')
         except KeyError:
+            self.top_left_corner_img = None
             log.error("No top left corner saved yet. "
                       "Please mark a top left corner and click on the save newly selected top left corner.")
 
@@ -429,10 +597,26 @@ class TableSetupActionAndSignals(QObject):
         if event.mimeData().hasImage:
             event.setDropAction(Qt.DropAction.CopyAction)
             file_path = event.mimeData().urls()[0].toLocalFile()
+            image = Image.open(file_path)
+            
+            if not self.append_screenshots:
+                self.screenshot_list = []
 
-            self.original_screenshot = Image.open(file_path)
-            self.signal_update_screenshot_pic.emit(self.original_screenshot)
+            self.load_topleft_corner()
+            new_cropped = check_cropping([image], self.top_left_corner_img)
+            
+            if len(self.screenshot_list) == 0:
+               self.cropped = new_cropped
+            else:
+               self.cropped = self.cropped and new_cropped
+            
+            if not self.cropped: 
+                    log.info("Images are not cropped or do not fit to the loaded template.")
+            
+            self.screenshot_list.append(image)
 
+            self.signal_update_screenshot_pic.emit(-1)
+            self.update_ui_with_screenshot_amount(len(self.screenshot_list))
             event.accept()
         else:
             event.ignore()
@@ -453,13 +637,13 @@ class TableSetupActionAndSignals(QObject):
         # self.ui.screenshot_label.setPixmap(self.screenshot_image)
         # self.ui.screenshot_label.show()
         self.screenshot_clicks += 1
-
         if self.screenshot_clicks % 2 == 0:
-            self.x2 = x
-            self.y2 = y
+            self.x1, self.y1, self.x2, self.y2 = normalize_rect(self.x1, self.y1, x, y)
+            
             if self.x2 > self.x1 and self.y2 > self.y1:
                 log.info(f"Clicked on {x}, {y}. Cropping... {(self.x1, self.y1, self.x2, self.y2)}")
-                self.preview = self.original_screenshot.crop((self.x1, self.y1, self.x2, self.y2))
+                self.preview = self.screenshot_list[self.selected_screenshot_idx].crop(
+                    (self.x1, self.y1, self.x2, self.y2))
                 log.info("image cropped")
                 self._update_preview_label(self.preview)
         else:
@@ -540,23 +724,28 @@ class TableSetupActionAndSignals(QObject):
         # show topleft_corner image in preview
         self.preview = Image.open(io.BytesIO(table['topleft_corner']))
         self._update_preview_label(self.preview)
+        self.load_topleft_corner()
+
+        self.cropped = check_cropping(self.screenshot_list, self.top_left_corner_img)
+        if not self.cropped: 
+            log.info("Images are not cropped or do not fit to the loaded template.")
 
         check_boxes = ['use_neural_network']
         for check_box in check_boxes:
             try:
                 if isinstance(table[check_box], int):
-                    nn = 1 if table[check_box]>0 else 0
+                    nn = 1 if table[check_box] > 0 else 0
                 if isinstance(table[check_box], str):
-                    nn = 1 if table[check_box]=='CheckState.Checked' else 0
+                    nn = 1 if table[check_box] == 'CheckState.Checked' else 0
                 self.signal_check_box.emit(check_box, int(nn))
             except KeyError:
                 log.info(f"No available data for {check_box}")
                 self.signal_check_box.emit(check_box, 0)
-                
+
         dropdowns = ['max_players']
         for dropdown in dropdowns:
             try:
-                self.ui.max_players.setCurrentIndex(int(table[dropdown]['value'])-1)
+                self.ui.max_players.setCurrentIndex(int(table[dropdown]['value']) - 1)
             except KeyError:
                 log.warning(f"No available data for {dropdown}")
                 self.ui.max_players.setCurrentIndex(0)
@@ -607,13 +796,14 @@ class TableSetupActionAndSignals(QObject):
         table_scraper = TableScraper(table_dict)
         table_scraper.nn_model = None
 
-        if 'use_neural_network' in table_dict and (table_dict['use_neural_network'] == '2' or table_dict['use_neural_network'] == 'CheckState.Checked'):
+        if 'use_neural_network' in table_dict and (
+                table_dict['use_neural_network'] == '2' or table_dict['use_neural_network'] == 'CheckState.Checked'):
             from tensorflow.keras.models import model_from_json
             table_scraper.nn_model = model_from_json(table_dict['_model'])
             mongo.load_table_nn_weights(self.table_name)
             table_scraper.nn_model.load_weights(get_dir('codebase') + '/loaded_model.h5')
 
-        table_scraper.screenshot = self.original_screenshot
+        table_scraper.screenshot = self.screenshot_list[self.selected_screenshot_idx]
         table_scraper.crop_from_top_left_corner()
         table_scraper.is_my_turn()
         table_scraper.lost_everything()
