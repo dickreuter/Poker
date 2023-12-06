@@ -8,7 +8,7 @@ import time
 from PIL import Image
 from PIL.ImageQt import ImageQt
 from PyQt6 import QtGui, QtWidgets
-from PyQt6.QtCore import Qt, QObject, pyqtSlot, pyqtSignal, QTimer
+from PyQt6.QtCore import Qt, QObject, pyqtSlot, pyqtSignal, QTimer, QCoreApplication
 from PyQt6.QtWidgets import QMessageBox, QSlider
 
 from poker.tools import constants as const
@@ -486,7 +486,10 @@ class TableSetupActionAndSignals(QObject):
         """Take a screenshot"""
         log.info("Clearing window")
 
-        self._update_preview_label(Image.new('RGB', (3, 3)))
+        # avoid having a screenshot of the form containing a screenshot of the poker window icon.
+        self.ui.preview_label.clear()
+        self.ui.screenshot_label.clear()
+        QCoreApplication.processEvents()
 
         log.info("Taking screenshot")
         config = get_config()
