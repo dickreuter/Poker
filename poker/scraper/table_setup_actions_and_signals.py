@@ -739,13 +739,13 @@ class TableSetupActionAndSignals(QObject):
                 log.info(f"No available data for {check_box}")
                 self.signal_check_box.emit(check_box, 0)
 
-        dropdowns = ['max_players']
-        for dropdown in dropdowns:
-            try:
-                self.ui.max_players.setCurrentIndex(int(table[dropdown]['value']) - 1)
-            except KeyError:
-                log.warning(f"No available data for {dropdown}")
-                self.ui.max_players.setCurrentIndex(0)
+        try:
+            all_values = [self.ui.max_players.itemText(i) for i in range(self.ui.max_players.count())]
+            index = all_values.index(str(table['max_players']['value']))
+            self.ui.max_players.setCurrentIndex(index)
+        except KeyError:
+            log.warning(f"No available data for 'max_players'")
+            self.ui.max_players.setCurrentIndex(0)
 
         exceptions = ["table_name"]
         players_buttons = ['covered_card_area', 'player_name_area', 'player_funds_area', 'player_pot_area',
