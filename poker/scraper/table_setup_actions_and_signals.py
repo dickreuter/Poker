@@ -88,7 +88,6 @@ class TableSetupActionAndSignals(QObject):
         self.ui.test_all_button.clicked.connect(lambda: self.test_all())
         self._connect_cards_with_save_slot()
         self._connect_range_buttons_with_save_coordinates()
-        self._connect_save_max_players_with_save_slot()
         self.ui.blank_new.clicked.connect(lambda: self.blank_new())
         self.ui.copy_to_new.clicked.connect(lambda: self.copy_to_new())
         self.ui.crop.clicked.connect(lambda: self.crop())
@@ -260,11 +259,6 @@ class TableSetupActionAndSignals(QObject):
 
         button_show_property = getattr(self.ui, 'covered_card_show')
         button_show_property.clicked.connect(lambda state: self.load_image('covered_card'))
-
-    def _connect_save_max_players_with_save_slot(self):
-        dropdown = 'max_players'
-        dropdown_property = getattr(self.ui, dropdown)
-        dropdown_property.currentIndexChanged.connect(lambda state, x=dropdown: self._save_max_players())
 
     def _connect_range_buttons_with_save_coordinates(self):
         range_buttons = [
