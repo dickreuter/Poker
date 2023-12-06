@@ -1,56 +1,115 @@
 .screenshotWindow {
-    width: 100%;
-    height: 700px;
-    border: 1px solid black;
-    margin-left: 20px;
-    display: inline-block;
-    overflow: auto;
+  width: 100%;
+  height: 700px;
+  border: 1px solid black;
+  margin-left: 20px;
+  display: inline-block;
+  overflow: auto;
 }
-  
+
 .previewWindow {
-    width: 100%;
-    height: 700px;
-    max-height: 700px;
-    overflow: scroll;
+  width: 100%;
+  height: 700px;
+  max-height: 700px;
+  overflow: scroll;
 }
 
 .page {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: 100%;
-    align-items: flex-start; /* add this line */
-  }
-  
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  align-items: flex-start; /* add this line */
+}
+
 .tm_button {
-    font-size: .8rem;
-    width: 200px;      
-    height: 25px;    
-    display: inline-block;
-    text-align: center; 
-    line-height: 10px; 
-    white-space: nowrap; 
-    overflow: hidden;   
-    text-overflow: ellipsis;
+  font-size: 0.8rem;
+  width: 200px;
+  height: 25px;
+  display: inline-block;
+  text-align: center;
+  line-height: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tm_button2 {
-    font-size: .8rem;
-    width: 100px;      
-    height: 25px;    
-    display: inline-block;
-    text-align: center; 
-    line-height: 10px; 
-    white-space: nowrap; 
-    overflow: hidden;   
-    text-overflow: ellipsis;
+  font-size: 0.8rem;
+  width: 100px;
+  height: 25px;
+  display: inline-block;
+  text-align: center;
+  line-height: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .toplevel-container {
-    vertical-align: top;
+  vertical-align: top;
 }
 
 canvas {
-    border: 2px dashed red;
-    background-color: #f0f0f0;
+  border: 2px dashed red;
+  background-color: #f0f0f0;
+}
+
+/* TableMapper.css */
+
+.scrollable-dropdown-menu {
+  max-height: 800px; /* Adjust as needed */
+  overflow-y: auto; /* Enable vertical scrolling */
+}
+
+.cards-container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.card-image {
+  margin: 10px;
+}
+
+/* TableMapper.css */
+/* TableMapper.css */
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 columns for suits */
+  grid-gap: 5px; /* Gap between cards */
+  color: white;
+  justify-items: center; /* Center cards in the grid cells */
+}
+
+.card-image {
+  width: 50px; /* Set a fixed width for the card */
+  height: 72px; /* Set a fixed height for the card, maintaining aspect ratio */
+  background: #333; /* Dark background similar to the uploaded image */
+  display: flex;
+  color: white;
+  flex-direction: column; /* Stack children vertically */
+  justify-content: flex-start; /* Align children to the top */
+  align-items: center; /* Center children horizontally */
+  padding-top: 5px; /* Padding at the top for the button */
+  border-radius: 5px; /* Rounded corners for the card container */
+  position: relative; /* For absolute positioning of the button */
+}
+
+.card-image img {
+  width: 100%; /* Image takes full width of the container */
+  height: calc(100% - 30px); /* Subtract height of the button */
+  object-fit: contain; /* Ensure the image fits without distortion */
+}
+
+.save-selection-button {
+  background-color: #fff; /* Button background */
+  color: #333; /* Button text color */
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  margin-bottom: 5px; /* Spacing between button and image */
+  font-size: 10px; /* Smaller font size for the button */
+  cursor: pointer;
+  z-index: 10; /* Ensure the button is above the image */
 }
