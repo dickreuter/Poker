@@ -88,7 +88,6 @@ class TableSetupActionAndSignals(QObject):
         self.ui.test_all_button.clicked.connect(lambda: self.test_all())
         self._connect_cards_with_save_slot()
         self._connect_range_buttons_with_save_coordinates()
-        self._connect_save_max_players_with_save_slot()
         self.ui.blank_new.clicked.connect(lambda: self.blank_new())
         self.ui.copy_to_new.clicked.connect(lambda: self.copy_to_new())
         self.ui.crop.clicked.connect(lambda: self.crop())
@@ -260,11 +259,6 @@ class TableSetupActionAndSignals(QObject):
 
         button_show_property = getattr(self.ui, 'covered_card_show')
         button_show_property.clicked.connect(lambda state: self.load_image('covered_card'))
-
-    def _connect_save_max_players_with_save_slot(self):
-        dropdown = 'max_players'
-        dropdown_property = getattr(self.ui, dropdown)
-        dropdown_property.currentIndexChanged.connect(lambda state, x=dropdown: self._save_max_players())
 
     def _connect_range_buttons_with_save_coordinates(self):
         range_buttons = [
@@ -745,13 +739,13 @@ class TableSetupActionAndSignals(QObject):
                 log.info(f"No available data for {check_box}")
                 self.signal_check_box.emit(check_box, 0)
 
-        dropdowns = ['max_players']
-        for dropdown in dropdowns:
-            try:
-                self.ui.max_players.setCurrentIndex(int(table[dropdown]['value']) - 1)
-            except KeyError:
-                log.warning(f"No available data for {dropdown}")
-                self.ui.max_players.setCurrentIndex(0)
+        try:
+            all_values = [self.ui.max_players.itemText(i) for i in range(self.ui.max_players.count())]
+            index = all_values.index(str(table['max_players']['value']))
+            self.ui.max_players.setCurrentIndex(index)
+        except KeyError:
+            log.warning(f"No available data for 'max_players'")
+            self.ui.max_players.setCurrentIndex(0)
 
         exceptions = ["table_name"]
         players_buttons = ['covered_card_area', 'player_name_area', 'player_funds_area', 'player_pot_area',
