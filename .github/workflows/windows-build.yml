@@ -17,9 +17,9 @@ jobs:
       with:
         python-version: '3.11.5'
 
-    - name: Install Tesseract 3.04.00
+    - name: Install Tesseract
       run: |
-        choco install tesseract --version=3.04.00
+        choco install tesseract
         echo "C:\Program Files\Tesseract-OCR" >> $GITHUB_PATH
 
     - name: Refresh Environment
