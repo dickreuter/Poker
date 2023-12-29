@@ -28,4 +28,3 @@ PyJWT==1.7.0
 flask_jwt_extended
 fastapi_auth
 uvicorn
-tesserocr
