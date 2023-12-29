@@ -10,55 +10,34 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.11.5'
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11.5'
 
-    - name: Install Tesseract
-      run: |
-        choco install tesseract
-        echo "C:\Program Files\Tesseract-OCR" >> $GITHUB_PATH
+      - name: Install Tesseract
+        run: iwr https://github.com/simonflueckiger/tesserocr-windows_build/releases/download/tesserocr-v2.6.0-tesseract-5.3.1/tesserocr-2.6.0-cp311-cp311-win_amd64.whl
 
-    - name: Refresh Environment
-      run: |
-        Import-Module "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
-        Update-SessionEnvironment
+      - name: Install dependencies
+        run: pip install -r requirements.txt
 
-    - name: Check PATH
-      run: |
-        echo "PATH: $env:PATH"
+      - name: Run PyInstaller
+        run: |
+          cd poker
+          pyinstaller main.spec
+          # Add other necessary steps here
 
-    - name: List Tesseract Directory
-      run: |
-        ls "C:\Program Files\Tesseract-OCR"
+      - name: Install NSIS
+        run: |
+          choco install nsis
 
-    - name: Test Tesseract Command
-      run: |
-        & "C:\Program Files\Tesseract-OCR\tesseract.exe" --version
+      - name: Run NSIS
+        run: makensis -V3 DeepMindPokerbot.nsi
 
-    - name: Install dependencies
-      run: |
-        $env:Path += ";C:\Program Files\Tesseract-OCR"
-        pip install -r requirements.txt
-
-    - name: Run PyInstaller
-      run: |
-        cd poker
-        pyinstaller main.spec
-        # Add other necessary steps here
-
-    - name: Install NSIS
-      run: |
-        choco install nsis
-
-    - name: Run NSIS
-      run: makensis -V3 DeepMindPokerbot.nsi
-
-    - name: Upload Artifacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: compiled-app
-        path: path/to/your/compiled/app
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: compiled-app
+          path: path/to/your/compiled/app
