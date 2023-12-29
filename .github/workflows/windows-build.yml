@@ -18,8 +18,8 @@ jobs:
 
       - name: Install Tesseract
         run: |
-          iwr https://github.com/simonflueckiger/tesserocr-windows_build/releases/download/tesserocr-v2.6.0-tesseract-5.3.1/tesserocr-2.6.0-cp311-cp311-win_amd64.whl -Out tesserocr.whl
-          pip install ./tesserocr.whl
+          iwr https://github.com/simonflueckiger/tesserocr-windows_build/releases/download/tesserocr-v2.6.0-tesseract-5.3.1/tesserocr-2.6.0-cp311-cp311-win_amd64.whl -Out tesserocr-2.6.0-cp311-cp311-win_amd64.whl
+          pip install tesserocr-2.6.0-cp311-cp311-win_amd64.whl
 
       - name: Install dependencies
         run: |
