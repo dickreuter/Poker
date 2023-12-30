@@ -1,10 +1,9 @@
 import { Tab, Tabs } from "@mui/material";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.css";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Dropdown } from "react-bootstrap";
 import "./TableMapper.css";
-import React from "react";
 
 function TableMapper() {
   const API_URL =
@@ -41,6 +40,34 @@ function TableMapper() {
     "K",
     "A",
   ];
+  const [buttonImages, setButtonImages] = useState({});
+  const [buttonSelections, setButtonSelections] = useState({});
+
+  // Add this function to handle the saving of button selections
+  const saveButtonSelection = async (imageData, label) => {
+    try {
+      // Here you would send imageData and label to your backend
+      const response = await axios.post(`${API_URL}/save_button_selection`, {
+        image_data: imageData,
+        label: label,
+      });
+      console.log("Button selection saved:", response.data);
+    } catch (error) {
+      console.error("Error saving button selection:", error);
+    }
+  };
+
+  // Call this function when the 'save' button is clicked
+  const onSaveButtonClick = (buttonKey) => {
+    const selection = buttonSelections[buttonKey];
+    const image = buttonImages[buttonKey];
+    if (selection && image) {
+      saveButtonSelection(image, buttonKey);
+    } else {
+      console.error("No selection or image to save for button:", buttonKey);
+    }
+  };
+
   const takeScreenshot = async () => {
     try {
       console.log("taking screenshot");
@@ -76,7 +103,6 @@ function TableMapper() {
       console.error("Error saving selection:", error);
     }
   };
-  
 
   const fetchAvailableTables = async () => {
     try {
@@ -367,34 +393,55 @@ function TableMapper() {
                   <Tab label="Test" />
                 </Tabs>
 
-                {tabValue === 0 && <div>{/* Content for "Buttons" tab */}</div>}
+                {tabValue === 0 && (
+                  <div className="buttons-grid">
+                    {/* Map over your buttons data here */}
+                    {Object.entries(buttonImages).map(
+                      ([buttonKey, imageSrc]) => (
+                        <div key={buttonKey} className="button-image">
+                          <img src={imageSrc} alt={buttonKey} />
+                          <button
+                            className="save-selection-button"
+                            onClick={() => onSaveButtonClick(buttonKey)}
+                          >
+                            Save
+                          </button>
+                        </div>
+                      )
+                    )}
+                  </div>
+                )}
                 {tabValue === 1 && <div>{/* Content for "Players" tab */}</div>}
                 {tabValue === 2 && (
-  <div className="cards-grid">
-    {ranks.map((rank) => (
-      <React.Fragment key={rank}>
-        {suits.map((suit) => {
-          const cardKey = rank + suit;
-          return (
-            <div key={cardKey} className="card-image">
-              {cardImages[cardKey] && (
-                <img src={cardImages[cardKey]} alt={cardKey} />
-              )}
-              <button
-                className="save-selection-button"
-                onClick={() => saveSelection(cardImages[cardKey], cardKey, lastSelectedTableName)}
-              >
-                Save
-              </button>
-            </div>
-          );
-        })}
-      </React.Fragment>
-    ))}
-  </div>
-)}
-Create the saveSelection Function:
-
+                  <div className="cards-grid">
+                    {ranks.map((rank) => (
+                      <React.Fragment key={rank}>
+                        {suits.map((suit) => {
+                          const cardKey = rank + suit;
+                          return (
+                            <div key={cardKey} className="card-image">
+                              {cardImages[cardKey] && (
+                                <img src={cardImages[cardKey]} alt={cardKey} />
+                              )}
+                              <button
+                                className="save-selection-button"
+                                onClick={() =>
+                                  saveSelection(
+                                    cardImages[cardKey],
+                                    cardKey,
+                                    lastSelectedTableName
+                                  )
+                                }
+                              >
+                                Save
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                )}
 
                 {tabValue === 3 && <div>{/* Content for "Mouse" tab */}</div>}
                 {tabValue === 4 && <div>{/* Content for "Test" tab */}</div>}
