@@ -34,6 +34,16 @@ jobs:
           pyinstaller main.spec
           # Add other necessary steps here
 
+      - name: Prepare distribution
+        run: |
+          mkdir dist\main\log
+          mkdir dist\main\pics
+          mkdir dist\main\log\screenshots
+          mkdir dist\main\decisionmaker
+          copy icon.ico dist\main
+          copy config_default.ini dist\main\config.ini
+          xcopy vboxapi dist\main\vboxapi\ /E
+
       - name: Install NSIS
         run: |
           choco install nsis
@@ -45,4 +55,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: compiled-app
-          path: path/to/your/compiled/app
+          path: DeepMindPokerbot_winstaller.exe

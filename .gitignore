@@ -169,7 +169,6 @@ package.bat
 *.nsi
 pokwerbot_downloader_initia.py
 desktop.ini
-config_default.ini
 pokerbot_downloader_initial.py
 config.ini
 /poker/tests/test_tensorflow.py
