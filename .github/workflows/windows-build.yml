@@ -40,16 +40,16 @@ jobs:
           mkdir dist\main\pics
           mkdir dist\main\log\screenshots
           mkdir dist\main\decisionmaker
-          copy icon.ico dist\main
-          copy config_default.ini dist\main\config.ini
-          xcopy vboxapi dist\main\vboxapi\ /E
+          copy poker\icon.ico dist\main
+          copy poker\config_default.ini dist\main\config.ini
+          xcopy poker\vboxapi dist\main\vboxapi\ /E
 
       - name: Install NSIS
         run: |
           choco install nsis
 
       - name: Run NSIS
-        run: makensis -V3 DeepMindPokerbot.nsi
+        run: makensis -V3 poker\DeepMindPokerbot.nsi
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v2

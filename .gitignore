@@ -166,7 +166,6 @@ cython_debug/
 best_strategies.js
 package.bat
 *.exe
-*.nsi
 pokwerbot_downloader_initia.py
 desktop.ini
 pokerbot_downloader_initial.py
