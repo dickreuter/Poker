@@ -24,7 +24,7 @@ fastapi
 tensorflow
 tqdm
 seaborn
-PyJWT==1.7.0
+PyJWT==2.4.0
 flask_jwt_extended
 fastapi_auth
 uvicorn
