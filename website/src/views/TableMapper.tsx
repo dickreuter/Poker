@@ -4,10 +4,9 @@ import "bootstrap/dist/css/bootstrap.css";
 import React, { useEffect, useRef, useState } from "react";
 import { Dropdown } from "react-bootstrap";
 import "./TableMapper.css";
+import { API_URL } from "./config";
 
 function TableMapper() {
-  const API_URL =
-    import.meta.env.VITE_REACT_APP_API_URL || "http://dickreuter.com:7777";
   const canvasRef = useRef(null);
   const previewRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);

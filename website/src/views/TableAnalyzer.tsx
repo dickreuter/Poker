@@ -3,9 +3,9 @@ import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.css';
 import { useEffect, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, Legend, Tooltip, XAxis, YAxis } from 'recharts';
+import { API_URL } from './config';
 
 function TableAnalyzer() {
-  const API_URL = import.meta.env.VITE_REACT_APP_API_URL || 'http://dickreuter.com:7777';
   const [tableData, setTableData] = useState([]);
   const [loading, setLoading] = useState(true); // New state for loading
 

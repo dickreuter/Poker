@@ -1,0 +1,36 @@
+name: Update Website
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Use Node.js
+      uses: actions/setup-node@v1
+      with:
+        node-version: '14'
+
+    - name: Install Dependencies
+      run: npm install
+      working-directory: ./website
+
+    - name: Build
+      run: npm run build
+      working-directory: ./website
+
+    - name: Deploy to Server
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.DEPLOYMENT_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan dickreuter.com >> ~/.ssh/known_hosts
+        scp -i ~/.ssh/id_rsa -r ./dist/* ec2-user@dickreuter.com:/home/ec2-user/www/deepermind-pokerbot.com
+      env:
+        DEPLOY_KEY: ${{ secrets.DEPLOYMENT_KEY }}
+      working-directory: ./website

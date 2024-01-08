@@ -9,10 +9,10 @@ import { pirate } from '../assets/Images';
 import FundsChangeLineChart from '../components/FundsChangeChart';
 import Loading from '../components/Loading';
 import DataTable from '../components/TableData';
+import { API_URL } from './config';
 
 
 const StrategyAnalyzer: React.FC = () => {
-    const API_URL = import.meta.env.VITE_REACT_APP_API_URL || 'http://dickreuter.com:7777';
     const [strategies, setStrategies] = useState<string[]>([]);
     const [selectedStrategy, setSelectedStrategy] = useState<string | null>(null);
     const [endStage, setEndStage] = useState<string>('All');

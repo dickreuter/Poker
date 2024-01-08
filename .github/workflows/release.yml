@@ -1,9 +1,8 @@
-name: Windows Build
+name: Binary Release
 
 on:
-  push:
-    branches: master
-
+  workflow_dispatch:
+    
 jobs:
   build:
     runs-on: windows-latest
@@ -36,23 +35,44 @@ jobs:
 
       - name: Prepare distribution
         run: |
+          cd poker
           mkdir dist\main\log
           mkdir dist\main\pics
           mkdir dist\main\log\screenshots
-          mkdir dist\main\decisionmaker
-          copy icon.ico dist\main
-          copy config_default.ini dist\main\config.ini
+          xcopy icon.ico dist\main\poker.ico* /Y
+          xcopy config_default.ini dist\main\config.ini* /Y
           xcopy vboxapi dist\main\vboxapi\ /E
+
+      - name: Show content
+        run: |
+          cd poker
+          dir dist\main
 
       - name: Install NSIS
         run: |
           choco install nsis
 
       - name: Run NSIS
-        run: makensis -V3 DeepMindPokerbot.nsi
-
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v2
+        run: |
+          makensis -V3 poker\DeepMindPokerbot.nsi
+         
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: compiled-app
-          path: DeepMindPokerbot_winstaller.exe
+          tag_name: DeepermindPokerbot-${{ github.run_number }}
+          release_name: Release ${{ github.run_number }}
+          draft: false
+          prerelease: false
+          
+      - name: Upload Executable to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./DeepMindPokerbot_winstaller.exe
+          asset_name: DeepMindPokerbot_winstaller.exe
+          asset_content_type: application/octet-stream

@@ -1,45 +1,77 @@
-import 'bootstrap/dist/css/bootstrap.css';
+import "bootstrap/dist/css/bootstrap.css";
 import { Link } from "react-router-dom";
+import { useDlLink } from "../views/config";
 
 function NavBar() {
-    return (
-        <nav className="navbar navbar-expand-sm fixed-top navbar-light bg-light">
-            <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo03" aria-controls="navbarTogglerDemo03" aria-expanded="false" aria-label="Toggle navigation">
-                <span className="navbar-toggler-icon"></span>
-            </button>
-            <a className="navbar-brand" href="/">DeeperMind PokerBot</a>
+    const dlLink = useDlLink();
 
-            <div className="collapse navbar-collapse" id="navbarTogglerDemo03">
-                <ul className="navbar-nav mr-auto">
-                    <li className="nav-item">
-                        <a className="nav-link" href="https://onedrive.live.com/download?cid=A3B69BDCC03E82A9&resid=A3B69BDCC03E82A9%21111289&authkey=AEftpEpz8jxnBdI">Download</a>
-                    </li>
-                    <li className="nav-item">
-                        <Link className="nav-link" to="/purchase">Purchase</Link>
-                    </li>
-                    <li className="nav-item">
-                        <Link className="nav-link" to="/strategyanalyzer">Strategies</Link>
-                    </li>
-                    <li className="nav-item">
-                        <Link className="nav-link" to="/tableanalyzer">Table mappings</Link>
-                    </li>
+  return (
+    <nav className="navbar navbar-expand-sm fixed-top navbar-light bg-light">
+      <button
+        className="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarTogglerDemo03"
+        aria-controls="navbarTogglerDemo03"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span className="navbar-toggler-icon"></span>
+      </button>
+      <a className="navbar-brand" href="/">
+        DeeperMind PokerBot
+      </a>
 
-                    <li className="nav-item">
-                        <a className="nav-link" href="https://discord.gg/xB9sR3Q7r3">Support chat</a>
-                    </li>
-                    <li className="nav-item">
-                        <a className="nav-link" href="https://github.com/dickreuter/Poker">Source code</a>
-                    </li>
-                    <li className="nav-item">
-                        <a className="nav-link" href="https://github.com/dickreuter/Poker/blob/master/readme.rst">Documentation</a>
-                    </li>
-                    <li className="nav-item">
-                        <a className="nav-link" href="http://www.betfair-bot.com">Betfair Bot</a>
-                    </li>
-                </ul>
-            </div>
-        </nav>
-    )
+      <div className="collapse navbar-collapse" id="navbarTogglerDemo03">
+        <ul className="navbar-nav mr-auto">
+          <li className="nav-item">
+            <a className="nav-link" href={dlLink}>
+              Download
+            </a>
+          </li>
+          <li className="nav-item">
+            <Link className="nav-link" to="/purchase">
+              Purchase
+            </Link>
+          </li>
+          <li className="nav-item">
+            <Link className="nav-link" to="/strategyanalyzer">
+              Strategies
+            </Link>
+          </li>
+          <li className="nav-item">
+            <Link className="nav-link" to="/tableanalyzer">
+              Table mappings
+            </Link>
+          </li>
+
+          <li className="nav-item">
+            <a className="nav-link" href="https://discord.gg/xB9sR3Q7r3">
+              Support chat
+            </a>
+          </li>
+          <li className="nav-item">
+            <a className="nav-link" href="https://github.com/dickreuter/Poker">
+              Source code
+            </a>
+          </li>
+          <li className="nav-item">
+            <a
+              className="nav-link"
+              href="https://github.com/dickreuter/Poker/blob/master/readme.rst"
+            >
+              Documentation
+            </a>
+          </li>
+          <li className="nav-item">
+            <a className="nav-link" href="http://www.betfair-bot.com">
+              Betfair Bot
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+  );
 }
 
-export default NavBar
+export default NavBar;
