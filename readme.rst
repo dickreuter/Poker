@@ -184,6 +184,7 @@ Running via python source code
 ------------------------------
 - Download pycharm communite edition as an IDE from here: https://www.jetbrains.com/pycharm/download/#section=windows
 - Install anaconda https://www.anaconda.com/products/distribution
+- Download tesserocr:  https://github.com/simonflueckiger/tesserocr-windows_build/releases/download/tesserocr-v2.6.0-tesseract-5.3.1/tesserocr-2.6.0-cp311-cp311-win_amd64.whl -Out tesserocr-2.6.0-cp311-cp311-win_amd64.whl and install the whleel file with pip install 
 - Create an environment with ``pip install -r requirements.txt`` and separately run pip install tesserocr
 - You also may need to get c++ runtime distributable: https://visualstudio.microsoft.com/downloads/
 - Install virtualbox from https://www.virtualbox.org/wiki/Downloads and put the poker client into the virtual box. That way it can be controlled without having to use the mouse in your main window.

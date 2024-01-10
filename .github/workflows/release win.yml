@@ -1,4 +1,4 @@
-name: Binary Release
+name: Binary Release Windows
 
 on:
   workflow_dispatch:
@@ -31,7 +31,6 @@ jobs:
         run: |
           cd poker
           pyinstaller main.spec
-          # Add other necessary steps here
 
       - name: Prepare distribution
         run: |
@@ -42,11 +41,6 @@ jobs:
           xcopy icon.ico dist\main\poker.ico* /Y
           xcopy config_default.ini dist\main\config.ini* /Y
           xcopy vboxapi dist\main\vboxapi\ /E
-
-      - name: Show content
-        run: |
-          cd poker
-          dir dist\main
 
       - name: Install NSIS
         run: |
@@ -63,7 +57,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: DeepermindPokerbot-${{ github.run_number }}
-          release_name: Release ${{ github.run_number }}
+          release_name: Windows Release ${{ github.run_number }}
           draft: false
           prerelease: false
           
