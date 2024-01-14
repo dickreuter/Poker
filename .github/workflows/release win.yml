@@ -25,7 +25,7 @@ jobs:
           pip install tesserocr-2.6.0-cp311-cp311-win_amd64.whl
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: pip install -r requirements_win.txt
 
       - name: Run PyInstaller
         run: |

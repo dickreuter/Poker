@@ -1,20 +1,21 @@
-os:
-  - windows
+language: python
+python:
+  - "3.11"
 
-language: shell
+os: windows
 
-before_install:
-  # Install Conda
-  - choco install miniconda3 --params="/AddToPath:1"
-  - source $HOME/miniconda3/etc/profile.d/conda.sh
-  
 install:
-  # Create a Conda environment from environment.yml
-  - conda env create --file environment.yml
-  - conda activate my_env
-  
-script: pytest --log-cli-level=warning
+  # Install Tesseract
+  - |
+    curl -L -o tesserocr-2.6.0-cp311-cp311-win_amd64.whl https://github.com/simonflueckiger/tesserocr-windows_build/releases/download/tesserocr-v2.6.0-tesseract-5.3.1/tesserocr-2.6.0-cp311-cp311-win_amd64.whl
+    pip install tesserocr-2.6.0-cp311-cp311-win_amd64.whl
 
-after_success:
-  - codecov
+  # Install other dependencies
+  - pip install -r requirements_win.txt
 
+script:
+  # Run your tests
+  - pytest
+
+  # Run Pylint
+  - pylint poker

@@ -233,3 +233,4 @@ Poker.code-workspace
 *.sh
 *.spec
 *.ipynb
+*.dmg
