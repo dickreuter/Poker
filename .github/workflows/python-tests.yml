@@ -1,0 +1,34 @@
+name: Python application test with GitHub Actions
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: 3.11
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements_win.txt
+        pip install pylint pytest
+
+    - name: Install Tesseract
+      run: |
+        curl -L -o tesserocr-2.6.0-cp311-cp311-win_amd64.whl https://github.com/simonflueckiger/tesserocr-windows_build/releases/download/tesserocr-v2.6.0-tesseract-5.3.1/tesserocr-2.6.0-cp311-cp311-win_amd64.whl
+        pip install tesserocr-2.6.0-cp311-cp311-win_amd64.whl
+
+    - name: Lint with pylint
+      run: |
+        pylint poker
+
+    - name: Test with pytest
+      run: |
+        pytest
