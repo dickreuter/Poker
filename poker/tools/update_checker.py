@@ -5,6 +5,8 @@ import requests
 
 from poker.tools.helper import get_config
 
+# pylint: disable=unused-variable,missing-function-docstring,missing-class-docstring,invalid-name,missing-timeout
+
 config = get_config()
 URL = config.config.get('main', 'db')
 

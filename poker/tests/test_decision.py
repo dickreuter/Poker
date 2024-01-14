@@ -1,3 +1,4 @@
+"""Tests for decision making"""
 import unittest
 from unittest.mock import MagicMock
 
@@ -8,7 +9,7 @@ from poker.decisionmaker.decisionmaker import Decision, DecisionTypes
 from poker.tests import init_table
 from poker.tools.strategy_handler import StrategyHandler
 
-# pylint: disable=unused-variable
+# pylint: disable=unused-variable,missing-function-docstring,missing-class-docstring,invalid-name
 @pytest.mark.skip(reason="Fix access issues")
 class TestDecision(unittest.TestCase):
     def test_no_test_bluff(self):

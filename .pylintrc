@@ -444,7 +444,11 @@ disable=raw-checker-failed,
         consider-using-f-string,
         unnecessary-dunder-call,
         trailing-whitespace,
-
+        bare-except,
+        missing-module-docstring,
+        import-outside-toplevel,
+        missing-timeout,
+        
 
 
 

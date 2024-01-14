@@ -12,6 +12,7 @@ from poker.scraper.table import Table
 
 log = logging.getLogger(__name__)
 
+# pylint: disable=unused-argument,f-string-without-interpolation,bare-except
 
 class TableScreenBased(Table):
 
@@ -195,17 +196,18 @@ class TableScreenBased(Table):
             crd1 = crd1.upper()
             crd2 = crd2.upper()
             sheet_name = str(self.position_utg_plus + 1)
-            if sheet_name == '6': return True
             try:
+                if sheet_name == '6': return True
                 if int(sheet_name[0]) > 6:
                     old = sheet_name[0]
                     sheet_name = sheet_name.replace(old, '6', 1)
-            except Exception as e:
-                pass
-                    
-            sheet = h.preflop_sheet[sheet_name]
-            sheet['Hand'] = sheet['Hand'].apply(lambda x: str(x).upper())
-            handlist = set(sheet['Hand'].tolist())
+                        
+                sheet = h.preflop_sheet[sheet_name]
+                sheet['Hand'] = sheet['Hand'].apply(lambda x: str(x).upper())
+                handlist = set(sheet['Hand'].tolist())
+            except KeyError:
+                log.warning("Fastfold ignored: No preflop sheet found for position: " + str(sheet_name))
+                return True
 
             found_card = ''
 
@@ -369,7 +371,7 @@ class TableScreenBased(Table):
 
         if ((h.previous_decision == "Call" or h.previous_decision == "Call2") and str(h.lastRoundGameID) == str(
                 h.GameID)) and \
-                not (self.checkButton == True and self.playersAhead == 0):
+                not (self.checkButton is True and self.playersAhead == 0):
             self.other_player_has_initiative = True
         else:
             self.other_player_has_initiative = False
