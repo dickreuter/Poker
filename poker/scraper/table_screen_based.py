@@ -196,6 +196,13 @@ class TableScreenBased(Table):
             crd2 = crd2.upper()
             sheet_name = str(self.position_utg_plus + 1)
             if sheet_name == '6': return True
+            try:
+                if int(sheet_name[0]) > 6:
+                    old = sheet_name[0]
+                    sheet_name = sheet_name.replace(old, '6', 1)
+            except Exception as e:
+                pass
+                    
             sheet = h.preflop_sheet[sheet_name]
             sheet['Hand'] = sheet['Hand'].apply(lambda x: str(x).upper())
             handlist = set(sheet['Hand'].tolist())

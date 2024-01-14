@@ -1,4 +1,4 @@
-name: Python application test with GitHub Actions
+name: Unit tests
 
 on: [push, pull_request]
 
