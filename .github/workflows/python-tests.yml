@@ -25,10 +25,10 @@ jobs:
         curl -L -o tesserocr-2.6.0-cp311-cp311-win_amd64.whl https://github.com/simonflueckiger/tesserocr-windows_build/releases/download/tesserocr-v2.6.0-tesseract-5.3.1/tesserocr-2.6.0-cp311-cp311-win_amd64.whl
         pip install tesserocr-2.6.0-cp311-cp311-win_amd64.whl
 
-    - name: Lint with pylint
-      run: |
-        pylint poker
-
     - name: Test with pytest
       run: |
         pytest
+
+    - name: Lint with pylint
+      run: |
+        pylint poker
