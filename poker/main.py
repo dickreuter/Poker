@@ -30,7 +30,7 @@ from poker.tools.mongo_manager import MongoManager
 from poker.tools.mouse_mover import MouseMoverTableBased
 from poker.tools.update_checker import UpdateChecker
 
-# pylint: disable=no-member,simplifiable-if-expression,protected-access,line-too-long,use-fstring-for-concatenation,refactoring:missing-module-dosctring,
+# pylint: disable=no-member,simplifiable-if-expression,protected-access,line-too-long,refactoring:missing-module-docstring,
 
 warnings.filterwarnings("ignore", category=matplotlib.MatplotlibDeprecationWarning)
 warnings.filterwarnings("ignore", message="ignoring `maxfev` argument to `Minimizer()`. Use `max_nfev` instead.")
@@ -39,7 +39,7 @@ warnings.filterwarnings("ignore", message="All-NaN axis encountered")
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-version = 6.76
+version = 6.77
 ui = None
 
 

@@ -5,12 +5,14 @@ import logging
 
 import pandas as pd
 import requests
-from PIL import Image
 from fastapi.encoders import jsonable_encoder
+from PIL import Image
+from requests.exceptions import JSONDecodeError
 
 from poker.tools.helper import COMPUTER_NAME, get_config, get_dir
 from poker.tools.singleton import Singleton
-from requests.exceptions import JSONDecodeError
+
+# pylint: disable=raise-missing-from
 
 TABLES_COLLECTION = 'tables'
 
@@ -44,6 +46,7 @@ class MongoManager(metaclass=Singleton):
         response = requests.post(URL + "update_table_image", json={'pil_image': encoded,
                                                                    'label': label,
                                                                    'table_name': table_name}).json()
+        return response
 
     def update_table_image(self, pil_image, label, table_name):
         """update table image"""
