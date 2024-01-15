@@ -32,7 +32,7 @@ from poker.tools.update_checker import UpdateChecker
 
 # pylint: disable=no-member,simplifiable-if-expression,protected-access,line-too-long,use-fstring-for-concatenation,refactoring:missing-module-dosctring,
 
-warnings.filterwarnings("ignore", category=matplotlib.cbook.mplDeprecation)
+warnings.filterwarnings("ignore", category=matplotlib.MatplotlibDeprecationWarning)
 warnings.filterwarnings("ignore", message="ignoring `maxfev` argument to `Minimizer()`. Use `max_nfev` instead.")
 warnings.filterwarnings("ignore", message="DataFrame columns are not unique, some columns will be omitted.")
 warnings.filterwarnings("ignore", message="All-NaN axis encountered")
