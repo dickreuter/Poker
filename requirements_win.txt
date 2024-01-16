@@ -20,7 +20,7 @@ lmfit
 openpyxl
 numexpr==2.8.4
 fastapi==0.101.1
-tensorflow
+tensorflow==2.12.0
 tqdm
 seaborn
 PyJWT==1.7.0
