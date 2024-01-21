@@ -1,8 +1,21 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { API_URL } from "../../views/config";
+import "./PreFlopStrategyEditor.css"; // Make sure the path is correct
 
-// Subcomponent for each hand scenario row
+const getBackgroundColor = (value) => {
+  const hue = ((value / 100) * 120).toString(10);
+  return `hsl(${hue}, 100%, 50%)`;
+};
+
+const getDefaultStrategy = () => ({
+  call: 0,
+  raise: 0,
+  betSizeCall: "Bet Halfpot",
+  betSizeRaise: "Bet Halfpot",
+});
+
+
 const HandScenarioRow = ({
   hand,
   scenario,
@@ -13,13 +26,27 @@ const HandScenarioRow = ({
   const [call, setCall] = useState(0);
   const [raise, setRaise] = useState(0);
 
+  const [betSizeCall, setBetSizeCall] = useState("Bet Halfpot");
+  const [betSizeRaise, setBetSizeRaise] = useState("Bet Halfpot");
+
   // Update call and raise when strategies or position changes
   useEffect(() => {
     const posStrategy = strategies[position]?.[hand]?.[scenario];
     setCall(posStrategy?.call || 0);
     setRaise(posStrategy?.raise || 0);
+    setBetSizeCall(posStrategy?.betSizeCall || "Bet Halfpot");
+    setBetSizeRaise(posStrategy?.betSizeRaise || "Bet Halfpot");
   }, [hand, scenario, position, strategies]);
 
+  const handleBetSizeChange = (betType, value, hand, scenario) => {
+    if (betType === "call") {
+      setBetSizeCall(value);
+      onStrategyChange(hand, scenario, call, raise, value, betSizeRaise);
+    } else if (betType === "raise") {
+      setBetSizeRaise(value);
+      onStrategyChange(hand, scenario, call, raise, betSizeCall, value);
+    }
+  };
   const handleCallChange = (e) => {
     const newCall = Math.max(
       0,
@@ -48,6 +75,13 @@ const HandScenarioRow = ({
           min="0"
           max="100"
         />
+        <select
+          value={betSizeCall}
+          onChange={(e) => handleBetSizeChange("call", e.target.value)}
+        >
+          <option value="Bet Halfpot">1/2 Pot</option>
+          <option value="Bet Pot">Pot</option>
+        </select>
         %
       </td>
       <td>
@@ -58,6 +92,13 @@ const HandScenarioRow = ({
           min="0"
           max="100"
         />
+        <select
+          value={betSizeRaise}
+          onChange={(e) => handleBetSizeChange("raise", e.target.value)}
+        >
+          <option value="Bet Halfpot">1/2 Pot</option>
+          <option value="Bet Pot">Pot</option>
+        </select>
         %
       </td>
       <td>{`${fold}%`}</td>
@@ -86,14 +127,21 @@ const PreFlopStrategyEditor = () => {
     fetchPreflopValues();
   }, []);
 
-  const handleStrategyChange = (hand, scenario, call, raise) => {
+  const handleStrategyChange = (
+    hand,
+    scenario,
+    call,
+    raise,
+    betSizeCall,
+    betSizeRaise
+  ) => {
     setStrategies((prevStrategies) => ({
       ...prevStrategies,
       [position]: {
         ...prevStrategies[position],
         [hand]: {
           ...prevStrategies[position]?.[hand],
-          [scenario]: { call, raise },
+          [scenario]: { call, raise, betSizeCall, betSizeRaise },
         },
       },
     }));
@@ -120,6 +168,79 @@ const PreFlopStrategyEditor = () => {
       // Optionally, display an error message to the user
     }
   };
+  // Handle call percentage change
+  // Handle call percentage change
+const handleCallChange = (event, hand, scenario) => {
+  const newCall = Math.max(
+    0,
+    Math.min(100, parseInt(event.target.value, 10) || 0)
+  );
+
+  setStrategies((prev) => ({
+    ...prev,
+    [position]: {
+      ...prev[position],
+      [hand]: {
+        ...(prev[position]?.[hand] || {}), // Initialize hand if not exists
+        [scenario]: {
+          ...(prev[position]?.[hand]?.[scenario] || getDefaultStrategy()), // Initialize scenario if not exists
+          call: newCall,
+          raise: prev[position]?.[hand]?.[scenario]?.raise || 0, // Use default if not set
+          betSizeCall: prev[position]?.[hand]?.[scenario]?.betSizeCall || "Bet Halfpot", // Use default if not set
+          betSizeRaise: prev[position]?.[hand]?.[scenario]?.betSizeRaise || "Bet Halfpot", // Use default if not set
+        },
+      },
+    },
+  }));
+};
+
+
+  // Handle raise percentage change
+// Handle raise percentage change
+const handleRaiseChange = (event, hand, scenario) => {
+  const newRaise = Math.max(
+    0,
+    Math.min(100, parseInt(event.target.value, 10) || 0)
+  );
+
+  setStrategies((prev) => ({
+    ...prev,
+    [position]: {
+      ...prev[position],
+      [hand]: {
+        ...(prev[position]?.[hand] || {}), // Initialize hand if not exists
+        [scenario]: {
+          ...(prev[position]?.[hand]?.[scenario] || getDefaultStrategy()), // Initialize scenario if not exists
+          call: prev[position]?.[hand]?.[scenario]?.call || 0, // Use default if not set
+          raise: newRaise,
+          betSizeCall: prev[position]?.[hand]?.[scenario]?.betSizeCall || "Bet Halfpot", // Use default if not set
+          betSizeRaise: prev[position]?.[hand]?.[scenario]?.betSizeRaise || "Bet Halfpot", // Use default if not set
+        },
+      },
+    },
+  }));
+};
+
+// Handle bet size change
+const handleBetSizeChange = (betType, value, hand, scenario) => {
+  setStrategies((prev) => ({
+    ...prev,
+    [position]: {
+      ...prev[position],
+      [hand]: {
+        ...(prev[position]?.[hand] || {}), // Initialize hand if not exists
+        [scenario]: {
+          ...(prev[position]?.[hand]?.[scenario] || getDefaultStrategy()), // Initialize scenario if not exists
+          call: prev[position]?.[hand]?.[scenario]?.call || 0, // Use default if not set
+          raise: prev[position]?.[hand]?.[scenario]?.raise || 0, // Use default if not set
+          [`betSize${betType[0].toUpperCase()}${betType.slice(1)}`]: value,
+        },
+      },
+    },
+  }));
+};
+
+  
 
   const scenarios = ["noCalls", "previousCalls", "previousRaises"];
   const hands = [
@@ -191,6 +312,11 @@ const PreFlopStrategyEditor = () => {
     "KJo",
     "QJo",
   ];
+  const getBackgroundColor = (value) => {
+    // Assuming value is between 0 to 100
+    const hue = ((value / 100) * 120).toString(10);
+    return `hsl(${hue}, 100%, 50%)`; // From red (0) to green (120)
+  };
 
   return (
     <div>
@@ -209,16 +335,26 @@ const PreFlopStrategyEditor = () => {
         <thead>
           <tr>
             <th>Hand</th>
-            <th colSpan="3">No calls or raises</th> {/* Colspan of 3 for the scenario grouping */}
-            <th colSpan="3">1 or more calls</th>    {/* Colspan of 3 for the scenario grouping */}
-            <th colSpan="3">1 or more raises</th>   {/* Colspan of 3 for the scenario grouping */}
+            <th colSpan="5" className="left-border">
+              No calls or bets
+            </th>
+            <th colSpan="5">1 or more calls</th>
+            <th colSpan="5" className="right-border">
+              1 or more raises
+            </th>
           </tr>
           <tr>
-            {scenarios.map((scenario) => (
+            {scenarios.map((scenario, index) => (
               <React.Fragment key={scenario}>
-                <th>Call</th>
-                <th>Raise</th>
-                <th>Fold</th>
+                <th className={index > 0 ? "left-border" : ""}>% Call</th>
+                <th>Call Bet Size</th>
+                <th>% Raise</th>
+                <th>Raise Bet Size</th>
+                <th
+                  className={index < scenarios.length - 1 ? "right-border" : ""}
+                >
+                  % Fold
+                </th>
               </React.Fragment>
             ))}
           </tr>
@@ -227,16 +363,83 @@ const PreFlopStrategyEditor = () => {
           {hands.map((hand) => (
             <tr key={hand}>
               <td>{hand}</td>
-              {scenarios.map((scenario) => (
-                <HandScenarioRow
-                  key={`${hand}-${scenario}`}
-                  hand={hand}
-                  scenario={scenario}
-                  position={position}
-                  strategies={strategies}
-                  onStrategyChange={handleStrategyChange}
-                />
-              ))}
+              
+              {scenarios.map((scenario) => {
+  const strategy =
+    strategies[position]?.[hand]?.[scenario] || getDefaultStrategy();
+
+  const fold = 100 - strategy.call - strategy.raise;
+                return (
+                  <React.Fragment key={`${hand}-${scenario}`}>
+                    <td
+                      className="value-cell"
+                      style={{
+                        backgroundColor: getBackgroundColor(strategy.call),
+                      }}
+                    >
+                      <input
+                        type="number"
+                        value={strategy.call}
+                        onChange={(e) => handleCallChange(e, hand, scenario)}
+                        min="0"
+                        max="100"
+                      />
+                    </td>
+                    <td>
+                      <select
+                        value={strategy.betSizeCall}
+                        onChange={(e) =>
+                          handleBetSizeChange(
+                            "call",
+                            e.target.value,
+                            hand,
+                            scenario
+                          )
+                        }
+                      >
+                        <option value="Bet Halfpot">1/2 Pot</option>
+                        <option value="Bet Pot">Pot</option>
+                      </select>
+                    </td>
+                    <td
+                      className="value-cell"
+                      style={{
+                        backgroundColor: getBackgroundColor(strategy.raise),
+                      }}
+                    >
+                      <input
+                        type="number"
+                        value={strategy.raise}
+                        onChange={(e) => handleRaiseChange(e, hand, scenario)}
+                        min="0"
+                        max="100"
+                      />
+                    </td>
+                    <td>
+                      <select
+                        value={strategy.betSizeRaise}
+                        onChange={(e) =>
+                          handleBetSizeChange(
+                            "raise",
+                            e.target.value,
+                            hand,
+                            scenario
+                          )
+                        }
+                      >
+                        <option value="Bet Halfpot">1/2 Pot</option>
+                        <option value="Bet Pot">Pot</option>
+                      </select>
+                    </td>
+                    <td
+                      className="value-cell"
+                      style={{ backgroundColor: getBackgroundColor(fold) }}
+                    >
+                      {fold}
+                    </td>
+                  </React.Fragment>
+                );
+              })}
             </tr>
           ))}
         </tbody>
@@ -244,5 +447,7 @@ const PreFlopStrategyEditor = () => {
     </div>
   );
 };
+
+// Make sure to define handleCallChange, handleRaiseChange, and handleBetSizeChange functions
 
 export default PreFlopStrategyEditor;

@@ -1,0 +1,20 @@
+.left-border {
+    border-left: 2px solid black;
+  }
+  
+  .right-border {
+    border-right: 2px solid black;
+  }
+  
+  .value-cell {
+    position: relative;
+  }
+  
+  .value-cell::after {
+    content: '%';
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  
