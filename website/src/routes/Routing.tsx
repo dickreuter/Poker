@@ -5,6 +5,7 @@ import PaymentCards from "../views/Purchase"
 import TableAnalyzer from "../views/TableAnalyzer"
 import StrategyAnalyzer from "../views/StrategyAnalyzer"
 import TableMapper from "../views/TableMapper"
+import StrategyEditor from "../views/StrategyEditor"
 
 function Routing() {
     return (
@@ -15,6 +16,7 @@ function Routing() {
                 <Route path="/" element={<Home />} />
                 <Route path="/purchase" element={<PaymentCards />} />
                 <Route path="/tablemapper" element={<TableMapper />} />
+                <Route path="/strategyeditor" element={<StrategyEditor />} />
             </Routes>
         </div>
     )

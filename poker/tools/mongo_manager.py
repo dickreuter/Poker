@@ -7,10 +7,10 @@ import pandas as pd
 import requests
 from PIL import Image
 from fastapi.encoders import jsonable_encoder
+from requests.exceptions import JSONDecodeError
 
 from poker.tools.helper import COMPUTER_NAME, get_config, get_dir
 from poker.tools.singleton import Singleton
-from requests.exceptions import JSONDecodeError
 
 TABLES_COLLECTION = 'tables'
 
@@ -78,11 +78,11 @@ class MongoManager(metaclass=Singleton):
 
     def load_table_nn_weights(self, table_name: str):
         log.info("Downloading neural network weights for card recognition with tolerance...")
-        weights_str = requests.post(URL + "get_tensorflow_weights", params={'table_name': table_name}).json()
         try:
+            weights_str = requests.post(URL + "get_tensorflow_weights", params={'table_name': table_name}).json()
             weights = base64.b64decode(weights_str)
-        except TypeError:
-            log.error("No Trained Neural Network found. The cards need to be trained first.")
+        except Exception as e:
+            log.error(f"No Trained Neural Network found. The cards need to be trained first. {e}")
             return
 
         with open(get_dir('codebase') + '/loaded_model.h5', 'wb') as fh:

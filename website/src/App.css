@@ -114,3 +114,7 @@
   justify-content: center;
   padding: 2em;
 }
+
+.main-content {
+  margin-top: 90px; /* Adjust this value based on your navbar's height */
+}
