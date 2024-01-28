@@ -2,7 +2,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 
 export const API_URL =
-  import.meta.env.VITE_REACT_APP_API_URL || "http://dickreuter.com:7777";
+  import.meta.env.VITE_REACT_APP_API_URL || "https://dickreuter.com:7778";
 
 export const useDlLink = () => {
   const [dlLink, setDlLink] = useState("");

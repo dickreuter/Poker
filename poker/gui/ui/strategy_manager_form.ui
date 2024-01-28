@@ -526,7 +526,7 @@
         <item row="0" column="0">
          <widget class="QCheckBox" name="preflop_override">
           <property name="text">
-           <string>Override with Pokersnowie table</string>
+           <string>Override with Expert-Strategy-Editor</string>
           </property>
          </widget>
         </item>
