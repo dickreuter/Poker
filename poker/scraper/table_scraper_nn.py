@@ -16,6 +16,7 @@ SCRAPER_DIR = get_dir('pics')
 TRAIN_FOLDER = get_dir('pics', "training_cards")
 VALIDATE_FOLDER = get_dir('pics', "validate_cards")
 TEST_FOLDER = get_dir('tests', "test_cards")
+TEST_FOLDER_TRAIN = get_dir('pics', "test_cards")
 
 log = logging.getLogger(__name__)
 
@@ -54,9 +55,10 @@ img_width = 15
 class CardNeuralNetwork():
 
     @staticmethod
-    def create_augmented_images(table_name):
+    def create_augmented_images(table_name, train_count=600, validate_count=600, test_count=500):
         shutil.rmtree(TRAIN_FOLDER, ignore_errors=True)
         shutil.rmtree(VALIDATE_FOLDER, ignore_errors=True)
+        shutil.rmtree(TEST_FOLDER_TRAIN, ignore_errors=True)
 
         log.info("Augmenting data with random pictures based on templates")
 
@@ -66,14 +68,14 @@ class CardNeuralNetwork():
             width_shift_range=0.05,
             height_shift_range=0.05,
             shear_range=0.02,
-            zoom_range=0.05,
+            zoom_range=[0.9, 1.5],
             horizontal_flip=False,
             fill_mode='nearest')
 
         mongo = MongoManager()
         table = mongo.get_table(table_name)
 
-        for folder in [TRAIN_FOLDER, VALIDATE_FOLDER]:
+        for folder, count in zip([TRAIN_FOLDER, VALIDATE_FOLDER, TEST_FOLDER_TRAIN], [train_count, validate_count, test_count]):
             card_ranks_original = '23456789TJQKA'
             original_suits = 'CDHS'
 
@@ -101,8 +103,8 @@ class CardNeuralNetwork():
                                       save_format='png',
                                       ):
                     i += 1
-                    if i > 500:
-                        break  # otherwise the generator would loop indefinitely
+                    if i >= count:
+                        break  # Limit the number of generated images
 
     def train_neural_network(self):
         from tensorflow.keras.preprocessing.image import ImageDataGenerator
@@ -128,17 +130,31 @@ class CardNeuralNetwork():
             class_mode='binary',
             color_mode='rgb')
 
+        self.test_generator = ImageDataGenerator(
+            rescale=0.00,
+            shear_range=0.00,
+            zoom_range=0.00,
+            horizontal_flip=False).flow_from_directory(
+            directory=os.path.join(SCRAPER_DIR, TEST_FOLDER_TRAIN),
+            target_size=(img_height, img_width),
+            batch_size=128,
+            class_mode='binary',
+            color_mode='rgb',
+            shuffle=False)
+
         num_classes = 52
         input_shape = (50, 15, 3)
         epochs = 50
-        from tensorflow.keras.callbacks import TensorBoard, EarlyStopping, LearningRateScheduler
+        from tensorflow.keras.callbacks import TensorBoard, EarlyStopping
         from tensorflow.keras.constraints import MaxNorm
-        from tensorflow.keras.layers import Conv2D, MaxPooling2D, BatchNormalization
+        from tensorflow.keras.layers import Conv2D, MaxPooling2D
         from tensorflow.keras.layers import Dropout, Flatten, Dense
         from tensorflow.keras.models import Sequential
-        from tensorflow.keras.losses import sparse_categorical_crossentropy
-        from tensorflow.keras import optimizers
-        from tensorflow.math import exp
+        from tensorflow.keras.optimizers import Adam
+
+        # Configurar el optimizador con una tasa de aprendizaje específica
+        custom_optimizer = Adam(learning_rate=0.001)
+
         model = Sequential()
         model.add(Conv2D(64, (3, 3), input_shape=input_shape, activation='relu', padding='same'))
         model.add(Conv2D(64, (3, 3), activation='relu', padding='same'))
@@ -161,10 +177,12 @@ class CardNeuralNetwork():
         from tensorflow.keras.losses import sparse_categorical_crossentropy
         from tensorflow.keras import optimizers
         model.compile(loss=sparse_categorical_crossentropy,
-                      optimizer=optimizers.Adam(),
+                      optimizer=custom_optimizer,
                       metrics=['accuracy'])
 
         log.info(model.summary())
+
+        self.model = model
 
         early_stop = EarlyStopping(monitor='val_accuracy',
                                 min_delta=0,
@@ -184,9 +202,27 @@ class CardNeuralNetwork():
                   validation_data=self.validation_generator,
                   callbacks=[early_stop])
         self.model = model
+
         score = model.evaluate(self.validation_generator, steps=52)
         print('Validation loss:', score[0])
         print('Validation accuracy:', score[1])
+        log.info(model.summary())
+        self.test_neural_network()
+
+    def test_neural_network(self):
+        log.info("Testing the neural network")
+
+        if self.model is not None:
+            # Evaluar el modelo en el conjunto de prueba
+            test_score = self.model.evaluate(self.test_generator, steps=52)
+            log.info('Test loss: %f', test_score[0])
+            log.info('Test accuracy: %f', test_score[1])
+
+            # Devolver el porcentaje de resultados de la prueba
+            return test_score[1]
+        else:
+            log.error("Model not trained. Please train the model before testing.")
+            return None
 
     def save_model_to_disk(self):
         # serialize model to JSON

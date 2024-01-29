@@ -98,6 +98,7 @@ class TableSetupActionAndSignals(QObject):
         self.ui.topleft_corner.clicked.connect(lambda: self.save_topleft_corner())
         self.ui.current_player.currentIndexChanged[int].connect(lambda: self._update_selected_player())
         self.ui.use_neural_network.clicked.connect(lambda: self._save_use_nerual_network_checkbox())
+        self.ui.use_neural_network_table.clicked.connect(lambda: self._save_use_nerual_network_table_checkbox())
         self.ui.max_players.currentIndexChanged[int].connect(lambda: self._save_max_players())
         self.ui.spinBox_nthSecond.valueChanged.connect(lambda: self._update_nth_second())
         self.ui.spinBox_xTimes.valueChanged.connect(lambda: self._update_x_times())
@@ -228,6 +229,18 @@ class TableSetupActionAndSignals(QObject):
         label = 'use_neural_network'
         is_set = self.ui.use_neural_network.checkState()
         log.info(f"Saving use neural network tickbox {is_set}")
+        mongo.update_state(state=is_set, label=label, table_name=self.table_name)
+        log.info("Saving complete")
+
+    def _save_use_nerual_network_table_checkbox(self):
+        owner = mongo.get_table_owner(self.table_name)
+        if owner != COMPUTER_NAME:
+            pop_up("Not authorized.",
+                   "You can only edit your own tables. Please create a new copy or start with a new blank table")
+            return
+        label = 'use_neural_network_table'
+        is_set = self.ui.use_neural_network_table.checkState()
+        log.info(f"Saving use neural network table tickbox {is_set}")
         mongo.update_state(state=is_set, label=label, table_name=self.table_name)
         log.info("Saving complete")
 
@@ -728,6 +741,18 @@ class TableSetupActionAndSignals(QObject):
             log.info("Images are not cropped or do not fit to the loaded template.")
 
         check_boxes = ['use_neural_network']
+        for check_box in check_boxes:
+            try:
+                if isinstance(table[check_box], int):
+                    nn = 1 if table[check_box] > 0 else 0
+                if isinstance(table[check_box], str):
+                    nn = 1 if table[check_box] == 'CheckState.Checked' else 0
+                self.signal_check_box.emit(check_box, int(nn))
+            except KeyError:
+                log.info(f"No available data for {check_box}")
+                self.signal_check_box.emit(check_box, 0)
+
+        check_boxes = ['use_neural_network_table']
         for check_box in check_boxes:
             try:
                 if isinstance(table[check_box], int):

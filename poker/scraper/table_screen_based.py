@@ -568,7 +568,6 @@ class TableScreenBased(Table):
                 self.Game_Number = 0
                 h.game_number_on_screen = 0
             self.get_my_funds(h, p)
-
             h.lastGameID = str(h.GameID)
             h.GameID = int(round(np.random.uniform(0, 999999999), 0))
             cards = ' '.join(self.mycards)
@@ -581,23 +580,19 @@ class TableScreenBased(Table):
             t_algo = threading.Thread(name='Algo', target=self.call_genetic_algorithm, args=(p,))
             t_algo.daemon = True
             t_algo.start()
-
             self.gui_signals.signal_funds_chart_update.emit(self.game_logger)
             self.gui_signals.signal_bar_chart_update.emit(self.game_logger, p.current_strategy)
-
             h.myLastBet = 0
             h.myFundsHistory.append(self.myFunds)
             h.previousCards = self.mycards
             h.lastSecondRoundAdjustment = 0
             h.last_round_bluff = False  # reset the bluffing marker
             h.round_number = 0
-
             mouse.move_mouse_away_from_buttons_jump()
             self.take_screenshot(False, p)
         else:
             log.debug("Game number on screen: " + str(h.game_number_on_screen))
             self.get_my_funds(h, p)
-
         return True
 
     def upload_collusion_wrapper(self, p, h):
