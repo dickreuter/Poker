@@ -4,9 +4,9 @@ import "./App.css";
 import NavBar from "./routes/NavBar";
 import Routing from "./routes/Routing";
 import { useEffect } from "react";
+import ReactGA4 from "react-ga4";
 
-const TRACKING_ID = "UA-7794836-7"; // OUR_TRACKING_ID
-ReactGA.initialize(TRACKING_ID);
+ReactGA4.initialize("G-H40Z0W36GF");
 
 function App() {
   useEffect(() => {
