@@ -131,83 +131,60 @@ class TableScraper:
             return True
 
     def get_table_cards_nn(self):
-        # Sacamos una foto de la zona de las cartas en la mesa
+        from io import BytesIO
         nn_image_area = self.table_dict['table_cards_area']
         nn_image = self.screenshot.crop(
             (nn_image_area['x1'], nn_image_area['y1'], nn_image_area['x2'], nn_image_area['y2']))
         nn_image_rgb = nn_image.convert('RGB')
 
-        # Define los colores a reemplazar y el color de reemplazo
-        target_colors = [(37, 82, 29), (105, 136, 98), (86, 65, 31)]
+        ##Cloth area
+        cloth_area_coordinates = self.table_dict['cloth_area']
+        cloth_area_image = Image.open(BytesIO(cloth_area_coordinates))
+        cloth_area_rgb = np.array(cloth_area_image.convert('RGB'))
+        cloth_area_remove = np.unique(cloth_area_rgb.reshape(-1, cloth_area_rgb.shape[2]), axis=0)
+
+        target_colors = [cloth_area_remove]
         lower_replace_range = (226, 226, 226)
         replacement_color = (255, 255, 255)
-
-        # Convertimos la imagen a un array de numpy para un procesamiento más chido
         np_image = np.array(nn_image_rgb)
-
-        # Inicializamos la máscara con False
-        mask = np.zeros(np_image.shape[:2], dtype=bool)
-
-        # Iteramos sobre cada color objetivo y actualizamos la máscara
-        for color in target_colors:
-            mask |= np.all(np.abs(np_image - color) <= 20, axis=-1)
-
-        # Reemplazamos los píxeles encontrados con el color de reemplazo
+        mask = np.any(np.all(np.abs(np_image[:, :, None, :] - target_colors) <= 20, axis=-1), axis=-1)
         np_image[mask] = replacement_color
-
-        # Encontramos los píxeles en el rango de colores a reemplazar por blanco
         replace_mask = np.all((np_image >= lower_replace_range) & (np_image <= replacement_color), axis=-1)
-
-        # Reemplazamos los píxeles encontrados con el color blanco
         np_image[replace_mask] = replacement_color
-
-        # Convertimos el array de nuevo a una imagen PIL
         nn_image_result = Image.fromarray(np_image)
 
-        # Dividimos la imagen en 10 partes a lo ancho
         cantidad_de_cortes = 10
         width_per_card = nn_image_result.width // cantidad_de_cortes
-
-
-        # Lista para almacenar las imágenes finales
         final_images = []
 
         # Iteramos sobre las partes de la imagen original
         for i in range(cantidad_de_cortes):
             left = i * width_per_card
             right = (i + 1) * width_per_card
-
-            # Extraemos cada parte de la imagen original
             image_part = nn_image_result.crop((left, 0, right, nn_image_result.height))
-
-            # Convertir la parte de la imagen a formato OpenCV (numpy array)
             image_array = np.array(image_part)
 
-            # Definir el color blanco y la tolerancia permitida
             color_blanco = (255, 255, 255)
             tolerancia = 30  # Puedes ajustar este valor según tus necesidades
+            white_percentage = np.sum(np.all(np.abs(image_array - color_blanco) < tolerancia, axis=-1)) / np.prod(
+                image_array.shape[:-1])
 
-            # Calcular el porcentaje de píxeles blancos en la imagen
-            white_percentage = np.sum(np.all(np.abs(image_array - color_blanco) < tolerancia, axis=-1)) / np.prod(image_array.shape[:-1])
-
-            # Si el porcentaje es menor al 72%, añadimos la imagen a la lista final
             if white_percentage < 0.83:
                 final_images.append(image_part)
 
-        # Procesamos y guardamos las imágenes que cumplen con la condición
         for i, image_part in enumerate(final_images, start=1):
-            # Procesamos la carta con la red neuronal y almacenamos el resultado
             card_result = predict(image_part, self.nn_model, self.table_dict['_class_mapping'])
             self.table_cards.append(card_result)
-            # Guardamos la imagen directamente con el nombre predicho
             image_part.save(get_dir('log') + f'/pics/table/{card_result}.png')
+
         log.info(f"Table cards: {self.table_cards}")
-        if len(self.table_cards) == 1 or len(self.table_cards) == 2:
+
+        if 1 <= len(self.table_cards) <= 2:
             log.warning(f"Only recognized {len(self.table_cards)} cards on the table. "
                         f"This can happen if cards are sliding in or if some of the templates are wrong")
             return False
-        return True
 
+        return True
 
     def get_dealer_position2(self):  # pylint: disable=inconsistent-return-statements
         """Determines position of dealer, where 0=myself, continous counter clockwise"""

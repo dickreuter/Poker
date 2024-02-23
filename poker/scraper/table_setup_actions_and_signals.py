@@ -120,9 +120,9 @@ class TableSetupActionAndSignals(QObject):
                 new_cropped = check_cropping(images, self.top_left_corner_img)
                 
                 if len(self.screenshot_list) == 0:
-                    self.cropped =  new_cropped
+                    self.cropped = new_cropped
                 else:
-                    self.cropped =  self.cropped and new_cropped
+                    self.cropped = self.cropped and new_cropped
 
                 if not self.cropped: 
                     log.info("Images are not cropped or do not fit to the loaded template.")
@@ -255,11 +255,11 @@ class TableSetupActionAndSignals(QObject):
             button_show_property = getattr(self.ui, 'card_' + card + '_show')
             button_show_property.clicked.connect(lambda state, x=card: self.load_image(x))
 
-        save_image_buttons = ['call_button', 'raise_button', 'bet_button', 'check_button', 'fold_button',
+        save_image_buttons = {'call_button', 'raise_button', 'bet_button', 'check_button', 'fold_button',
                               'fast_fold_button',
                               'all_in_call_button',
-                              'my_turn',
-                              'lost_everything', 'im_back', 'resume_hand', 'dealer_button', 'covered_card']
+                              'my_turn', 'cloth_area',
+                              'lost_everything', 'im_back', 'resume_hand', 'dealer_button', 'covered_card'}
         for button in save_image_buttons:
             button_property = getattr(self.ui, button)
             button_property.clicked.connect(lambda state, x=button: self.save_image(x))
@@ -710,7 +710,7 @@ class TableSetupActionAndSignals(QObject):
             log.info(f"UnFlattening button {'card_' + card}")
             self.signal_flatten_button.emit('card_' + card, False)
 
-        all_buttons = ['call_value', 'raise_value', 'all_in_call_value', 'game_number', 'current_round_pot',
+        all_buttons = ['cloth_area', 'call_value', 'raise_value', 'all_in_call_value', 'game_number', 'current_round_pot',
                        'total_pot_area', 'my_turn_search_area', 'lost_everything_search_area', 'table_cards_area',
                        'my_cards_area', 'mouse_fold', 'mouse_fast_fold', 'mouse_raise', 'mouse_full_pot', 'mouse_call',
                        'mouse_increase', 'mouse_call2', 'mouse_check', 'mouse_imback', 'mouse_resume_hand',
