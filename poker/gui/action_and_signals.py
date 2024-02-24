@@ -487,13 +487,13 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
 
         return translate_ui_files()
 
-    def save_setup(self):
+        def save_setup(self):
         config = get_config()
         config.config.set('main', 'control', self.ui_setup.comboBox_vm.currentText())
         config.config.set('main', 'montecarlo_timeout', self.ui_setup.comboBox_2.currentText())
         config.config.set('main', 'login', self.ui_setup.login.text())
         config.config.set('main', 'password', self.ui_setup.password.text())
-        config.config.set('main', 'Translate', self.ui_setup.Translates.currentText())
+        config.config.set('main', 'Translate', self.ui_setup.comboBox_Translates.currentText())
         config.update_file()
         self.ui_setup.close()
 
