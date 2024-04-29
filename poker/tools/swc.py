@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 
 is_debug = False  # used for saving images for debug purposes
 
-SELECTION_CONTOUR_THICKNESS = 6
+selection_contour_thickness = 6
 DIGIT_HEIGHT_TOLERANCE = 2
 THRESHOLD = 175
 FINAL_SELECTION_CROP_PADDING = 2

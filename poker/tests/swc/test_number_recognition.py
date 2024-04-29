@@ -11,8 +11,9 @@ images = {
     0: {1: {"amount": 40.0},
         2: {"amount": 9.0},
         3: {"amount": 6000.0},
-        4: {"amount": 1.0}},
-    1: {1: {"amount": 1480.0}},
+        4: {"amount": 1.0},
+        5: {"amount": 1.0}},
+1: {1: {"amount": 1480.0}},
     2: {1: {"amount": 250.0},
         2: {"amount": 5000.0},
         3: {"amount": 8945.0},
@@ -57,6 +58,14 @@ class TestNumberRecognition():
     def test_player0_4(self):
         player = 0
         num = 4
+        img = self.get_img(player, num)
+        assert ocr(img) == images[player][num]["amount"]
+
+
+    # SELECTION_CONTOUR_THICKNESS of 4 will fix this test
+    def test_player0_5(self):
+        player = 0
+        num = 5
         img = self.get_img(player, num)
         assert ocr(img) == images[player][num]["amount"]
 

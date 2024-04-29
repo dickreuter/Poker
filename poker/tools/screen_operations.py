@@ -68,7 +68,8 @@ def get_table_template_image(table_name='default', label='topleft_corner'):
 def get_ocr_float(img_orig, table_name, fast=False):
     """Return float value from image. -1.0f when OCR failed"""
     if table_name and table_name.lower().startswith("swc poker"):
-        return swc_ocr(img_orig)
+        # img_orig.save()
+        swc_ocr(img_orig)
     else:
         return get_ocr_number(img_orig, fast)
 
