@@ -161,7 +161,7 @@ function PaymentCards() {
                                     {showBitcoin && (
                                         <div className="small">
                                             Bitcoin address: {bitcoinAddress} <br/>
-                                            Please email me to confirm once you have made a payment: email@example.com
+                                            Please contact Nicolas on the discord channel one you have made your payment to get a password.
                                         </div>
                                     )}
                                 </div>
