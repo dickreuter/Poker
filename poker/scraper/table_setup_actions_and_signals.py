@@ -98,6 +98,7 @@ class TableSetupActionAndSignals(QObject):
         self.ui.topleft_corner.clicked.connect(lambda: self.save_topleft_corner())
         self.ui.current_player.currentIndexChanged[int].connect(lambda: self._update_selected_player())
         self.ui.use_neural_network.clicked.connect(lambda: self._save_use_nerual_network_checkbox())
+        self.ui.use_neural_network_table.clicked.connect(lambda: self._save_use_nerual_network_table_checkbox())
         self.ui.max_players.currentIndexChanged[int].connect(lambda: self._save_max_players())
         self.ui.spinBox_nthSecond.valueChanged.connect(lambda: self._update_nth_second())
         self.ui.spinBox_xTimes.valueChanged.connect(lambda: self._update_x_times())
@@ -119,9 +120,9 @@ class TableSetupActionAndSignals(QObject):
                 new_cropped = check_cropping(images, self.top_left_corner_img)
                 
                 if len(self.screenshot_list) == 0:
-                    self.cropped =  new_cropped
+                    self.cropped = new_cropped
                 else:
-                    self.cropped =  self.cropped and new_cropped
+                    self.cropped = self.cropped and new_cropped
 
                 if not self.cropped: 
                     log.info("Images are not cropped or do not fit to the loaded template.")
@@ -231,6 +232,18 @@ class TableSetupActionAndSignals(QObject):
         mongo.update_state(state=is_set, label=label, table_name=self.table_name)
         log.info("Saving complete")
 
+    def _save_use_nerual_network_table_checkbox(self):
+        owner = mongo.get_table_owner(self.table_name)
+        if owner != COMPUTER_NAME:
+            pop_up("Not authorized.",
+                   "You can only edit your own tables. Please create a new copy or start with a new blank table")
+            return
+        label = 'use_neural_network_table'
+        is_set = self.ui.use_neural_network_table.checkState()
+        log.info(f"Saving use neural network table tickbox {is_set}")
+        mongo.update_state(state=is_set, label=label, table_name=self.table_name)
+        log.info("Saving complete")
+
     def _connect_cards_with_save_slot(self):
         # contains cards in the deck
         deck = [x.lower() + y.lower() for x in CARD_VALUES for y in CARD_SUITES]
@@ -242,11 +255,11 @@ class TableSetupActionAndSignals(QObject):
             button_show_property = getattr(self.ui, 'card_' + card + '_show')
             button_show_property.clicked.connect(lambda state, x=card: self.load_image(x))
 
-        save_image_buttons = ['call_button', 'raise_button', 'bet_button', 'check_button', 'fold_button',
+        save_image_buttons = {'call_button', 'raise_button', 'bet_button', 'check_button', 'fold_button',
                               'fast_fold_button',
                               'all_in_call_button',
-                              'my_turn',
-                              'lost_everything', 'im_back', 'resume_hand', 'dealer_button', 'covered_card']
+                              'my_turn', 'cloth_area',
+                              'lost_everything', 'im_back', 'resume_hand', 'dealer_button', 'covered_card'}
         for button in save_image_buttons:
             button_property = getattr(self.ui, button)
             button_property.clicked.connect(lambda state, x=button: self.save_image(x))
@@ -697,7 +710,7 @@ class TableSetupActionAndSignals(QObject):
             log.info(f"UnFlattening button {'card_' + card}")
             self.signal_flatten_button.emit('card_' + card, False)
 
-        all_buttons = ['call_value', 'raise_value', 'all_in_call_value', 'game_number', 'current_round_pot',
+        all_buttons = ['cloth_area', 'call_value', 'raise_value', 'all_in_call_value', 'game_number', 'current_round_pot',
                        'total_pot_area', 'my_turn_search_area', 'lost_everything_search_area', 'table_cards_area',
                        'my_cards_area', 'mouse_fold', 'mouse_fast_fold', 'mouse_raise', 'mouse_full_pot', 'mouse_call',
                        'mouse_increase', 'mouse_call2', 'mouse_check', 'mouse_imback', 'mouse_resume_hand',
@@ -728,6 +741,18 @@ class TableSetupActionAndSignals(QObject):
             log.info("Images are not cropped or do not fit to the loaded template.")
 
         check_boxes = ['use_neural_network']
+        for check_box in check_boxes:
+            try:
+                if isinstance(table[check_box], int):
+                    nn = 1 if table[check_box] > 0 else 0
+                if isinstance(table[check_box], str):
+                    nn = 1 if table[check_box] == 'CheckState.Checked' else 0
+                self.signal_check_box.emit(check_box, int(nn))
+            except KeyError:
+                log.info(f"No available data for {check_box}")
+                self.signal_check_box.emit(check_box, 0)
+
+        check_boxes = ['use_neural_network_table']
         for check_box in check_boxes:
             try:
                 if isinstance(table[check_box], int):
