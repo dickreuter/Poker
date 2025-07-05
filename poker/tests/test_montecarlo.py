@@ -149,7 +149,7 @@ class TestMonteCarlo(unittest.TestCase):
     # Unittest to ensure correct winning probabilities are returned
     def test_monteCarlo(self):  # pylint: disable=too-many-statements
         def testRun(Simulation, my_cards, cards_on_table, players, expected_results, opponent_range=1):
-            maxRuns = 15000  # maximum number of montecarlo runs
+            maxruns = 15000  # maximum number of montecarlo runs
             testRuns = 5  # make several testruns to get standard deviation of winning probability
             secs = 1  # cut simulation short if amount of seconds are exceeded
 
@@ -157,7 +157,7 @@ class TestMonteCarlo(unittest.TestCase):
             for _ in range(testRuns):
                 start_time = time.time() + secs
                 logger = MagicMock()
-                Simulation.run_montecarlo(logger, my_cards, cards_on_table, players, 1, maxRuns=maxRuns,
+                Simulation.run_montecarlo(logger, my_cards, cards_on_table, players, 1, max_runs=maxruns,
                                           timeout=start_time, ghost_cards='', opponent_range=opponent_range)
                 equity = Simulation.equity
                 total_result.append(equity * 100)

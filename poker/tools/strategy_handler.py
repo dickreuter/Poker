@@ -151,7 +151,8 @@ class StrategyHandler:
         self.new_strategy_name = stringPart + str(numberPart) + suffix
         self.selected_strategy['Strategy'] = self.new_strategy_name
         self.current_strategy = self.new_strategy_name
-        del self.selected_strategy['_id']
+        if '_id' in self.selected_strategy:
+            del self.selected_strategy['_id']
         response = requests.post(
             URL + "save_strategy", json={'strategy': json.dumps(self.selected_strategy),
                                          'login': login, 'password': password}).json()

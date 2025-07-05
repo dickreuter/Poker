@@ -36,7 +36,6 @@ import os
 import logging
 
 
-
 # pylint: disable=unnecessary-lambda
 
 class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
@@ -377,6 +376,9 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
     def open_setup(self):
         self.ui_setup = SetupForm()
         self.ui_setup.pushButton_save.clicked.connect(lambda: self.save_setup())
+        self.ui_setup.pushButton_Translates.clicked.connect(lambda: self.translate())
+
+
         vm_list = ['Direct mouse control']
         try:
             vm = VirtualBoxController()
@@ -387,23 +389,34 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
         self.ui_setup.comboBox_vm.addItems(vm_list)
         timeouts = ['8', '9', '10', '11', '12']
         self.ui_setup.comboBox_2.addItems(timeouts)
+        translates_list = ['en', 'es', 'hi', 'fr', 'zh-TW']
+        self.ui_setup.comboBox_Translates.addItems(translates_list)
 
         config = get_config()
         try:
             mouse_control = config.config.get('main', 'control')
         except:
             mouse_control = 'Direct mouse control'
-        for i in [i for i, x in enumerate(vm_list) if x == mouse_control]:
-            idx = i
-            self.ui_setup.comboBox_vm.setCurrentIndex(idx)
+        for i, x in enumerate(vm_list):
+            if x == mouse_control:
+                self.ui_setup.comboBox_vm.setCurrentIndex(i)
 
         try:
             timeout = config.config.get('main', 'montecarlo_timeout')
         except:
-            timeout = 10
-        for i in [i for i, x in enumerate(timeouts) if x == timeout]:
-            idx = i
-            self.ui_setup.comboBox_2.setCurrentIndex(idx)
+            timeout = '10'
+        for i, x in enumerate(timeouts):
+            if x == timeout:
+                self.ui_setup.comboBox_2.setCurrentIndex(i)
+
+        try:
+            translate_config = config.config.get('main', 'Translates')
+        except:
+            translate_config = 'en'
+        for i, x in enumerate(translates_list):
+            if x == translate_config:
+                self.ui_setup.comboBox_Translates.setCurrentIndex(i)
+
 
         login = config.config.get('main', 'login')
         password = config.config.get('main', 'password')
@@ -412,12 +425,75 @@ class UIActionAndSignals(QObject):  # pylint: disable=undefined-variable
         self.ui_setup.login.setText(login)
         self.ui_setup.password.setText(password)
 
-    def save_setup(self):
+    def translate(self):
+        import xml.etree.ElementTree as ET
+        from googletrans import Translator
+        from tqdm import tqdm
+        import os
+
+        def translate_text(self, text, source_language='en', target_language=None):
+            exceptions = {'2C', '3C', '4C', '5C', '6C', '7C', '8C', '9C', 'TC', 'JC', 'QC', 'KC', 'AC',
+                          '2S', '3S', '4S', '5S', '6S', '7S', '8S', '9S', 'TS', 'JS', 'QS', 'KS', 'AS',
+                          '2H', '3H', '4H', '5H', '6H', '7H', '8H', '9H', 'TH', 'JH', 'QH', 'KH', 'AH',
+                          '2D', '3D', '4D', '5D', '6D', '7D', '8D', '9D', 'TD', 'JD', 'QD', 'KD', 'AD'}
+
+            if target_language is None:
+                selected_translate = self.ui_setup.comboBox_Translates.currentText()
+                target_language = selected_translate
+            if text in exceptions:
+                return text
+            translator = Translator()
+            translated_text = translator.translate(text, dest=target_language)
+            translated_text = translated_text.text
+            # Realizar los reemplazos específicos
+            translated_text = translated_text.replace("<html> <Head/> <Body> <P> ", "<html><Head/><Body><P>")
+            translated_text = translated_text.replace(". </p> </body> </html>", "</p></body></html>")
+            return translated_text
+
+        def translate_ui_files(ui_directory='gui/ui'):
+            ui_files = [os.path.join(ui_directory, filename) for filename in os.listdir(ui_directory) if
+                        filename.endswith('.ui')]
+            processed_files = []
+            with tqdm(total=len(ui_files), desc="Processing files") as pbar:
+                for ui_file in ui_files:
+                    processed_files.extend(translate_ui_file(self, ui_file))
+                    pbar.update(1)
+            print('Please reboot for the changes to take effect.')
+            return processed_files
+
+        def translate_ui_file(self, file_path):
+            tree = ET.parse(file_path)
+            root = tree.getroot()
+
+            processed_files = []
+
+            for string_tag in root.iter('string'):
+                try:
+                    if string_tag.text is not None and isinstance(string_tag.text, str):
+                        cleaned_text = string_tag.text.strip().replace('&lt;', '<').replace('&gt;', '>')
+                        translated_text = translate_text(self, cleaned_text)
+                        string_tag.text = translated_text
+                except Exception as e:
+                    print("\n")
+                    print(f"File error {file_path}: {e}")
+                    print(f"Problematic line: {string_tag.text}")
+
+            tree.write(file_path, encoding='utf-8', xml_declaration=True)
+            processed_files.append(file_path)
+
+            return processed_files
+
+            # Llamar a la función interna translate_ui_files
+
+        return translate_ui_files()
+
+        def save_setup(self):
         config = get_config()
         config.config.set('main', 'control', self.ui_setup.comboBox_vm.currentText())
         config.config.set('main', 'montecarlo_timeout', self.ui_setup.comboBox_2.currentText())
         config.config.set('main', 'login', self.ui_setup.login.text())
         config.config.set('main', 'password', self.ui_setup.password.text())
+        config.config.set('main', 'Translate', self.ui_setup.comboBox_Translates.currentText())
         config.update_file()
         self.ui_setup.close()
 

@@ -28,3 +28,4 @@ flask_jwt_extended
 fastapi_auth
 uvicorn==0.23.2
 tesserocr
+googletrans
