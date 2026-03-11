@@ -35,8 +35,8 @@ log = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 # Button search region (bottom portion of table)
-# Actual buttons appear in the bottom ~15% of table
-BUTTON_Y_MIN = 0.82
+# Actual buttons appear in the bottom ~30% of table
+BUTTON_Y_MIN = 0.70
 BUTTON_Y_MAX = 0.98
 BUTTON_X_MIN = 0.15
 BUTTON_X_MAX = 0.98

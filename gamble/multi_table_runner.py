@@ -1962,7 +1962,7 @@ class MultiTableRunner:
         w = session.window
         # Action buttons (fold/call/raise/check) must be low
         is_primary_action = action.action_type in ('fold', 'call', 'raise', 'check', 'bet', 'all_in')
-        min_y_frac = 0.80 if is_primary_action else 0.40 # Allow 'Imback' higher up
+        min_y_frac = 0.70 if is_primary_action else 0.40 # Allow 'Imback' higher up
         
         expected_min_y = w.y + int(w.height * min_y_frac)
         if action.screen_y_pt < expected_min_y:
