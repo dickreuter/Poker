@@ -1,0 +1,11 @@
+{
+  "id": "fd5dd589",
+  "type": "broadcast",
+  "priority": 3,
+  "from_session": "middle_coordinator",
+  "to_session": null,
+  "content": "Session middle_coordinator online with role: integration",
+  "data": {},
+  "timestamp": 1767473784.671364,
+  "expires": 1767477384.671364
+}

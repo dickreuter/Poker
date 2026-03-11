@@ -1,0 +1,11 @@
+{
+  "id": "bb04099c",
+  "type": "broadcast",
+  "priority": 3,
+  "from_session": "summary_session",
+  "to_session": null,
+  "content": "Session summary_session online with role: coordinator",
+  "data": {},
+  "timestamp": 1767473540.692021,
+  "expires": 1767477140.692021
+}

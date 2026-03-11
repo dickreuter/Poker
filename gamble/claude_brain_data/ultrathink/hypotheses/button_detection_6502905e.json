@@ -1,0 +1,16 @@
+{
+  "id": "6502905e",
+  "category": "button_detection",
+  "title": "Retina scaling check",
+  "description": "Ensure proper 2x scaling for Retina displays",
+  "based_on": [
+    "180e3608"
+  ],
+  "proposed_change": "Ensure proper 2x scaling for Retina displays",
+  "expected_improvement": 0.24,
+  "status": "proposed",
+  "created_at": 1767473121.8276181,
+  "tested_at": null,
+  "test_results": null,
+  "votes": 0
+}

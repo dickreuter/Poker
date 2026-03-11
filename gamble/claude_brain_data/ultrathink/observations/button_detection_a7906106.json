@@ -1,0 +1,14 @@
+{
+  "id": "a7906106",
+  "category": "button_detection",
+  "event": "fold_button_click_failed",
+  "type": "failure",
+  "context": {
+    "y_offset": -120,
+    "button": "fold"
+  },
+  "outcome": "button_not_clicked",
+  "session_id": "test_ultrathink",
+  "timestamp": 1767473045.7140732,
+  "metrics": {}
+}

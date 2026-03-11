@@ -1,0 +1,16 @@
+{
+  "id": "66413ca9",
+  "category": "card_detection",
+  "title": "Position-based fallback",
+  "description": "Use known card positions when template fails",
+  "based_on": [
+    "03a0d06a"
+  ],
+  "proposed_change": "Use known card positions when template fails",
+  "expected_improvement": 0.22499999999999998,
+  "status": "proposed",
+  "created_at": 1767473121.827588,
+  "tested_at": null,
+  "test_results": null,
+  "votes": 0
+}

@@ -1,0 +1,13 @@
+{
+  "id": "b17ab2fe",
+  "type": "question",
+  "priority": 2,
+  "from_session": "button_handler",
+  "to_session": null,
+  "content": "How can I improve button click reliability?",
+  "data": {
+    "context": "button_clicking"
+  },
+  "timestamp": 1767473110.6443672,
+  "expires": 1767476710.6443672
+}

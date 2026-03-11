@@ -1,0 +1,16 @@
+{
+  "id": "ea707ef1",
+  "category": "card_detection",
+  "event": "template_match_score_too_high",
+  "type": "failure",
+  "context": {
+    "score": 0.39999999999999997,
+    "threshold": 0.15,
+    "card": "Qs",
+    "error": "Score exceeds threshold"
+  },
+  "outcome": "failure",
+  "session_id": "card_analyzer",
+  "timestamp": 1767473110.642833,
+  "metrics": {}
+}

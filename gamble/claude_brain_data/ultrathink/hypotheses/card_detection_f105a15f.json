@@ -1,0 +1,16 @@
+{
+  "id": "f105a15f",
+  "category": "card_detection",
+  "title": "Adaptive threshold",
+  "description": "Use multiple thresholds [0.15, 0.20, 0.25, 0.30, 0.35]",
+  "based_on": [
+    "03a0d06a"
+  ],
+  "proposed_change": "Use multiple thresholds [0.15, 0.20, 0.25, 0.30, 0.35]",
+  "expected_improvement": 0.24,
+  "status": "proposed",
+  "created_at": 1767473121.82758,
+  "tested_at": null,
+  "test_results": null,
+  "votes": 0
+}

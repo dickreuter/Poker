@@ -1,0 +1,16 @@
+{
+  "id": "bb92047b",
+  "category": "card_detection",
+  "title": "Add caching",
+  "description": "Cache results to avoid repeated operations",
+  "based_on": [
+    "03a0d06a"
+  ],
+  "proposed_change": "Cache results to avoid repeated operations",
+  "expected_improvement": 0.18,
+  "status": "proposed",
+  "created_at": 1767473121.827594,
+  "tested_at": null,
+  "test_results": null,
+  "votes": 0
+}

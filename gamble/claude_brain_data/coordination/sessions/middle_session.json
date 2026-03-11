@@ -1,0 +1,12 @@
+{
+  "id": "middle_session",
+  "status": "offline",
+  "capabilities": [
+    "coordinator"
+  ],
+  "started_at": 1767473617.8675442,
+  "last_heartbeat": 1767473617.8677208,
+  "current_task": null,
+  "tasks_completed": 0,
+  "metadata": {}
+}

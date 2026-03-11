@@ -1,0 +1,16 @@
+{
+  "id": "bbcb9cd9",
+  "category": "button_detection",
+  "title": "Debounce mechanism",
+  "description": "Add debouncing to prevent rapid repeats",
+  "based_on": [
+    "180e3608"
+  ],
+  "proposed_change": "Add debouncing to prevent rapid repeats",
+  "expected_improvement": 0.165,
+  "status": "proposed",
+  "created_at": 1767473121.827639,
+  "tested_at": null,
+  "test_results": null,
+  "votes": 0
+}

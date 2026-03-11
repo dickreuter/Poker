@@ -1,0 +1,16 @@
+{
+  "id": "b7b466b5",
+  "category": "card_detection",
+  "title": "Update template",
+  "description": "Capture fresh template from current UI",
+  "based_on": [
+    "03a0d06a"
+  ],
+  "proposed_change": "Capture fresh template from current UI",
+  "expected_improvement": 0.24,
+  "status": "proposed",
+  "created_at": 1767473121.827571,
+  "tested_at": null,
+  "test_results": null,
+  "votes": 0
+}

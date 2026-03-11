@@ -1,0 +1,12 @@
+{
+  "id": "button_handler",
+  "status": "offline",
+  "capabilities": [
+    "button_clicking"
+  ],
+  "started_at": 1767473110.641866,
+  "last_heartbeat": 1767473110.6419818,
+  "current_task": null,
+  "tasks_completed": 0,
+  "metadata": {}
+}

@@ -1,0 +1,28 @@
+{
+  "total_insights": 3,
+  "total_improvements": 3,
+  "sessions_contributed": [
+    "test_session_1",
+    "coordinator",
+    "middle_session"
+  ],
+  "areas": {
+    "card_detection": {
+      "insights": 2,
+      "improvements": 1
+    },
+    "button_clicking": {
+      "insights": 0,
+      "improvements": 1
+    },
+    "button_detection": {
+      "insights": 1,
+      "improvements": 0
+    },
+    "integration": {
+      "insights": 0,
+      "improvements": 1
+    }
+  },
+  "last_updated": 1767473617.868182
+}

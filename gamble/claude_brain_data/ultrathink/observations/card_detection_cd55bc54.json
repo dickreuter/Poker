@@ -1,0 +1,13 @@
+{
+  "id": "cd55bc54",
+  "category": "card_detection",
+  "event": "insight_shared",
+  "type": "failure",
+  "context": {
+    "title": "Bottom session has working card detection"
+  },
+  "outcome": "shared",
+  "session_id": "middle_session",
+  "timestamp": 1767473617.868358,
+  "metrics": {}
+}

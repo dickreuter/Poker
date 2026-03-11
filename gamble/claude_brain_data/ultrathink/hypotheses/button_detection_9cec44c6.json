@@ -1,0 +1,16 @@
+{
+  "id": "9cec44c6",
+  "category": "button_detection",
+  "title": "Retry with backoff",
+  "description": "Implement exponential backoff retry mechanism",
+  "based_on": [
+    "180e3608"
+  ],
+  "proposed_change": "Implement exponential backoff retry mechanism",
+  "expected_improvement": 0.18,
+  "status": "proposed",
+  "created_at": 1767473121.827627,
+  "tested_at": null,
+  "test_results": null,
+  "votes": 0
+}

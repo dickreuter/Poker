@@ -1,0 +1,16 @@
+{
+  "id": "8af745c6",
+  "category": "button_detection",
+  "title": "Focus window first",
+  "description": "Focus the target window before clicking",
+  "based_on": [
+    "180e3608"
+  ],
+  "proposed_change": "Focus the target window before clicking",
+  "expected_improvement": 0.21,
+  "status": "proposed",
+  "created_at": 1767473121.8276212,
+  "tested_at": null,
+  "test_results": null,
+  "votes": 0
+}

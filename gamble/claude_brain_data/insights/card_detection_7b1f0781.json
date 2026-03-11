@@ -1,0 +1,20 @@
+{
+  "id": "7b1f0781",
+  "area": "card_detection",
+  "title": "Template size normalization critical",
+  "content": "All card templates must be normalized to 25x47 pixels for consistent matching. The database has 23 different sizes ranging from 42x22 to 49x27 which causes failures.",
+  "evidence": [
+    "Tested with 52 card templates",
+    "Detection rate jumped from 60% to 95%"
+  ],
+  "confidence": 0.5,
+  "created_by": "card_analyzer",
+  "created_at": 1767473110.642159,
+  "updated_at": 1767473110.642159,
+  "votes": 0,
+  "tags": [
+    "card_detection",
+    "template",
+    "normalization"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "id": "763e1961",
+  "area": "card_detection",
+  "problem": "Cards still not being recognized - logs show 'My cards not recognized'",
+  "solution": "Need to fix get_my_cards_positioned() in table_scraper.py. Current issue: all cards returning score 1.0 which means no match. Template sizes are inconsistent (23 different sizes). Should resize all templates to same size before matching.",
+  "code_changes": null,
+  "priority": 2,
+  "status": "proposed",
+  "created_by": "coordinator",
+  "created_at": 1767473429.8487182,
+  "implemented_at": null,
+  "votes": 0
+}

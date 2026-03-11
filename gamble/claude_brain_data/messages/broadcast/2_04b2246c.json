@@ -1,0 +1,14 @@
+{
+  "id": "04b2246c",
+  "type": "insight",
+  "priority": 2,
+  "from_session": "middle_session",
+  "to_session": null,
+  "content": "New insight: Bottom session has working card detection",
+  "data": {
+    "insight_id": "d27c7788",
+    "area": "card_detection"
+  },
+  "timestamp": 1767473617.868276,
+  "expires": 1767560017.868277
+}

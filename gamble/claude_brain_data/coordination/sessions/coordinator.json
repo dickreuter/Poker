@@ -1,0 +1,12 @@
+{
+  "id": "coordinator",
+  "status": "offline",
+  "capabilities": [
+    "coordinator"
+  ],
+  "started_at": 1767473429.84763,
+  "last_heartbeat": 1767473429.847845,
+  "current_task": null,
+  "tasks_completed": 0,
+  "metadata": {}
+}

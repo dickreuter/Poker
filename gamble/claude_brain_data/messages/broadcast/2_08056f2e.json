@@ -1,0 +1,14 @@
+{
+  "id": "08056f2e",
+  "type": "insight",
+  "priority": 2,
+  "from_session": "card_analyzer",
+  "to_session": null,
+  "content": "New insight: Template size normalization critical",
+  "data": {
+    "insight_id": "7b1f0781",
+    "area": "card_detection"
+  },
+  "timestamp": 1767473110.642317,
+  "expires": 1767559510.642317
+}

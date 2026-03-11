@@ -1,0 +1,55 @@
+{
+  "K": {
+    "count": 3,
+    "trusted": true
+  },
+  "4": {
+    "count": 3,
+    "trusted": true
+  },
+  "2": {
+    "count": 3,
+    "trusted": true
+  },
+  "6": {
+    "count": 3,
+    "trusted": true
+  },
+  "3": {
+    "count": 3,
+    "trusted": true
+  },
+  "10": {
+    "count": 3,
+    "trusted": true
+  },
+  "J": {
+    "count": 3,
+    "trusted": true
+  },
+  "Q": {
+    "count": 3,
+    "trusted": true
+  },
+  "7": {
+    "count": 4,
+    "trusted": true
+  },
+  "A": {
+    "count": 3,
+    "trusted": true
+  },
+  "8": {
+    "count": 3,
+    "trusted": true
+  },
+  "5": {
+    "count": 5,
+    "trusted": true
+  },
+  "9": {
+    "count": 3,
+    "trusted": true,
+    "synthetic": true
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "id": "middle_coordinator",
+  "status": "offline",
+  "capabilities": [
+    "integration"
+  ],
+  "started_at": 1767473794.396181,
+  "last_heartbeat": 1767473794.396416,
+  "current_task": null,
+  "tasks_completed": 0,
+  "metadata": {}
+}

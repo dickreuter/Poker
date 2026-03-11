@@ -1,0 +1,16 @@
+{
+  "id": "c2c6aac6",
+  "category": "card_detection",
+  "title": "Increase threshold",
+  "description": "Use adaptive threshold chain instead of fixed value",
+  "based_on": [
+    "03a0d06a"
+  ],
+  "proposed_change": "Use adaptive threshold chain instead of fixed value",
+  "expected_improvement": 0.21,
+  "status": "proposed",
+  "created_at": 1767473121.827565,
+  "tested_at": null,
+  "test_results": null,
+  "votes": 0
+}

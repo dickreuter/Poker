@@ -1,0 +1,11 @@
+{
+  "id": "82305e6a",
+  "type": "broadcast",
+  "priority": 3,
+  "from_session": "coordinator",
+  "to_session": null,
+  "content": "Session coordinator online with role: coordinator",
+  "data": {},
+  "timestamp": 1767473429.848017,
+  "expires": 1767477029.848018
+}

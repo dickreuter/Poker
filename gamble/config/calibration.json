@@ -1,0 +1,54 @@
+{
+  "tables": [
+    {
+      "id": "table_1",
+      "window": {
+        "x": 40,
+        "y": 429,
+        "width": 850,
+        "height": 615
+      },
+      "buttons": {
+        "fold": {
+          "x": 109,
+          "y": 942,
+          "width": 76,
+          "height": 42
+        },
+        "call": null,
+        "bet": null
+      },
+      "cards_valid": true
+    },
+    {
+      "id": "table_2",
+      "window": {
+        "x": 74,
+        "y": 157,
+        "width": 1200,
+        "height": 720
+      },
+      "buttons": {
+        "fold": {
+          "x": 485,
+          "y": 660,
+          "width": 348,
+          "height": 198
+        },
+        "call": {
+          "x": 1201,
+          "y": 689,
+          "width": 66,
+          "height": 31
+        },
+        "bet": null
+      },
+      "cards_valid": true
+    }
+  ],
+  "settings": {
+    "threshold": 0.15,
+    "input_method": "mouse",
+    "y_offset": -150
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "ef7e2d56",
+  "category": "button_detection",
+  "event": "insight_shared",
+  "type": "failure",
+  "context": {
+    "title": "FIXED: Fold button now detected"
+  },
+  "outcome": "shared",
+  "session_id": "coordinator",
+  "timestamp": 1767473429.848397,
+  "metrics": {}
+}

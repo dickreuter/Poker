@@ -1,0 +1,20 @@
+{
+  "id": "3d82fb10",
+  "category": "card_detection",
+  "name": "Repeated: template_match_score_too_high",
+  "description": "Event 'template_match_score_too_high' occurred 3 times",
+  "observations": [
+    "ea707ef1",
+    "958498c3",
+    "860ce015"
+  ],
+  "frequency": 3,
+  "confidence": 0.3,
+  "first_seen": 1767473110.6425412,
+  "last_seen": 1767473110.642833,
+  "conditions": {
+    "threshold": 0.15,
+    "error": "Score exceeds threshold"
+  },
+  "correlations": {}
+}

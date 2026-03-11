@@ -1,0 +1,16 @@
+{
+  "id": "8d4cd40a",
+  "category": "button_detection",
+  "title": "Coordinate verification",
+  "description": "Verify coordinates are within expected bounds",
+  "based_on": [
+    "180e3608"
+  ],
+  "proposed_change": "Verify coordinates are within expected bounds",
+  "expected_improvement": 0.18,
+  "status": "proposed",
+  "created_at": 1767473121.827615,
+  "tested_at": null,
+  "test_results": null,
+  "votes": 0
+}

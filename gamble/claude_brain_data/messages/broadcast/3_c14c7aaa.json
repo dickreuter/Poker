@@ -1,0 +1,11 @@
+{
+  "id": "c14c7aaa",
+  "type": "broadcast",
+  "priority": 3,
+  "from_session": "card_analyzer",
+  "to_session": null,
+  "content": "Session card_analyzer online with role: card_detection",
+  "data": {},
+  "timestamp": 1767473110.641539,
+  "expires": 1767476710.641539
+}

@@ -1,0 +1,13 @@
+{
+  "id": "622a53b0",
+  "area": "integration",
+  "problem": "cli_controller.py still uses old MouseMoverTableBased",
+  "solution": "Update cli_controller.py to use DynamicMouseMover instead. This eliminates hardcoded coordinates and Y offsets.",
+  "code_changes": null,
+  "priority": 2,
+  "status": "proposed",
+  "created_by": "coordinator",
+  "created_at": 1767473429.848862,
+  "implemented_at": null,
+  "votes": 0
+}

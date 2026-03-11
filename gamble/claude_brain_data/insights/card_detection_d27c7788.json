@@ -1,0 +1,16 @@
+{
+  "id": "d27c7788",
+  "area": "card_detection",
+  "title": "Bottom session has working card detection",
+  "content": "The bottom Claude session successfully identified 'FULL HOUSE K\u2666K\u2660 on 8-8-8'. It's reading cards correctly. Need to find out what method it's using.",
+  "evidence": [],
+  "confidence": 0.5,
+  "created_by": "middle_session",
+  "created_at": 1767473617.868077,
+  "updated_at": 1767473617.868077,
+  "votes": 0,
+  "tags": [
+    "card_detection",
+    "working"
+  ]
+}

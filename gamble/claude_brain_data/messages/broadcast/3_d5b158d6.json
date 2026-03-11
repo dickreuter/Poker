@@ -1,0 +1,11 @@
+{
+  "id": "d5b158d6",
+  "type": "broadcast",
+  "priority": 3,
+  "from_session": "button_handler",
+  "to_session": null,
+  "content": "Session button_handler online with role: button_clicking",
+  "data": {},
+  "timestamp": 1767473110.642074,
+  "expires": 1767476710.642074
+}

@@ -1,0 +1,16 @@
+{
+  "id": "dc4db354",
+  "category": "button_detection",
+  "title": "Add logging",
+  "description": "Add detailed logging to diagnose failure cause",
+  "based_on": [
+    "180e3608"
+  ],
+  "proposed_change": "Add detailed logging to diagnose failure cause",
+  "expected_improvement": 0.15,
+  "status": "proposed",
+  "created_at": 1767473121.8276238,
+  "tested_at": null,
+  "test_results": null,
+  "votes": 0
+}

@@ -1,0 +1,19 @@
+{
+  "id": "b056e00c",
+  "category": "button_detection",
+  "name": "Repeated: fold_button_click_failed",
+  "description": "Event 'fold_button_click_failed' occurred 3 times",
+  "observations": [
+    "6abe1974",
+    "53673edf",
+    "a7906106"
+  ],
+  "frequency": 3,
+  "confidence": 0.3,
+  "first_seen": 1767473045.7136772,
+  "last_seen": 1767473045.7140732,
+  "conditions": {
+    "button": "fold"
+  },
+  "correlations": {}
+}

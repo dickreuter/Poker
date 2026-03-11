@@ -1,0 +1,16 @@
+{
+  "id": "41f4ca0f",
+  "category": "button_detection",
+  "title": "Retry mechanism",
+  "description": "Retry click if button still visible after action",
+  "based_on": [
+    "180e3608"
+  ],
+  "proposed_change": "Retry click if button still visible after action",
+  "expected_improvement": 0.195,
+  "status": "proposed",
+  "created_at": 1767473121.827611,
+  "tested_at": null,
+  "test_results": null,
+  "votes": 0
+}

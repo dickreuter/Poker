@@ -1,0 +1,16 @@
+{
+  "id": "f3cb38cb",
+  "category": "card_detection",
+  "title": "Batch processing",
+  "description": "Batch multiple operations together",
+  "based_on": [
+    "03a0d06a"
+  ],
+  "proposed_change": "Batch multiple operations together",
+  "expected_improvement": 0.15,
+  "status": "proposed",
+  "created_at": 1767473121.827598,
+  "tested_at": null,
+  "test_results": null,
+  "votes": 0
+}

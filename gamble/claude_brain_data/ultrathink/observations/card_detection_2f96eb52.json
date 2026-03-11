@@ -1,0 +1,13 @@
+{
+  "id": "2f96eb52",
+  "category": "card_detection",
+  "event": "insight_shared",
+  "type": "failure",
+  "context": {
+    "title": "Template size normalization critical"
+  },
+  "outcome": "shared",
+  "session_id": "card_analyzer",
+  "timestamp": 1767473110.6423879,
+  "metrics": {}
+}

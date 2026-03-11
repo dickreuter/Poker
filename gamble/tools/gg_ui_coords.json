@@ -1,0 +1,47 @@
+{
+  "description": "GGPoker Spin & Gold UI coordinates",
+  "window_position_points": {
+    "x": 62,
+    "y": 127,
+    "w": 1200,
+    "h": 720
+  },
+  "retina_scale": 2,
+  "elements": {
+    "tile_row_1_y_px": 300,
+    "tile_row_2_y_px": 550,
+    "tiles": {
+      "$0.25_3max": {
+        "x_px": 320,
+        "y_px": 300,
+        "description": "First tile, top row"
+      },
+      "$1": {
+        "x_px": 540,
+        "y_px": 300,
+        "description": "Second tile, top row"
+      },
+      "$10": {
+        "x_px": 760,
+        "y_px": 300,
+        "description": "Third tile"
+      }
+    },
+    "play_now_without_insurance": {
+      "x_px": 480,
+      "y_px": 1380,
+      "description": "Left Play Now button (dark/gray)"
+    },
+    "play_now_with_insurance": {
+      "x_px": 780,
+      "y_px": 1380,
+      "description": "Right Play Now button (colored)"
+    },
+    "number_of_games_selector": {
+      "x_px": 240,
+      "y_px": 1380,
+      "description": "Game count selector with +/- buttons"
+    }
+  },
+  "how_to_click": "\n    1. Get window position via AppleScript (returns POINTS)\n    2. Element position is in window PIXELS\n    3. To click: screen_x = win_x + element_x_px // 2\n                 screen_y = win_y + element_y_px // 2\n    "
+}

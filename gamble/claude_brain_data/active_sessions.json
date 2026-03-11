@@ -1,0 +1,44 @@
+{
+  "test_session_1": {
+    "started": 1767473045.712885,
+    "last_seen": 1767473045.712886,
+    "status": "closed",
+    "closed_at": 1767473045.715009
+  },
+  "card_analyzer": {
+    "started": 1767473110.640564,
+    "last_seen": 1767473110.640564,
+    "status": "closed",
+    "closed_at": 1767473110.645141
+  },
+  "button_handler": {
+    "started": 1767473110.641696,
+    "last_seen": 1767473110.641696,
+    "status": "closed",
+    "closed_at": 1767473110.645303
+  },
+  "coordinator": {
+    "started": 1767473429.846945,
+    "last_seen": 1767473429.846945,
+    "status": "closed",
+    "closed_at": 1767473429.849715
+  },
+  "summary_session": {
+    "started": 1767473540.690926,
+    "last_seen": 1767473540.690926,
+    "status": "closed",
+    "closed_at": 1767473540.693341
+  },
+  "middle_session": {
+    "started": 1767473617.867219,
+    "last_seen": 1767473617.867219,
+    "status": "closed",
+    "closed_at": 1767473617.870288
+  },
+  "middle_coordinator": {
+    "started": 1767473794.395652,
+    "last_seen": 1767473794.395653,
+    "status": "closed",
+    "closed_at": 1767473794.397059
+  }
+}

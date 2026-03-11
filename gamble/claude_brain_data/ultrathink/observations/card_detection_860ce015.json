@@ -1,0 +1,16 @@
+{
+  "id": "860ce015",
+  "category": "card_detection",
+  "event": "template_match_score_too_high",
+  "type": "failure",
+  "context": {
+    "score": 0.36,
+    "threshold": 0.15,
+    "card": "Ac",
+    "error": "Score exceeds threshold"
+  },
+  "outcome": "failure",
+  "session_id": "card_analyzer",
+  "timestamp": 1767473110.6425412,
+  "metrics": {}
+}

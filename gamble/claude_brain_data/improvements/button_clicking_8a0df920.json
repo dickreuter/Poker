@@ -1,0 +1,13 @@
+{
+  "id": "8a0df920",
+  "area": "button_clicking",
+  "problem": "Fold button Y position varies depending on GGPoker UI state",
+  "solution": "Use HSV color detection to find red/orange fold button dynamically instead of fixed coordinates. This eliminates the need for hardcoded Y offsets.",
+  "code_changes": null,
+  "priority": 2,
+  "status": "proposed",
+  "created_by": "button_handler",
+  "created_at": 1767473110.6430411,
+  "implemented_at": null,
+  "votes": 0
+}

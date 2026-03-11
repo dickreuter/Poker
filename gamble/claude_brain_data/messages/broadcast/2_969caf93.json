@@ -1,0 +1,14 @@
+{
+  "id": "969caf93",
+  "type": "insight",
+  "priority": 2,
+  "from_session": "coordinator",
+  "to_session": null,
+  "content": "New insight: FIXED: Fold button now detected",
+  "data": {
+    "insight_id": "b1781691",
+    "area": "button_detection"
+  },
+  "timestamp": 1767473429.84831,
+  "expires": 1767559829.84831
+}

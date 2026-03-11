@@ -1,0 +1,16 @@
+{
+  "id": "4918a657",
+  "category": "button_detection",
+  "title": "Batch processing",
+  "description": "Batch multiple operations together",
+  "based_on": [
+    "180e3608"
+  ],
+  "proposed_change": "Batch multiple operations together",
+  "expected_improvement": 0.15,
+  "status": "proposed",
+  "created_at": 1767473121.827636,
+  "tested_at": null,
+  "test_results": null,
+  "votes": 0
+}

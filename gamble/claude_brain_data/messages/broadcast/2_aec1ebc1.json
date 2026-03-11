@@ -1,0 +1,11 @@
+{
+  "id": "aec1ebc1",
+  "type": "broadcast",
+  "priority": 2,
+  "from_session": "test_session_1",
+  "to_session": null,
+  "content": "Test broadcast from session 1",
+  "data": {},
+  "timestamp": 1767473045.713463,
+  "expires": 1767476645.713463
+}

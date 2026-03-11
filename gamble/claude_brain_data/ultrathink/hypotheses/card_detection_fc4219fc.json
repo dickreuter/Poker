@@ -1,0 +1,16 @@
+{
+  "id": "fc4219fc",
+  "category": "card_detection",
+  "title": "Template normalization",
+  "description": "Resize all templates to consistent size",
+  "based_on": [
+    "03a0d06a"
+  ],
+  "proposed_change": "Resize all templates to consistent size",
+  "expected_improvement": 0.21,
+  "status": "proposed",
+  "created_at": 1767473121.827584,
+  "tested_at": null,
+  "test_results": null,
+  "votes": 0
+}

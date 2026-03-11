@@ -1,0 +1,12 @@
+{
+  "id": "card_analyzer",
+  "status": "offline",
+  "capabilities": [
+    "card_detection"
+  ],
+  "started_at": 1767473110.6411462,
+  "last_heartbeat": 1767473110.6413288,
+  "current_task": null,
+  "tasks_completed": 0,
+  "metadata": {}
+}

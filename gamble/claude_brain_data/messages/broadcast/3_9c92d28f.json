@@ -1,0 +1,11 @@
+{
+  "id": "9c92d28f",
+  "type": "broadcast",
+  "priority": 3,
+  "from_session": "middle_session",
+  "to_session": null,
+  "content": "Session middle_session online with role: coordinator",
+  "data": {},
+  "timestamp": 1767473617.867892,
+  "expires": 1767477217.867892
+}

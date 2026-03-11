@@ -1,0 +1,11 @@
+{
+  "id": "647f9e28",
+  "type": "broadcast",
+  "priority": 2,
+  "from_session": "button_handler",
+  "to_session": null,
+  "content": "Need help: Fold button Y position is inconsistent. Current offset -150 sometimes works, sometimes doesn't.",
+  "data": {},
+  "timestamp": 1767473110.642972,
+  "expires": 1767476710.642972
+}

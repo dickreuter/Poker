@@ -1,0 +1,17 @@
+{
+  "id": "b1781691",
+  "area": "button_detection",
+  "title": "FIXED: Fold button now detected",
+  "content": "\nFixed the Fold button detection in dynamic_table_finder.py.\n\nPROBLEM: Fold button was never being detected because BUTTON_COLORS didn't include it.\nThe comment said \"Fold is detected separately\" but no code existed.\n\nFIX: Added fold color detection:\n    'fold': {\n        'lower': np.array([0, 0, 40]),\n        'upper': np.array([180, 50, 120]),\n        'name': 'Fold'\n    }\n\nVERIFIED WORKING: Now detects fold at (215, 544) on test table.\n",
+  "evidence": [],
+  "confidence": 0.5,
+  "created_by": "coordinator",
+  "created_at": 1767473429.8481321,
+  "updated_at": 1767473429.8481321,
+  "votes": 0,
+  "tags": [
+    "button_detection",
+    "fold",
+    "fix"
+  ]
+}

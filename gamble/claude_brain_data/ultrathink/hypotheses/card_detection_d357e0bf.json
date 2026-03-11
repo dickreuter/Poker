@@ -1,0 +1,16 @@
+{
+  "id": "d357e0bf",
+  "category": "card_detection",
+  "title": "Add normalization",
+  "description": "Normalize brightness/contrast before matching",
+  "based_on": [
+    "03a0d06a"
+  ],
+  "proposed_change": "Normalize brightness/contrast before matching",
+  "expected_improvement": 0.18,
+  "status": "proposed",
+  "created_at": 1767473121.827575,
+  "tested_at": null,
+  "test_results": null,
+  "votes": 0
+}

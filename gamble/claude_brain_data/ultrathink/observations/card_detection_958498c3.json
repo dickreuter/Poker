@@ -1,0 +1,16 @@
+{
+  "id": "958498c3",
+  "category": "card_detection",
+  "event": "template_match_score_too_high",
+  "type": "failure",
+  "context": {
+    "score": 0.38,
+    "threshold": 0.15,
+    "card": "Kh",
+    "error": "Score exceeds threshold"
+  },
+  "outcome": "failure",
+  "session_id": "card_analyzer",
+  "timestamp": 1767473110.64269,
+  "metrics": {}
+}

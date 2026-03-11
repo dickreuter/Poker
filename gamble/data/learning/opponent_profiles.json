@@ -1,0 +1,256 @@
+{
+ "pool_rush_2nl": {
+  "hands_seen": 38,
+  "vpip_count": 15,
+  "pfr_count": 7,
+  "postflop_bets": 8,
+  "postflop_calls": 7,
+  "postflop_checks": 0,
+  "postflop_folds": 0,
+  "cbet_opportunities": 1,
+  "cbet_count": 1,
+  "fold_to_cbet_opportunities": 0,
+  "fold_to_cbet_count": 0,
+  "three_bet_opportunities": 0,
+  "three_bet_count": 0,
+  "went_to_showdown": 287,
+  "won_at_showdown": 175,
+  "last_seen": 1773116725.402426,
+  "_pos_stats": {
+   "BTN": {
+    "hands": 33,
+    "vpip": 33,
+    "pfr": 33
+   },
+   "BB": {
+    "hands": 17,
+    "vpip": 17,
+    "pfr": 17
+   },
+   "SB": {
+    "hands": 16,
+    "vpip": 16,
+    "pfr": 16
+   },
+   "UTG": {
+    "hands": 12,
+    "vpip": 12,
+    "pfr": 12
+   },
+   "CO": {
+    "hands": 1,
+    "vpip": 1,
+    "pfr": 1
+   }
+  },
+  "_recent_vpip": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "_recent_pfr": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "_recent_af_actions": [],
+  "_shown_hands": []
+ },
+ "test_player": {
+  "hands_seen": 30,
+  "vpip_count": 9,
+  "pfr_count": 9,
+  "postflop_bets": 9,
+  "postflop_calls": 0,
+  "postflop_checks": 0,
+  "postflop_folds": 0,
+  "cbet_opportunities": 0,
+  "cbet_count": 0,
+  "fold_to_cbet_opportunities": 0,
+  "fold_to_cbet_count": 0,
+  "three_bet_opportunities": 0,
+  "three_bet_count": 0,
+  "went_to_showdown": 0,
+  "won_at_showdown": 0,
+  "last_seen": 1772956341.701288,
+  "_pos_stats": {},
+  "_recent_vpip": [
+   false,
+   false,
+   false,
+   false,
+   false,
+   false,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "_recent_pfr": [
+   false,
+   false,
+   false,
+   false,
+   false,
+   false,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "_recent_af_actions": [
+   [
+    1,
+    0
+   ],
+   [
+    1,
+    0
+   ],
+   [
+    1,
+    0
+   ],
+   [
+    1,
+    0
+   ],
+   [
+    1,
+    0
+   ],
+   [
+    1,
+    0
+   ],
+   [
+    1,
+    0
+   ],
+   [
+    1,
+    0
+   ],
+   [
+    1,
+    0
+   ]
+  ],
+  "_shown_hands": []
+ },
+ "villain_default": {
+  "hands_seen": 21,
+  "vpip_count": 74,
+  "pfr_count": 74,
+  "postflop_bets": 0,
+  "postflop_calls": 0,
+  "postflop_checks": 0,
+  "postflop_folds": 0,
+  "cbet_opportunities": 0,
+  "cbet_count": 0,
+  "fold_to_cbet_opportunities": 0,
+  "fold_to_cbet_count": 0,
+  "three_bet_opportunities": 0,
+  "three_bet_count": 0,
+  "went_to_showdown": 194,
+  "won_at_showdown": 145,
+  "last_seen": 1773196386.179274,
+  "_pos_stats": {
+   "BTN": {
+    "hands": 15,
+    "vpip": 15,
+    "pfr": 15
+   },
+   "UTG": {
+    "hands": 21,
+    "vpip": 21,
+    "pfr": 21
+   },
+   "BB": {
+    "hands": 25,
+    "vpip": 25,
+    "pfr": 25
+   },
+   "SB": {
+    "hands": 7,
+    "vpip": 7,
+    "pfr": 7
+   },
+   "CO": {
+    "hands": 7,
+    "vpip": 7,
+    "pfr": 7
+   }
+  },
+  "_recent_vpip": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "_recent_pfr": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "_recent_af_actions": [],
+  "_shown_hands": []
+ }
+}

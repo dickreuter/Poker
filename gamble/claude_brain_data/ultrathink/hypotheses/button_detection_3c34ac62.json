@@ -1,0 +1,16 @@
+{
+  "id": "3c34ac62",
+  "category": "button_detection",
+  "title": "Color detection",
+  "description": "Find buttons by HSV color instead of fixed coordinates",
+  "based_on": [
+    "180e3608"
+  ],
+  "proposed_change": "Find buttons by HSV color instead of fixed coordinates",
+  "expected_improvement": 0.255,
+  "status": "proposed",
+  "created_at": 1767473121.827606,
+  "tested_at": null,
+  "test_results": null,
+  "votes": 0
+}

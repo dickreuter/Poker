@@ -1,0 +1,16 @@
+{
+  "id": "20fddc07",
+  "category": "card_detection",
+  "title": "Debounce mechanism",
+  "description": "Add debouncing to prevent rapid repeats",
+  "based_on": [
+    "03a0d06a"
+  ],
+  "proposed_change": "Add debouncing to prevent rapid repeats",
+  "expected_improvement": 0.165,
+  "status": "proposed",
+  "created_at": 1767473121.827601,
+  "tested_at": null,
+  "test_results": null,
+  "votes": 0
+}

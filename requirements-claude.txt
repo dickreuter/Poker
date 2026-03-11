@@ -1,0 +1,16 @@
+# Requirements for Claude Opus 4.6 Integration
+# Install with: pip install -r requirements-claude.txt
+
+# Anthropic SDK (required)
+anthropic>=0.40.0
+
+# Image handling (usually already installed)
+Pillow>=10.0.0
+
+# For mouse automation (if not using existing pymouse)
+pyautogui>=0.9.54
+
+# Already in main requirements.txt but needed:
+# numpy
+# opencv-python
+# pytesseract
