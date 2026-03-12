@@ -30,6 +30,11 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 
+# --- ULTRA-FAST OCR CACHE ---
+# Maps window_id -> {'hash': str, 'cards': List[str]}
+_CARD_CACHE = {}
+_BOARD_CACHE = {}
+
 # ---------------------------------------------------------------------------
 #  Region definitions (percentage of table image)
 # ---------------------------------------------------------------------------
@@ -193,23 +198,53 @@ def read_table(
     has_any_buttons = bool(buttons)
 
     # 2. Cards + Board — only read if we have buttons (expensive OCR)
+    my_cards = []
+    board_cards = []
+    
     if has_any_buttons:
-        my_cards = read_player_cards(table_img, debug_dir=debug_dir)
-        board_cards = _detect_board_cards(img, W, H)
-
-        # --- Deduplicate board cards by name ---
-        # OCR can misread two different board cards as the same value.
-        # A legal board never has duplicate cards.
-        if board_cards:
-            seen = set()
-            unique_board = []
-            for card in board_cards:
-                if card not in seen:
-                    seen.add(card)
-                    unique_board.append(card)
-                else:
-                    log.warning(f"BOARD DEDUP: duplicate '{card}' removed from {board_cards}")
-            board_cards = unique_board
+        # --- ULTRA-FAST CACHE LOOKUP ---
+        # Hash hole card area
+        from gamble.ocr.card_reader import SEARCH_Y_MIN, SEARCH_Y_MAX, SEARCH_X_MIN, SEARCH_X_MAX
+        h1, h2 = int(H*SEARCH_Y_MIN), int(H*SEARCH_Y_MAX)
+        w1, w2 = int(W*SEARCH_X_MIN), int(W*SEARCH_X_MAX)
+        card_area = img[h1:h2, w1:w2]
+        card_hash = hash(card_area.tobytes())
+        
+        # Hash board area
+        bh1, bh2 = int(H*BOARD_Y_MIN), int(H*BOARD_Y_MAX)
+        bw1, bw2 = int(W*BOARD_X_MIN), int(W*BOARD_X_MAX)
+        board_area = img[bh1:bh2, bw1:bw2]
+        board_hash = hash(board_area.tobytes())
+        
+        cached_cards = _CARD_CACHE.get(window_id)
+        cached_board = _BOARD_CACHE.get(window_id)
+        
+        # Hole card OCR (if hash changed or first time)
+        if cached_cards and cached_cards['hash'] == card_hash:
+            my_cards = list(cached_cards['cards'])
+            log.debug(f"CACHE HIT (cards) for {window_id}")
+        else:
+            my_cards = read_player_cards(table_img, debug_dir=debug_dir)
+            _CARD_CACHE[window_id] = {'hash': card_hash, 'cards': list(my_cards)}
+            
+        # Board OCR (if hash changed or first time)
+        if cached_board and cached_board['hash'] == board_hash:
+            board_cards = list(cached_board['cards'])
+            log.debug(f"CACHE HIT (board) for {window_id}")
+        else:
+            board_cards = _detect_board_cards(img, W, H)
+            
+            # --- Deduplicate board cards by name ---
+            if board_cards:
+                seen = set()
+                unique_board = []
+                for card in board_cards:
+                    if card not in seen:
+                        seen.add(card)
+                        unique_board.append(card)
+                board_cards = unique_board
+            
+            _BOARD_CACHE[window_id] = {'hash': board_hash, 'cards': list(board_cards)}
 
         # --- Cross-validate: no card should appear in both hole and board ---
         if my_cards and board_cards:
@@ -218,9 +253,7 @@ def read_table(
                 log.warning(f"CARD COLLISION: {overlap} in both hole={my_cards} and board={board_cards}")
                 # Remove the conflicting cards from the board (hole cards are more reliable)
                 board_cards = [c for c in board_cards if c not in overlap]
-    else:
-        my_cards = []
-        board_cards = []
+    
     cards_face_down = len(my_cards) == 0
     t2 = time.time()
 

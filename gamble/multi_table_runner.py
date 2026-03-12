@@ -1842,16 +1842,22 @@ class MultiTableRunner:
                     state.get_action_by_type('call') or 
                     state.get_action_by_type('fold')) # Final safety fallback
 
-        # 3. Raise/Bet logic
+        # 3. Raise/Bet logic (PRIORITIZE AGGRESSION)
         if any(kw in target_str for kw in ('raise', 'bet', '3bet', '4bet', 'allin', 'bluff')):
-            # Prioritize best betting buttons
+            # Prioritize raise/bet buttons strictly
             btn = (state.get_action_by_type('raise') or
                    state.get_action_by_type('bet') or
-                   state.get_action_by_type('all_in') or
-                   state.get_action_by_type('call') or
-                   state.get_action_by_type('check'))
+                   state.get_action_by_type('all_in'))
+            
             if btn:
                 log.debug(f"MAP: {mouse_target} -> {btn.action_type}")
+                return btn
+            
+            # Fallback to call/check ONLY if no raise button exists
+            btn = (state.get_action_by_type('call') or 
+                   state.get_action_by_type('check'))
+            if btn:
+                log.warning(f"MAP: {mouse_target} but NO raise button found. Falling back to {btn.action_type}")
                 return btn
 
         # 4. Lobby/Special buttons
@@ -2047,13 +2053,15 @@ class MultiTableRunner:
             return
 
         # --- Activate the table window and verify before clicking ---
-        self._activate_table_window(session)
+        if not self._activate_table_window(session):
+            log.warning(f"Could not focus {session.window.name}, but trying click anyway.")
+        
+        # Mandatory delay for macOS focus to register
+        _time.sleep(0.3)
 
-        # Pre-click color guard: verify the action button is still there
-        if not self._verify_button_color(action.screen_x_pt, action.screen_y_pt):
-            log.warning(f"ABORT CLICK: button color guard failed for {action.action_type} "
-                        f"at ({action.screen_x_pt},{action.screen_y_pt}), skipping action")
-            return
+        # Compute desired raise amount for bet sizing decisions
+        target_amount = self._compute_raise_amount(state, decision_label)
+        log.info(f"ACTION START: label={decision_label} type={action.action_type} target={target_amount:.1f}BB")
 
         if target_amount and target_amount > 0 and action.action_type in ('raise', 'bet'):
             raise_x = action.screen_x_pt
@@ -2166,22 +2174,20 @@ class MultiTableRunner:
                 pyautogui.press('backspace')
                 _time.sleep(0.2)
                 
-                # Type character by character with optimized cadence
-                # Use slightly slower delay (0.1s) for higher reliability
+                # Type character by character with optimized cadence (30ms)
                 for char in amount_str:
                     pyautogui.typewrite(char)
-                    _time.sleep(0.1) 
+                    _time.sleep(0.03) 
                 
-                _time.sleep(0.3)
+                _time.sleep(0.1)
                 pyautogui.press('enter')
                 
-                # HIGH PRESSURE SKIP: Don't wait for UI or verify if running out of time
+                # HIGH PRESSURE SKIP
                 if high_pressure:
-                    log.info("HIGH PRESSURE: Skipping verification, clicking raise immediately")
                     typing_success = True
                     break
 
-                _time.sleep(0.6) # Wait for UI to reflect change
+                _time.sleep(0.3) # Optimized wait for UI
                 
                 # VERIFICATION: Read the 'Raise' button text to see the resulting amount
                 try:
@@ -2248,28 +2254,28 @@ class MultiTableRunner:
             self._reliable_click(dialog_x, dialog_y, 'dismiss_bet_dialog')
             _time.sleep(0.3)
 
-        # FINAL CLICK
+        # FINAL CLICK (Double-tap for reliability)
         self._reliable_click(action.screen_x_pt, action.screen_y_pt, action.action_type)
+        _time.sleep(0.05)
+        self._reliable_click(action.screen_x_pt + 2, action.screen_y_pt + 1, action.action_type)
+        
         log.info(f"Clicked {action.action_type} at ({action.screen_x_pt}, {action.screen_y_pt}) "
                  f"[decision={decision_label}]")
         
-        # --- NEW: Post-Action Verification (Flawless Execution) ---
-        # After clicking, we wait a moment and verify the buttons are gone.
-        # If they are still there, the click failed (UI lag).
-        _time.sleep(0.4)
-        v_state = self.capture_game_state(session)
-        if v_state and v_state.is_my_turn:
-            # Still our turn? The action didn't register.
-            log.warning(f"ACTION FAILED: {action.action_type} still visible on {session.window.name}. RE-CLICKING.")
-            # Re-click with a small offset to hit a different part of the button
-            self._reliable_click(action.screen_x_pt + 5, action.screen_y_pt + 2, action.action_type)
+        # --- NEW: FAST Verification (Only for bets) ---
+        if action.action_type in ('raise', 'bet', 'all_in'):
+            # Wait briefly for UI to potentially change
             _time.sleep(0.3)
+            # FAST check: is there still red in the action area?
+            # If so, the click might have been swallowed.
+            if self._verify_button_color(action.screen_x_pt, action.screen_y_pt):
+                log.warning(f"ACTION MIGHT HAVE FAILED: {action.action_type} button still visible. Re-clicking.")
+                self._reliable_click(action.screen_x_pt - 5, action.screen_y_pt - 2, action.action_type)
         
-        # --- NEW: Handle "Are you sure?" dialog ---
+        # Handle confirmation dialog
         if action.action_type in ('raise', 'bet'):
             _time.sleep(0.2)
-            if self._handle_bet_confirmation(session):
-                log.info("Handled confirmation dialog via verification path")
+            self._handle_bet_confirmation(session)
 
         session.last_action_time = datetime.datetime.utcnow()
         # Track what we acted on to prevent duplicate actions on same situation

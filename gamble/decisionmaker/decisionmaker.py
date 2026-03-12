@@ -245,10 +245,30 @@ def gto_preflop_decision(crd1: str, crd2: str, position: str,
         # BB Defense (Deep math)
         if pos == 'BB':
             if hand in GTO_BB_DEFEND:
-                # Defend wide unless raise is massive (>45% stack)
+                # Fix 4: Tiered BB defense based on raise size
+                # call_to_stack is raise_size / hero_stack
+                # Typical raise is 2-2.5BB. If stack is 100BB, call_to_stack is 0.02.
+                # If stack is 25BB (Spin), call_to_stack is 0.08.
+                
+                # Convert call_amount to relative BB size
+                raise_size_bb = call_amount / 1.0 # Approximate
+                
                 if call_to_stack > 0.45 and hand not in GTO_3BET.get('vs_BTN', set()):
                     log.debug(f"BB Defense: folding {hand} vs massive {call_to_stack:.0%} stack raise")
                     return 'fold'
+                
+                # Tiered defense vs smaller raises
+                if call_to_stack > 0.15: # Large raise (>4x in Spin, >15x in Cash)
+                    # Tighten to only top 50% of defend range + premiums
+                    if random.random() < 0.50 and hand not in PREMIUMS:
+                        log.debug(f"BB Defense: tightening vs large raise ({call_to_stack:.2f})")
+                        return 'fold'
+                elif call_to_stack > 0.10: # Medium raise (3x-4x in Spin)
+                    # Tighten ~30%
+                    if random.random() < 0.30 and hand not in PREMIUMS:
+                        log.debug(f"BB Defense: tightening vs medium raise ({call_to_stack:.2f})")
+                        return 'fold'
+
                 log.debug(f"BB Defense: calling with {hand}")
                 return 'call'
         
@@ -1183,7 +1203,14 @@ class Decision(DecisionBase):
                 log.info(f"BAYESIAN FOLD PRESSURE: value={_banalysis['value_pct']:.0%}, "
                          f"adj=+{bayesian_adj:.3f} (conf={_exp_conf:.0%})")
 
-        required_equity = max(pot_odds - implied_adj - blocker_adj + opp_call_adj - range_adj + spot_adj + sizing_adj + icm_adj + bayesian_adj, 0.05)
+        # Fix 5: Multiway Pot Tightening (Tighten ~6% per extra opponent)
+        multiway_adj = 0.0
+        other_players = getattr(t, 'other_active_players', 1)
+        if other_players >= 2:
+            multiway_adj = (other_players - 1) * 0.06
+            log.info(f"MULTIWAY TIGHTENING: +{multiway_adj:.1%} (opponents={other_players})")
+
+        required_equity = max(pot_odds - implied_adj - blocker_adj + opp_call_adj - range_adj + spot_adj + sizing_adj + icm_adj + bayesian_adj + multiway_adj, 0.05)
 
         # --- Hand strength gate: discount equity when facing bets with weak hands ---
         # Monte Carlo equity is vs RANDOM hands. When opponent bets, their range is
@@ -1242,9 +1269,15 @@ class Decision(DecisionBase):
                      f"(pot_odds={pot_odds:.3f}, sizing={sizing_adj:+.3f}{_opp_tag})")
 
         # All-in guard — fold low-equity all-in situations
-        if t.allInCallButton and t.equity < 0.35:
-            self.decision = DecisionTypes.fold
-            log.info(f"All-in guard: equity {t.equity:.3f} < 0.35, folding")
+        if t.allInCallButton:
+            # Pot Odds Guard: equity < call / (pot + call)
+            pot_odds_limit = call / (pot + call) if (pot + call) > 0 else 0
+            # Minimum floor 0.18 (never call with pure garbage)
+            all_in_threshold = max(0.18, pot_odds_limit)
+            if t.equity < all_in_threshold:
+                self.decision = DecisionTypes.fold
+                log.info(f"ALL-IN GUARD: equity {t.equity:.3f} < threshold {all_in_threshold:.3f} "
+                         f"(pot_odds={pot_odds_limit:.3f}), folding")
 
     def betting(self, t, p, h):
         # preflop
@@ -1415,6 +1448,10 @@ class Decision(DecisionBase):
             # --- Strong value bet: high equity → always bet big ---
             # Opponent-adaptive: bet thinner for value vs fish who call with worse
             value_threshold = 0.70
+            # Fix 5: Multiway Tightening (~5% higher threshold per extra opponent)
+            if other_players >= 2:
+                value_threshold += (other_players - 1) * 0.05
+                log.info(f"MULTIWAY VALUE TIGHTENING: threshold={value_threshold:.2f} (opponents={other_players})")
             opp = self._get_opp()
             if opp:
                 ptype = opp.get('type', 'unknown')
@@ -1494,6 +1531,19 @@ class Decision(DecisionBase):
 
             # --- Turn barrel: continue aggression from flop ---
             if t.gameStage == GameStages.Turn.value and t.checkButton:
+                # Fix 6: Turn Probe Bet (when flop was checked around)
+                no_initiative = not t.other_player_has_initiative and not getattr(self, '_we_bet_prev_street', False)
+                if no_initiative and t.equity >= 0.45:
+                    probe_freq = 0.60
+                    # Probe more on dry boards, less on wet
+                    if wetness > 0.6: probe_freq -= 0.15
+                    elif wetness < 0.3: probe_freq += 0.10
+                    
+                    if random.random() < probe_freq:
+                        self.decision = DecisionTypes.bet2
+                        log.info(f"PROBE BET: eq={t.equity:.3f} wet={wetness:.2f} freq={probe_freq:.2f}")
+                        return
+
                 we_bet_prev = getattr(self, '_we_bet_prev_street', False)
                 prev_equity = getattr(self, '_prev_street_equity', None)
 
@@ -2475,12 +2525,21 @@ class Decision(DecisionBase):
         if t.allInCallButton and self.decision != DecisionTypes.fold:
             if self.decision in (DecisionTypes.check, DecisionTypes.check_deception):
                 pass  # Check is free, keep it
-            elif t.equity >= 0.35:
-                log.info(f"All-in call button: equity {t.equity:.3f} >= 0.35, calling")
-                self.decision = DecisionTypes.call
             else:
-                log.info(f"ALL-IN GUARD: equity {t.equity:.3f} < 0.35, folding instead of all-in")
-                self.decision = DecisionTypes.fold
+                # Pot Odds Guard: equity < call / (pot + call)
+                pot = max(t.totalPotValue, 0.01)
+                call = max(t.minCall, 0)
+                pot_odds_limit = call / (pot + call) if (pot + call) > 0 else 0
+                # Minimum floor 0.18 (never call with pure garbage)
+                all_in_threshold = max(0.18, pot_odds_limit)
+                
+                if t.equity >= all_in_threshold:
+                    log.info(f"All-in call button: equity {t.equity:.3f} >= threshold {all_in_threshold:.3f}, calling")
+                    self.decision = DecisionTypes.call
+                else:
+                    log.info(f"ALL-IN GUARD (admin): equity {t.equity:.3f} < threshold {all_in_threshold:.3f} "
+                             f"(pot_odds={pot_odds_limit:.3f}), folding instead of all-in")
+                    self.decision = DecisionTypes.fold
 
         h.lastSecondRoundAdjustment = self.secondRoundAdjustment
 
@@ -3079,6 +3138,31 @@ class Decision(DecisionBase):
             self.decision = DecisionTypes.fold
 
         self.decision = self.decision.value
+
+        # Fix 7: Hand History Writing (Enables Feedback Loop)
+        try:
+            import datetime
+            import json
+            from gamble.core.constants import get_dir
+            history_file = os.path.join(get_dir('learning'), 'hand_history.jsonl')
+            opp = self._get_opp()
+            hand_data = {
+                'timestamp': datetime.datetime.utcnow().isoformat(),
+                'street': t.gameStage,
+                'cards': t.mycards,
+                'board': t.cardsOnTable,
+                'equity': round(float(t.equity), 3),
+                'decision': self.decision,
+                'pot_bb': round(float(t.totalPotValue) / t.bigBlind, 1) if t.bigBlind > 0 else 0,
+                'call_bb': round(float(t.minCall) / t.bigBlind, 1) if t.bigBlind > 0 else 0,
+                'spr': round(float(self.spr), 1),
+                'opponent_type': opp.get('type', 'unknown') if opp else 'unknown',
+                'table': getattr(t, '_table_name', 'unknown')
+            }
+            with open(history_file, 'a') as f:
+                f.write(json.dumps(hand_data) + '\n')
+        except Exception as e:
+            log.debug(f"Hand history write failed: {e}")
 
         # --- Analysis (computed after decision for logging) ---
         self._analyze_blockers(t)

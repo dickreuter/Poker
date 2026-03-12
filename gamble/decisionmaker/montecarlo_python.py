@@ -338,11 +338,19 @@ class MonteCarlo:
                 # Convert opponent_allowed_cards (set of strings like 'AKs') to eval7.HandRange
                 if isinstance(opponent_range, set):
                     range_str = ", ".join(list(opponent_range))
+                elif isinstance(opponent_range, (float, int)):
+                    # Fix 2: Convert VPIP (float) to eval7 range string
+                    # Uses tiered ranges from tightest to widest
+                    v = float(opponent_range)
+                    if v <= 0.05: range_str = "AA, KK, QQ, AKs"
+                    elif v <= 0.10: range_str = "TT+, AJs+, AKo"
+                    elif v <= 0.15: range_str = "77+, A9s+, KJs+, AJo+, KQo"
+                    elif v <= 0.20: range_str = "55+, A7s+, KTs+, QJs, ATo+, KQo"
+                    elif v <= 0.25: range_str = "22+, A2s+, KTs+, QTs+, JTs, ATo+, KJo+, QJo"
+                    elif v <= 0.35: range_str = "22+, A2s+, K5s+, Q8s+, J8s+, T8s+, A2o+, K9o+, QTo+"
+                    elif v <= 0.50: range_str = "22+, A2s+, K2s+, Q5s+, J7s+, T7s+, A2o+, K5o+, Q8o+"
+                    else: range_str = "22+, A2s+, K2s+, Q2s+, J2s+, T2s+, A2o+, K2o+, Q2o+" # Top 50%
                 else:
-                    # If it's a float, we need to generate the top X% range string
-                    # For now, fallback to Python loop for float ranges or 
-                    # use a wide default if unsure.
-                    # Optimization: range_equity.py has better range estimation.
                     range_str = "22+, A2s+, K2s+, Q2s+, J2s+, T2s+, A2o+, K2o+, Q2o+" 
 
                 villain_range = eval7.HandRange(range_str)
@@ -631,28 +639,6 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
     ui_action_and_signals.signal_status.emit("Monte Carlo completed successfully")
     logger.debug("Cards Monte Carlo completed successfully with runs: " + str(m.runs))
     logger.info("Absolute equity (no ranges for bot) " + str(np.round(t.abs_equity, 2)))
-
-    if t.gameStage == "PreFlop":
-        # Ensure preflop_equities is loaded (may be missing on cache hits
-        # since get_opponent_allowed_cards_list is only called in run_montecarlo)
-        if not hasattr(m, 'preflop_equities'):
-            try:
-                ror = "-50" if getattr(m, 'use_range_of_range', False) else ""
-                with open(os.path.join(get_dir('codebase'), f'decisionmaker/preflop_equity{ror}.json')) as f:
-                    m.preflop_equities = json.load(f)
-            except Exception:
-                m.preflop_equities = {}
-
-        crd1, crd2 = m.get_two_short_notation(t.mycards)
-        if crd1 in m.preflop_equities:
-            m.equity = m.preflop_equities[crd1]
-        elif crd2 in m.preflop_equities:
-            m.equity = m.preflop_equities[crd2]
-        elif crd1 + 'O' in m.preflop_equities:
-            m.equity = m.preflop_equities[crd1 + 'O']
-        else:
-            logger.warning("Preflop equity not found in lookup table: " + str(crd1))
-        # t.abs_equity = m.equity
 
     t.abs_equity = np.round(t.abs_equity, 2)
     t.winnerCardTypeList = m.winnerCardTypeList
