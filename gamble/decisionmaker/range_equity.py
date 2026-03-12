@@ -401,6 +401,52 @@ class RangeEquity:
             log.warning(f"Board-aware equity error: {e}")
             return self.equity_vs_range(hero, board, villain_range_str), f"fallback: {e}"
 
+    def estimate_villain_range_str(
+        self,
+        position: str = 'CO',
+        action: str = 'open',
+        player_type: str = 'unknown',
+        street: str = 'preflop',
+    ) -> str:
+        """Estimate the villain's likely range based on position and action.
+
+        Returns a string compatible with eval7.HandRange.
+        """
+        pos = position.upper()
+        
+        # Base range from player type
+        p_ranges = PLAYER_TYPE_RANGES.get(player_type, PLAYER_TYPE_RANGES['unknown'])
+        
+        if street == 'preflop':
+            if action == 'open':
+                # Use position-specific RFI range, modified by player tightness
+                base = RFI_RANGES.get(pos, RFI_RANGES['CO'])
+                if player_type == 'nit': return p_ranges['open']
+                return base
+            elif action == '3bet':
+                # Use 3-bet ranges
+                r_key = f'vs_{pos}'
+                return THREE_BET_RANGES.get(r_key, THREE_BET_RANGES['default'])
+            elif action == 'call':
+                if player_type == 'nit': return CALL_RANGES['tight']
+                if player_type in ('fish_passive', 'fish_aggro'): return CALL_RANGES['wide']
+                return CALL_RANGES['medium']
+            elif action == 'all_in':
+                return p_ranges['all_in']
+        
+        # Postflop (Flop/Turn/River)
+        if action == 'all_in':
+            return p_ranges['all_in']
+        elif action in ('bet', 'raise'):
+            if street == 'flop': return p_ranges['flop_bet']
+            if street == 'turn': return p_ranges['turn_bet']
+            return p_ranges['river_bet']
+        elif action == 'check':
+            # Checking ranges are wider/weaker
+            return '22+, A2s+, K2s+, Q2s+, J2s+, T2s+, A2o+, K2o+, Q2o+'
+            
+        return '22+, A2s+, K2s+, Q2s+, J2s+, T2s+, A2o+, K2o+, Q2o+'
+
     def estimate_villain_range(
         self,
         position: str = 'unknown',

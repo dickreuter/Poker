@@ -1749,20 +1749,26 @@ class MultiTableRunner:
                 except Exception:
                     pass  # Never let logging break decision flow
 
-                # --- IRON-CLAD EXECUTION FLOW ---
+                # --- IRON-CLAD EXECUTION FLOW (Safe Version) ---
                 # Map DecisionMaker output to available action
                 action = self._map_decision_to_action(state, mouse_target)
                 target_str = str(mouse_target).split('.')[-1].lower() if hasattr(mouse_target, 'name') else str(mouse_target).lower()
 
-                # GUARANTEED ACTION: If it's a Fold or Check, and we can't find the button,
-                # use hardcoded coordinates immediately. We CANNOT loop on these.
-                if not action and target_str in ('fold', 'check', 'call'):
-                    log.warning(f"Iron-Clad: No button found for {target_str}, using coordinate fallback.")
-                    x_map = {'fold': 0.15, 'check': 0.50, 'call': 0.50}
-                    tx = x_map.get(target_str, 0.15)
+                # SAFETY: If decision is 'Check' but we are facing a bet, this is a logic mismatch.
+                # Force a fold rather than accidentally calling.
+                if target_str == 'check' and state.call_amount > 0:
+                    log.warning(f"SAFETY: Decision was 'Check' but facing {state.call_amount} BB bet. Forcing re-evaluation.")
+                    return False # Trigger retry
+
+                # GUARANTEED ACTION: ONLY for 'Fold'. 
+                # We can safely fallback to a coordinate click for Fold to save the hand.
+                # We NEVER fallback for Call/Raise because clicking the wrong spot costs money.
+                if not action and target_str == 'fold':
+                    log.warning(f"Iron-Clad: No Fold button found, using coordinate fallback.")
+                    tx = 0.15 # Standard Fold position
                     from gamble.ocr.game_state import AvailableAction
                     action = AvailableAction(
-                        action_type=target_str,
+                        action_type='fold',
                         screen_x_pt=session.window.x + int(session.window.width * tx),
                         screen_y_pt=session.window.y + int(session.window.height * 0.91),
                         amount=None, confidence=0.1, rel_x=tx, rel_y=0.91
@@ -1778,44 +1784,11 @@ class MultiTableRunner:
 
             except Exception as e:
                 log.error(f"Decision failed: {e}\n{traceback.format_exc()}")
-                # Decision crashed but we have cards — don't just fold.
-                # Try push/fold as a fallback before giving up.
-                if state.my_cards and len(state.my_cards) == 2:
-                    try:
-                        from gamble.decisionmaker.range_equity import lookup_push_fold
-                        pf_result = lookup_push_fold(
-                            state.my_cards,
-                            getattr(state, 'hero_position', 'CO') or 'CO',
-                            getattr(t, 'myFunds', 10) or 10
-                        )
-                        if pf_result:
-                            log.info(f"CRASH FALLBACK: push/fold says {pf_result} for {state.my_cards}")
-                            if pf_result == 'shove':
-                                # Shove — find raise or all-in button
-                                for btn_type in ('raise', 'all_in', 'call'):
-                                    fb = state.get_action_by_type(btn_type)
-                                    if fb:
-                                        self._click_action(fb, session, state, 'crash_shove')
-                                        return True
-                            # push/fold says fold — continue to fold logic below
-                        elif state.has_check_button:
-                            fb = state.get_action_by_type('check')
-                            if fb:
-                                self._click_action(fb, session, state, 'crash_check')
-                                return True
-                    except Exception as e2:
-                        log.error(f"Crash fallback also failed: {e2}")
+                return False
 
-        # No cards after all retries — take safe action
-        if state.has_check_button:
-            action = state.get_action_by_type('check')
-            if action:
-                self._click_action(action, session, state, 'check_no_cards')
-                return True
-
-        # No cards = can't evaluate hand.
-        # DO NOT auto-fold (prevents folding AA if OCR misses cards).
-        # Return False to trigger a retry/wait instead.
+        # No cards after all retries — DO NOT ACT.
+        # It is safer to wait than to check/fold blindly.
+        log.warning(f"Aborting decision for {session.window.name}: No valid hand identified after all retries.")
         return False
 
     def _map_decision_to_action(self, state, mouse_target):
@@ -1853,12 +1826,8 @@ class MultiTableRunner:
                 log.debug(f"MAP: {mouse_target} -> {btn.action_type}")
                 return btn
             
-            # Fallback to call/check ONLY if no raise button exists
-            btn = (state.get_action_by_type('call') or 
-                   state.get_action_by_type('check'))
-            if btn:
-                log.warning(f"MAP: {mouse_target} but NO raise button found. Falling back to {btn.action_type}")
-                return btn
+            # NO FALLBACK TO CALL/CHECK. If we want to raise, we wait for the raise button.
+            return None
 
         # 4. Lobby/Special buttons
         if 'imback' in target_str:
@@ -2256,11 +2225,13 @@ class MultiTableRunner:
 
         # FINAL CLICK (Double-tap for reliability)
         self._reliable_click(action.screen_x_pt, action.screen_y_pt, action.action_type)
-        _time.sleep(0.05)
-        self._reliable_click(action.screen_x_pt + 2, action.screen_y_pt + 1, action.action_type)
         
-        log.info(f"Clicked {action.action_type} at ({action.screen_x_pt}, {action.screen_y_pt}) "
-                 f"[decision={decision_label}]")
+        # Only double-tap if it's a critical bet or if we are not in high pressure
+        if not high_pressure or action.action_type in ('raise', 'bet', 'all_in'):
+            _time.sleep(0.05)
+            self._reliable_click(action.screen_x_pt + 2, action.screen_y_pt + 1, action.action_type)
+        
+        log.info(f"EXECUTION: Clicked {action.action_type} for decision {decision_label}")
         
         # --- NEW: FAST Verification (Only for bets) ---
         if action.action_type in ('raise', 'bet', 'all_in'):
@@ -3651,9 +3622,46 @@ class MultiTableRunner:
             config = get_config()
             # Use module-level MockSignalsMC for montecarlo (it expects signal_status.emit())
             mock_signals = MockSignalsMC()
+
+            # --- SMART RANGE ESTIMATION (Phase 2 Unification) ---
+            smart_range = None
+            try:
+                from gamble.decisionmaker.range_equity import get_range_equity
+                re = get_range_equity()
+                opp_profile = getattr(session, '_opp_profile', None) or {}
+                ptype = opp_profile.get('type', 'unknown') if opp_profile.get('hands', 0) >= 10 else 'unknown'
+
+                # Villain action estimation
+                v_action = 'check'
+                if t.allInCallButton: v_action = 'all_in'
+                elif t.minCall > 0:
+                    if getattr(t, 'first_raiser', False): v_action = '3bet'
+                    else: v_action = 'open' if t.gameStage == 'PreFlop' else 'bet'
+                
+                # Villain position estimation
+                _utg_to_pos = {0: 'UTG', 1: 'MP', 2: 'CO', 3: 'BTN', 4: 'SB', 5: 'BB'}
+                _hero_pos = getattr(t, '_gto_position', 'CO')
+                _raiser_utg = getattr(t, 'first_raiser_utg', float('nan'))
+                import math as _math
+                if not _math.isnan(_raiser_utg):
+                    v_position = _utg_to_pos.get(int(_raiser_utg), 'CO')
+                else:
+                    v_position = 'BTN' if _hero_pos in ('BB', 'SB') else 'CO'
+
+                smart_range = re.estimate_villain_range_str(
+                    position=v_position,
+                    action=v_action,
+                    player_type=ptype,
+                    street=t.gameStage.lower() if t.gameStage != 'PreFlop' else 'preflop'
+                )
+                log.info(f"UNIFIED RANGE: {v_position} {v_action} ({ptype}) -> {smart_range[:50]}...")
+            except Exception as e:
+                log.debug(f"Smart range estimation failed: {e}")
+
             m = run_montecarlo_wrapper(
                 p, mock_signals, config, None, t,
-                session.game_logger, session.preflop_state, h
+                session.game_logger, session.preflop_state, h,
+                smart_range=smart_range
             )
 
             # === DECISION MAKING (Original) ===

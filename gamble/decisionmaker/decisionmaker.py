@@ -396,9 +396,13 @@ class Decision(DecisionBase):
         # --- Range-based equity (eval7) ---
         # Overrides Monte Carlo equity when we can estimate villain's range
         try:
-            from gamble.decisionmaker.range_equity import get_range_equity
-            re = get_range_equity()
-            if getattr(t, 'mycards', None) and len(t.mycards) == 2:
+            # OPTIMIZATION: If the unified pipeline already calculated range_equity, use it
+            if hasattr(t, 'range_equity') and t.range_equity is not None:
+                log.info(f"UNIFIED EQUITY: Using pre-calculated range equity: {t.range_equity:.1%}")
+                t.equity = t.range_equity
+            elif getattr(t, 'mycards', None) and len(t.mycards) == 2:
+                from gamble.decisionmaker.range_equity import get_range_equity
+                re = get_range_equity()
                 opp_profile = getattr(self, '_opp_profile', None) or {}
                 ptype = opp_profile.get('type', 'unknown') if opp_profile.get('hands', 0) >= 10 else 'unknown'
 

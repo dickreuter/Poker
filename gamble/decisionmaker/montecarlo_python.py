@@ -336,7 +336,9 @@ class MonteCarlo:
                 board_cards = self._to_eval7_cards(original_table_card_list)
                 
                 # Convert opponent_allowed_cards (set of strings like 'AKs') to eval7.HandRange
-                if isinstance(opponent_range, set):
+                if isinstance(opponent_range, str):
+                    range_str = opponent_range
+                elif isinstance(opponent_range, set):
                     range_str = ", ".join(list(opponent_range))
                 elif isinstance(opponent_range, (float, int)):
                     # Fix 2: Convert VPIP (float) to eval7 range string
@@ -440,14 +442,18 @@ class MonteCarlo:
         return self.equity, self.winTypesDict
 
 
-def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_state, h):
+def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_state, h, smart_range=None):
     # Prepare for montecarlo simulation to evaluate equity (probability of winning with given cards)
     m = MonteCarlo()
 
     logger = logging.getLogger('montecarlo')
     logger.setLevel(logging.DEBUG)
 
-    if t.gameStage == "PreFlop":
+    if smart_range:
+        opponent_range = smart_range
+        # Default assumed players for smart range
+        t.assumedPlayers = 2
+    elif t.gameStage == "PreFlop":
         # Use actual number of opponents for more realistic equity
         # In 6-max, UTG faces 5 opponents, BTN faces 2-3, etc.
         raw_opponents = getattr(t, 'other_active_players', 2)
@@ -455,7 +461,6 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
         opponent_range = p.selected_strategy['range_preflop']
 
     elif t.gameStage == "Flop":
-
         if t.isHeadsUp:
             for i in range(t.total_players-1):
                 if t.other_players[i]['status'] == 1:
@@ -469,7 +474,6 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
         t.assumedPlayers = t.other_active_players - int(round(t.playersAhead * (1 - opponent_range))) + 1
 
     else:
-
         if t.isHeadsUp:
             for i in range(t.total_players-1):
                 if t.other_players[i]['status'] == 1:
