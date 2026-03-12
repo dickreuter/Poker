@@ -35,10 +35,11 @@ log = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 # Button search region (bottom portion of table)
-# Actual buttons appear in the bottom ~30% of table
-BUTTON_Y_MIN = 0.70
+# Standard buttons are at ~0.85, but we search from 0.50 to catch 
+# "Deal Me In", "Are you sure?", and the bet slider area.
+BUTTON_Y_MIN = 0.50
 BUTTON_Y_MAX = 0.98
-BUTTON_X_MIN = 0.15
+BUTTON_X_MIN = 0.02 # Wider search to catch edge buttons
 BUTTON_X_MAX = 0.98
 
 # Pot display region (top-center)
@@ -89,12 +90,6 @@ BUTTON_HSV = {
         'upper': np.array([18, 255, 255]),
         'label': 'dark_red',
     },
-    'deal_me_in': {
-        # Bright red/salmon "Deal Me In" / "I'm Back" buttons
-        'lower': np.array([0, 100, 100]),
-        'upper': np.array([15, 255, 255]),
-        'label': 'red',
-    },
     'check_yellow': {
         # Yellow/gold buttons in Battle Royale and other themed tables
         # Fills the gap between dark_red (H<=18) and green (H>=35)
@@ -102,6 +97,17 @@ BUTTON_HSV = {
         'upper': np.array([35, 255, 255]),
         'label': 'yellow',
     },
+}
+
+# SEPARATE Deal Me In Range to prevent interference with dark_red action buttons
+DEAL_ME_IN_HSV = {
+    'deal_me_in': {
+        # Bright red/salmon "Deal Me In" / "I'm Back" buttons
+        # More lenient S/V (80 instead of 100) to catch various themes
+        'lower': np.array([0, 80, 80]),
+        'upper': np.array([15, 255, 255]),
+        'label': 'red',
+    }
 }
 
 # GGPoker's call button is near-black with faint gray text.
@@ -172,15 +178,17 @@ def read_table(
             confidence=info.get('confidence', 0.8),
         ))
 
-    # Only poker action buttons count as "my turn"
+    # Turn logic:
+    # 1. Must have poker action buttons visible
+    # 2. If ONLY non-action buttons are visible (im_back), it's not our turn
     poker_actions = {'fold', 'call', 'check', 'raise', 'bet', 'all_in'}
     non_action_buttons = {'new_hand', 'deal_me_in', 'show_rabbit', 'im_back'}
     action_types = {a.action_type for a in available_actions}
-    # If non-action buttons present, this is post-hand / lobby — not our turn
-    if action_types & non_action_buttons:
+    
+    is_my_turn = bool(action_types & poker_actions)
+    
+    if action_types & non_action_buttons and not (action_types & poker_actions):
         is_my_turn = False
-    else:
-        is_my_turn = bool(action_types & poker_actions)
 
     has_any_buttons = bool(buttons)
 
@@ -483,7 +491,7 @@ def _detect_buttons(img: np.ndarray, W: int, H: int, deal_me_in_only: bool = Fal
     Returns:
         (buttons_dict, rects_dict) where buttons_dict maps action type to info.
     """
-    y_min = 0.40 if deal_me_in_only else BUTTON_Y_MIN
+    y_min = 0.20 if deal_me_in_only else BUTTON_Y_MIN
     y1 = int(H * y_min)
     y2 = int(H * BUTTON_Y_MAX)
     x1 = int(W * BUTTON_X_MIN)
@@ -505,11 +513,16 @@ def _detect_buttons(img: np.ndarray, W: int, H: int, deal_me_in_only: bool = Fal
     small_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
     region_w = x2 - x1
 
-    for btn_type, hsv_def in BUTTON_HSV.items():
-        if deal_me_in_only and btn_type != 'deal_me_in':
-            continue
+    # Use separate HSV dictionaries to prevent color overlap
+    # If not deal_me_in_only, we search BOTH for better rejoining speed
+    if deal_me_in_only:
+        search_dicts = [DEAL_ME_IN_HSV]
+    else:
+        search_dicts = [BUTTON_HSV, DEAL_ME_IN_HSV]
 
-        mask = cv2.inRange(hsv, hsv_def['lower'], hsv_def['upper'])
+    for s_dict in search_dicts:
+        for btn_type, hsv_def in s_dict.items():
+            mask = cv2.inRange(hsv, hsv_def['lower'], hsv_def['upper'])
 
         if hsv_def['label'] == 'dark_red':
             # Dark red: skip MORPH_CLOSE to prevent merging adjacent buttons
@@ -534,6 +547,15 @@ def _detect_buttons(img: np.ndarray, W: int, H: int, deal_me_in_only: bool = Fal
             
             if area < this_min_area or bw < (min_btn_w * 0.7) or bh < (min_btn_h * 0.7):
                 continue
+
+            # HERO ZONE PROTECTION: Action buttons (fold/call/raise) are never 
+            # in the dead center (where cards are). Deal Me In CAN be there.
+            abs_bx = bx + x1
+            center_x_pct = (abs_bx + bw / 2) / W
+            if not deal_me_in_only and btn_type != 'deal_me_in':
+                if 0.35 < center_x_pct < 0.65:
+                    # This is in the hero card zone, likely not an action button
+                    continue
 
             # If a dark_red contour is wider than 30% of button region,
             # it's likely multiple buttons merged together

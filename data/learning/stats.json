@@ -1,0 +1,24 @@
+{
+  "total_actions": 1200,
+  "successful_actions": 758,
+  "sessions": 9,
+  "by_type": {
+    "test_action": {
+      "success": 1,
+      "fail": 1
+    },
+    "new_ocr_action": {
+      "success": 747,
+      "fail": 0
+    },
+    "rebuy": {
+      "success": 3,
+      "fail": 0
+    },
+    "bet_sizing": {
+      "success": 7,
+      "fail": 441
+    }
+  },
+  "last_updated": "2026-03-12T10:50:33.424404"
+}

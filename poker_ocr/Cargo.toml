@@ -1,0 +1,50 @@
+[package]
+name = "poker_ocr"
+version = "0.1.0"
+edition = "2021"
+description = "Fast poker table OCR for GGPoker on macOS"
+
+[dependencies]
+# CLI
+clap = { version = "4", features = ["derive"] }
+
+# Image processing
+image = "0.25"
+imageproc = "0.24"
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Math (template matching)
+ndarray = "0.16"
+
+# macOS frameworks
+core-graphics = "0.24"
+core-foundation = "0.10"
+
+# Async (for ScreenCaptureKit)
+tokio = { version = "1", features = ["rt", "macros", "time"] }
+
+# Parallelism
+rayon = "1"
+
+# Error handling
+anyhow = "1"
+
+# Logging
+tracing = "0.1"
+
+# Timing
+instant = "0.1"
+
+# Regex
+regex = "1"
+
+# Env filter for tracing
+tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+strip = true

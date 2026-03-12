@@ -35,12 +35,11 @@ log = logging.getLogger(__name__)
 VALID_RANKS = {'A', 'K', 'Q', 'J', '10', '9', '8', '7', '6', '5', '4', '3', '2'}
 
 # Search band for player cards (percentage of table image).
-# X narrowed from 0.30-0.63 to 0.36-0.60 to exclude the red table border
-# which was causing the red (hearts) blob to extend into felt area.
+# Expanded to 0.34-0.65 to ensure both cards are captured even with drift.
 SEARCH_Y_MIN = 0.53
 SEARCH_Y_MAX = 0.88
-SEARCH_X_MIN = 0.36
-SEARCH_X_MAX = 0.60
+SEARCH_X_MIN = 0.34
+SEARCH_X_MAX = 0.65
 
 # Deck style constants
 STYLE_WHITE = 'white'    # White cards, colored text
@@ -249,6 +248,11 @@ def read_player_cards(
 
     if debug_dir:
         _save_debug(img_np, W, H, positions, cards, debug_dir)
+
+    # Reject partial hand — must have TWO cards preflop or NONE
+    if len(cards) == 1:
+        log.warning(f"PARTIAL HAND detected: {cards} — waiting for second card")
+        return []
 
     # Reject duplicate cards — impossible in a real deck
     if len(cards) == 2 and cards[0] == cards[1]:

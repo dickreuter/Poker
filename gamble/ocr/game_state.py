@@ -146,6 +146,11 @@ class GameState:
         return 0.0
 
     @property
+    def other_active_players(self) -> int:
+        """Count of active opponents (non-hero)."""
+        return sum(1 for p in self.players if p.is_active and not p.is_hero)
+
+    @property
     def game_stage(self) -> str:
         # DecisionMaker expects "PreFlop" (capital F), not "Preflop"
         stage_map = {

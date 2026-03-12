@@ -1,0 +1,41 @@
+{
+  "white_pixel_min": 180,
+  "card_area_min": 1500,
+  "button_area_min": 1500,
+  "match_score_max": 0.35,
+  "hsv_green_lower": [
+    35,
+    50,
+    100
+  ],
+  "hsv_green_upper": [
+    85,
+    255,
+    255
+  ],
+  "hsv_orange_lower": [
+    8,
+    80,
+    80
+  ],
+  "hsv_orange_upper": [
+    25,
+    255,
+    255
+  ],
+  "action_cooldown": 1.5,
+  "click_verify_delay": 0.3,
+  "table_width_min": 400,
+  "icon_bar_height_ratio": 0.21999999999999997,
+  "hsv_gray_lower": [
+    0,
+    0,
+    60
+  ],
+  "hsv_gray_upper": [
+    180,
+    40,
+    140
+  ],
+  "button_region_y_start": 0.6
+}

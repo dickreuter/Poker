@@ -188,9 +188,9 @@ def gto_preflop_decision(crd1: str, crd2: str, position: str,
              f"call={call_amount:.1f} stack={hero_stack:.1f} rpos={raiser_position}")
 
     # ─── PREMIUM SHIELD ──────────────────────────────────────────────────────
-    # Guaranteed never to fold these hands preflop. 
-    # If not in a raise range, always call.
-    PREMIUMS = {'AA', 'KK', 'QQ', 'JJ', 'AKS', 'AKO', 'AQS'}
+    # Guaranteed never to fold these hands preflop to a single raise. 
+    # If not in a 3-bet range, always call.
+    PREMIUMS = {'AA', 'KK', 'QQ', 'JJ', 'TT', '99', 'AKS', 'AKO', 'AQS', 'AJS', 'KQS'}
     is_premium = hand in PREMIUMS
 
     # BB with check option (unraised pot / limped pot)
@@ -234,7 +234,7 @@ def gto_preflop_decision(crd1: str, crd2: str, position: str,
                 log.info(f"MIXED BLUFF: randomized 3-bet with {hand}")
                 return 'raise'
 
-        # Premium Trapping/Defending
+        # Premium Trapping/Defending (redundant with shield above but kept for flow)
         if is_premium:
             log.info(f"PREMIUM SHIELD: calling with {hand} (not in 3-bet range)")
             return 'call'
@@ -245,8 +245,8 @@ def gto_preflop_decision(crd1: str, crd2: str, position: str,
         # BB Defense (Deep math)
         if pos == 'BB':
             if hand in GTO_BB_DEFEND:
-                # Defend wide unless raise is massive (>30% stack)
-                if call_to_stack > 0.30 and hand not in GTO_3BET.get('vs_BTN', set()):
+                # Defend wide unless raise is massive (>45% stack)
+                if call_to_stack > 0.45 and hand not in GTO_3BET.get('vs_BTN', set()):
                     log.debug(f"BB Defense: folding {hand} vs massive {call_to_stack:.0%} stack raise")
                     return 'fold'
                 log.debug(f"BB Defense: calling with {hand}")
@@ -256,7 +256,7 @@ def gto_preflop_decision(crd1: str, crd2: str, position: str,
         open_range = GTO_OPEN.get(pos, GTO_OPEN.get('CO', set()))
         if hand in open_range:
             # GTO: Call vs raise if in open range and not massive commitment
-            if call_to_stack > 0.30:
+            if call_to_stack > 0.45:
                 log.debug(f"Commitment: folding {hand} vs {call_to_stack:.0%} stack raise")
                 return 'fold'
             log.debug(f"Open-range Defense: calling with {hand}")
@@ -923,18 +923,27 @@ class Decision(DecisionBase):
                          f'GTO range says: {gto_action} (pos={position}, '
                          f'raiser={has_raiser}, call={call_amt})')
 
-                if gto_action == 'raise':
-                    # Use bet3 for opens/3-bets, bet4 for 4-bets
-                    if float(call_amt) > 4:
-                        self.decision = DecisionTypes.bet4
-                    else:
-                        self.decision = DecisionTypes.bet3
-                elif gto_action == 'call':
-                    self.decision = DecisionTypes.call
-                    # Phase 4.1/4.3: Stack-relative call gating for GTO fallback
-                    _call_amt_g = float(call_amt) if call_amt else 0
-                    _hero_stack_g = max(getattr(t, 'myFunds', 100), 1.0)
-                    _call_to_stack_g = _call_amt_g / _hero_stack_g
+            # PREMIUM EXEMPTION: Never fold premium hands due to safety floors or stack gates
+            PREMIUMS = {'AA', 'KK', 'QQ', 'JJ', 'TT', 'AKS', 'AKO', 'AQS', 'AJS', 'KQS'}
+            hand_norm = _normalize_hand(crd1, crd2)
+            is_premium_hand = hand_norm in PREMIUMS
+
+            if gto_action == 'raise':
+                # Use bet3 for opens/3-bets, bet4 for 4-bets
+                if float(call_amt) > 4:
+                    self.decision = DecisionTypes.bet4
+                else:
+                    self.decision = DecisionTypes.bet3
+            elif gto_action == 'call':
+                self.decision = DecisionTypes.call
+                # Phase 4.1/4.3: Stack-relative call gating for GTO fallback
+                _call_amt_g = float(call_amt) if call_amt else 0
+                _hero_stack_g = max(getattr(t, 'myFunds', 100), 1.0)
+                _call_to_stack_g = _call_amt_g / _hero_stack_g
+                
+                # GTO GATES: Prevent calling off large stack portions with weak equity
+                # EXEMPT PREMIUMS: JJ, TT, AK, etc. should always call/raise regardless of gate
+                if not is_premium_hand:
                     if _call_to_stack_g > 0.50 and t.equity < 0.45:
                         log.info(f"GTO GATE: call/stack={_call_to_stack_g:.0%}, eq={t.equity:.3f} < 0.45 → FOLD")
                         self.decision = DecisionTypes.fold
@@ -944,31 +953,34 @@ class Decision(DecisionBase):
                     elif _call_to_stack_g > 0.10 and t.equity < 0.25:
                         log.info(f"GTO GATE: call/stack={_call_to_stack_g:.0%}, eq={t.equity:.3f} < 0.25 → FOLD")
                         self.decision = DecisionTypes.fold
-                elif gto_action == 'check':
-                    self.decision = DecisionTypes.check
-                else:
-                    self.decision = DecisionTypes.fold
+            elif gto_action == 'check':
+                self.decision = DecisionTypes.check
+            else:
+                self.decision = DecisionTypes.fold
 
-            # SAFETY: Don't raise/call trash preflop. Equity floor prevents
-            # card misreads (e.g. 5S+5S detected as pocket 5s) from causing raises.
-            # PREMIUM EXEMPTION: Never fold premium hands due to safety floors
-            PREMIUMS = {'AA', 'KK', 'QQ', 'JJ', 'AKS', 'AKO', 'AQS'}
-            hand_norm = _normalize_hand(crd1, crd2)
-            is_premium_hand = hand_norm in PREMIUMS
-
-            if self.decision in (DecisionTypes.bet3, DecisionTypes.bet4):
-                if t.equity < 0.22 and not is_premium_hand:
-                    log.info(f'Preflop raise overridden to FOLD: equity {t.equity:.3f} < 0.22')
+        # --- BULLETPROOF EV SAFETY (eval7-aware) ---
+        # Instead of hardcoded floors, calculate if the action is actually profitable.
+        if self.decision == DecisionTypes.call:
+            call_amt = float(getattr(t, 'currentCallValue', 0) or 0)
+            pot = max(float(getattr(t, 'totalPotValue', 0) or 0), 1.5)
+            
+            if call_amt > 0:
+                pot_odds = call_amt / (pot + call_amt)
+                # Requirement: Equity must justify the call price
+                # We allow 15% 'slack' for implied odds/playability
+                min_eq_req = pot_odds * 0.85
+                
+                # Minimum absolute safety: never call with < 15% equity unless checking
+                if t.equity < min_eq_req and t.equity < 0.25 and not is_premium_hand:
+                    log.info(f"EV SAFETY: Call {call_amt} into {pot} (odds {pot_odds:.1%}) "
+                             f"needs eq > {min_eq_req:.1%}. Hero has {t.equity:.1%}. FOLDING.")
                     self.decision = DecisionTypes.fold
-            elif self.decision == DecisionTypes.call:
-                call_amt = getattr(t, 'currentCallValue', 0) or 0
-                pot = max(getattr(t, 'totalPotValue', 0) or 0, 1.5)
-                if float(call_amt) > 0:
-                    pot_odds = float(call_amt) / (pot + float(call_amt))
-                    if t.equity < pot_odds and t.equity < 0.28 and not is_premium_hand:
-                        log.info(f'Preflop call overridden to FOLD: equity {t.equity:.3f} '
-                                 f'< pot_odds {pot_odds:.3f} and < 0.28')
-                        self.decision = DecisionTypes.fold
+        
+        elif self.decision in (DecisionTypes.bet3, DecisionTypes.bet4):
+            # For raises, we must have at least 20% absolute equity OR be a premium
+            if t.equity < 0.20 and not is_premium_hand:
+                log.info(f"EV SAFETY: Raise overridden to FOLD. Equity {t.equity:.1%} is too low for non-premium.")
+                self.decision = DecisionTypes.fold
 
             t.currentBluff = 0
 
@@ -2245,15 +2257,7 @@ class Decision(DecisionBase):
         if isinstance(pos, (int, float)) and pos >= 3:
             rep_strength += 0.05  # Late position = more credible
 
-        # Scare cards on board that favor our perceived range
-        if t.cardsOnTable:
-            rank_map = {r: i for i, r in enumerate('23456789TJQKA')}
-            board_ranks = [rank_map.get(c[0].upper(), 0) for c in t.cardsOnTable if len(c) >= 2]
-            # Ace on board = favors preflop raiser
-            if 12 in board_ranks and rep_strength >= 0.4:
-                rep_strength += 0.08
-
-        return max(0.1, min(0.95, strength))
+        return max(0.1, min(0.95, rep_strength))
 
     def _geometric_bet_size(self, current_pot, effective_stack, streets_remaining):
         """
