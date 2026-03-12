@@ -228,11 +228,11 @@ def read_table(
     if is_my_turn:
         pot = _read_pot(img, W, H)
         # SANITY CAP: BB display mode means pot is in BB.
-        # In a 6-max game, pot can never exceed ~600 BB (everyone all-in 100 BB).
-        # Values > 200 BB are almost certainly OCR misreads (e.g. reading
+        # In a 6-max game, pot can reach ~600 BB (everyone all-in 100 BB).
+        # Values > 600 BB are almost certainly OCR misreads (e.g. reading
         # opponent profile "$570.75 Total Winnings" as pot).
-        if pot > 200:
-            log.warning(f"POT SANITY CAP: {pot:.1f} BB > 200 — OCR misread, capping at 0")
+        if pot > 600:
+            log.warning(f"POT SANITY CAP: {pot:.1f} BB > 600 — OCR misread, capping at 0")
             pot = 0.0
     else:
         pot = 0.0
@@ -249,15 +249,15 @@ def read_table(
         if a.action_type == 'call':
             has_call = True
             if a.amount:
-                # SANITY: call can't exceed 200 BB (same as pot cap)
-                if a.amount > 200:
-                    log.warning(f"CALL SANITY CAP: {a.amount:.1f} BB > 200 — OCR misread")
+                # SANITY: call can't exceed 600 BB (6-max all-in)
+                if a.amount > 600:
+                    log.warning(f"CALL SANITY CAP: {a.amount:.1f} BB > 600 — OCR misread")
                     a.amount = None
                 else:
                     call_amount = a.amount
         elif a.action_type == 'raise' and a.amount:
-            if a.amount > 200:
-                log.warning(f"RAISE SANITY CAP: {a.amount:.1f} BB > 200 — OCR misread")
+            if a.amount > 600:
+                log.warning(f"RAISE SANITY CAP: {a.amount:.1f} BB > 600 — OCR misread")
                 a.amount = None
             else:
                 min_raise_amount = a.amount

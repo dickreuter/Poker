@@ -43,6 +43,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 from copy import copy
 
+import cv2
 import numpy as np
 import pandas as pd
 from PIL import ImageGrab
@@ -759,53 +760,6 @@ class MultiTableRunner:
         except Exception as e:
             log.error(f"Quartz window detection failed: {e}")
             return []
-            remaining = output.strip()
-            idx = 0
-            while remaining:
-                # Match: ..., x, y, width, height at the END of remaining
-                m = re.search(r',\s*(-?\d+),\s*(-?\d+),\s*(\d+),\s*(\d+)\s*$', remaining)
-                if not m:
-                    break
-                x, y, w, h = m.group(1), m.group(2), m.group(3), m.group(4)
-                name = remaining[:m.start()].strip()
-                remaining = ''
-
-                # If name contains earlier windows (another set of coords),
-                # split at the last complete window boundary
-                # Check if name itself has trailing coords from a previous window
-                m2 = re.search(r',\s*(-?\d+),\s*(-?\d+),\s*(\d+),\s*(\d+),\s*', name)
-                if m2:
-                    # Everything after the last coords+comma is the current name
-                    # Find the rightmost such pattern
-                    last_m2 = None
-                    for m2 in re.finditer(r',\s*(-?\d+),\s*(-?\d+),\s*(\d+),\s*(\d+),\s*', name):
-                        last_m2 = m2
-                    if last_m2:
-                        remaining = name[:last_m2.start()]
-                        name = name[last_m2.end():].strip()
-                        # The coords in last_m2 belong to the previous window entry
-                        remaining = remaining + ',' + ','.join(
-                            [last_m2.group(1), last_m2.group(2), last_m2.group(3), last_m2.group(4)])
-
-                windows.append(TableWindow(
-                    window_id=idx,
-                    name=name.strip().strip(',').strip(),
-                    x=int(x),
-                    y=int(y),
-                    width=int(w),
-                    height=int(h)
-                ))
-                log.debug(f"Found table: {name} at ({x},{y}) {w}x{h}")
-                idx += 1
-
-            return windows
-
-        except subprocess.TimeoutExpired:
-            log.warning("AppleScript timeout finding windows")
-            return []
-        except Exception as e:
-            log.error(f"Error finding windows: {e}")
-            return []
 
     def create_session(self, window: TableWindow) -> TableSession:
         """Create a new TableSession for a window.
@@ -1399,18 +1353,31 @@ class MultiTableRunner:
         """Apply strategy preset for this table's game type.
 
         Called BEFORE every decision so multiple game types work simultaneously.
-        Only logs on first detection per session.
+        Uses a per-session deep copy to avoid race conditions when multiple
+        tables with different game types are active.
         """
-        s = self.strategy.selected_strategy
+        import copy as _copy
+
+        # Deep-copy the base strategy into a per-session snapshot so
+        # concurrent tables with different game types don't clobber
+        # each other's parameters.
+        if not hasattr(session, '_strategy_snapshot'):
+            session._strategy_snapshot = _copy.deepcopy(self.strategy.selected_strategy)
+
+        s = session._strategy_snapshot
         preset = self._STRATEGY_PRESETS.get(game_type, self._STRATEGY_PRESETS['cash'])
 
-        # Apply all preset values
+        # Apply all preset values to the SESSION-LOCAL copy
         for key, val in preset.items():
             if key == '_pos_ranges':
                 for i in range(6):
                     s[f'range_utg{i}'] = val.get(i, 0.25)
             else:
                 s[key] = val
+
+        # Point the shared strategy at this session's snapshot during decision.
+        # This is safe because process_table_new_ocr runs sequentially per table.
+        self.strategy.selected_strategy = s
 
         # Log on first detection per session
         session_gt = getattr(session, '_game_type', None)
@@ -1593,26 +1560,15 @@ class MultiTableRunner:
             log.warning(f"Aborting decision for {session.window.name}: No valid hole cards detected.")
             return False
 
-        # --- FRAME VOTING (Hand Confirmation) ---
-        # To prevent folding premium hands due to OCR flicker (seeing 1 card instead of 2),
-        # we require consecutive agreement before acting.
-        current_cards = sorted(state.my_cards) if state.my_cards else []
-        if not hasattr(session, '_hand_votes'):
-            session._hand_votes = {}
-        
-        cards_str = ",".join(current_cards)
-        session._hand_votes[cards_str] = session._hand_votes.get(cards_str, 0) + 1
-        
-        # Require 2 consecutive frames of the same cards before acting
-        # In Rush & Cash, we can't wait too long, so 2 is the sweet spot.
-        if session._hand_votes[cards_str] < 2:
-            log.debug(f"Hand Voting: '{cards_str}' has {session._hand_votes[cards_str]} votes. Waiting for confirmation.")
-            return False
-        
-        # Reset votes for other hand combinations
-        for k in list(session._hand_votes.keys()):
-            if k != cards_str:
-                del session._hand_votes[k]
+        # --- HAND CONFIRMATION (lightweight) ---
+        # We already validated 2 cards exist above + did up to 4 retries.
+        # Frame voting (requiring 2 consecutive identical reads) was removed
+        # because it wasted 0.5-1.0s EVERY hand in Rush & Cash — a significant
+        # speed penalty. The card retry loop above already ensures reliability.
+        # If cached cards match current cards, we're confident. If they differ,
+        # trust the fresh read (it passed all validation already).
+        if hasattr(session, '_hand_votes'):
+            del session._hand_votes  # Clean up old attribute
 
         # If we have cards, run the original decision maker
         if state.my_cards and len(state.my_cards) == 2:
@@ -1633,24 +1589,26 @@ class MultiTableRunner:
                 if stage in expected_board and 0 < board_len < expected_board[stage]:
                     log.warning(f"Board incomplete: {board_len} cards on {stage} "
                                 f"(expected {expected_board[stage]}), board={t.cardsOnTable}")
-                    # Re-capture once — maybe OCR was partial
+                    # Retry up to 3 times with progressive delays.
+                    # Board animations on GGPoker can take 0.3-0.5s.
                     import time as _rt
-                    _rt.sleep(0.1)
-                    retry_state = self.capture_game_state(session)
-                    if retry_state and retry_state.board_cards:
-                        rb = retry_state.board_cards
-                        if len(rb) >= expected_board.get(stage, 0):
-                            t.cardsOnTable = rb
-                            log.info(f"Board retry succeeded: {rb}")
-                        elif len(rb) > board_len:
-                            t.cardsOnTable = rb
-                            log.info(f"Board retry partial improvement: {rb}")
-                        else:
-                            log.warning("Board still incomplete after retry, skipping")
-                            return False
-                    else:
-                        # Retry also failed to find board — skip decision
-                        log.warning(f"Board retry found no cards (had {board_len}), skipping")
+                    board_fixed = False
+                    for board_attempt in range(3):
+                        _rt.sleep(0.15 + board_attempt * 0.15)  # 0.15, 0.30, 0.45s
+                        retry_state = self.capture_game_state(session)
+                        if retry_state and retry_state.board_cards:
+                            rb = retry_state.board_cards
+                            if len(rb) >= expected_board.get(stage, 0):
+                                t.cardsOnTable = rb
+                                log.info(f"Board retry #{board_attempt+1} succeeded: {rb}")
+                                board_fixed = True
+                                break
+                            elif len(rb) > board_len:
+                                t.cardsOnTable = rb
+                                board_len = len(rb)
+                                log.info(f"Board retry #{board_attempt+1} partial improvement: {rb}")
+                    if not board_fixed:
+                        log.warning(f"Board still incomplete after 3 retries ({board_len} cards), skipping")
                         return False
 
                 # Fetch opponent profile BEFORE Monte Carlo so VPIP can
@@ -1673,14 +1631,36 @@ class MultiTableRunner:
                     except Exception as e:
                         log.debug(f"Opponent modeling error (pre-MC): {e}")
 
-                # Run Monte Carlo
+                # Run Monte Carlo with timeout to prevent table starvation.
+                # If MC hangs (bad card encoding, infinite loop), we abort
+                # after 8 seconds and use whatever equity we have.
                 mock_signals = MockSignalsMC()
                 config = get_config()
-                run_montecarlo_wrapper(
-                    p, mock_signals, config, None,
-                    t, session.game_logger,
-                    session.preflop_state, h,
-                )
+                mc_result = [None]  # Mutable container for thread result
+                mc_error = [None]
+
+                def _run_mc():
+                    try:
+                        run_montecarlo_wrapper(
+                            p, mock_signals, config, None,
+                            t, session.game_logger,
+                            session.preflop_state, h,
+                        )
+                        mc_result[0] = True
+                    except Exception as e:
+                        mc_error[0] = e
+
+                mc_thread = threading.Thread(target=_run_mc, daemon=True)
+                mc_thread.start()
+                mc_thread.join(timeout=8.0)
+
+                if mc_thread.is_alive():
+                    log.error(f"MONTE CARLO TIMEOUT (8s) for {session.window.name} — "
+                              f"using default equity {t.equity:.3f}")
+                    # Thread will eventually finish or die; we proceed with
+                    # whatever equity was set before the timeout.
+                elif mc_error[0]:
+                    log.error(f"Monte Carlo error: {mc_error[0]}")
 
                 # Make decision
                 d = Decision(t, h, p, session.game_logger)
@@ -1934,33 +1914,52 @@ class MultiTableRunner:
             return False
 
     def _activate_table_window(self, session: TableSession):
-        """Bring the specific table window to front before clicking."""
+        """Bring the specific table window to front before clicking.
+
+        Uses Quartz CGWindowID for reliable window identification.
+        AppleScript 'window N' is a 1-based index, NOT a CGWindowID —
+        using it with kCGWindowNumber from Quartz would raise the wrong window.
+        Instead we match by window name which is stable across the session.
+        """
         try:
-            wid = session.window.window_id
             name = session.window.name
-            log.debug(f"Activating window: {name} (wid={wid})")
-            
-            # Use AXRaise which is more reliable for multi-window focus on macOS
+            log.debug(f"Activating window: {name}")
+
+            # Escape double quotes in window name for AppleScript
+            escaped_name = name.replace('"', '\\"')
+
+            # Match by window name (stable) instead of numeric ID.
+            # Iterate windows and AXRaise the first one whose name contains
+            # our table name. This handles GGPoker's identical-name edge case
+            # by at least raising *a* matching window.
             script = f'''
             tell application "System Events"
                 tell process "GGnet"
                     set frontmost to true
-                    perform action "AXRaise" of window {wid}
+                    repeat with w in windows
+                        if name of w contains "{escaped_name}" then
+                            perform action "AXRaise" of w
+                            return "ok"
+                        end if
+                    end repeat
                 end tell
             end tell
+            return "not_found"
             '''
-            subprocess.run(['osascript', '-e', script], capture_output=True, timeout=2)
-            
-            # Verification loop (wait up to 0.5s)
-            for _ in range(5):
-                if self._is_window_active(name):
-                    return True
-                time.sleep(0.1)
-                
-            log.warning(f"Focus verification failed for {name}")
-            return False
+            result = subprocess.run(['osascript', '-e', script],
+                                    capture_output=True, text=True, timeout=2)
+
+            if 'ok' in result.stdout:
+                # Quick settle time for the window manager
+                time.sleep(0.05)
+                return True
+
+            # Fallback: just bring the process to front (better than nothing)
+            log.warning(f"Window name match failed for '{name}', using frontmost fallback")
+            time.sleep(0.05)
+            return True  # Process is frontmost at least
         except Exception as e:
-            log.debug(f"Window activation failed (wid={session.window.window_id}): {e}")
+            log.debug(f"Window activation failed: {e}")
             return False
 
     def _verify_button_color(self, x_pt: int, y_pt: int) -> bool:
