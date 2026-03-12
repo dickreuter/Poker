@@ -190,7 +190,7 @@ def gto_preflop_decision(crd1: str, crd2: str, position: str,
     # ─── PREMIUM SHIELD ──────────────────────────────────────────────────────
     # Guaranteed never to fold these hands preflop to a single raise. 
     # If not in a 3-bet range, always call.
-    PREMIUMS = {'AA', 'KK', 'QQ', 'JJ', 'TT', '99', 'AKS', 'AKO', 'AQS', 'AJS', 'KQS'}
+    PREMIUMS = {'AA', 'KK', 'QQ', 'JJ', 'TT', '99', 'AKS', 'AKO', 'AQS', 'AQO', 'AJS', 'KQS'}
     is_premium = hand in PREMIUMS
 
     # BB with check option (unraised pot / limped pot)
