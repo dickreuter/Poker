@@ -558,8 +558,9 @@ def _detect_buttons(img: np.ndarray, W: int, H: int, deal_me_in_only: bool = Fal
             mask = cv2.inRange(hsv, hsv_def['lower'], hsv_def['upper'])
 
         if hsv_def['label'] == 'dark_red':
-            # Dark red: skip MORPH_CLOSE to prevent merging adjacent buttons
-            # GGPoker fold/call/raise are all the same color and very close
+            # GGPoker buttons are very close. Use a stronger dilation to 
+            # ensure the whole button is captured as one blob.
+            mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=2)
             mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, small_kernel, iterations=1)
         else:
             mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=1)
