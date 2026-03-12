@@ -6,7 +6,7 @@ This document provides a comprehensive technical overview of the Gamble bot's ar
 ---
 
 ## 1. Multi-Table Runner Architecture
-The `MultiTableRunner` (`gamble/multi_table_runner.py`) is the core orchestration layer capable of handling 10+ tables simultaneously.
+The `MultiTableRunner` (`sys_core/engine.py`) is the core orchestration layer capable of handling 10+ tables simultaneously.
 
 ### Key Components:
 *   **Main Loop:** Polls all active poker windows every ~50-100ms.
@@ -41,7 +41,7 @@ The `eval7` library is used for fast (1-2ms) hand vs. range equity simulations.
 *   **Blocker Awareness:** `eval7` automatically accounts for card removal (blockers), making equity calculations much more precise than simple Monte Carlo.
 
 ### B. Nash Equilibrium (Push/Fold):
-For short-stack situations (≤15 BB), the bot employs Nash Equilibrium strategies found in `gamble/decisionmaker/range_equity.py`.
+For short-stack situations (≤15 BB), the bot employs Nash Equilibrium strategies found in `sys_core/decisionmaker/range_equity.py`.
 *   **NASH_SHOVE_RANGES:** Hardcoded ranges derived from solvers (HoldemResources/ICMIZER) that tell the bot exactly when to shove based on position and effective stack.
 *   **Call-vs-Shove:** Uses `eval7` to compute the EV of calling a shove by simulating our hand against the opponent's likely Nash shove range.
 

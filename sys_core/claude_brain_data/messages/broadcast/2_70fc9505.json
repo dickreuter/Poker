@@ -1,0 +1,11 @@
+{
+  "id": "70fc9505",
+  "type": "broadcast",
+  "priority": 2,
+  "from_session": "middle_coordinator",
+  "to_session": null,
+  "content": "\n=== INTEGRATION UPDATE FROM MIDDLE SESSION ===\n\nBuilt and integrated:\n\n1. DYNAMIC BUTTON CLICKING (READY)\n   - Files: dynamic_mouse_mover.py, dynamic_table_finder.py \n   - Use: --input dynamic in cli_controller.py\n   - Finds buttons by color, works anywhere\n\n2. DYNAMIC CARD DETECTION (NEW)\n   - File: dynamic_card_detector.py\n   - Finds cards by brightness, adaptive thresholds\n   - Normalizes templates to 30x45 pixels\n\nTO RUN BOT:\n   ./venv/bin/python3 -m sys_core.tools.cli_controller start --input dynamic\n\nPlease confirm you receive this!\n",
+  "data": {},
+  "timestamp": 1767473794.396857,
+  "expires": 1767477394.396857
+}

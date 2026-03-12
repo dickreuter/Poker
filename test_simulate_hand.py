@@ -16,12 +16,12 @@ logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(name)s %(levelname)s %(message)s')
 log = logging.getLogger('simulate_hand')
 
-from gamble.ocr.game_state import GameState, PlayerInfo, AvailableAction, Street
-from gamble.decisionmaker.current_hand_memory import CurrentHandPreflopState, History
-from gamble.decisionmaker.decisionmaker import Decision
-from gamble.decisionmaker.montecarlo_python import run_montecarlo_wrapper
-from gamble.tools.strategy_handler import StrategyHandler
-from gamble.tools.helper import get_config
+from sys_core.ocr.game_state import GameState, PlayerInfo, AvailableAction, Street
+from sys_core.decisionmaker.current_hand_memory import CurrentHandPreflopState, History
+from sys_core.decisionmaker.decisionmaker import Decision
+from sys_core.decisionmaker.montecarlo_python import run_montecarlo_wrapper
+from sys_core.tools.strategy_handler import StrategyHandler
+from sys_core.tools.helper import get_config
 
 # Mock signals for Monte Carlo
 class MockSignals:
@@ -31,9 +31,9 @@ class MockSignals:
 
 
 def build_strategy():
-    """Build strategy with same settings as multi_table_runner without DB."""
+    """Build strategy with same settings as engine without DB."""
     p = StrategyHandler()
-    # Build strategy dict inline (same as multi_table_runner.py lines 345-417)
+    # Build strategy dict inline (same as engine.py lines 345-417)
     s = {
         'bigBlind': 1.0, 'smallBlind': 0.5,
         'initialFunds': 100.0, 'initialFunds2': 100.0,
@@ -286,7 +286,7 @@ def simulate_hand(hero_cards, board_cards, pot, call_amount, hero_stack,
     dec_str = str(decision).lower() if decision else ''
     if 'bet' in dec_str or 'raise' in dec_str or 'allin' in dec_str.replace(' ', ''):
         try:
-            from gamble.decisionmaker.range_equity import compute_bet_size_bb, preflop_raise_size_bb
+            from sys_core.decisionmaker.range_equity import compute_bet_size_bb, preflop_raise_size_bb
             bb_size = 1.0
             pot_bb = pot
             stack_bb = hero_stack
@@ -312,7 +312,7 @@ def simulate_hand(hero_cards, board_cards, pot, call_amount, hero_stack,
 
     # Range equity if available
     try:
-        from gamble.decisionmaker.range_equity import RangeEquity
+        from sys_core.decisionmaker.range_equity import RangeEquity
         req = RangeEquity()
         villain_range = req.estimate_villain_range(
             position='CO',
@@ -393,7 +393,7 @@ if __name__ == '__main__':
     # --- Scenario 5: THE BANKRUPTCY SCENARIO — call 288 on 16 stack ---
     print("\n### SCENARIO 5: SAFETY TEST — misread call 288, stack 16 ###\n")
     # This tests the new safety code at OCR level
-    from gamble.ocr.table_reader import _parse_amount
+    from sys_core.ocr.table_reader import _parse_amount
     misread = _parse_amount("Call 288", max_expected=16.0)
     log.info(f"_parse_amount('Call 288', max_expected=16): {misread}")
     assert misread is None, f"Should have been rejected! Got {misread}"

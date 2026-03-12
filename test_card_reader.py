@@ -5,7 +5,7 @@ Usage:
     # Test with a screenshot file:
     python test_card_reader.py /path/to/screenshot.png
 
-    # Test with a live GGPoker window capture:
+    # Test with a live GGSystem window capture:
     python test_card_reader.py --live
 
     # Save debug images:
@@ -22,15 +22,15 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 logging.basicConfig(level=logging.DEBUG, format='%(name)s - %(message)s')
 
 from PIL import Image
-from gamble.ocr.card_reader import read_player_cards
+from sys_core.ocr.card_reader import read_player_cards
 
 
 def capture_ggpoker_table():
-    """Capture a live GGPoker table window."""
+    """Capture a live GGSystem table window."""
     import subprocess
     from PIL import ImageGrab
 
-    # Find GGPoker windows
+    # Find GGSystem windows
     script = '''
     tell application "System Events"
         tell process "GGnet"
@@ -55,7 +55,7 @@ def capture_ggpoker_table():
 
     output = result.stdout.strip()
     if not output:
-        print("No GGPoker table windows found")
+        print("No GGSystem table windows found")
         return None, None
 
     # Parse first window
@@ -103,7 +103,7 @@ def test_with_file(path, debug=False):
 
 
 def test_live(debug=False):
-    """Test card reader with live GGPoker window capture."""
+    """Test card reader with live GGSystem window capture."""
     table_img, size = capture_ggpoker_table()
     if table_img is None:
         return []

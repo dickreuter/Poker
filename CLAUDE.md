@@ -1,4 +1,4 @@
-# GGPoker Bot - Current Status & Instructions
+# GGSystem Utility - Current Status & Instructions
 
 ---
 ## 🤖 CLAUDE OPUS 4.6 INTEGRATION (Mar 7, 2026) 🤖
@@ -23,7 +23,7 @@ The bot now integrates **Claude Opus 4.6** for intelligent decision-making while
 
 ### Why Claude Opus 4.6?
 
-| Feature | Benefit for Poker Bot |
+| Feature | Benefit for System Utility |
 |---------|----------------------|
 | **Major computer use gains** | Better visual understanding of poker tables |
 | **Adaptive thinking** | Adjusts reasoning depth based on decision complexity |
@@ -76,7 +76,7 @@ The bot now integrates **Claude Opus 4.6** for intelligent decision-making while
 | Claude vision | 1-3s | When detection fails 3+ times |
 | **Total per action** | **~1-2s** | Well within 15-30s time bank |
 
-**Is it fast enough?** YES. Poker gives you 15-30 seconds per decision. Claude responds in 1-2 seconds.
+**Is it fast enough?** YES. System gives you 15-30 seconds per decision. Claude responds in 1-2 seconds.
 
 ### Quick Start
 
@@ -88,12 +88,12 @@ pip install anthropic
 export ANTHROPIC_API_KEY="your-key-here"
 
 # 3. Run Claude-enhanced bot
-python -m gamble.tools.claude_enhanced_runner
+python -m sys_core.tools.claude_enhanced_runner
 
 # Options:
-python -m gamble.tools.claude_enhanced_runner --max-tables 6
-python -m gamble.tools.claude_enhanced_runner --no-claude-decisions  # Local strategy only
-python -m gamble.tools.claude_enhanced_runner --no-claude-vision     # No vision fallback
+python -m sys_core.tools.claude_enhanced_runner --max-tables 6
+python -m sys_core.tools.claude_enhanced_runner --no-claude-decisions  # Local strategy only
+python -m sys_core.tools.claude_enhanced_runner --no-claude-vision     # No vision fallback
 ```
 
 ### Files Created
@@ -106,9 +106,9 @@ python -m gamble.tools.claude_enhanced_runner --no-claude-vision     # No vision
 ### How Claude Makes Decisions
 
 ```python
-from gamble.tools.claude_poker_brain import ClaudePokerBrain
+from sys_core.tools.claude_poker_brain import ClaudeSystemBrain
 
-brain = ClaudePokerBrain()
+brain = ClaudeSystemBrain()
 
 # Send structured data (from local detection)
 decision = brain.decide_action(
@@ -122,7 +122,7 @@ decision = brain.decide_action(
     buttons=['fold', 'call', 'raise'] # From HSV detection
 )
 
-print(decision.action)      # PokerAction.CALL
+print(decision.action)      # SystemAction.CALL
 print(decision.confidence)  # 0.85
 print(decision.reasoning)   # "Good pot odds with nut flush draw..."
 print(decision.thinking_time_ms)  # 850
@@ -165,7 +165,7 @@ The Claude integration **wraps** the existing bot, it doesn't replace it:
 ```
 claude_enhanced_runner.py
     │
-    ├── Uses: multi_table_runner.py (window management)
+    ├── Uses: engine.py (window management)
     ├── Uses: table_screen_based.py (local detection)
     ├── Uses: adaptive_learner.py (self-learning)
     ├── Uses: vision_analyzer.py (self-healing)
@@ -177,9 +177,9 @@ claude_enhanced_runner.py
 
 | Command | When to Use |
 |---------|-------------|
-| `python -m gamble.multi_table_runner` | Original bot, no API costs |
-| `python -m gamble.tools.claude_enhanced_runner` | With Claude decisions (recommended) |
-| `python -m gamble.tools.claude_enhanced_runner --no-claude-decisions` | Claude vision only |
+| `python -m sys_core.engine` | Original bot, no API costs |
+| `python -m sys_core.tools.claude_enhanced_runner` | With Claude decisions (recommended) |
+| `python -m sys_core.tools.claude_enhanced_runner --no-claude-decisions` | Claude vision only |
 
 ### API Costs
 
@@ -240,16 +240,16 @@ grep "vision fallback" log/claude_enhanced.log
 
 ```bash
 # START UNIFIED AUTONOMOUS MULTI-TABLE BOT
-python -m gamble.multi_table_runner
+python -m sys_core.engine
 
 # With options:
-python -m gamble.multi_table_runner --target-tables 4 --max-tables 10
+python -m sys_core.engine --target-tables 4 --max-tables 10
 
 # Skip window resizing (if tables already positioned):
-python -m gamble.multi_table_runner --no-standardize
+python -m sys_core.engine --no-standardize
 
 # STOP BOT
-pkill -f "gamble.multi_table_runner"
+pkill -f "sys_core.engine"
 
 # CHECK STATUS
 tail -f log/multi_table.log
@@ -270,7 +270,7 @@ tail -f log/multi_table.log
 10. **Fast fold DISABLED** - strategy makes all decisions
 
 ### Recent Fixes (Jan 5, 2026):
-- ✅ **UNIFIED BOT CREATED** - `multi_table_runner.py` now has COMPLETE original logic
+- ✅ **UNIFIED BOT CREATED** - `engine.py` now has COMPLETE original logic
 - ✅ Added preflop sheet loading (was missing!)
 - ✅ Added full verification chain (25+ checks from main.py)
 - ✅ Added full history updates (13 fields, was only 6)
@@ -287,7 +287,7 @@ tail -f log/multi_table.log
 ### Files in the Unified System:
 | File | Purpose |
 |------|---------|
-| `multi_table_runner.py` | **THE ONE BOT** - unified entry point |
+| `engine.py` | **THE ONE BOT** - unified entry point |
 | `scraper/table_screen_based.py` | Original detection (used by wrapper) |
 | `decisionmaker/decisionmaker.py` | Original equity + strategy |
 | `tools/adaptive_learner.py` | Self-learning (thresholds) |
@@ -306,12 +306,12 @@ The codebase had **severe fragmentation**:
 - 3 overlapping learning systems
 - 8 different bots with different decision logic
 
-**NOW there is ONE unified system in `gamble/core/`**
+**NOW there is ONE unified system in `sys_core/core/`**
 
 ### The New Architecture
 
 ```
-gamble/core/
+sys_core/core/
 ├── __init__.py           # Import everything from here
 ├── constants.py          # ALL shared constants (HSV ranges, thresholds)
 ├── window_finder.py      # UNIFIED window finding (replaces 3 implementations)
@@ -324,7 +324,7 @@ gamble/core/
 ### How to Use the Unified Module
 
 ```python
-from gamble.core import (
+from sys_core.core import (
     # Window finding
     WindowFinder,
     TableWindow,
@@ -373,7 +373,7 @@ class MyBot(BaseBot):
 
 | Module | What It Does | Replaces |
 |--------|--------------|----------|
-| `WindowFinder` | Find GGPoker windows via AppleScript | 3 different WindowFinder classes |
+| `WindowFinder` | Find GGSystem windows via AppleScript | 3 different WindowFinder classes |
 | `ButtonDetector` | HSV color + OCR fallback + self-healing | 7 button detection implementations |
 | `CardDetector` | Template + white region + self-healing | 6 card detection implementations |
 | `UnifiedLearner` | Thresholds + logging + self-healing | adaptive_learner + vision_analyzer + self_healer |
@@ -390,7 +390,7 @@ def my_find_buttons(img):
 
 ✅ **RIGHT** - Use the unified detector:
 ```python
-from gamble.core import ButtonDetector
+from sys_core.core import ButtonDetector
 detector = ButtonDetector()
 buttons = detector.detect(img, table_window)
 ```
@@ -411,7 +411,7 @@ You don't need to implement this yourself - it's in `UnifiedLearner.heal_detecti
 
 ### WE ARE IMPROVING THE ORIGINAL BOT, NOT REPLACING IT
 
-The **ORIGINAL bot** (`gamble/scraper/table_scraper.py`) already has:
+The **ORIGINAL bot** (`sys_core/scraper/table_scraper.py`) already has:
 - ✅ **Equity calculations** - calculates hand strength
 - ✅ **Opponent tracking** - reads all player stack sizes
 - ✅ **Pot tracking** - current pot, total pot
@@ -479,7 +479,7 @@ When detection fails, the bot:
 ### Vision Analyzer API
 
 ```python
-from gamble.tools.vision_analyzer import (
+from sys_core.tools.vision_analyzer import (
     auto_fix_detection,   # Full auto-fix (buttons + cards + regions)
     auto_fix_buttons,     # Fix button detection only
     auto_fix_cards,       # Fix card detection only
@@ -604,7 +604,7 @@ These show:
 
 Claude only needs to intervene for:
 1. **Major code bugs** - actual Python errors
-2. **New UI layouts** - if GGPoker redesigns completely
+2. **New UI layouts** - if GGSystem redesigns completely
 3. **New game types** - adding support for new games
 
 The bot handles:
@@ -669,7 +669,7 @@ Claude should look at these to understand WHY detection failed.
 
 ### Usage in Bots
 ```python
-from gamble.tools.adaptive_learner import log_action, report_issue, get_threshold
+from sys_core.tools.adaptive_learner import log_action, report_issue, get_threshold
 
 # Get adaptive threshold
 white_min = get_threshold('white_pixel_min', 180)
@@ -692,7 +692,7 @@ This helps identify game-specific detection issues.
 
 ### Debug Screenshots (for Claude to analyze)
 ```python
-from gamble.tools.adaptive_learner import save_debug_screenshot
+from sys_core.tools.adaptive_learner import save_debug_screenshot
 
 # Save when detection fails - Claude can look at these later
 save_debug_screenshot('table_detection', table_image, reason='not_ready')
@@ -703,7 +703,7 @@ Debug screenshots saved to: `data/learning/debug/`
 
 ### Complete API Reference
 ```python
-from gamble.tools.adaptive_learner import (
+from sys_core.tools.adaptive_learner import (
     log_action,           # Log any action with success/fail
     report_issue,         # Report issue for Claude to fix
     get_threshold,        # Get adaptive threshold value
@@ -762,7 +762,7 @@ When detection fails, the bot doesn't just log it and wait for Claude.
 ### How It Works
 
 ```python
-from gamble.tools.self_healer import get_healer, heal_buttons, heal_cards, auto_heal
+from sys_core.tools.self_healer import get_healer, heal_buttons, heal_cards, auto_heal
 
 # When button detection fails:
 healer = get_healer()
@@ -980,7 +980,7 @@ Three new unified systems have been created to fix all previous issues:
 
 #### 1. `ten_table_bot.py` - Autonomous Multi-Table Player
 ```bash
-python -m gamble.tools.ten_table_bot --max-tables 10
+python -m sys_core.tools.ten_table_bot --max-tables 10
 ```
 
 Features:
@@ -991,7 +991,7 @@ Features:
 
 #### 2. `ui_navigator.py` - Lobby Navigation with OCR
 ```bash
-python -m gamble.tools.ui_navigator --action startup --tables 5
+python -m sys_core.tools.ui_navigator --action startup --tables 5
 ```
 
 Features:
@@ -1002,7 +1002,7 @@ Features:
 
 #### 3. `master_bot.py` - Complete Autonomous System
 ```bash
-python -m gamble.tools.master_bot --tables 10 --stake "$1"
+python -m sys_core.tools.master_bot --tables 10 --stake "$1"
 ```
 
 Features:
@@ -1097,7 +1097,7 @@ def find_player_cards_dynamic(table_img):
 ## FILE STRUCTURE
 
 ```
-gamble/tools/
+sys_core/tools/
 ├── cli_controller.py      # Main bot entry point - NEEDS FIX
 ├── smart_card_detector.py # Has dynamic detection - USE THIS
 ├── beast_mode.py          # Standalone bot with color detection
@@ -1113,7 +1113,7 @@ gamble/tools/
 ### 1. cli_controller.py (line ~200-300)
 Current card detection uses fixed coordinates. Change to:
 ```python
-from gamble.tools.smart_card_detector import SmartCardDetector
+from sys_core.tools.smart_card_detector import SmartCardDetector
 
 detector = SmartCardDetector(table_dict)
 my_cards = detector.detect_player_cards(table_screenshot)
@@ -1131,13 +1131,13 @@ The `SmartCardDetector` class has the RIGHT approach:
 
 ```bash
 # Test table detection only
-python -m gamble.tools.cli_controller test
+python -m sys_core.tools.cli_controller test
 
 # Run bot (after fixing card detection)
-python -m gamble.tools.cli_controller start --input dynamic
+python -m sys_core.tools.cli_controller start --input dynamic
 
 # Alternative: beast_mode.py (simpler, color-based)
-python -m gamble.tools.beast_mode --max-tables 1
+python -m sys_core.tools.beast_mode --max-tables 1
 ```
 
 ---
@@ -1181,9 +1181,9 @@ See `beast_mode.py:find_buttons()` for working implementation.
 ## TEMPLATE INFO
 
 All 52 card templates stored in MongoDB at `https://dickreuter.com:7778/`
-- Table name: `Official GGPoker 6player`
+- Table name: `Official GGSystem 6player`
 - Template size: 50x70 pixels (rank+suit corner)
-- GGPoker uses 4-color deck: spades=black, hearts=red, diamonds=blue, clubs=green
+- GGSystem uses 4-color deck: spades=black, hearts=red, diamonds=blue, clubs=green
 
 ---
 
@@ -1200,14 +1200,14 @@ All 52 card templates stored in MongoDB at `https://dickreuter.com:7778/`
 ## QUICK DEBUG
 
 ```bash
-# Check if GGPoker is running
+# Check if GGSystem is running
 osascript -e 'tell application "System Events" to name of processes' | grep -i gg
 
-# List all GGPoker windows
+# List all GGSystem windows
 osascript -e 'tell application "System Events" to tell process "GGnet" to name of every window'
 
 # Watch logs
-tail -f /Users/sebastian/Developer/Gamble/gamble/log/dm_assistant.log
+tail -f /Users/sebastian/Developer/Gamble/sys_core/log/dm_assistant.log
 ```
 
 ---
@@ -1231,7 +1231,7 @@ tail -f /Users/sebastian/Developer/Gamble/gamble/log/dm_assistant.log
 4. **Card detection NOT working** - white mask detection finds contours but not matching cards
 
 ### auto_player.py Location
-`/Users/sebastian/Developer/Gamble/gamble/tools/auto_player.py`
+`/Users/sebastian/Developer/Gamble/sys_core/tools/auto_player.py`
 
 ### Bot Output (Working)
 ```
@@ -1282,17 +1282,17 @@ def detect_cards(self, table_img):
 ### How to Run
 ```bash
 # Start the bot
-python -m gamble.tools.auto_player
+python -m sys_core.tools.auto_player
 
 # Watch logs
-tail -f /Users/sebastian/Developer/Gamble/gamble/log/auto_player.log
+tail -f /Users/sebastian/Developer/Gamble/sys_core/log/auto_player.log
 
 # Kill bot
 pkill -f auto_player
 ```
 
 ### Registration Flow (manual)
-1. Focus GGPoker lobby
+1. Focus GGSystem lobby
 2. Click on Spin & Gold tile ($0.25 is first)
 3. Click "Play Now" button
 4. Wait for table to open (~8 seconds)
@@ -1310,10 +1310,10 @@ pkill -f auto_player
 
 ---
 
-## GGPoker Window Names
+## GGSystem Window Names
 
-- Main lobby: `"GGPoker"`
-- Poker table: Contains keywords like `"Spin"`, `"Gold"`, `"Hold"`, `"Cash"`, `"Blinds"`, `"NL"`
+- Main lobby: `"GGSystem"`
+- System table: Contains keywords like `"Spin"`, `"Gold"`, `"Hold"`, `"Cash"`, `"Blinds"`, `"NL"`
 - Cashier: `"Cashier"`
 
 ### AppleScript to Find Tables
@@ -1348,7 +1348,7 @@ end tell
 - **Diamonds**: Blue
 - **Clubs**: Green
 
-**NOTE**: GGPoker uses a 4-color deck. Previous sessions incorrectly claimed 2-color — THIS WAS WRONG! Confirmed Mar 7 2026 from live screenshots showing blue 10♦ and green A♣.
+**NOTE**: GGSystem uses a 4-color deck. Previous sessions incorrectly claimed 2-color — THIS WAS WRONG! Confirmed Mar 7 2026 from live screenshots showing blue 10♦ and green A♣.
 
 ---
 
@@ -1521,10 +1521,10 @@ coords = coords.replace('−', '-').replace('–', '-')
 ```
 
 #### 2. Created Dynamic Lobby Navigator
-**New file**: `gamble/tools/dynamic_lobby_navigator.py`
+**New file**: `sys_core/tools/dynamic_lobby_navigator.py`
 
 Features:
-- Finds GGPoker lobby window dynamically
+- Finds GGSystem lobby window dynamically
 - Detects Spin & Gold icon by gold/yellow color in top bar
 - Detects game tiles by color (gold, blue, purple, red, teal)
 - Detects Play Now buttons by white text on dark background
@@ -1534,10 +1534,10 @@ Features:
 **Usage**:
 ```bash
 # Test detection
-python -m gamble.tools.dynamic_lobby_navigator --test
+python -m sys_core.tools.dynamic_lobby_navigator --test
 
 # Register for Spin & Gold
-python -m gamble.tools.dynamic_lobby_navigator --register --stake 0
+python -m sys_core.tools.dynamic_lobby_navigator --register --stake 0
 ```
 
 ### CRITICAL DISCOVERY: CARD BACKS vs CARD FACES
@@ -1579,7 +1579,7 @@ def process_table(table_img):
 
 ### RESEARCH FINDINGS (Best Practices)
 
-From web research on poker bot development:
+From web research on system service development:
 
 1. **Retina Display Handling**:
    - Use MSS library (10x faster than PIL ImageGrab)
@@ -1617,7 +1617,7 @@ From web research on poker bot development:
 All debug images saved to `/tmp/gg_debug/`:
 - `lobby_original.png` - Raw lobby screenshot
 - `lobby_annotated.png` - Lobby with detected elements marked
-- `table_capture.png` - Poker table screenshot
+- `table_capture.png` - System table screenshot
 - `table_cards_marked.png` - Table with card region marked
 - `both_cards.png` - Extracted card region
 - `left_card.png`, `right_card.png` - Split cards (showing backs)
@@ -1633,13 +1633,13 @@ All debug images saved to `/tmp/gg_debug/`:
 
 ```bash
 # 1. Test lobby detection (no clicking)
-python -m gamble.tools.dynamic_lobby_navigator --test --debug
+python -m sys_core.tools.dynamic_lobby_navigator --test --debug
 
 # 2. Register for Spin & Gold (will click)
-python -m gamble.tools.dynamic_lobby_navigator --register --stake 0
+python -m sys_core.tools.dynamic_lobby_navigator --register --stake 0
 
 # 3. Run auto player on open tables
-python -m gamble.tools.auto_player
+python -m sys_core.tools.auto_player
 
 # 4. Watch logs
 tail -f /Users/sebastian/Developer/Gamble/log/auto_player.log
@@ -1647,7 +1647,7 @@ tail -f /Users/sebastian/Developer/Gamble/log/auto_player.log
 
 ### VERIFIED WORKING
 
-- ✅ Window detection (GGPoker lobby and tables)
+- ✅ Window detection (GGSystem lobby and tables)
 - ✅ Unicode minus fix (no more parseInt errors)
 - ✅ Spin & Gold icon detection (in top bar)
 - ✅ Game tile detection (colored tiles in grid)
@@ -1664,7 +1664,7 @@ tail -f /Users/sebastian/Developer/Gamble/log/auto_player.log
 **OCR-based button detection WORKS!** Using pytesseract to find button text instead of guessing coordinates.
 
 ### New File Created
-`gamble/tools/ocr_player.py` - OCR-based poker player
+`sys_core/tools/ocr_player.py` - OCR-based poker player
 
 ### How It Works
 ```python
@@ -1700,7 +1700,7 @@ Clicked Fold at (778, 985)
 
 ### To Run OCR Player
 ```bash
-python -m gamble.tools.ocr_player
+python -m sys_core.tools.ocr_player
 ```
 
 ### Why OCR Works Better Than Coordinates
@@ -1806,7 +1806,7 @@ POINTS vs PIXELS confusion causes clicks to miss.
 
 ## TEN TABLE BOT CREATED (Jan 4, 2026 16:43)
 
-**New file**: `gamble/tools/ten_table_bot.py` (1148 lines)
+**New file**: `sys_core/tools/ten_table_bot.py` (1148 lines)
 
 ### Features
 1. Unified visual detection (works any table size)
@@ -1818,7 +1818,7 @@ POINTS vs PIXELS confusion causes clicks to miss.
 
 ### To Run
 ```bash
-python -m gamble.tools.ten_table_bot
+python -m sys_core.tools.ten_table_bot
 ```
 
 ### Architecture
@@ -1875,7 +1875,7 @@ python -m gamble.tools.ten_table_bot
 | `dynamic_lobby_navigator.py` | 39273 | OCR lobby navigation, Spin & Gold | ✅ Working |
 | `ui_navigator.py` | 29253 | UI automation and navigation | ✅ Working |
 | `gg_registration.py` | 39033 | Table registration automation | ✅ Working |
-| `gg_automation.py` | 18187 | GGPoker-specific automation | ✅ Working |
+| `gg_automation.py` | 18187 | GGSystem-specific automation | ✅ Working |
 | `smart_ui_automation.py` | 48250 | Smart UI detection and clicking | ✅ Working |
 | **READING** ||||
 | `dynamic_table_reader.py` | 15994 | OCR pot/stack/card reading | ✅ Working |
@@ -1898,22 +1898,22 @@ python -m gamble.tools.ten_table_bot
 
 ```bash
 # === RECOMMENDED: Main bot with self-learning ===
-python -m gamble.tools.cli_controller start
+python -m sys_core.tools.cli_controller start
 
 # === OCR-based player (simple, reliable) ===
-python -m gamble.tools.ocr_player
+python -m sys_core.tools.ocr_player
 
 # === Auto player with vision analyzer ===
-python -m gamble.tools.auto_player
+python -m sys_core.tools.auto_player
 
 # === 10-table management ===
-python -m gamble.tools.ten_table_bot --max-tables 10
+python -m sys_core.tools.ten_table_bot --max-tables 10
 
 # === Lobby navigation only (register for Spin & Gold) ===
-python -m gamble.tools.dynamic_lobby_navigator --register --stake 0
+python -m sys_core.tools.dynamic_lobby_navigator --register --stake 0
 
 # === Test lobby detection (no clicking) ===
-python -m gamble.tools.dynamic_lobby_navigator --test --debug
+python -m sys_core.tools.dynamic_lobby_navigator --test --debug
 ```
 
 ### SELF-LEARNING DATA STRUCTURE
@@ -1953,7 +1953,7 @@ data/learning/
 
 ### LEARNED BUTTON COLORS (HSV samples from actual game)
 
-The system has learned these HSV values from real GGPoker buttons:
+The system has learned these HSV values from real GGSystem buttons:
 
 | Button | HSV Samples Collected |
 |--------|----------------------|
@@ -1983,12 +1983,12 @@ tail -f log/auto_player.log
 tail -f log/dynamic_lobby.log
 
 # Kill all bots
-pkill -f "python -m gamble"
+pkill -f "python -m sys_core"
 
-# Check if GGPoker running
+# Check if GGSystem running
 pgrep -l GGnet
 
-# List GGPoker windows
+# List GGSystem windows
 osascript -e 'tell application "System Events" to tell process "GGnet" to name of every window'
 
 # Check learning stats
@@ -2009,7 +2009,7 @@ ls data/learning/debug/ | wc -l
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                         USER STARTS BOT                              │
-│                    python -m gamble.tools.X                          │
+│                    python -m sys_core.tools.X                          │
 └─────────────────────────────────────────────────────────────────────┘
                                   │
                                   ▼
@@ -2083,7 +2083,7 @@ ls data/learning/debug/ | wc -l
 
 ### FILE SIZE REFERENCE
 
-Total codebase in `gamble/tools/`: **~600KB** across 45 Python files
+Total codebase in `sys_core/tools/`: **~600KB** across 45 Python files
 
 Largest files (most functionality):
 1. `smart_ui_automation.py` - 48KB
@@ -2100,31 +2100,31 @@ Largest files (most functionality):
 # === For any new bot, import these: ===
 
 # Self-learning system
-from gamble.tools.adaptive_learner import (
+from sys_core.tools.adaptive_learner import (
     log_action, get_threshold, report_issue, save_screenshot
 )
 
 # Vision analyzer (auto-fix)
-from gamble.tools.vision_analyzer import (
+from sys_core.tools.vision_analyzer import (
     auto_fix_detection, auto_fix_buttons, auto_fix_cards
 )
 
 # Table detection
-from gamble.tools.dynamic_table_finder import (
+from sys_core.tools.dynamic_table_finder import (
     DynamicTableFinder, find_poker_tables
 )
 
 # Button detection
-from gamble.tools.button_detector import ButtonDetector
+from sys_core.tools.button_detector import ButtonDetector
 
 # Card detection
-from gamble.tools.smart_card_detector import SmartCardDetector
+from sys_core.tools.smart_card_detector import SmartCardDetector
 
 # Lobby navigation
-from gamble.tools.dynamic_lobby_navigator import DynamicLobbyNavigator
+from sys_core.tools.dynamic_lobby_navigator import DynamicLobbyNavigator
 
 # Constants
-from gamble.tools.constants import RETINA_SCALE  # = 2
+from sys_core.tools.constants import RETINA_SCALE  # = 2
 ```
 
 ---
@@ -2178,7 +2178,7 @@ from gamble.tools.constants import RETINA_SCALE  # = 2
 | Ten Table Bot | `tools/ten_table_bot.py` | State machine | No |
 | Master Bot | `tools/master_bot.py` | Orchestrator | No |
 
-**Recommended**: Create new bots by inheriting from `gamble.core.BaseBot`
+**Recommended**: Create new bots by inheriting from `sys_core.core.BaseBot`
 
 ### Data Files
 
@@ -2270,7 +2270,7 @@ Example:
 4. **SELF-LEARNING**: Bot fixes itself - check `data/learning/` for what it learned
 5. **NO HARDCODING**: Use color/OCR detection, never pixel coordinates
 6. **ADD DON'T REMOVE**: Only add to this file, never delete sections
-7. **USE UNIFIED CORE**: Import from `gamble.core` for all new code
+7. **USE UNIFIED CORE**: Import from `sys_core.core` for all new code
 
 ---
 
@@ -2299,17 +2299,17 @@ def check_fast_fold(self, h, p, mouse):
     return True  # Always return True to skip fast fold
 ```
 
-**File**: `gamble/scraper/table_screen_based.py` line 189-203
+**File**: `sys_core/scraper/table_screen_based.py` line 189-203
 
 #### 2. Wrong Deck Color Assumption - 4-Color vs 2-Color
 **Problem**: Bot detected "TD" (Ten Diamonds) when card was actually "TS" (Ten Spades).
 
 **Root Cause**: `smart_card_detector.py` line 291 assumed 4-color deck:
 ```python
-# GGPoker uses 4-color deck: Spades=black, Hearts=red, Diamonds=blue, Clubs=green
+# GGSystem uses 4-color deck: Spades=black, Hearts=red, Diamonds=blue, Clubs=green
 ```
 
-But GGPoker uses **STANDARD 2-COLOR DECK**:
+But GGSystem uses **STANDARD 2-COLOR DECK**:
 - Hearts = Red, Diamonds = Red
 - Spades = Black, Clubs = Black
 
@@ -2317,7 +2317,7 @@ The detector was checking for blue pixels (diamonds in 4-color) but finding none
 
 **Fix Applied**: Changed to 2-color logic with OCR for suit distinction:
 ```python
-# GGPoker uses STANDARD 2-color deck:
+# GGSystem uses STANDARD 2-color deck:
 # - Hearts = Red, Diamonds = Red
 # - Spades = Black, Clubs = Black
 # We need to use suit SHAPE detection to distinguish H/D and S/C
@@ -2328,7 +2328,7 @@ elif black_total > red_total * 1.5:  # Clearly black
     suit = self._distinguish_black_suit(card_img)  # Uses OCR
 ```
 
-**File**: `gamble/tools/smart_card_detector.py` lines 282-318
+**File**: `sys_core/tools/smart_card_detector.py` lines 282-318
 
 #### 3. Added Suit Self-Learning
 **Problem**: No way to track/improve suit detection errors.
@@ -2338,7 +2338,7 @@ elif black_total > red_total * 1.5:  # Clearly black
 - Saves failed suit detection images to `data/learning/suit_errors/`
 - Tracks success/failure rates
 
-**File**: `gamble/tools/smart_card_detector.py` lines 434-464
+**File**: `sys_core/tools/smart_card_detector.py` lines 434-464
 
 ### WHY THE BOT WAS ALWAYS FOLDING - FULL ANALYSIS
 
@@ -2356,10 +2356,10 @@ The suit error was CRITICAL because:
 
 | File | Change |
 |------|--------|
-| `gamble/scraper/table_screen_based.py` | Disabled fast fold |
-| `gamble/tools/smart_card_detector.py` | Fixed 2-color deck, added OCR suit detection, added self-learning |
-| `gamble/core/card_detector.py` | Fixed 2-color deck (was 4-color) |
-| `gamble/tools/ten_table_bot.py` | Fixed 2-color deck (was 4-color) |
+| `sys_core/scraper/table_screen_based.py` | Disabled fast fold |
+| `sys_core/tools/smart_card_detector.py` | Fixed 2-color deck, added OCR suit detection, added self-learning |
+| `sys_core/core/card_detector.py` | Fixed 2-color deck (was 4-color) |
+| `sys_core/tools/ten_table_bot.py` | Fixed 2-color deck (was 4-color) |
 
 ### NEW METHODS ADDED
 
@@ -2394,7 +2394,7 @@ def _log_suit_detection(card_img, suit, ocr_text, success=True):
 ## DEEP ANALYSIS - REMAINING ISSUES
 
 ### ⚠️ WARNING: DecisionMaker Also Has Preflop Folding
-**Location**: `gamble/decisionmaker/decisionmaker.py` lines 345-349
+**Location**: `sys_core/decisionmaker/decisionmaker.py` lines 345-349
 
 ```python
 else:
@@ -2409,7 +2409,7 @@ If cards are detected wrong, this can also cause unnecessary folds.
 ### Issue #1: Strategy Not Using Equity Properly
 **Symptom**: Bot may still make wrong decisions even with correct cards.
 
-**Location**: `gamble/decisionmaker/decisionmaker.py`
+**Location**: `sys_core/decisionmaker/decisionmaker.py`
 
 **What to check**:
 - Is equity being calculated correctly?
@@ -2420,8 +2420,8 @@ If cards are detected wrong, this can also cause unnecessary folds.
 **Symptom**: Bot clicks but action doesn't register in game.
 
 **Locations**:
-- `gamble/tools/action_verifier.py`
-- `gamble/tools/mouse_mover.py`
+- `sys_core/tools/action_verifier.py`
+- `sys_core/tools/mouse_mover.py`
 
 **What to check**:
 - Is before/after screenshot comparison working?
@@ -2435,7 +2435,7 @@ If cards are detected wrong, this can also cause unnecessary folds.
 1. `table_scraper.py` - Template matching from MongoDB
 2. `smart_card_detector.py` - Visual white region + OCR (FIXED)
 3. `dynamic_card_detector.py` - Alternative detection
-4. `gamble/core/card_detector.py` - Unified detector
+4. `sys_core/core/card_detector.py` - Unified detector
 
 **What to check**:
 - Which path is actually being used?
@@ -2460,8 +2460,8 @@ If cards are detected wrong, this can also cause unnecessary folds.
 **Symptom**: Equity calculations may use wrong pot sizes.
 
 **Locations**:
-- `gamble/tools/dynamic_table_reader.py`
-- `gamble/scraper/table_scraper.py`
+- `sys_core/tools/dynamic_table_reader.py`
+- `sys_core/scraper/table_scraper.py`
 
 **What to check**:
 - Is pot being read correctly?
@@ -2471,7 +2471,7 @@ If cards are detected wrong, this can also cause unnecessary folds.
 ### Issue #6: Table Detection Race Condition
 **Symptom**: Bot might process same table twice or miss tables.
 
-**Location**: `gamble/tools/cli_controller.py` main loop
+**Location**: `sys_core/tools/cli_controller.py` main loop
 
 **What to check**:
 - Is table list being refreshed correctly?
@@ -2506,7 +2506,7 @@ If cards are detected wrong, this can also cause unnecessary folds.
 
 ```bash
 # 1. Start the bot
-python -m gamble.tools.cli_controller start --input dynamic
+python -m sys_core.tools.cli_controller start --input dynamic
 
 # 2. Watch for these log messages:
 tail -f log/dm_assistant.log | grep -E "(SELF-LEARNING|Fast fold DISABLED|Detected.*suit|strategy)"
@@ -2527,7 +2527,7 @@ cat data/learning/thresholds.json
 
 ## CRITICAL: 4-COLOR DECK (CONFIRMED Mar 7 2026)
 
-**GGPoker uses a 4-COLOR deck:**
+**GGSystem uses a 4-COLOR deck:**
 
 | Suit | Color | Symbol |
 |------|-------|--------|
@@ -2538,7 +2538,7 @@ cat data/learning/thresholds.json
 
 Each suit has a unique color — no OCR needed for suit distinction.
 Detection uses HSV on rank text color (the rank character is colored).
-See `gamble/ocr/card_reader.py:_detect_suit_at()` for implementation.
+See `sys_core/ocr/card_reader.py:_detect_suit_at()` for implementation.
 
 ---
 
@@ -2548,7 +2548,7 @@ See `gamble/ocr/card_reader.py:_detect_suit_at()` for implementation.
 
 **The original bot WORKS.** Don't replace it - WRAP it for multi-table support.
 
-### New File: `gamble/multi_table_runner.py`
+### New File: `sys_core/engine.py`
 
 This is a **wrapper** around the ORIGINAL bot that:
 1. Finds ALL open poker windows (not just one)
@@ -2564,7 +2564,7 @@ This is a **wrapper** around the ORIGINAL bot that:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    multi_table_runner.py                             │
+│                    engine.py                             │
 │                         (NEW WRAPPER)                                │
 │                                                                      │
 │   ┌─────────────────────────────────────────────────────────────┐   │
@@ -2605,7 +2605,7 @@ This is a **wrapper** around the ORIGINAL bot that:
 
 ```bash
 # Multi-table with original bot decision making
-python -m gamble.multi_table_runner --target-tables 4 --max-tables 10
+python -m sys_core.engine --target-tables 4 --max-tables 10
 
 # Arguments:
 #   --target-tables N  : Maintain N tables open (default: 4)
@@ -2668,7 +2668,7 @@ Tables are processed in this order:
 
 | File | Purpose |
 |------|---------|
-| `multi_table_runner.py` | NEW - Multi-table wrapper |
+| `engine.py` | NEW - Multi-table wrapper |
 | `main.py` | Original single-table entry (still works) |
 | `scraper/table_screen_based.py` | Original table detection |
 | `scraper/table_scraper.py` | Original card/button reading |
@@ -2699,11 +2699,11 @@ The multi-table wrapper can use the self-learning systems:
 
 ```python
 # In check_table_state() when detection fails:
-from gamble.tools.vision_analyzer import auto_fix_buttons
+from sys_core.tools.vision_analyzer import auto_fix_buttons
 fix_result = auto_fix_buttons(screenshot)
 
 # In process_table() for logging:
-from gamble.tools.adaptive_learner import log_action
+from sys_core.tools.adaptive_learner import log_action
 log_action('table_processed', success=True, details={'table': session.window.name})
 ```
 
@@ -2715,7 +2715,7 @@ log_action('table_processed', success=True, details={'table': session.window.nam
 - Build separate card/button detection
 
 **DO:**
-- Use `multi_table_runner.py` as the entry point
+- Use `engine.py` as the entry point
 - Let it wrap the ORIGINAL bot components
 - Add improvements to the ORIGINAL files if needed
 
@@ -2723,7 +2723,7 @@ log_action('table_processed', success=True, details={'table': session.window.nam
 
 ## COMPLETE SYSTEM MAPPING (Jan 5, 2026)
 
-### Source: https://github.com/dickreuter/Poker
+### Source: https://github.com/dickreuter/System
 
 ### OCR FIELDS
 

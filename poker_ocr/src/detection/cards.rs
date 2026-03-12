@@ -136,7 +136,7 @@ impl CardDetector {
             return false;
         }
 
-        // Card backs on GGPoker are red-patterned
+        // Card backs on GGSystem are red-patterned
         // Count red-ish pixels in the region
         let mut red_count = 0u32;
         let total = cw * ch;
@@ -206,7 +206,7 @@ impl CardDetector {
         }
 
         // Step 4: Suit verification via color
-        // GGPoker uses 2-color deck: Hearts/Diamonds=Red, Spades/Clubs=Black
+        // GGSystem uses 2-color deck: Hearts/Diamonds=Red, Spades/Clubs=Black
         let verified_code = verify_suit_by_color(rgba, rect, &best_code);
         let confidence = 1.0 - best_score / thresholds.template_match_threshold;
 

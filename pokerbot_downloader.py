@@ -1,4 +1,4 @@
-from gamble.tools.pokerbot_downloader_initial import UpdateChecker
+from sys_core.tools.pokerbot_downloader_initial import UpdateChecker
 
 u=UpdateChecker()
 u.check_update(0)

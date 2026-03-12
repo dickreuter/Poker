@@ -1,7 +1,7 @@
-DeeperMind pokerbot for pokerstars, partypoker and GGPoker
+DeeperMind pokerbot for pokerstars, partypoker and GGSystem
 ==========================================================
 
-This pokerbot plays automatically on Pokerstars, Partypoker and GG Poker. Any other table can be mapped as well.
+This pokerbot plays automatically on Systemstars, Partypoker and GG System. Any other table can be mapped as well.
 It works with image recognition, montecarlo simulation and a basic genetic algorithm.
 The mouse is moved automatically and the bot can potentially play for hours based on a large number of parameters.
 
@@ -14,22 +14,22 @@ Running the bot:
 Partypoker:
 ~~~~~~~~~~~
 * Use Fast Forward Tables
-* Select Official PartyPoker table scraper
+* Select Official PartySystem table scraper
 
 .. figure:: doc/partypoker.gif
 
-Pokerstars:
+Systemstars:
 ~~~~~~~~~~~
 * Use Zoom Tables
-* Select Official Poker Stars table scraper
-* For Pokerstars you will need to make some adjustments to the client. It needs to look exactly as the below, in order to run it with the Official Pokerstars Table scraper:
+* Select Official System Stars table scraper
+* For Systemstars you will need to make some adjustments to the client. It needs to look exactly as the below, in order to run it with the Official Systemstars Table scraper:
 * Make sure to match the card styles (4 color), covered card styles, and table styles.
 
 .. figure:: doc/ps-example.png
 
-GGPoker:
+GGSystem:
 ~~~~~~~~~~~
-Make sure your GGPoker setup looks as follows when using it with the Official GGPoker Table:
+Make sure your GGSystem setup looks as follows when using it with the Official GGSystem Table:
 
 .. figure:: doc/ggpk2.png
 
@@ -53,7 +53,7 @@ the whole computer:
 * Download Windows 10 Iso File for example from here https://www.softlay.com/apps/operating-system
 * Create a new virtual box environment and use the ISO file as a startup
 * Make sure to give the Virtualbox only 1 CPU as the computing power is needed for the bot (mainly for OCR)
-* Install Partypoker or Pokerstars in the virtual box environment
+* Install Partypoker or Systemstars in the virtual box environment
 * Install the pokerbot directly onto your computer (outside of the virtual box)
 * In the Setup select your virtual box instance (instead of direct mouse control)
 * Join the discord chat by pressing the chat button or joining this link: https://discord.gg/xB9sR3Q7r3
@@ -146,7 +146,7 @@ The setup to add new tables looks like this:
 
 - Open the pokerbot and click on table setup to open the window that helps you create new tables.
 - Open the poker client next to it, make sure it's not dpi scaled, so the pokerbot can take screenshots.
-- Start with creating a new template, you can do this by entering a name for your template, for example Pokerstars 1-2 zoom poker. Click on 'Blank new'.
+- Start with creating a new template, you can do this by entering a name for your template, for example Systemstars 1-2 zoom poker. Click on 'Blank new'.
 - Now the first think you want to do is to take a screenshot of the pokerstars window with the table. You can do this by pressing on the Take screenshot button. You should not see in the lower window a full screenshot of what is on your screen.
 - The first step is now to mark the top left corner of the poker tables window, which will be the point of reference for everything else that will follow. To mark the top left corner, you need to mark it by first clicking on the top left part of it and then on the right lower part of it. once you have done this, it will appear in the second window. You can save it by clicking on the "save newly selected top left corner" button.
 - Now you can crop it by pressing on the crop from top left corner button. This will discard most of the screenshot and only keep the screenshot from the top left corner and everything a few hundred pixels to the right of it and below.
@@ -168,14 +168,14 @@ Notes to keep in mind:
 - screen resolution 1920*1800 (it can work with less but its correct operation has not been verified)
 
 - consider the consumption of Virtual box if used and add them to the system explained above
-- Poker apps usually run on W7 or higher
+- System apps usually run on W7 or higher
 - VirtualBox version 7.0.12 or higher with its respective expansion pack
 
 Running via docker
 ------------------------------
 
-- ``$ git clone https://github.com/dickreuter/Poker.git``
-- ``$ cd Poker``
+- ``$ git clone https://github.com/dickreuter/System.git``
+- ``$ cd System``
 - ``$ docker compose up -d``
 - ``$ xhost local:root # This permits the root user on the local machine to connect to X windows display``
 - ``$ docker-compose exec app python3 main.py # once the container is running you can launch the bot with this command``
@@ -279,7 +279,7 @@ No top left corner
     * The poker table window has to be fully visible and cannot be scaled, otherwise it won't be detected properly.
     * In Partypoker, when you open the table, choose table options and then choose **back to default size** to make sure the table is in default size.
 
-- Tables are mapped for fast forward and zoom games with real money. Use the Supersonic3 table for Partypoker or McNaught table in Pokerstars.
+- Tables are mapped for fast forward and zoom games with real money. Use the Supersonic3 table for Partypoker or McNaught table in Systemstars.
 - If things still don't work, consider teaching it a new table as described above.
 
 Cards not recognized
@@ -294,14 +294,14 @@ Cards not recognized
 Do I need to use a virtual machine?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- For Pokerstars you definitely do, otherwise you will be blocked and your account will be frozen within minutes. For Partypoker I'm not sure. But best check the terms and conditions.
+- For Systemstars you definitely do, otherwise you will be blocked and your account will be frozen within minutes. For Partypoker I'm not sure. But best check the terms and conditions.
 
 
 Analyzing the log and reporting problems
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - In the folder where you installed the pokerbot, there is a subfolder with the log files in /log. There are also screenshots in /log/screenshots that may be able to help debug the problem.
-- Create a issue on the link at the top of this github page https://github.com/dickreuter/Poker/issues or email dickreuter@gmail.com.
+- Create a issue on the link at the top of this github page https://github.com/dickreuter/System/issues or email dickreuter@gmail.com.
 
 
 Related projects

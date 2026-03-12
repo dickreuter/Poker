@@ -1,0 +1,176 @@
+{
+  "version": "1.0",
+  "created": "2026-01-03T22:59:53.848475",
+  "source": "GGSystem Spin & Gold Lobby",
+  "window_info": {
+    "position_px": [
+      0,
+      248
+    ],
+    "size_px": [
+      2400,
+      1440
+    ],
+    "retina_scale": 2
+  },
+  "templates": {
+    "play_now_dark": {
+      "filename": "play_now_dark.png",
+      "description": "Play Now button (dark button with white text)",
+      "category": "button",
+      "context": "lobby",
+      "capture_date": "2026-01-03T22:59:53.848505",
+      "match_threshold": 0.05,
+      "width": 232,
+      "height": 62,
+      "color_signature_hsv": [
+        93,
+        29,
+        76
+      ],
+      "source_coords_px": [
+        646,
+        1290,
+        878,
+        1352
+      ]
+    },
+    "play_now_insurance": {
+      "filename": "play_now_insurance.png",
+      "description": "Play Now with insurance button (colored)",
+      "category": "button",
+      "context": "lobby",
+      "capture_date": "2026-01-03T22:59:53.848904",
+      "match_threshold": 0.05,
+      "width": 232,
+      "height": 62,
+      "color_signature_hsv": [
+        137,
+        154,
+        112
+      ],
+      "source_coords_px": [
+        916,
+        1290,
+        1148,
+        1352
+      ]
+    },
+    "tile_1_dollar": {
+      "filename": "tile_1_dollar.png",
+      "description": "$1 Spin & Gold Buy-in button",
+      "category": "tile",
+      "context": "lobby",
+      "capture_date": "2026-01-03T22:59:53.849174",
+      "match_threshold": 0.05,
+      "width": 197,
+      "height": 44,
+      "color_signature_hsv": [
+        18,
+        199,
+        170
+      ],
+      "source_coords_px": "extracted from quadrant"
+    },
+    "tile_25_cents": {
+      "filename": "tile_25_cents.png",
+      "description": "$0.25 Spin & Gold Buy-in button",
+      "category": "tile",
+      "context": "lobby",
+      "capture_date": "2026-01-03T22:59:53.849436",
+      "match_threshold": 0.05,
+      "width": 217,
+      "height": 44,
+      "color_signature_hsv": [
+        19,
+        145,
+        88
+      ],
+      "source_coords_px": "extracted from quadrant"
+    },
+    "btn_close_x": {
+      "filename": "btn_close_x.png",
+      "description": "Close/X button for dialogs",
+      "category": "dialog",
+      "context": "dialog",
+      "capture_date": "2026-01-03T22:59:53.849692",
+      "match_threshold": 0.05,
+      "width": 54,
+      "height": 48,
+      "color_signature_hsv": [
+        0,
+        0,
+        31
+      ],
+      "source_coords_px": [
+        2338,
+        8,
+        2392,
+        56
+      ]
+    },
+    "btn_fold": {
+      "filename": null,
+      "description": "Fold button (during gameplay)",
+      "category": "action",
+      "context": "table",
+      "capture_date": null,
+      "match_threshold": 0.05,
+      "color_detection": {
+        "hsv_lower": [
+          0,
+          0,
+          40
+        ],
+        "hsv_upper": [
+          180,
+          50,
+          120
+        ]
+      },
+      "note": "Dark gray - detected by color, no template image"
+    },
+    "btn_call": {
+      "filename": null,
+      "description": "Call button (during gameplay)",
+      "category": "action",
+      "context": "table",
+      "capture_date": null,
+      "match_threshold": 0.05,
+      "color_detection": {
+        "hsv_lower": [
+          35,
+          50,
+          50
+        ],
+        "hsv_upper": [
+          85,
+          255,
+          255
+        ]
+      },
+      "note": "Green - detected by color, no template image"
+    },
+    "btn_raise": {
+      "filename": null,
+      "description": "Raise button (during gameplay)",
+      "category": "action",
+      "context": "table",
+      "capture_date": null,
+      "match_threshold": 0.05,
+      "color_detection": {
+        "hsv_lower": [
+          10,
+          80,
+          80
+        ],
+        "hsv_upper": [
+          25,
+          255,
+          255
+        ]
+      },
+      "note": "Orange - detected by color, no template image"
+    }
+  }
+}

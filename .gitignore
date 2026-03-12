@@ -1,7 +1,7 @@
 ﻿/.idea
 *.log
 *.xml
-/.vs/Poker/v14
+/.vs/System/v14
 *.
 /poker/pics/*.png
 **/__pycache__
@@ -224,7 +224,7 @@ notebooks/Screenshot_14.png
 notebooks/IMG_5772.png
 notebooks/image (5).png
 notebooks/bet365231.PNG
-Poker.code-workspace
+System.code-workspace
 *.png*.dmg
 *.autosave
 *.code-workspace

@@ -1,10 +1,10 @@
-# Original Poker Bot vs Current Implementation
+# Original System Utility vs Current Implementation
 
-## Source: https://github.com/dickreuter/Poker
+## Source: https://github.com/dickreuter/System
 
 ---
 
-## WHAT'S FROM THE ORIGINAL (dickreuter/Poker)
+## WHAT'S FROM THE ORIGINAL (dickreuter/System)
 
 ### scraper/ - Table Recognition (5 files)
 These are the CORE working files from the original:
@@ -51,10 +51,10 @@ The graphical interface - ALL from original:
 
 ---
 
-## WHAT'S NEW (Added for Multi-Table GGPoker)
+## WHAT'S NEW (Added for Multi-Table GGSystem)
 
 ### tools/ - 51 New Files!
-These were added to extend the original for multi-table GGPoker:
+These were added to extend the original for multi-table GGSystem:
 
 #### Multi-Table Management
 | File | Purpose |
@@ -81,13 +81,13 @@ These were added to extend the original for multi-table GGPoker:
 | `vision_analyzer.py` | Analyzes images, auto-fixes |
 | `self_healer.py` | Real-time detection fixing |
 
-#### UI Navigation (GGPoker specific)
+#### UI Navigation (GGSystem specific)
 | File | Purpose |
 |------|---------|
 | `dynamic_lobby_navigator.py` | OCR lobby navigation |
 | `ui_navigator.py` | General UI automation |
 | `gg_registration.py` | Table registration |
-| `gg_automation.py` | GGPoker-specific actions |
+| `gg_automation.py` | GGSystem-specific actions |
 | `smart_ui_automation.py` | Smart clicking |
 
 #### Experimental Bots
@@ -115,7 +115,7 @@ Created to consolidate fragmented detection:
 
 ## ARCHITECTURE COMPARISON
 
-### Original (dickreuter/Poker)
+### Original (dickreuter/System)
 ```
 main.py (GUI)
     ↓
@@ -130,9 +130,9 @@ MouseMover → clicks button
 - Single table only
 - Hardcoded pixel coordinates
 - GUI required
-- PokerStars/PartyPoker focused
+- SystemStars/PartySystem focused
 
-### Current (gamble/)
+### Current (sys_core/)
 ```
 cli_controller.py multi (headless)
     ↓
@@ -153,7 +153,7 @@ AdaptiveLearner → self-improving
 - Multi-table (up to 10)
 - Dynamic detection (no hardcoded coords)
 - Headless operation (no GUI needed)
-- GGPoker optimized
+- GGSystem optimized
 - Self-learning/healing
 
 ---
@@ -163,9 +163,9 @@ AdaptiveLearner → self-improving
 ### ACTIVELY USED (Core Decision Logic)
 ```python
 # From original - THE BRAIN
-from gamble.decisionmaker.decisionmaker import Decision
-from gamble.decisionmaker.montecarlo_python import run_montecarlo_wrapper
-from gamble.scraper.table_screen_based import TableScreenBased
+from sys_core.decisionmaker.decisionmaker import Decision
+from sys_core.decisionmaker.montecarlo_python import run_montecarlo_wrapper
+from sys_core.scraper.table_screen_based import TableScreenBased
 
 # Decision flow (UNCHANGED from original):
 # 1. Get cards → lookup in preflop chart
@@ -200,7 +200,7 @@ Most of `tools/*.py` are experimental attempts that should be ignored:
 - `spin_grinder.py` - redundant
 - etc.
 
-**USE ONLY:** `python -m gamble.tools.cli_controller multi`
+**USE ONLY:** `python -m sys_core.tools.cli_controller multi`
 
 ---
 
@@ -211,7 +211,7 @@ Most of `tools/*.py` are experimental attempts that should be ignored:
 | Tables | 1 | Up to 10 |
 | GUI | Required | Optional (headless) |
 | Coords | Hardcoded pixels | Dynamic detection |
-| Poker site | PokerStars/Party | GGPoker |
+| System site | SystemStars/Party | GGSystem |
 | Cards | Template only | Template + Visual + OCR |
 | Deck | 4-color assumed | 2-color fixed |
 | Learning | None | Self-improving |

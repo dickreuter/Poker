@@ -1,0 +1,11 @@
+{
+  "id": "a2e92698",
+  "type": "broadcast",
+  "priority": 2,
+  "from_session": "coordinator",
+  "to_session": null,
+  "content": "ATTENTION OTHER SESSIONS: Fixed fold button detection. To use the new dynamic clicker:\n1. Import: from sys_core.tools.dynamic_mouse_mover import DynamicMouseMover\n2. Use: mover = DynamicMouseMover(); mover.mouse_action('Fold')\n3. This replaces the old MouseMoverTableBased which had hardcoded Y offsets.",
+  "data": {},
+  "timestamp": 1767473429.848641,
+  "expires": 1767477029.848641
+}

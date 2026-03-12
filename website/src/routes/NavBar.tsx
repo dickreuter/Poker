@@ -38,8 +38,8 @@ function NavBar() {
       >
         <span className="navbar-toggler-icon"></span>
       </button>
-      <a className="navbar-brand" href="/" onClick={() => handleNavLinkClick('DeeperMind PokerBot')}>
-        DeeperMind PokerBot
+      <a className="navbar-brand" href="/" onClick={() => handleNavLinkClick('DeeperMind SystemBot')}>
+        DeeperMind SystemBot
       </a>
 
       <div className={`collapse navbar-collapse ${isOpen ? 'show' : ''}`} id="navbarTogglerDemo03">
@@ -70,14 +70,14 @@ function NavBar() {
             </a>
           </li>
           <li className="nav-item">
-            <a className="nav-link" href="https://github.com/dickreuter/Poker" onClick={() => handleNavLinkClick('Source Code')}>
+            <a className="nav-link" href="https://github.com/dickreuter/System" onClick={() => handleNavLinkClick('Source Code')}>
               Source code
             </a>
           </li>
           <li className="nav-item">
             <a
               className="nav-link"
-              href="https://github.com/dickreuter/Poker/blob/master/readme.rst"
+              href="https://github.com/dickreuter/System/blob/master/readme.rst"
               onClick={() => handleNavLinkClick('Documentation')}
             >
               Documentation

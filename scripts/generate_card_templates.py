@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Generate 52 card templates matching GGPoker card corner style.
+Generate 52 card templates matching GGSystem card corner style.
 
 Creates synthetic rank+suit corner images that match the existing templates
-found in gamble/tests/test_cards/ (20x43 or 29x43 pixels, white background,
+found in sys_core/tests/test_cards/ (20x43 or 29x43 pixels, white background,
 dark rank text with suit symbol below).
 
 These templates are used by the Rust OCR engine for card detection via
@@ -188,7 +188,7 @@ def main():
     parser.add_argument('--use-existing', action='store_true', default=True,
                         help='Copy existing real templates over synthetic ones')
     parser.add_argument('--test-cards-dir', type=str,
-                        default='gamble/tests/test_cards/',
+                        default='sys_core/tests/test_cards/',
                         help='Directory with existing real card templates')
 
     args = parser.parse_args()

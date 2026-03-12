@@ -2,7 +2,7 @@
 name = "poker_ocr"
 version = "0.1.0"
 edition = "2021"
-description = "Fast poker table OCR for GGPoker on macOS"
+description = "Fast poker table OCR for GGSystem on macOS"
 
 [dependencies]
 # CLI

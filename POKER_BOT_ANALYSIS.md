@@ -1,8 +1,8 @@
-# Poker Bot Analysis & Documentation
+# System Utility Analysis & Documentation
 
 ## Overview
 
-This project is a fork of [dickreuter/Poker](https://github.com/dickreuter/Poker) - a fully functional poker automation tool that plays through image recognition and algorithmic decision-making.
+This project is a fork of [dickreuter/System](https://github.com/dickreuter/System) - a fully functional poker automation tool that plays through image recognition and algorithmic decision-making.
 
 ---
 
@@ -137,7 +137,7 @@ def find_template_on_screen(template, screenshot, threshold):
 
 ### 1. Card Detection Failing
 - Shows `['?H', '?H']` instead of actual cards
-- **Cause**: Card templates don't match current GGPoker UI
+- **Cause**: Card templates don't match current GGSystem UI
 - **Fix**: Need to capture ALL 52 card templates
 
 ### 2. OCR Failing
@@ -147,7 +147,7 @@ def find_template_on_screen(template, screenshot, threshold):
 
 ### 3. Template Matching Intermittent
 - Sometimes score is 0.000 (perfect), sometimes 0.34 (fail)
-- **Cause**: GGPoker UI changes slightly (focus border, animations)
+- **Cause**: GGSystem UI changes slightly (focus border, animations)
 - **Fix**: Use adaptive thresholds, multiple fallback methods
 
 ### 4. Dealer Position Not Found
@@ -198,7 +198,7 @@ gui/
 ### 1. Use the Table Setup GUI
 
 ```bash
-python -m gamble.main
+python -m sys_core.main
 # Go to Table Setup in the GUI
 ```
 
@@ -235,22 +235,22 @@ Cards needed: `as, ah, ad, ac, ks, kh, kd, kc, qs, qh, qd, qc, js, jh, jd, jc, t
 
 ### GUI Mode (Original)
 ```bash
-python -m gamble.main
+python -m sys_core.main
 ```
 
 ### CLI Mode (Headless)
 ```bash
 # Test table detection
-python -m gamble.tools.cli_controller test
+python -m sys_core.tools.cli_controller test
 
 # Run single hand
-python -m gamble.tools.cli_controller single --input dynamic
+python -m sys_core.tools.cli_controller single --input dynamic
 
 # Run continuously
-python -m gamble.tools.cli_controller start --input dynamic
+python -m sys_core.tools.cli_controller start --input dynamic
 
 # Multi-table
-python -m gamble.tools.cli_controller multi --max-tables 4
+python -m sys_core.tools.cli_controller multi --max-tables 4
 ```
 
 ---
@@ -279,7 +279,7 @@ point_x = pixel_x // 2
 ## What Needs To Be Done
 
 ### Option 1: Use the GUI (Proper Way)
-1. Run `python -m gamble.main`
+1. Run `python -m sys_core.main`
 2. Open Table Setup
 3. Capture all templates through the GUI
 4. Configure strategy
@@ -315,6 +315,6 @@ tail -f log/dm_assistant.log | grep -E "My cards|equity|FOLD|CALL|RAISE"
 
 ## Summary
 
-The bot is a sophisticated poker automation tool, but it relies heavily on **template matching**. The current issue is that the templates stored in the remote database don't match the current GGPoker UI.
+The bot is a sophisticated poker automation tool, but it relies heavily on **template matching**. The current issue is that the templates stored in the remote database don't match the current GGSystem UI.
 
 **The fix is NOT to patch code endlessly** - it's to properly capture all templates using the Table Setup GUI, as intended by the original author.

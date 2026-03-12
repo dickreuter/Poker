@@ -13,7 +13,7 @@ This document details critical fixes and mechanics implemented to address issues
 **Solution:** A multi-layered detection strategy was implemented.
 
 ### A. Color-Based Fallback (Primary Fix)
-*   **File:** `gamble/scraper/table_scraper.py`
+*   **File:** `sys_core/scraper/table_scraper.py`
 *   **Method:** `im_back()`
 *   **Logic:**
     1.  First tries the original template matching.
@@ -22,15 +22,15 @@ This document details critical fixes and mechanics implemented to address issues
     4.  The specific coordinates are stored in `table_dict['last_deal_me_in_pos']`.
 
 ### B. OCR Detection (Multi-Table Runner)
-*   **File:** `gamble/ocr/table_reader.py`
+*   **File:** `sys_core/ocr/table_reader.py`
 *   **Change:** Added `deal_me_in` to the `BUTTON_HSV` dictionary.
-*   **Values:** Uses the unified **Red** color range from `gamble/core/constants.py`:
+*   **Values:** Uses the unified **Red** color range from `sys_core/core/constants.py`:
     *   Lower: `[0, 100, 100]`
     *   Upper: `[15, 255, 255]`
 *   **Logic:** The `read_table` function now actively scans for this color range and confirms it with OCR text ("Deal", "Back", "Sit").
 
 ### C. Fast Action Execution
-*   **File:** `gamble/tools/mouse_mover.py`
+*   **File:** `sys_core/tools/mouse_mover.py`
 *   **Change:** The `Imback` action now checks for `last_deal_me_in_pos`.
 *   **Improvement:** Instead of clicking a hardcoded config coordinate (which might be wrong) and waiting 0-3 seconds, it immediately clicks the exact detected pixel coordinates of the button.
 
@@ -45,7 +45,7 @@ This document details critical fixes and mechanics implemented to address issues
 **Solution:** Explicit "Premium Exemption" in safety floors.
 
 ### Logic Implementation
-*   **File:** `gamble/decisionmaker/decisionmaker.py`
+*   **File:** `sys_core/decisionmaker/decisionmaker.py`
 *   **Method:** `preflop_table_analyser`
 *   **Code:**
     ```python
@@ -67,7 +67,7 @@ This document details critical fixes and mechanics implemented to address issues
 
 ## 3. Multi-Table Runner Mechanics
 
-The `MultiTableRunner` (`gamble/multi_table_runner.py`) uses a specialized pipeline:
+The `MultiTableRunner` (`sys_core/engine.py`) uses a specialized pipeline:
 
 1.  **Fast Scan (`_fast_deal_me_in_scan`):**
     *   Takes **one** full-screen screenshot.
@@ -83,6 +83,6 @@ The `MultiTableRunner` (`gamble/multi_table_runner.py`) uses a specialized pipel
 
 ## 4. Key Configuration Files
 
-*   **`gamble/core/constants.py`**: The single source of truth for color ranges (HSV) and thresholds. Modify this file to tune detection sensitivity.
-*   **`gamble/ocr/table_reader.py`**: Controls the computer vision pipeline for reading buttons, cards, and pots.
-*   **`gamble/decisionmaker/decisionmaker.py`**: Contains the core strategy logic, GTO lookups, and the new safety exemptions.
+*   **`sys_core/core/constants.py`**: The single source of truth for color ranges (HSV) and thresholds. Modify this file to tune detection sensitivity.
+*   **`sys_core/ocr/table_reader.py`**: Controls the computer vision pipeline for reading buttons, cards, and pots.
+*   **`sys_core/decisionmaker/decisionmaker.py`**: Contains the core strategy logic, GTO lookups, and the new safety exemptions.

@@ -12,16 +12,16 @@ The multi-table runner is the most advanced version of the bot. It handles multi
 
 ```bash
 # Standard multi-table run
-python -m gamble.multi_table_runner
+python -m sys_core.engine
 
 # With Claude-enhanced decisions (High-IQ mode)
-python -m gamble.tools.claude_enhanced_runner
+python -m sys_core.tools.claude_enhanced_runner
 ```
 
 ### For Single-Table Testing
 If you want to test the bot on a single table with full GUI feedback:
 ```bash
-python gamble/main.py
+python sys_core/main.py
 ```
 
 ---
@@ -65,7 +65,7 @@ After a session, use the built-in analysis tools to see if the bot is winning an
 ### Run the Session Analyzer
 This tool reads your entire hand history and provides a professional poker report:
 ```bash
-python -m gamble.tools.session_analyzer
+python -m sys_core.tools.session_analyzer
 ```
 It will output:
 *   **VPIP / PFR / 3-Bet %:** Are we playing too loose or too tight?
@@ -73,7 +73,7 @@ It will output:
 *   **Big Pot Efficiency:** How much EV did we realize in pots > 50 BB?
 
 ### Check the Spot Tracker
-The `SpotTracker` (logged at the end of the `multi_table_runner` output) tells you how we are doing in specific tactical situations:
+The `SpotTracker` (logged at the end of the `engine` output) tells you how we are doing in specific tactical situations:
 ```text
 SPOT P&L: Facing 3-bet IP: +120.5 BB | Defending BB vs BTN: -45.0 BB
 ```
@@ -84,6 +84,6 @@ If a specific spot is heavily negative, the bot's `AdaptiveLearner` will automat
 ## 5. How to Tune the Bot
 
 If the bot is consistently missing a specific color (e.g., it doesn't see the "Fold" button on a new theme):
-1.  Open `gamble/core/constants.py`.
+1.  Open `sys_core/core/constants.py`.
 2.  Adjust the `HSV_RANGES` for that button.
 3.  The bot will reload these constants automatically on the next cycle.

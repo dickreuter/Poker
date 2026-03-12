@@ -1,5 +1,5 @@
 # COMPREHENSIVE ARCHITECTURE ANALYSIS
-## GGPoker Multi-Table Bot - Deep Dive
+## GGSystem Multi-Table Bot - Deep Dive
 
 Generated: Jan 5, 2026
 
@@ -20,7 +20,7 @@ The codebase has **42+ bot entry points** but shares core detection logic. The m
 ## 2. THE ONE COMMAND THAT WORKS
 
 ```bash
-python -m gamble.tools.cli_controller multi --max-tables 10 --input dynamic
+python -m sys_core.tools.cli_controller multi --max-tables 10 --input dynamic
 ```
 
 This uses:
@@ -36,7 +36,7 @@ This uses:
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                         MULTI-TABLE BOT FLOW                             │
-│                  python -m gamble.tools.cli_controller multi             │
+│                  python -m sys_core.tools.cli_controller multi             │
 └─────────────────────────────────────────────────────────────────────────┘
                                     │
                                     ▼
@@ -50,8 +50,8 @@ This uses:
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
 │  WINDOW DETECTION (AppleScript)                                         │
-│  File: gamble/core/window_finder.py                                     │
-│  - Finds GGPoker windows by process name "GGnet"                        │
+│  File: sys_core/core/window_finder.py                                     │
+│  - Finds GGSystem windows by process name "GGnet"                        │
 │  - Returns positions in POINTS (macOS coordinates)                      │
 │  - Filters for poker tables vs lobby                                    │
 └─────────────────────────────────────────────────────────────────────────┘
@@ -88,7 +88,7 @@ This uses:
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
 │  DECISION MAKING                                                         │
-│  File: gamble/decisionmaker/decisionmaker.py                            │
+│  File: sys_core/decisionmaker/decisionmaker.py                            │
 │                                                                          │
 │  Inputs:                                                                 │
 │  - t.mycards: ['AH', 'KS']                                              │
@@ -109,7 +109,7 @@ This uses:
                                     ▼
 ┌─────────────────────────────────────────────────────────────────────────┐
 │  ACTION EXECUTION                                                        │
-│  File: gamble/tools/mouse_mover.py                                      │
+│  File: sys_core/tools/mouse_mover.py                                      │
 │                                                                          │
 │  1. Map decision → button location (from detection)                     │
 │  2. Move mouse with jitter (realistic movement)                         │
@@ -148,25 +148,25 @@ The unified constants exist in `core/constants.py` but `tools/` modules have LOC
 
 **Impact**: Some bots find Fold button, others don't.
 
-**Fix Required**: All tools/ files should `from gamble.core.constants import HSV_RANGES`
+**Fix Required**: All tools/ files should `from sys_core.core.constants import HSV_RANGES`
 
 ### Issue #2: Files NOT Using Unified Constants
 
 **Files that should import from core/constants.py but don't:**
-- gamble/tools/ten_table_bot.py
-- gamble/tools/dynamic_table_finder.py
-- gamble/tools/auto_player.py
-- gamble/tools/ultimate_bot.py
-- gamble/tools/beast_mode.py
-- gamble/tools/button_detector.py
-- gamble/tools/smart_table_finder.py
+- sys_core/tools/ten_table_bot.py
+- sys_core/tools/dynamic_table_finder.py
+- sys_core/tools/auto_player.py
+- sys_core/tools/ultimate_bot.py
+- sys_core/tools/beast_mode.py
+- sys_core/tools/button_detector.py
+- sys_core/tools/smart_table_finder.py
 
 **Files correctly using unified constants:**
-- gamble/core/card_detector.py ✓
-- gamble/core/base_bot.py ✓
-- gamble/core/unified_learner.py ✓
-- gamble/core/button_detector.py ✓
-- gamble/core/window_finder.py ✓
+- sys_core/core/card_detector.py ✓
+- sys_core/core/base_bot.py ✓
+- sys_core/core/unified_learner.py ✓
+- sys_core/core/button_detector.py ✓
+- sys_core/core/window_finder.py ✓
 
 ### Issue #3: 6 Card Detection Systems
 
@@ -181,7 +181,7 @@ The unified constants exist in `core/constants.py` but `tools/` modules have LOC
 
 **Impact**: Each bot may use different detection, leading to inconsistent behavior.
 
-**Fix Required**: All bots should use `from gamble.core import CardDetector`
+**Fix Required**: All bots should use `from sys_core.core import CardDetector`
 
 ### Issue #4: 12 OCR Implementations
 
@@ -197,8 +197,8 @@ OCR is used in 12 different files with varying configurations:
 
 | Location | Purpose |
 |----------|---------|
-| gamble/core/button_detector.py | Unified, uses core/constants.py |
-| gamble/tools/button_detector.py | Older, has LOCAL HSV ranges |
+| sys_core/core/button_detector.py | Unified, uses core/constants.py |
+| sys_core/tools/button_detector.py | Older, has LOCAL HSV ranges |
 
 **Impact**: Which one gets used depends on import path.
 
@@ -247,7 +247,7 @@ Parsing:
 ### Template System
 
 - **Source**: MongoDB at `https://dickreuter.com:7778/`
-- **Table**: `Official GGPoker 6player`
+- **Table**: `Official GGSystem 6player`
 - **Cards**: 52 templates, 50x70 pixels each
 - **Format**: Base64-encoded PNG images
 - **Algorithm**: cv2.matchTemplate with TM_SQDIFF_NORMED
@@ -255,7 +255,7 @@ Parsing:
 
 ### 2-Color Deck Detection (FIXED)
 
-GGPoker uses STANDARD 2-color deck:
+GGSystem uses STANDARD 2-color deck:
 - Hearts = Red
 - Diamonds = Red
 - Spades = Black
@@ -433,12 +433,12 @@ Example:
 
 ### Start Bot
 ```bash
-python -m gamble.tools.cli_controller multi --max-tables 10
+python -m sys_core.tools.cli_controller multi --max-tables 10
 ```
 
 ### Stop Bot
 ```bash
-pkill -f "gamble.tools.cli_controller"
+pkill -f "sys_core.tools.cli_controller"
 ```
 
 ### Watch Logs

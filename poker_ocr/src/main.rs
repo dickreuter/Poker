@@ -12,7 +12,7 @@ use poker_ocr::output::game_state::GameState;
 use poker_ocr::regions::TableLayout;
 
 #[derive(Parser, Debug)]
-#[command(name = "poker_ocr", about = "Fast poker table OCR for GGPoker on macOS")]
+#[command(name = "poker_ocr", about = "Fast poker table OCR for GGSystem on macOS")]
 struct Args {
     /// Window ID (CGWindowID) to capture
     #[arg(long)]
@@ -30,7 +30,7 @@ struct Args {
     #[arg(long)]
     screenshot: Option<String>,
 
-    /// List all GGPoker windows and exit
+    /// List all GGSystem windows and exit
     #[arg(long)]
     list_windows: bool,
 
