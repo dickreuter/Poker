@@ -1557,8 +1557,18 @@ class MultiTableRunner:
         # If we reach here and still don't have cards, abort the decision to avoid
         # incorrect folds/checks.
         if not state.my_cards or len(state.my_cards) != 2:
-            log.warning(f"Aborting decision for {session.window.name}: No valid hole cards detected.")
+            # Fix: Temporal Consistency Check
+            if not hasattr(session, '_no_cards_count'): session._no_cards_count = 0
+            session._no_cards_count += 1
+            if session._no_cards_count < 2:
+                log.info(f"Blink Protection: No cards detected once for {session.window.name}, retrying next frame...")
+                return False
+            
+            log.warning(f"Aborting decision for {session.window.name}: No valid hole cards detected after {session._no_cards_count} frames.")
             return False
+        
+        # Reset protection if cards found
+        session._no_cards_count = 0
 
         # --- HAND CONFIRMATION (lightweight) ---
         # We already validated 2 cards exist above + did up to 4 retries.

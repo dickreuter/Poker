@@ -3204,6 +3204,7 @@ class Decision(DecisionBase):
                 'cards': t.mycards,
                 'board': t.cardsOnTable,
                 'equity': round(float(t.equity), 3),
+                'range_equity': round(float(getattr(t, 'range_equity', t.equity)), 3),
                 'decision': self.decision,
                 'pot_bb': round(float(t.totalPotValue) / t.bigBlind, 1) if t.bigBlind > 0 else 0,
                 'call_bb': round(float(t.minCall) / t.bigBlind, 1) if t.bigBlind > 0 else 0,
