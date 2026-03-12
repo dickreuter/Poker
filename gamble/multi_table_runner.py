@@ -339,8 +339,8 @@ class MultiTableRunner:
     """
 
     def __init__(self,
-                 max_tables: int = 10,
-                 target_tables: int = 1,
+                 max_tables: int = 12,
+                 target_tables: int = 9,
                  table_scraper_name: str = "Official GGPoker 6player",
                  dry_run: bool = False):
         self.max_tables = max_tables

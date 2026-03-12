@@ -1207,14 +1207,44 @@ class Decision(DecisionBase):
                 log.info(f"BAYESIAN FOLD PRESSURE: value={_banalysis['value_pct']:.0%}, "
                          f"adj=+{bayesian_adj:.3f} (conf={_exp_conf:.0%})")
 
-        # Fix 5: Multiway Pot Tightening (Tighten ~6% per extra opponent)
+        # --- Fix 5: Multiway Pot Tightening (Tighten ~6% per extra opponent) ---
         multiway_adj = 0.0
         other_players = getattr(t, 'other_active_players', 1)
         if other_players >= 2:
             multiway_adj = (other_players - 1) * 0.06
             log.info(f"MULTIWAY TIGHTENING: +{multiway_adj:.1%} (opponents={other_players})")
 
-        required_equity = max(pot_odds - implied_adj - blocker_adj + opp_call_adj - range_adj + spot_adj + sizing_adj + icm_adj + bayesian_adj + multiway_adj, 0.05)
+        # --- GG POKER META: Stack Dominance & Bounty Logic ---
+        stack_adj = 0.0
+        # If we cover the opponent (we have more BB), we 'win flips more' / bully
+        # Determine opponent stack from minCall + their remaining funds
+        opp_stack = t.minCall # Default to what they bet
+        if hasattr(t, 'other_players') and t.other_players:
+            # Try to find the raiser's stack
+            for op in t.other_players:
+                if op.get('status') == 1 and op.get('pot', 0) >= t.minCall * 0.8:
+                    opp_stack = op.get('pot', 0) + op.get('funds', 0)
+                    break
+        
+        if self.hero_stack_bb > opp_stack * 1.2:
+            # We dominate them: -5% equity required (bully/win flips)
+            stack_adj = -0.05
+            log.info(f"STACK DOMINANCE: Hero ({self.hero_stack_bb:.0f}) > Opp ({opp_stack:.0f}) -> -5% req equity")
+        elif self.hero_stack_bb < opp_stack * 0.8:
+            # They dominate us: +3% equity required (survival)
+            stack_adj = 0.03
+            log.info(f"STACK VULNERABILITY: Hero ({self.hero_stack_bb:.0f}) < Opp ({opp_stack:.0f}) -> +3% req equity")
+
+        # Bounty Logic: If we can KO them, call wider
+        bounty_adj = 0.0
+        is_tourney = any(kw in getattr(t, '_table_name', '') for kw in ('Spin', 'Gold', 'Tournament', 'SNG', 'MTT'))
+        if is_tourney and t.allInCallButton and self.hero_stack_bb > opp_stack:
+            # They are all-in and we cover them: Bounty value!
+            # Lower requirement by 5-10% depending on how much we cover
+            bounty_adj = -0.07 if self.hero_stack_bb > opp_stack * 1.5 else -0.04
+            log.info(f"BOUNTY BOOST: Potential KO opportunity -> {bounty_adj:+.1%} req equity")
+
+        required_equity = max(pot_odds - implied_adj - blocker_adj + opp_call_adj - range_adj + spot_adj + sizing_adj + icm_adj + bayesian_adj + multiway_adj + stack_adj + bounty_adj, 0.05)
 
         # --- Hand strength gate: discount equity when facing bets with weak hands ---
         # Monte Carlo equity is vs RANDOM hands. When opponent bets, their range is
@@ -1468,6 +1498,24 @@ class Decision(DecisionBase):
                 elif ptype == 'nit':
                     value_threshold = 0.80  # Nits only call with good hands — need more equity
                     log.info(f"OPP_ADAPT: value threshold 80% (vs nit)")
+
+            # --- GG POKER META: Stack Dominance Bully ---
+            # Lower value threshold if we cover the opponent (bully them)
+            # Find biggest opponent stack involved
+            max_opp_stack = 0
+            if hasattr(t, 'other_players'):
+                for op in t.other_players:
+                    if op.get('status') == 1:
+                        max_opp_stack = max(max_opp_stack, op.get('funds', 0) + op.get('pot', 0))
+            
+            if self.hero_stack_bb > max_opp_stack * 1.3:
+                # We cover everyone: lower value threshold by 5%
+                value_threshold -= 0.05
+                log.info(f"BULLY MODE: Lowering value threshold to {value_threshold:.2f} (we cover everyone)")
+            elif self.hero_stack_bb < max_opp_stack * 0.7:
+                # We are covered: raise value threshold by 3% (caution)
+                value_threshold += 0.03
+                log.info(f"CAUTION MODE: Raising value threshold to {value_threshold:.2f} (we are covered)")
 
             if t.equity >= value_threshold and t.checkButton:
                 # --- GEOMETRIC BET SIZING (Optimization) ---
