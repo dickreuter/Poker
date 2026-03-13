@@ -122,7 +122,7 @@ class GGSystemAutomation:
         self.screen_size: Tuple[int, int] = (3420, 2224)  # Retina
 
     def scan_windows(self) -> List[GGWindow]:
-        """Scan all GGSystem windows and classify them"""
+        """Scan all GGPoker windows and classify them"""
         script = '''
         tell application "System Events"
             set windowList to {}
@@ -164,7 +164,7 @@ class GGSystemAutomation:
                 except Exception as e:
                     log.debug(f"Error parsing window: {e}")
 
-        log.info(f"Found {len(self.windows)} GGSystem windows")
+        log.info(f"Found {len(self.windows)} GGPoker windows")
         return self.windows
 
     def _classify_window(self, window: GGWindow, screenshot: Image.Image) -> WindowType:
@@ -205,7 +205,7 @@ class GGSystemAutomation:
         return WindowType.UNKNOWN
 
     def get_main_lobby(self) -> Optional[GGWindow]:
-        """Get the main GGSystem lobby window"""
+        """Get the main GGPoker lobby window"""
         for win in self.windows:
             if win.window_type == WindowType.MAIN_LOBBY:
                 return win

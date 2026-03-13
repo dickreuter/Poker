@@ -373,7 +373,7 @@ class MyBot(BaseBot):
 
 | Module | What It Does | Replaces |
 |--------|--------------|----------|
-| `WindowFinder` | Find GGSystem windows via AppleScript | 3 different WindowFinder classes |
+| `WindowFinder` | Find GGPoker windows via AppleScript | 3 different WindowFinder classes |
 | `ButtonDetector` | HSV color + OCR fallback + self-healing | 7 button detection implementations |
 | `CardDetector` | Template + white region + self-healing | 6 card detection implementations |
 | `UnifiedLearner` | Thresholds + logging + self-healing | adaptive_learner + vision_analyzer + self_healer |
@@ -1181,9 +1181,9 @@ See `beast_mode.py:find_buttons()` for working implementation.
 ## TEMPLATE INFO
 
 All 52 card templates stored in MongoDB at `https://dickreuter.com:7778/`
-- Table name: `Official GGSystem 6player`
+- Table name: `Official GGPoker 6player`
 - Template size: 50x70 pixels (rank+suit corner)
-- GGSystem uses 4-color deck: spades=black, hearts=red, diamonds=blue, clubs=green
+- GGPoker uses 4-color deck: spades=black, hearts=red, diamonds=blue, clubs=green
 
 ---
 
@@ -1203,7 +1203,7 @@ All 52 card templates stored in MongoDB at `https://dickreuter.com:7778/`
 # Check if GGSystem is running
 osascript -e 'tell application "System Events" to name of processes' | grep -i gg
 
-# List all GGSystem windows
+# List all GGPoker windows
 osascript -e 'tell application "System Events" to tell process "GGnet" to name of every window'
 
 # Watch logs
@@ -1292,7 +1292,7 @@ pkill -f auto_player
 ```
 
 ### Registration Flow (manual)
-1. Focus GGSystem lobby
+1. Focus GGPoker lobby
 2. Click on Spin & Gold tile ($0.25 is first)
 3. Click "Play Now" button
 4. Wait for table to open (~8 seconds)
@@ -1312,7 +1312,7 @@ pkill -f auto_player
 
 ## GGSystem Window Names
 
-- Main lobby: `"GGSystem"`
+- Main lobby: `"GGPoker"`
 - System table: Contains keywords like `"Spin"`, `"Gold"`, `"Hold"`, `"Cash"`, `"Blinds"`, `"NL"`
 - Cashier: `"Cashier"`
 
@@ -1348,7 +1348,7 @@ end tell
 - **Diamonds**: Blue
 - **Clubs**: Green
 
-**NOTE**: GGSystem uses a 4-color deck. Previous sessions incorrectly claimed 2-color — THIS WAS WRONG! Confirmed Mar 7 2026 from live screenshots showing blue 10♦ and green A♣.
+**NOTE**: GGPoker uses a 4-color deck. Previous sessions incorrectly claimed 2-color — THIS WAS WRONG! Confirmed Mar 7 2026 from live screenshots showing blue 10♦ and green A♣.
 
 ---
 
@@ -1524,7 +1524,7 @@ coords = coords.replace('−', '-').replace('–', '-')
 **New file**: `sys_core/tools/dynamic_lobby_navigator.py`
 
 Features:
-- Finds GGSystem lobby window dynamically
+- Finds GGPoker lobby window dynamically
 - Detects Spin & Gold icon by gold/yellow color in top bar
 - Detects game tiles by color (gold, blue, purple, red, teal)
 - Detects Play Now buttons by white text on dark background
@@ -1647,7 +1647,7 @@ tail -f /Users/sebastian/Developer/Gamble/log/auto_player.log
 
 ### VERIFIED WORKING
 
-- ✅ Window detection (GGSystem lobby and tables)
+- ✅ Window detection (GGPoker lobby and tables)
 - ✅ Unicode minus fix (no more parseInt errors)
 - ✅ Spin & Gold icon detection (in top bar)
 - ✅ Game tile detection (colored tiles in grid)
@@ -1988,7 +1988,7 @@ pkill -f "python -m sys_core"
 # Check if GGSystem running
 pgrep -l GGnet
 
-# List GGSystem windows
+# List GGPoker windows
 osascript -e 'tell application "System Events" to tell process "GGnet" to name of every window'
 
 # Check learning stats
@@ -2306,10 +2306,10 @@ def check_fast_fold(self, h, p, mouse):
 
 **Root Cause**: `smart_card_detector.py` line 291 assumed 4-color deck:
 ```python
-# GGSystem uses 4-color deck: Spades=black, Hearts=red, Diamonds=blue, Clubs=green
+# GGPoker uses 4-color deck: Spades=black, Hearts=red, Diamonds=blue, Clubs=green
 ```
 
-But GGSystem uses **STANDARD 2-COLOR DECK**:
+But GGPoker uses **STANDARD 2-COLOR DECK**:
 - Hearts = Red, Diamonds = Red
 - Spades = Black, Clubs = Black
 
@@ -2317,7 +2317,7 @@ The detector was checking for blue pixels (diamonds in 4-color) but finding none
 
 **Fix Applied**: Changed to 2-color logic with OCR for suit distinction:
 ```python
-# GGSystem uses STANDARD 2-color deck:
+# GGPoker uses STANDARD 2-color deck:
 # - Hearts = Red, Diamonds = Red
 # - Spades = Black, Clubs = Black
 # We need to use suit SHAPE detection to distinguish H/D and S/C
@@ -2527,7 +2527,7 @@ cat data/learning/thresholds.json
 
 ## CRITICAL: 4-COLOR DECK (CONFIRMED Mar 7 2026)
 
-**GGSystem uses a 4-COLOR deck:**
+**GGPoker uses a 4-COLOR deck:**
 
 | Suit | Color | Symbol |
 |------|-------|--------|

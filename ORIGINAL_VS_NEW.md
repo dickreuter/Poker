@@ -81,7 +81,7 @@ These were added to extend the original for multi-table GGSystem:
 | `vision_analyzer.py` | Analyzes images, auto-fixes |
 | `self_healer.py` | Real-time detection fixing |
 
-#### UI Navigation (GGSystem specific)
+#### UI Navigation (GGPoker specific)
 | File | Purpose |
 |------|---------|
 | `dynamic_lobby_navigator.py` | OCR lobby navigation |
@@ -153,7 +153,7 @@ AdaptiveLearner → self-improving
 - Multi-table (up to 10)
 - Dynamic detection (no hardcoded coords)
 - Headless operation (no GUI needed)
-- GGSystem optimized
+- GGPoker optimized
 - Self-learning/healing
 
 ---

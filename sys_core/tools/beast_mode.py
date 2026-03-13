@@ -83,7 +83,7 @@ class BeastModeBot:
         self.start_time = None
 
     def find_all_windows(self) -> List[Dict]:
-        """Find all GGSystem windows via AppleScript"""
+        """Find all GGPoker windows via AppleScript"""
         script = '''
         tell application "System Events"
             if not (exists process "GGnet") then
@@ -295,12 +295,12 @@ class BeastModeBot:
         windows = self.find_all_windows()
         lobby = None
         for w in windows:
-            if w['name'] == 'GGSystem':
+            if w['name'] == 'GGPoker':
                 lobby = w
                 break
 
         if not lobby:
-            log.warning("GGSystem lobby not found")
+            log.warning("GGPoker lobby not found")
             return False
 
         # Focus lobby

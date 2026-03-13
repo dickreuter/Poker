@@ -36,7 +36,7 @@ pub fn get_window_info(window_id: u32) -> Result<WindowInfo> {
         .ok_or_else(|| anyhow!("Window {} not found", window_id))
 }
 
-/// List all GGSystem table windows.
+/// List all GGPoker table windows.
 pub fn list_ggpoker_windows() -> Result<Vec<WindowListEntry>> {
     let all = list_all_windows()?;
     let poker_keywords = ["Blinds", "Spin", "Gold", "Rush", "Cash", "Hold", "Omaha", "NL", "PLO"];

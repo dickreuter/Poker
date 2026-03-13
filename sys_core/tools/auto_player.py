@@ -83,7 +83,7 @@ class AutoPlayer:
         try:
             from sys_core.tools.mongo_manager import MongoManager
             mongo = MongoManager()
-            self.table_dict = mongo.get_table("Official GGSystem 6player")
+            self.table_dict = mongo.get_table("Official GGPoker 6player")
             if self.table_dict:
                 log.info(f"Loaded {len(self.table_dict)} templates")
                 return True

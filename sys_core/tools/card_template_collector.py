@@ -29,7 +29,7 @@ ALL_CARDS = [r.lower() + s for r in RANKS for s in SUITS]
 class CardTemplateCollector:
     """Collects card templates from live gameplay."""
 
-    def __init__(self, table_name="Official GGSystem 6player"):
+    def __init__(self, table_name="Official GGPoker 6player"):
         self.table_name = table_name
         self.collected = {}  # card_key -> PIL Image
         self.save_dir = "/tmp/poker_cards"

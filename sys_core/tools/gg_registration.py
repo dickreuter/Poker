@@ -427,12 +427,12 @@ class SmartUIAutomation:
 
 class WindowManager:
     """
-    Manage GGSystem windows using macOS AppleScript.
+    Manage GGPoker windows using macOS AppleScript.
     """
 
     @staticmethod
     def get_all_windows() -> List[Dict]:
-        """Get all GGSystem windows with positions."""
+        """Get all GGPoker windows with positions."""
         script = '''
         tell application "System Events"
             if not (exists process "GGnet") then
@@ -478,11 +478,11 @@ class WindowManager:
                             'h_px': int(coords[3]) * RETINA_SCALE,
                         })
 
-            log.debug(f"Found {len(windows)} GGSystem windows")
+            log.debug(f"Found {len(windows)} GGPoker windows")
             return windows
 
         except subprocess.TimeoutExpired:
-            log.error("Timeout getting GGSystem windows")
+            log.error("Timeout getting GGPoker windows")
             return []
         except Exception as e:
             log.error(f"Error getting windows: {e}")
@@ -490,12 +490,12 @@ class WindowManager:
 
     @staticmethod
     def find_main_lobby() -> Optional[Dict]:
-        """Find the main GGSystem lobby window."""
+        """Find the main GGPoker lobby window."""
         windows = WindowManager.get_all_windows()
 
         for win in windows:
             name = win['name'].lower()
-            # Main lobby is usually just "GGSystem" or similar
+            # Main lobby is usually just "GGPoker" or similar
             if name == 'ggpoker' or 'lobby' in name:
                 log.info(f"Found main lobby: {win['name']}")
                 return win
@@ -555,7 +555,7 @@ class WindowManager:
     def activate_ggpoker() -> bool:
         """Activate GGSystem application."""
         script = '''
-        tell application "GGSystem" to activate
+        tell application "GGPoker" to activate
         '''
         try:
             subprocess.run(['osascript', '-e', script], capture_output=True, timeout=3)

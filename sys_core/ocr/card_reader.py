@@ -1,4 +1,4 @@
-"""Dynamic OCR card reader for GGSystem tables.
+"""Dynamic OCR card reader for GGPoker tables.
 
 Finds player hole cards by detecting card regions dynamically,
 then reads rank via pytesseract OCR and suit via 4-color HSV analysis.
@@ -345,7 +345,7 @@ def _find_cards_fixed_position(img_np: np.ndarray, W: int, H: int) -> Optional[D
     """Find cards using fixed percentage-based positions (no blob detection).
 
     This is the last-resort fallback for same-suit pairs where blob detection
-    merges both cards into one blob. Uses the known GGSystem card positions
+    merges both cards into one blob. Uses the known GGPoker card positions
     from local_table_config.py.
 
     Only succeeds if both card regions have enough white text pixels
@@ -1953,7 +1953,7 @@ if __name__ == '__main__':
 
     if len(sys.argv) < 2:
         print("Usage: python -m sys_core.ocr.card_reader <screenshot.png> [screenshot2.png ...]")
-        print("  Reads player hole cards from GGSystem table screenshots.")
+        print("  Reads player hole cards from GGPoker table screenshots.")
         sys.exit(1)
 
     for path in sys.argv[1:]:

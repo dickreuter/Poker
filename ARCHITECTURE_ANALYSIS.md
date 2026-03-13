@@ -51,7 +51,7 @@ This uses:
 ┌─────────────────────────────────────────────────────────────────────────┐
 │  WINDOW DETECTION (AppleScript)                                         │
 │  File: sys_core/core/window_finder.py                                     │
-│  - Finds GGSystem windows by process name "GGnet"                        │
+│  - Finds GGPoker windows by process name "GGnet"                        │
 │  - Returns positions in POINTS (macOS coordinates)                      │
 │  - Filters for poker tables vs lobby                                    │
 └─────────────────────────────────────────────────────────────────────────┘
@@ -247,7 +247,7 @@ Parsing:
 ### Template System
 
 - **Source**: MongoDB at `https://dickreuter.com:7778/`
-- **Table**: `Official GGSystem 6player`
+- **Table**: `Official GGPoker 6player`
 - **Cards**: 52 templates, 50x70 pixels each
 - **Format**: Base64-encoded PNG images
 - **Algorithm**: cv2.matchTemplate with TM_SQDIFF_NORMED
@@ -255,7 +255,7 @@ Parsing:
 
 ### 2-Color Deck Detection (FIXED)
 
-GGSystem uses STANDARD 2-color deck:
+GGPoker uses STANDARD 2-color deck:
 - Hearts = Red
 - Diamonds = Red
 - Spades = Black

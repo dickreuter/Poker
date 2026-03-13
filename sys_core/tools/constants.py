@@ -74,7 +74,7 @@ def get_ggpoker_window_sizes():
         return windows
 
     except Exception as e:
-        log.debug(f"Could not get GGSystem windows: {e}")
+        log.debug(f"Could not get GGPoker windows: {e}")
         return []
 
 
@@ -84,7 +84,7 @@ def get_dynamic_crop_size(window_size=None):
 
     Args:
         window_size: Optional (width, height) tuple. If not provided,
-                    will try to detect from GGSystem windows.
+                    will try to detect from GGPoker windows.
 
     Returns:
         (width, height) tuple in pixels

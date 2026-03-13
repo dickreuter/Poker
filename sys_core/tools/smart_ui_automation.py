@@ -304,13 +304,13 @@ def with_retry(max_attempts: int = 3, delay: float = 0.5):
 # ============================================================================
 
 class WindowFinder:
-    """Finds GGSystem windows using macOS AppleScript."""
+    """Finds GGPoker windows using macOS AppleScript."""
 
     @staticmethod
     @with_logging
     def find_ggpoker_windows() -> List[Dict]:
         """
-        Find all GGSystem windows using macOS AppleScript.
+        Find all GGPoker windows using macOS AppleScript.
         Returns list of dicts with position/size in POINTS.
         """
         script = '''
@@ -364,7 +364,7 @@ class WindowFinder:
             return windows
 
         except subprocess.TimeoutExpired:
-            log.error("Timeout finding GGSystem windows")
+            log.error("Timeout finding GGPoker windows")
             return []
         except Exception as e:
             log.error(f"Error finding windows: {e}")

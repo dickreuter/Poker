@@ -149,7 +149,7 @@ class UltimateBot:
         try:
             from sys_core.tools.mongo_manager import MongoManager
             mongo = MongoManager()
-            table_dict = mongo.get_table("Official GGSystem 6player")
+            table_dict = mongo.get_table("Official GGPoker 6player")
 
             if not table_dict:
                 log.warning("Could not load card templates from MongoDB")
@@ -182,7 +182,7 @@ class UltimateBot:
     # ========================================================================
 
     def find_all_windows(self) -> List[TableWindow]:
-        """Find all GGSystem windows using macOS AppleScript"""
+        """Find all GGPoker windows using macOS AppleScript"""
         script = '''
         tell application "System Events"
             if not (exists process "GGnet") then
@@ -231,7 +231,7 @@ class UltimateBot:
     def get_lobby(self) -> Optional[TableWindow]:
         """Get GGSystem main lobby window"""
         for w in self.find_all_windows():
-            if w.name == 'GGSystem':
+            if w.name == 'GGPoker':
                 return w
         return None
 

@@ -262,7 +262,7 @@ def detect_cards_simple(screenshot: Image.Image, table_window=None) -> List[str]
 
     # Get table dict for templates
     mongo = MongoManager()
-    table_dict = mongo.get_table("Official GGSystem 6player")
+    table_dict = mongo.get_table("Official GGPoker 6player")
 
     detector = DynamicCardDetector(table_dict)
 
@@ -303,7 +303,7 @@ if __name__ == '__main__':
 
     # Get template
     mongo = MongoManager()
-    table_dict = mongo.get_table("Official GGSystem 6player")
+    table_dict = mongo.get_table("Official GGPoker 6player")
 
     # Create detector
     detector = DynamicCardDetector(table_dict)

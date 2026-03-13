@@ -29,7 +29,7 @@ Systemstars:
 
 GGSystem:
 ~~~~~~~~~~~
-Make sure your GGSystem setup looks as follows when using it with the Official GGSystem Table:
+Make sure your GGPoker setup looks as follows when using it with the Official GGSystem Table:
 
 .. figure:: doc/ggpk2.png
 

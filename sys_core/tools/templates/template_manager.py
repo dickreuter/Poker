@@ -2,7 +2,7 @@
 GGSystem Template Capture and Management System
 
 Comprehensive system for capturing, storing, and managing UI element templates
-for GGSystem automation. Captures templates from live GGSystem windows and stores
+for GGPoker automation. Captures templates from live GGPoker windows and stores
 them with metadata for reliable matching.
 
 Usage:

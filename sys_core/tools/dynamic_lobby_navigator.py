@@ -98,7 +98,7 @@ class DetectedElement:
 
 @dataclass
 class LobbyWindow:
-    """GGSystem lobby window"""
+    """GGPoker lobby window"""
     name: str
     x_pt: int  # Position in points (screen coords for clicking)
     y_pt: int
@@ -117,7 +117,7 @@ class LobbyWindow:
 
 class DynamicLobbyNavigator:
     """
-    Navigate GGSystem lobby using dynamic color detection.
+    Navigate GGPoker lobby using dynamic color detection.
 
     All UI elements are found by their distinctive colors:
     - Spin & Gold icon: Gold/yellow colored icon in top bar
@@ -185,14 +185,14 @@ class DynamicLobbyNavigator:
         self.detected_elements: Dict[str, DetectedElement] = {}
 
     def find_lobby_window(self) -> Optional[LobbyWindow]:
-        """Find the main GGSystem lobby window using AppleScript"""
+        """Find the main GGPoker lobby window using AppleScript"""
         script = '''
         tell application "System Events"
             if not (exists process "GGnet") then return ""
             tell process "GGnet"
                 repeat with w in windows
                     set winName to name of w as text
-                    if winName is "GGSystem" then
+                    if winName is "GGPoker" then
                         set winPos to position of w
                         set winSize to size of w
                         return winName & "###" & (item 1 of winPos as text) & "," & (item 2 of winPos as text) & "," & (item 1 of winSize as text) & "," & (item 2 of winSize as text)
@@ -637,7 +637,7 @@ class DynamicLobbyNavigator:
 
         # Find and capture lobby
         if not self.find_lobby_window():
-            log.error("Could not find GGSystem lobby")
+            log.error("Could not find GGPoker lobby")
             return False
 
         lobby_img = self.capture_lobby()
@@ -1022,7 +1022,7 @@ class DynamicLobbyNavigator:
         # 1. Find and focus the lobby
         lobby_window = self.find_lobby_window()
         if not lobby_window:
-            log.error("Could not find GGSystem lobby window")
+            log.error("Could not find GGPoker lobby window")
             return False
 
         # Focus the LOBBY window specifically (not just the process)
@@ -1033,7 +1033,7 @@ class DynamicLobbyNavigator:
                 tell process "GGnet"
                     set frontmost to true
                     repeat with w in windows
-                        if name of w is "GGSystem" then
+                        if name of w is "GGPoker" then
                             perform action "AXRaise" of w
                         end if
                     end repeat
@@ -1327,7 +1327,7 @@ def test_detection():
     # Find lobby
     lobby = navigator.find_lobby_window()
     if not lobby:
-        print("ERROR: GGSystem lobby not found. Is it open?")
+        print("ERROR: GGPoker lobby not found. Is it open?")
         return False
 
     print(f"Lobby: {lobby.name}")

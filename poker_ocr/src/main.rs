@@ -30,7 +30,7 @@ struct Args {
     #[arg(long)]
     screenshot: Option<String>,
 
-    /// List all GGSystem windows and exit
+    /// List all GGPoker windows and exit
     #[arg(long)]
     list_windows: bool,
 

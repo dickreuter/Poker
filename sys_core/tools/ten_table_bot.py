@@ -190,11 +190,11 @@ class TableSession:
 # =============================================================================
 
 class WindowFinder:
-    """Finds GGSystem windows using AppleScript."""
+    """Finds GGPoker windows using AppleScript."""
 
     @staticmethod
     def find_all_windows() -> List[TableInfo]:
-        """Find all GGSystem windows."""
+        """Find all GGPoker windows."""
         script = '''
         tell application "System Events"
             if not (exists process "GGnet") then return ""
@@ -635,7 +635,7 @@ class VisualDetector:
     def _detect_suit_by_color(self, card_img: Image.Image) -> Optional[str]:
         """Detect card suit by color.
 
-        GGSystem uses STANDARD 2-COLOR DECK (NOT 4-color!):
+        GGPoker uses STANDARD 2-COLOR DECK (NOT 4-color!):
         - Hearts = Red, Diamonds = Red
         - Spades = Black, Clubs = Black
         """
@@ -1041,7 +1041,7 @@ class TenTableBot:
             try:
                 from sys_core.tools.mongo_manager import MongoManager
                 mongo = MongoManager()
-                self.table_dict = mongo.get_table("Official GGSystem 6player")
+                self.table_dict = mongo.get_table("Official GGPoker 6player")
                 self.detector = VisualDetector(self.table_dict)
                 log.info("Loaded table templates from MongoDB")
             except Exception as e:

@@ -308,7 +308,7 @@ class SmartCardDetector:
         hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
 
         # Detect suit by color
-        # GGSystem uses STANDARD 2-color deck:
+        # GGPoker uses STANDARD 2-color deck:
         # - Hearts = Red, Diamonds = Red
         # - Spades = Black, Clubs = Black
         # We need to use suit SHAPE detection to distinguish H/D and S/C
@@ -363,7 +363,7 @@ class SmartCardDetector:
             # Crop the rank corner (top-left area where rank is displayed)
             w, h = card_img.size
 
-            # On GGSystem cards, rank is in top-left corner
+            # On GGPoker cards, rank is in top-left corner
             # Crop roughly top 45% height and left 45% width
             rank_x2 = int(w * 0.45)
             rank_y2 = int(h * 0.45)

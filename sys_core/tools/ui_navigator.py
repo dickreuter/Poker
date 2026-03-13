@@ -70,7 +70,7 @@ class UIElement:
 
 @dataclass
 class LobbyWindow:
-    """Represents the GGSystem lobby window."""
+    """Represents the GGPoker lobby window."""
     name: str
     x_pt: int
     y_pt: int
@@ -331,14 +331,14 @@ class UINavigator:
             log.debug("UINavigator: Adaptive learner not available")
 
     def _find_lobby_window(self) -> Optional[LobbyWindow]:
-        """Find the GGSystem lobby window."""
+        """Find the GGPoker lobby window."""
         script = '''
         tell application "System Events"
             if not (exists process "GGnet") then return ""
             tell process "GGnet"
                 repeat with w in windows
                     set winName to name of w as text
-                    if winName contains "GGSystem" or winName contains "Lobby" then
+                    if winName contains "GGPoker" or winName contains "Lobby" then
                         set winPos to position of w
                         set winSize to size of w
                         return winName & "###" & (item 1 of winPos) & "," & (item 2 of winPos) & "," & (item 1 of winSize) & "," & (item 2 of winSize)
@@ -812,7 +812,7 @@ class UINavigator:
 
         # Find lobby
         if not self._find_lobby_window():
-            log.error("GGSystem lobby not found!")
+            log.error("GGPoker lobby not found!")
             return False
 
         # Ensure GGSystem is focused

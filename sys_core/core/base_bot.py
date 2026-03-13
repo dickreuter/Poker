@@ -145,7 +145,7 @@ class BaseBot(ABC):
         return self.window_finder.find_poker_tables()
 
     def find_lobby(self) -> Optional[TableWindow]:
-        """Find the GGSystem lobby window."""
+        """Find the GGPoker lobby window."""
         return self.window_finder.find_lobby_window()
 
     def capture_screenshot(self) -> Image.Image:

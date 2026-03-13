@@ -30,7 +30,7 @@ class ButtonDetector:
     """
     Detect GGSystem action buttons by their color signatures.
 
-    GGSystem uses consistent colors for buttons:
+    GGPoker uses consistent colors for buttons:
     - Fold: Red/Orange (#E05555-ish)
     - Call/Check: Green (#55AA55-ish)
     - Bet/Raise: Blue (#5555E0-ish)

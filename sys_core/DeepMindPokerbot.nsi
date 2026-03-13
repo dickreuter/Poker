@@ -43,14 +43,14 @@ UninstPage instfiles
 ;General
 
   ;Name and file
-  Name "DeepMindSystembot"
-  OutFile "..\DeepMindSystembot_winstaller.exe"
+  Name "DeepMindPokerbot"
+  OutFile "..\DeepMindPokerbot_winstaller.exe"
 
   
 
   
   ;Get installation folder from registry if available
-  InstallDirRegKey HKCU "Software\DeepMindSystembot" ""
+  InstallDirRegKey HKCU "Software\DeepMindPokerbot" ""
 
   ;Request application privileges for Windows Vista
   RequestExecutionLevel admin ;Require admin rights on NT6+ (When UAC is turned on)
@@ -69,7 +69,7 @@ SectionIn RO
 
   
   ;Store installation folder
-  WriteRegStr HKCU "Software\DeepMindSystembot" "" $INSTDIR
+  WriteRegStr HKCU "Software\DeepMindPokerbot" "" $INSTDIR
   
   ;create desktop shortcut
   CreateShortCut "$DESKTOP\${MUI_PRODUCT}.lnk" "$INSTDIR\${MUI_FILE}" "" "$INSTDIR\icon.ico"

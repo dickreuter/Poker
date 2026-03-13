@@ -1,5 +1,5 @@
 """
-Dynamic Table Finder - Finds GGSystem tables and UI elements regardless of screen position.
+Dynamic Table Finder - Finds GGPoker tables and UI elements regardless of screen position.
 
 This module replaces hardcoded template coordinates with dynamic detection using:
 1. macOS AppleScript for window position detection
@@ -65,7 +65,7 @@ BUTTON_COLORS = {
 
 
 class TableWindow:
-    """Represents a detected GGSystem table window."""
+    """Represents a detected GGPoker table window."""
 
     def __init__(self, name: str, x_pt: int, y_pt: int, w_pt: int, h_pt: int):
         self.name = name
@@ -124,13 +124,13 @@ class TableWindow:
 
 
 class DynamicTableFinder:
-    """Finds GGSystem tables and UI elements dynamically."""
+    """Finds GGPoker tables and UI elements dynamically."""
 
     def __init__(self):
         self._last_screenshot: Optional[Image.Image] = None
 
     def find_all_tables(self) -> List[TableWindow]:
-        """Find all GGSystem windows using macOS AppleScript."""
+        """Find all GGPoker windows using macOS AppleScript."""
         script = '''
         tell application "System Events"
             if not (exists process "GGnet") then
@@ -171,10 +171,10 @@ class DynamicTableFinder:
             return windows
 
         except subprocess.TimeoutExpired:
-            log.error("Timeout finding GGSystem windows")
+            log.error("Timeout finding GGPoker windows")
             return []
         except Exception as e:
-            log.error(f"Error finding GGSystem windows: {e}")
+            log.error(f"Error finding GGPoker windows: {e}")
             return []
 
     def find_poker_tables(self) -> List[TableWindow]:

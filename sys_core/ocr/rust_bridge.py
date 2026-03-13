@@ -194,7 +194,7 @@ class RustOCRBridge:
         return states
 
     def list_windows(self) -> List[Dict]:
-        """List all GGSystem windows.
+        """List all GGPoker windows.
 
         Returns:
             List of dicts with window_id, name, x, y, width, height

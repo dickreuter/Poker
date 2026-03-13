@@ -97,7 +97,7 @@ class MasterBot:
         try:
             from sys_core.tools.mongo_manager import MongoManager
             mongo = MongoManager()
-            self._table_dict = mongo.get_table("Official GGSystem 6player")
+            self._table_dict = mongo.get_table("Official GGPoker 6player")
             log.info("Loaded table templates from MongoDB")
             return True
         except Exception as e:

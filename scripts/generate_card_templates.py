@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Generate 52 card templates matching GGSystem card corner style.
+Generate 52 card templates matching GGPoker card corner style.
 
 Creates synthetic rank+suit corner images that match the existing templates
 found in sys_core/tests/test_cards/ (20x43 or 29x43 pixels, white background,

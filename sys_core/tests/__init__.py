@@ -25,7 +25,7 @@ parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 
 
-def init_table(file, round_number=0, strategy='Default1', table_scraper_name='Official GGSystem 6player'):
+def init_table(file, round_number=0, strategy='Default1', table_scraper_name='Official GGPoker 6player'):
     # LOG_FILENAME = 'testing.log'
     logger = logging.getLogger('tester')
     gui_signals = MagicMock()

@@ -81,9 +81,9 @@ class SystemServiceTray:
 
     def check_status(self):
         try:
-            # Check if engine is running
+            # Check if engine is running (check for module name or filename)
             output = subprocess.check_output(["ps", "aux"]).decode()
-            is_running = "sys_core.engine" in output
+            is_running = ("sys_core.engine" in output) or ("engine.py" in output)
             
             if is_running:
                 self.status_action.setText("Status: ACTIVE")
@@ -97,11 +97,12 @@ class SystemServiceTray:
             self.status_action.setText("Status: Error")
 
     def start_service(self):
-        subprocess.Popen(["./run_sys.sh"], cwd=self.project_root)
-        QTimer.singleShot(1000, self.check_status)
+        # Use run_sys.sh which handles absolute paths
+        subprocess.run(["./run_sys.sh"], cwd=self.project_root, check=False)
+        QTimer.singleShot(2000, self.check_status)
 
     def stop_service(self):
-        subprocess.Popen(["./stop_sys.sh"], cwd=self.project_root)
+        subprocess.run(["./stop_sys.sh"], cwd=self.project_root, check=False)
         QTimer.singleShot(1000, self.check_status)
 
     def quit_app(self):

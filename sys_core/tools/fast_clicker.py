@@ -42,7 +42,7 @@ def activate_ggpoker_window():
     try:
         # Use direct application activation - more reliable than System Events
         script = '''
-        tell application "GGSystem" to activate
+        tell application "GGPoker" to activate
         delay 0.2
         '''
         subprocess.run(['osascript', '-e', script], capture_output=True, timeout=3)

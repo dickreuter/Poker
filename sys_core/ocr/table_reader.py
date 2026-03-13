@@ -1359,7 +1359,7 @@ OPPONENT_CARD_REGIONS_6MAX = [
 def _count_opponents_in_hand(img: np.ndarray, W: int, H: int) -> int:
     """Count opponents with visible card backs (actually in the hand).
 
-    GGSystem card backs are dark red (~RGB 80,20,20).
+    GGPoker card backs are dark red (~RGB 80,20,20).
     In HSV: H=0-15, S>60, V=30-130 (darker than buttons which have V>130).
     Only players still in the hand show card backs. Folded seats are empty.
 

@@ -26,7 +26,7 @@ class SpinGoldGrinder:
     Automated Spin & Gold tournament grinding.
 
     This is the BEAST MODE automation:
-    1. Scans for GGSystem windows
+    1. Scans for GGPoker windows
     2. Navigates to Spin & Gold lobby
     3. Registers for $1 tournament
     4. Waits for table to open

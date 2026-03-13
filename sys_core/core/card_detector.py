@@ -359,7 +359,7 @@ class CardDetector:
         """Identify suit by dominant color in region."""
         hsv = cv2.cvtColor(region, cv2.COLOR_BGR2HSV)
 
-        # GGSystem uses STANDARD 2-COLOR DECK (NOT 4-color!)
+        # GGPoker uses STANDARD 2-COLOR DECK (NOT 4-color!)
         # Hearts = Red, Diamonds = Red
         # Spades = Black, Clubs = Black
         # We detect RED vs BLACK first, then use OCR for specific suit
@@ -457,7 +457,7 @@ class CardDetector:
         """
         Check if cards appear to be face-down (showing card backs).
 
-        GGSystem card backs are red with a pattern.
+        GGPoker card backs are red with a pattern.
         """
         hsv = cv2.cvtColor(search_region, cv2.COLOR_BGR2HSV)
 

@@ -341,7 +341,7 @@ class MultiTableRunner:
     def __init__(self,
                  max_tables: int = 12,
                  target_tables: int = 9,
-                 table_scraper_name: str = "Official GGSystem 6player",
+                 table_scraper_name: str = "Official GGPoker 6player",
                  dry_run: bool = False):
         self.max_tables = max_tables
         self.target_tables = target_tables
@@ -373,7 +373,7 @@ class MultiTableRunner:
         self.strategy.read_strategy()
 
         # Override strategy for Rush & Cash 6-max GTO:
-        # GGSystem displays ALL values in BB units (pot, stacks, call/raise amounts).
+        # GGPoker displays ALL values in BB units (pot, stacks, call/raise amounts).
         # Set bigBlind=1.0 so strategy math stays consistent with displayed values.
         s = self.strategy.selected_strategy
         s['bigBlind'] = 1.0  # Everything is in BB units on screen
@@ -647,7 +647,7 @@ class MultiTableRunner:
         cols = self.tile_columns
         y_off = self.tile_y_offset
         # Single AppleScript: iterate all windows, assign grid positions by index
-        # Exclude lobby ("GGSystem") and cashier windows
+        # Exclude lobby ("GGPoker") and cashier windows
         # Also raise all table windows to front after tiling
         script = f'''
         tell application "System Events"
@@ -656,7 +656,7 @@ class MultiTableRunner:
                 set tableWindows to {{}}
                 repeat with aWin in windows
                     set winName to name of aWin as text
-                    if winName is not "GGSystem" and winName is not "Cashier" then
+                    if winName is not "GGPoker" and winName is not "Cashier" then
                         if winName contains "Rush" or winName contains "Cash" or winName contains "Spin" or winName contains "Hold" or winName contains "NL" or winName contains "Blinds" or winName contains "Table" or winName contains "Gold" then
                             set colNum to idx mod {cols}
                             set rowNum to idx div {cols}
@@ -698,7 +698,7 @@ class MultiTableRunner:
 
     def find_poker_windows(self) -> List[TableWindow]:
         """
-        Find all open GGSystem table windows using Quartz (macOS native).
+        Find all open GGPoker table windows using Quartz (macOS native).
         Bypasses Accessibility permission issues that plague AppleScript.
         Returns list of TableWindow objects.
         """
@@ -708,17 +708,17 @@ class MultiTableRunner:
                 Quartz.kCGWindowListOptionOnScreenOnly | Quartz.kCGWindowListExcludeDesktopElements,
                 Quartz.kCGNullWindowID
             )
-            
-            # GGSystem can use these names for the owner process
-            target_owners = ('GGSystem', 'GGnet')
+
+            # GGPoker can use these names for the owner process
+            target_owners = ('GGPoker', 'GGnet')
             keywords = ("Spin", "Hold", "NL", "Blinds", "Table", "Highlight", "Gold", "$")
-            
+
             windows = []
             for w in window_list:
                 owner = w.get('kCGWindowOwnerName', '')
                 if owner not in target_owners:
                     continue
-                
+
                 name = w.get('kCGWindowName', '')
                 bounds = w.get('kCGWindowBounds', {})
                 x = int(bounds.get('X', 0))
@@ -726,22 +726,23 @@ class MultiTableRunner:
                 width = int(bounds.get('Width', 0))
                 height = int(bounds.get('Height', 0))
                 wid = int(w.get('kCGWindowNumber', 0))
-                
+
                 # Filter for poker tables (not lobby, chat, or mini-widgets)
                 is_poker_table = False
                 if any(k in name for k in keywords):
                     is_poker_table = True
 
                 # EXPLICIT LOBBY EXCLUSION: Skip the main window
-                if name == "GGSystem" or name == "GGnet" or "Lobby" in name:
+                if name == "GGPoker" or name == "GGnet" or "Lobby" in name:
                     is_poker_table = False
 
                 # Size-based fallback (Lobby is usually 1200x740, tables vary)
                 # Tables are typically > 700 width and > 500 height
                 if is_poker_table is False and width > 750 and width < 2000 and height > 500:
                     # Double check it's not the lobby before accepting by size
-                    if name != "GGSystem" and name != "GGnet":
-                        is_poker_table = True                
+                    if name != "GGPoker" and name != "GGnet":
+                        is_poker_table = True
+                
                 # Filter out pure-black overlays or 0-size ghosts
                 if is_poker_table and width > 0 and height > 0:
                     windows.append(TableWindow(
@@ -1304,7 +1305,7 @@ class MultiTableRunner:
 
         Returns: 'mtt', 'spin', 'rush', 'cash'
 
-        Recognizes all GGSystem formats:
+        Recognizes all GGPoker formats:
           MTT: WSOP, Express, GTD, Bounty, GGMasters, Satellite, Freeroll,
                Flip & Go, Battle Royale, Daily Hyper, Step, Freezeout,
                Multi-Flight, any "Blinds X | Y" level format
@@ -1322,7 +1323,7 @@ class MultiTableRunner:
         if 'RUSH' in name:
             return 'rush'
 
-        # MTT indicators — comprehensive GGSystem tournament keywords
+        # MTT indicators — comprehensive GGPoker tournament keywords
         _mtt_kw = (
             'GTD', 'STEP', 'WSOP', 'EXPRESS', 'BOUNTY', 'FREEZEOUT',
             'MY RANK', 'SATELLITE', 'FREEROLL', 'GGMASTERS', 'BATTLE ROYALE',
@@ -1452,7 +1453,7 @@ class MultiTableRunner:
             log.debug(f"Using cached postflop state (no cards yet): board={state.board_cards}")
         else:
             # Preflop or no cached state — re-capture with animation delay
-            _time.sleep(0.10)  # Brief delay for card animation (GGSystem deals in ~100ms)
+            _time.sleep(0.10)  # Brief delay for card animation (GGPoker deals in ~100ms)
             state = self.capture_game_state(session)
 
         # Clear stale cache
@@ -4451,7 +4452,7 @@ def main():
     parser.add_argument('--max-tables', type=int, default=10, help='Maximum tables to play')
     parser.add_argument('--target-tables', type=int, default=0,
                        help='Target number of tables (0 = auto-detect from open windows)')
-    parser.add_argument('--table-name', type=str, default='Official GGSystem 6player',
+    parser.add_argument('--table-name', type=str, default='Official GGPoker 6player',
                        help='Table scraper name from MongoDB')
     parser.add_argument('--no-standardize', action='store_true',
                        help='Skip table resizing/tiling on startup')

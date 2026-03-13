@@ -20,7 +20,7 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
 
-def export_templates(output_dir: str, table_name: str = "Official GGSystem 6player"):
+def export_templates(output_dir: str, table_name: str = "Official GGPoker 6player"):
     """Export card templates from MongoDB to PNG files.
 
     Each template is saved as {RANK}{SUIT}.png, e.g., AH.png, KS.png, 10D.png
@@ -93,7 +93,7 @@ def main():
                         default='poker_ocr/assets/card_templates/',
                         help='Output directory for template PNGs')
     parser.add_argument('--table', type=str,
-                        default='Official GGSystem 6player',
+                        default='Official GGPoker 6player',
                         help='MongoDB table name')
 
     args = parser.parse_args()

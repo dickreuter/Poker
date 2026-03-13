@@ -26,11 +26,11 @@ from sys_core.ocr.card_reader import read_player_cards
 
 
 def capture_ggpoker_table():
-    """Capture a live GGSystem table window."""
+    """Capture a live GGPoker table window."""
     import subprocess
     from PIL import ImageGrab
 
-    # Find GGSystem windows
+    # Find GGPoker windows
     script = '''
     tell application "System Events"
         tell process "GGnet"
@@ -55,7 +55,7 @@ def capture_ggpoker_table():
 
     output = result.stdout.strip()
     if not output:
-        print("No GGSystem table windows found")
+        print("No GGPoker table windows found")
         return None, None
 
     # Parse first window

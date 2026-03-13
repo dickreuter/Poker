@@ -46,7 +46,7 @@ jobs:
       - name: Create DMG
         run: |
           cd sys_core/dist/main
-          create-dmg DeepMindSystembot.dmg .
+          create-dmg DeepMindPokerbot.dmg .
 
       - name: Create Release for MacOS
         id: create_release
@@ -54,7 +54,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: DeepermindSystembot-mac-${{ github.run_number }}
+          tag_name: DeepermindPokerbot-mac-${{ github.run_number }}
           release_name: Mac Release ${{ github.run_number }}
           draft: false
           prerelease: false
@@ -65,7 +65,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: /Users/runner/work/System/System/sys_core/dist/main/DeepMindSystembot.dmg
-          asset_name: DeepMindSystembot.dmg
+          asset_path: /Users/runner/work/System/System/sys_core/dist/main/DeepMindPokerbot.dmg
+          asset_name: DeepMindPokerbot.dmg
           asset_content_type: application/octet-stream
   

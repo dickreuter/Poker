@@ -206,7 +206,7 @@ impl CardDetector {
         }
 
         // Step 4: Suit verification via color
-        // GGSystem uses 2-color deck: Hearts/Diamonds=Red, Spades/Clubs=Black
+        // GGPoker uses 2-color deck: Hearts/Diamonds=Red, Spades/Clubs=Black
         let verified_code = verify_suit_by_color(rgba, rect, &best_code);
         let confidence = 1.0 - best_score / thresholds.template_match_threshold;
 

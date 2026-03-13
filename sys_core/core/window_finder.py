@@ -14,7 +14,7 @@ Usage:
 
     finder = WindowFinder()
 
-    # Get all GGSystem windows
+    # Get all GGPoker windows
     all_windows = finder.find_all_windows()
 
     # Get only poker table windows (excludes lobby)
@@ -90,7 +90,7 @@ class TableWindow:
         Active tables have "Blinds X | Y" in the name, e.g.:
         - "Spin & Gold $0.25 - Blinds 15 | 30" -> IS a table
         - "Highlight for $0.25 x40,000 Table!" -> NOT a table (just prize popup)
-        - "GGSystem" -> NOT a table (lobby)
+        - "GGPoker" -> NOT a table (lobby)
         """
         # If it has "Blinds", it's definitely an active table
         if 'Blinds' in self.name:
@@ -105,8 +105,8 @@ class TableWindow:
         return any(kw in self.name for kw in POKER_TABLE_KEYWORDS)
 
     def is_lobby(self) -> bool:
-        """Check if this is the main GGSystem lobby window"""
-        return self.name == "GGSystem"
+        """Check if this is the main GGPoker lobby window"""
+        return self.name == "GGPoker"
 
     def capture(self, full_screenshot: Optional[Image.Image] = None) -> Image.Image:
         """
@@ -152,7 +152,7 @@ class TableWindow:
 
 class WindowFinder:
     """
-    Find GGSystem windows on macOS using AppleScript.
+    Find GGPoker windows on macOS using AppleScript.
 
     This is the UNIFIED implementation that all bots should use.
     """
@@ -162,10 +162,10 @@ class WindowFinder:
 
     def find_all_windows(self) -> List[TableWindow]:
         """
-        Find all GGSystem windows.
+        Find all GGPoker windows.
 
         Returns:
-            List of TableWindow objects for all GGSystem windows.
+            List of TableWindow objects for all GGPoker windows.
         """
         script = f'''
         tell application "System Events"
@@ -287,7 +287,7 @@ class WindowFinder:
 
     def find_lobby_window(self) -> Optional[TableWindow]:
         """
-        Find the main GGSystem lobby window.
+        Find the main GGPoker lobby window.
 
         Returns:
             TableWindow for lobby, or None if not found.

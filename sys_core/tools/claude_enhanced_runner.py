@@ -148,7 +148,7 @@ class ClaudeEnhancedRunner:
                  max_tables: int = 4,
                  use_claude_decisions: bool = True,
                  use_claude_vision_fallback: bool = True,
-                 table_config_name: str = "Official GGSystem 6player"):
+                 table_config_name: str = "Official GGPoker 6player"):
         """
         Initialize the enhanced runner.
 
@@ -194,7 +194,7 @@ class ClaudeEnhancedRunner:
         self.start_time = None
 
     def find_poker_windows(self) -> List[TableWindow]:
-        """Find all GGSystem table windows using AppleScript."""
+        """Find all GGPoker table windows using AppleScript."""
         script = '''
         tell application "System Events"
             if not (exists process "GGnet") then

@@ -1,5 +1,5 @@
 """
-Smart Table Finder - Detect GGSystem tables without relying on templates
+Smart Table Finder - Detect GGPoker tables without relying on templates
 
 This module finds poker tables by detecting:
 1. Green felt color (the table surface)
@@ -41,7 +41,7 @@ class DetectedTable:
 
 class SmartTableFinder:
     """
-    Find GGSystem tables by visual features instead of template matching.
+    Find GGPoker tables by visual features instead of template matching.
     """
 
     # Green felt HSV color range (wider to catch table)
@@ -233,7 +233,7 @@ class SmartTableFinder:
         Find the table that needs action (has buttons visible).
 
         Uses a fallback chain:
-        1. AppleScript to find GGSystem windows (most reliable)
+        1. AppleScript to find GGPoker windows (most reliable)
         2. Green felt detection (fallback)
 
         Returns:
@@ -265,7 +265,7 @@ class SmartTableFinder:
         return tables[0] if tables else None
 
     def _find_table_via_applescript(self) -> Optional[DetectedTable]:
-        """Find GGSystem table using macOS AppleScript - most reliable method."""
+        """Find GGPoker table using macOS AppleScript - most reliable method."""
         import subprocess
 
         script = '''

@@ -12,7 +12,7 @@ Usage:
 
     session = TableSession(
         table_id=0,
-        table_dict=mongo.get_table("Official GGSystem 6player"),
+        table_dict=mongo.get_table("Official GGPoker 6player"),
         strategy=strategy,
         window=(14, 850, 1200, 800)
     )
@@ -470,7 +470,7 @@ if __name__ == "__main__":
 
     print("Loading table template...")
     mongo = MongoManager()
-    table_dict = mongo.get_table("Official GGSystem 6player")
+    table_dict = mongo.get_table("Official GGPoker 6player")
 
     print("Creating session manager...")
     manager = TableSessionManager(table_dict, None)

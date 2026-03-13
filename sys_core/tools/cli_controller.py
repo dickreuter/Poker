@@ -748,7 +748,7 @@ def start_bot(table_name=None, strategy_name=None, auto_act=True, input_method=I
     return bot
 
 
-def test_table_detection(table_name="Official GGSystem 6player"):
+def test_table_detection(table_name="Official GGPoker 6player"):
     """Test if the bot can find the poker table"""
     from sys_core.tools.claude_table_setup import ClaudeTableSetup
 
@@ -786,7 +786,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.command == "test":
-        test_table_detection(args.table or "Official GGSystem 6player")
+        test_table_detection(args.table or "Official GGPoker 6player")
 
     elif args.command == "multi":
         # Multi-table mode

@@ -48,7 +48,7 @@ jobs:
 
       - name: Run NSIS
         run: |
-          makensis -V3 poker\DeepMindSystembot.nsi
+          makensis -V3 poker\DeepMindPokerbot.nsi
          
       - name: Create Release
         id: create_release
@@ -56,7 +56,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: DeepermindSystembot-${{ github.run_number }}
+          tag_name: DeepermindPokerbot-${{ github.run_number }}
           release_name: Windows Release ${{ github.run_number }}
           draft: false
           prerelease: false
@@ -67,6 +67,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./DeepMindSystembot_winstaller.exe
-          asset_name: DeepMindSystembot_winstaller.exe
+          asset_path: ./DeepMindPokerbot_winstaller.exe
+          asset_name: DeepMindPokerbot_winstaller.exe
           asset_content_type: application/octet-stream

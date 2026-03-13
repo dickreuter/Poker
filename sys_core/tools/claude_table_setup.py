@@ -5,7 +5,7 @@ Bypasses the buggy UI and directly configures templates via API.
 Usage (from Claude):
     from sys_core.tools.claude_table_setup import ClaudeTableSetup
 
-    setup = ClaudeTableSetup("Official GGSystem 6player")
+    setup = ClaudeTableSetup("Official GGPoker 6player")
     setup.auto_setup()  # Full automated setup
     # or step by step:
     setup.take_and_analyze_screenshot()
@@ -34,7 +34,7 @@ class ClaudeTableSetup:
     Directly interfaces with the template API, bypassing the buggy UI.
     """
 
-    def __init__(self, table_name="Official GGSystem 6player"):
+    def __init__(self, table_name="Official GGPoker 6player"):
         self.table_name = table_name
         self.api_url = "https://dickreuter.com:7778/"
         self.screenshot = None

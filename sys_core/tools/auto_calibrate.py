@@ -1,7 +1,7 @@
 """
 Auto-Calibration System for GGSystem Utility
 
-This module automatically detects GGSystem windows, captures templates,
+This module automatically detects GGPoker windows, captures templates,
 finds button positions, and validates card detection - eliminating
 manual configuration and template matching issues.
 
@@ -25,12 +25,12 @@ log = logging.getLogger(__name__)
 
 
 class WindowFinder:
-    """Find GGSystem windows using macOS APIs instead of template matching."""
+    """Find GGPoker windows using macOS APIs instead of template matching."""
 
     @staticmethod
     def find_all_windows():
         """
-        Find all GGSystem table windows via macOS Accessibility API.
+        Find all GGPoker table windows via macOS Accessibility API.
         Returns list of (x, y, width, height) tuples.
         """
         script = '''
@@ -195,7 +195,7 @@ class ButtonDetector:
 
 class AutoCalibrator:
     """
-    Automatic calibration system that detects GGSystem setup
+    Automatic calibration system that detects GGPoker setup
     without relying on fragile template matching.
     """
 
@@ -223,11 +223,11 @@ class AutoCalibrator:
         print("=" * 50)
 
         # Step 1: Find windows
-        print("\n1. Finding GGSystem windows...")
+        print("\n1. Finding GGPoker windows...")
         windows = self.window_finder.find_all_windows()
 
         if not windows:
-            print("   ERROR: No GGSystem windows found!")
+            print("   ERROR: No GGPoker windows found!")
             print("   Make sure GGSystem is running and you're at a table.")
             return None
 
@@ -360,7 +360,7 @@ def quick_test():
             print(f"  Table {i + 1}: position=({x}, {y}) size={w}x{h}")
         return True
     else:
-        print("FAILED: No GGSystem windows found")
+        print("FAILED: No GGPoker windows found")
         return False
 
 

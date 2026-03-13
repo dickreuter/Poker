@@ -187,7 +187,7 @@ class GameState:
         # --- BB normalization ---
         # DecisionMaker expects everything in BB units.
         #
-        # GGSystem client has "BB display" enabled — ALL table types (Rush & Cash,
+        # GGPoker client has "BB display" enabled — ALL table types (Rush & Cash,
         # Spin & Gold, tournaments) show values in BB on screen.  OCR values are
         # therefore ALWAYS in BB already.  No normalization needed.
         _to_bb = lambda v: v

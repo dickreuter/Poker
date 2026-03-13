@@ -95,7 +95,7 @@ class SpinGrinder:
             tell process "GGnet"
                 repeat with w in windows
                     set winName to name of w as text
-                    if winName contains "GGSystem" then
+                    if winName contains "GGPoker" then
                         set winPos to position of w
                         set winSize to size of w
                         return (item 1 of winPos as text) & "," & (item 2 of winPos as text) & "," & (item 1 of winSize as text) & "," & (item 2 of winSize as text)
