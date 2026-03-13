@@ -22,12 +22,12 @@ jobs:
 
       - name: Run PyInstaller for MacOS
         run: |
-          cd poker
+          cd sys_core
           pyinstaller --noconfirm --clean --distpath dist/main main.spec
 
       - name: Prepare distribution for MacOS
         run: |
-          cd poker
+          cd sys_core
           mkdir -p dist/main/log
           mkdir -p dist/main/pics
           mkdir -p dist/main/log/screenshots
@@ -40,12 +40,12 @@ jobs:
 
       - name: List contents of PyInstaller output directory
         run: |
-          cd poker/dist/main
+          cd sys_core/dist/main
           ls
 
       - name: Create DMG
         run: |
-          cd poker/dist/main
+          cd sys_core/dist/main
           create-dmg DeepMindSystembot.dmg .
 
       - name: Create Release for MacOS
@@ -65,7 +65,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: /Users/runner/work/System/System/dist/main/DeepMindSystembot.dmg
+          asset_path: /Users/runner/work/System/System/sys_core/dist/main/DeepMindSystembot.dmg
           asset_name: DeepMindSystembot.dmg
           asset_content_type: application/octet-stream
   
