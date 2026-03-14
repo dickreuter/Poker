@@ -138,6 +138,7 @@ class PokerBotApp(rumps.App):
                     with open(log_path, 'r') as f:
                         lines = f.readlines()
                         decisions = sum(1 for l in lines if 'DECISION' in l)
+                        ms_count = sum(1 for l in lines if 'MULTI-STREET' in l)
                         tables = 0
                         for l in reversed(lines[-50:]):
                             if 'Found' in l and 'poker tables' in l:
@@ -146,7 +147,8 @@ class PokerBotApp(rumps.App):
                                 except:
                                     pass
                                 break
-                        self.status_item.title = f"Status: {decisions} hands | {tables} tables | {self.strategy.upper()}"
+                        ms_str = f" | MS:{ms_count}" if ms_count > 0 else ""
+                        self.status_item.title = f"Status: {decisions} hands | {tables} tables | {self.strategy.upper()}{ms_str}"
             except:
                 pass
             time.sleep(5)

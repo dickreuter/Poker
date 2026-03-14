@@ -1926,6 +1926,21 @@ class MultiTableRunner:
                                     f" cbet={'Y' if _ctx.is_cbet_spot else 'N'}"
                                     f" mw={'Y' if _ctx.is_multiway else 'N'}]")
 
+                # Multi-street planning info
+                _ms_str = ""
+                _ms_info = getattr(d, '_multi_street_info', None)
+                if _ms_info is None:
+                    # Check if compute_ev_decision stored it in the result
+                    _ev_res = getattr(d, '_last_ev_result', None)
+                    if _ev_res and isinstance(_ev_res, dict):
+                        _ms_info = _ev_res.get('multi_street')
+                if _ms_info and isinstance(_ms_info, dict):
+                    _ms_str = (f" | PLAN: check_ev={_ms_info.get('total_ev_check', 0):+.1f}"
+                               f" bet_ev={_ms_info.get('total_ev_bet', 0):+.1f}"
+                               f" ({_ms_info.get('simulations', 0)} runouts,"
+                               f" {_ms_info.get('time_ms', 0):.0f}ms,"
+                               f" improves {_ms_info.get('improvement_rate', 0):.0%})")
+
                 log.info(f"DECISION: {mouse_target} | cards={state.my_cards} "
                          f"board={state.board_cards} | pot={state.pot:.1f} call={state.call_amount:.1f} "
                          f"| equity={equity_val:.3f} abs_eq={abs_eq_val:.3f} "
@@ -1933,7 +1948,7 @@ class MultiTableRunner:
                          f"| callLim={d.finalCallLimit:.1f} betLim={d.finalBetLimit:.1f} "
                          f"| stage={t.gameStage} pos={getattr(state, 'position', '?')}"
                          f" opp={t.other_active_players} init={'Y' if t.other_player_has_initiative else 'N'}"
-                         f"{_ctx_str}{blocker_str}{opp_str}{tourney_log}")
+                         f"{_ctx_str}{blocker_str}{opp_str}{tourney_log}{_ms_str}")
 
                 # Track P&L (stack changes between hands)
                 try:

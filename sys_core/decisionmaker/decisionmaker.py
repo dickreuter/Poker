@@ -1393,10 +1393,370 @@ class Decision(DecisionBase):
 
         log.info(f"EV DECISION: {best_action.name} (EV={best_ev:+.2f}) — {reasoning}")
 
+        # ── Multi-street planning (flop and turn only) ───────────────────
+        # After computing single-street EV, run multi-street simulation.
+        # If it disagrees with single-street, trust the multi-street planner.
+        multi_street_info = None
+        try:
+            if street == 'flop' and can_raise and len(board) == 3:
+                ms = self._plan_multi_street(
+                    t, mycards, board, v_range, pot, my_stack, call_amount,
+                    fold_equity=fold_equity, equity=equity, ptype=ptype,
+                )
+                if ms is not None:
+                    multi_street_info = ms
+                    result['multi_street'] = ms
+                    ms_best = ms['best_action']
+
+                    # If multi-street disagrees with single-street on bet vs check
+                    if ms_best in ('bet', 'raise') and best_action in (
+                            DecisionTypes.fold, DecisionTypes.check, DecisionTypes.call):
+                        if ms['total_ev_bet'] > ms['total_ev_check'] + 0.5:
+                            # Multi-street says bet is significantly better
+                            if raise_amount > 0:
+                                if raise_amount >= my_stack * 0.85:
+                                    best_action = DecisionTypes.bet4
+                                elif bet_frac >= 0.60:
+                                    best_action = DecisionTypes.bet3
+                                elif bet_frac >= 0.30:
+                                    best_action = DecisionTypes.bet2
+                                else:
+                                    best_action = DecisionTypes.bet1
+                                result['action'] = best_action
+                                log.info(f"MULTI-STREET OVERRIDE: {ms_best} "
+                                         f"(bet_ev={ms['total_ev_bet']:+.2f} > "
+                                         f"check_ev={ms['total_ev_check']:+.2f})")
+
+                    elif ms_best in ('check', 'fold') and best_action in (
+                            DecisionTypes.bet1, DecisionTypes.bet2,
+                            DecisionTypes.bet3, DecisionTypes.bet4):
+                        if ms['total_ev_check'] > ms['total_ev_bet'] + 0.5:
+                            best_action = DecisionTypes.check if t.checkButton else DecisionTypes.call
+                            result['action'] = best_action
+                            log.info(f"MULTI-STREET OVERRIDE: {ms_best} "
+                                     f"(check_ev={ms['total_ev_check']:+.2f} > "
+                                     f"bet_ev={ms['total_ev_bet']:+.2f})")
+
+            elif street == 'turn' and can_raise and len(board) == 4:
+                ms = self._plan_multi_street(
+                    t, mycards, board, v_range, pot, my_stack, call_amount,
+                    fold_equity=fold_equity, equity=equity, ptype=ptype,
+                )
+                if ms is not None:
+                    multi_street_info = ms
+                    result['multi_street'] = ms
+                    ms_best = ms['best_action']
+
+                    if ms_best in ('bet', 'raise') and best_action in (
+                            DecisionTypes.fold, DecisionTypes.check, DecisionTypes.call):
+                        if ms['total_ev_bet'] > ms['total_ev_check'] + 0.3:
+                            if raise_amount > 0:
+                                if raise_amount >= my_stack * 0.85:
+                                    best_action = DecisionTypes.bet4
+                                elif bet_frac >= 0.60:
+                                    best_action = DecisionTypes.bet3
+                                elif bet_frac >= 0.30:
+                                    best_action = DecisionTypes.bet2
+                                else:
+                                    best_action = DecisionTypes.bet1
+                                result['action'] = best_action
+                                log.info(f"MULTI-STREET OVERRIDE (turn): {ms_best} "
+                                         f"(bet_ev={ms['total_ev_bet']:+.2f})")
+
+                    elif ms_best in ('check', 'fold') and best_action in (
+                            DecisionTypes.bet1, DecisionTypes.bet2,
+                            DecisionTypes.bet3, DecisionTypes.bet4):
+                        if ms['total_ev_check'] > ms['total_ev_bet'] + 0.3:
+                            best_action = DecisionTypes.check if t.checkButton else DecisionTypes.call
+                            result['action'] = best_action
+                            log.info(f"MULTI-STREET OVERRIDE (turn): {ms_best} "
+                                     f"(check_ev={ms['total_ev_check']:+.2f})")
+
+        except Exception as e:
+            log.debug(f"Multi-street planning failed: {e}")
+
+        if multi_street_info:
+            log.info(f"MULTI-STREET PLAN: {multi_street_info['simulations']} runouts "
+                     f"in {multi_street_info['time_ms']:.0f}ms | "
+                     f"bet_ev={multi_street_info['total_ev_bet']:+.2f} "
+                     f"check_ev={multi_street_info['total_ev_check']:+.2f} | "
+                     f"improves {multi_street_info['improvement_rate']:.0%} of turns | "
+                     f"plan={multi_street_info['best_action']}")
+
         # Store for EV gate — prevents legacy betting from overriding
         self._ev_decision_action = best_action
 
+        # Store result on self so engine.py can access multi_street info
+        self._last_ev_result = result
+
         return result
+
+    # ══════════════════════════════════════════════════════════════════════
+    # MULTI-STREET PLANNING ENGINE
+    #
+    # Simulates future runouts using eval7 to compute total expected value
+    # across all remaining streets, replacing single-street EV evaluation
+    # with full hand planning.
+    # ══════════════════════════════════════════════════════════════════════
+
+    def _plan_multi_street(self, t, hero_cards, board, villain_range_str,
+                           pot, stack, call_amount,
+                           fold_equity=0.30, equity=0.50, ptype='unknown'):
+        """Monte Carlo simulation over future streets.
+
+        Samples random turn+river runouts, computes equity at each decision
+        point using eval7, and returns the action plan with highest total
+        expected value across all remaining streets.
+
+        Args:
+            t: Table state object
+            hero_cards: ['AH', 'KS']
+            board: ['QH', 'JD', '2C'] (3 or 4 cards)
+            villain_range_str: eval7 range string
+            pot: current pot
+            stack: hero's stack
+            call_amount: amount to call
+            fold_equity: estimated fold equity for betting
+            equity: current street equity
+            ptype: opponent type string
+
+        Returns:
+            dict with planning results, or None if planning not possible.
+        """
+        import time as _time
+
+        try:
+            import eval7
+        except ImportError:
+            return None
+
+        t_start = _time.monotonic()
+
+        from sys_core.decisionmaker.range_equity import _convert_card, get_range_equity
+
+        hero_e7 = [_convert_card(c) for c in hero_cards if c]
+        hero_e7 = [c for c in hero_e7 if c is not None]
+        board_e7 = [_convert_card(c) for c in board if c]
+        board_e7 = [c for c in board_e7 if c is not None]
+
+        if len(hero_e7) != 2 or len(board_e7) < 3:
+            return None
+
+        # River (5 cards) or preflop (0 cards): no future streets to simulate
+        if len(board_e7) >= 5:
+            return None
+
+        try:
+            villain_hr = eval7.HandRange(villain_range_str)
+            if len(villain_hr) == 0:
+                return None
+        except Exception:
+            return None
+
+        # Build deck minus known cards
+        all_cards = eval7.Deck().cards
+        dead = set(str(c) for c in hero_e7 + board_e7)
+        remaining = [c for c in all_cards if str(c) not in dead]
+
+        if len(remaining) < 2:
+            return None
+
+        is_flop = len(board_e7) == 3
+        is_turn = len(board_e7) == 4
+        n_sims = 150 if is_flop else 100  # Fewer sims on turn (only 1 street)
+
+        bb = t.bigBlind if t.bigBlind > 0 else 1.0
+
+        # Bet sizing for simulation
+        bet_frac = 0.55  # Default bet ~55% pot
+        wetness = self._board_wetness(board)
+        if wetness < 0.3:
+            bet_frac = 0.33
+        elif wetness > 0.7:
+            bet_frac = 0.75
+
+        # Range narrowing: villain calls our bet with tighter range
+        re = get_range_equity()
+        call_range_str = re.estimate_villain_range(
+            position='CO', action='call',
+            player_type=ptype, street='flop' if is_flop else 'turn',
+            bet_size_pct=bet_frac,
+        )
+        try:
+            call_range_hr = eval7.HandRange(call_range_str)
+        except Exception:
+            call_range_hr = villain_hr
+
+        # ── Monte Carlo simulation ───────────────────────────────────────
+        ev_bet_total = 0.0
+        ev_check_total = 0.0
+        improvement_count = 0
+        n_valid = 0
+        current_eq = equity
+
+        random.shuffle(remaining)
+
+        for sim_i in range(n_sims):
+            try:
+                # Sample future cards
+                if is_flop:
+                    # Need turn + river
+                    if len(remaining) < 2:
+                        break
+                    idx1 = sim_i % len(remaining)
+                    idx2 = (sim_i * 7 + 13) % len(remaining)
+                    if idx2 == idx1:
+                        idx2 = (idx1 + 1) % len(remaining)
+                    turn_card = remaining[idx1]
+                    river_card = remaining[idx2]
+                    future_board_turn = board_e7 + [turn_card]
+                    future_board_river = board_e7 + [turn_card, river_card]
+                else:
+                    # Turn: only need river
+                    idx1 = sim_i % len(remaining)
+                    river_card = remaining[idx1]
+                    future_board_river = board_e7 + [river_card]
+                    future_board_turn = board_e7  # Already on turn
+
+                # ── Compute equity at each future street ────────────────
+
+                if is_flop:
+                    # Equity on turn (after dealing turn card)
+                    try:
+                        turn_eq = float(eval7.py_hand_vs_range_monte_carlo(
+                            hero_e7, villain_hr, future_board_turn, 3000))
+                    except Exception:
+                        turn_eq = equity
+
+                    # Equity on river (exact)
+                    try:
+                        river_eq = float(eval7.py_hand_vs_range_exact(
+                            hero_e7, villain_hr, future_board_river))
+                    except Exception:
+                        river_eq = turn_eq
+
+                    # Track improvement
+                    if turn_eq > current_eq + 0.05:
+                        improvement_count += 1
+
+                else:
+                    # On turn: just compute river equity
+                    turn_eq = equity
+                    try:
+                        river_eq = float(eval7.py_hand_vs_range_exact(
+                            hero_e7, villain_hr, future_board_river))
+                    except Exception:
+                        river_eq = equity
+
+                    if river_eq > current_eq + 0.05:
+                        improvement_count += 1
+
+                # ── Plan A: BET now ────────────────────────────────────
+                # Villain folds with fold_equity, or calls with tighter range
+                bet_size = bet_frac * pot
+                bet_size = min(bet_size, stack)
+
+                # If villain folds
+                ev_bet_fold = fold_equity * pot
+
+                # If villain calls: pot grows, we continue
+                new_pot_after_call = pot + bet_size * 2
+                remaining_stack = stack - bet_size
+
+                if is_flop:
+                    # Turn decision: barrel or check based on turn equity
+                    # We barrel good turns (equity improved), check bad turns
+                    if turn_eq >= 0.45:
+                        # Barrel turn
+                        turn_bet = bet_frac * new_pot_after_call
+                        turn_bet = min(turn_bet, remaining_stack)
+                        turn_fe = fold_equity * 0.85  # Less fold equity on later streets
+
+                        # Villain folds turn
+                        ev_turn_fold = turn_fe * new_pot_after_call
+
+                        # Villain calls turn: river showdown
+                        river_pot = new_pot_after_call + turn_bet * 2
+                        ev_turn_call = (1.0 - turn_fe) * (river_eq * river_pot - turn_bet)
+
+                        ev_when_called_flop = ev_turn_fold + ev_turn_call
+                    else:
+                        # Check turn, go to showdown (or fold to bet)
+                        # Simplified: check through, river showdown
+                        ev_when_called_flop = river_eq * new_pot_after_call - 0
+                else:
+                    # On turn: villain calls, river showdown
+                    ev_when_called_flop = river_eq * new_pot_after_call - 0
+
+                ev_bet_this = ev_bet_fold + (1.0 - fold_equity) * (
+                    ev_when_called_flop - bet_size)
+
+                # ── Plan B: CHECK now ──────────────────────────────────
+                if is_flop:
+                    # Free card on turn, then decide on turn
+                    if turn_eq >= 0.50:
+                        # Good turn: bet turn
+                        turn_bet_check = bet_frac * pot
+                        turn_bet_check = min(turn_bet_check, stack)
+                        turn_fe_check = fold_equity * 0.90
+
+                        ev_check_bet = turn_fe_check * pot + (1.0 - turn_fe_check) * (
+                            river_eq * (pot + turn_bet_check * 2) - turn_bet_check)
+                        ev_check_this = ev_check_bet
+                    else:
+                        # Bad turn: check through to river
+                        ev_check_this = river_eq * pot
+                else:
+                    # On turn: check = go to river for free
+                    ev_check_this = river_eq * pot
+
+                ev_bet_total += ev_bet_this
+                ev_check_total += ev_check_this
+                n_valid += 1
+
+            except Exception:
+                continue
+
+        elapsed_ms = (_time.monotonic() - t_start) * 1000
+
+        if n_valid < 20:
+            return None
+
+        avg_ev_bet = ev_bet_total / n_valid
+        avg_ev_check = ev_check_total / n_valid
+        improvement_rate = improvement_count / n_valid
+
+        # Normalize to BB
+        avg_ev_bet_bb = avg_ev_bet / bb
+        avg_ev_check_bb = avg_ev_check / bb
+
+        if avg_ev_bet_bb > avg_ev_check_bb:
+            best = 'bet'
+        else:
+            best = 'check'
+
+        # Build reasoning
+        if is_flop:
+            n_improve = improvement_count
+            n_total_cards = len(remaining)
+            reasoning = (f"{'Flush draw' if self.outs >= 8 else 'Draw' if self.outs >= 4 else 'Hand'} "
+                         f"has {'+'  if avg_ev_bet_bb > 0 else ''}EV bet line "
+                         f"despite {equity:.0%} current equity. "
+                         f"{n_improve}/{n_valid} turns improve equity >50%. "
+                         f"Plan: {'BET flop -> BARREL good turns' if best == 'bet' else 'CHECK flop -> free card'}")
+        else:
+            reasoning = (f"River simulation: bet_ev={avg_ev_bet_bb:+.1f} BB, "
+                         f"check_ev={avg_ev_check_bb:+.1f} BB across {n_valid} runouts.")
+
+        return {
+            'best_action': best,
+            'total_ev_bet': avg_ev_bet_bb,
+            'total_ev_check': avg_ev_check_bb,
+            'improvement_rate': improvement_rate,
+            'reasoning': reasoning,
+            'simulations': n_valid,
+            'time_ms': elapsed_ms,
+        }
 
     def _get_opp(self):
         """Get opponent profile dict (safe accessor)."""

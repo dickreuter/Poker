@@ -423,6 +423,104 @@ class OpponentModeler:
             if len(p._shown_hands) > 50:
                 p._shown_hands = p._shown_hands[-50:]
 
+    def record_showdown_with_equity(self, player_id, cards, board_cards,
+                                     actions_by_street=None, won=False):
+        """Record opponent's shown cards with equity computed at each decision point.
+
+        Uses eval7 to calculate what equity the opponent had when they took each
+        action. This data feeds into future range estimation improvements.
+
+        Args:
+            player_id: Opponent identifier
+            cards: ['7S', '2C'] — opponent's shown hole cards
+            board_cards: ['AH', 'KD', '5C', '9S', '2H'] — full board
+            actions_by_street: {
+                'preflop': 'call',
+                'flop': 'call',
+                'turn': 'bet',
+                'river': 'call'
+            }
+            won: Whether opponent won the hand
+        """
+        if not cards or len(cards) < 2 or not board_cards:
+            self.record_showdown(player_id, won=won, cards=cards)
+            return
+
+        p = self._get(player_id)
+        p.went_to_showdown += 1
+        if won:
+            p.won_at_showdown += 1
+
+        if actions_by_street is None:
+            actions_by_street = {}
+
+        # Compute equity at each street using eval7
+        equity_data = []
+        try:
+            from sys_core.decisionmaker.range_equity import _convert_card, get_range_equity
+            import eval7
+
+            hero_e7 = [_convert_card(c) for c in cards if c]
+            hero_e7 = [c for c in hero_e7 if c is not None]
+            board_e7 = [_convert_card(c) for c in board_cards if c]
+            board_e7 = [c for c in board_e7 if c is not None]
+
+            if len(hero_e7) == 2 and len(board_e7) >= 3:
+                re = get_range_equity()
+                # Typical opponent range to compute equity against
+                default_range = '22+, A2s+, K9s+, QTs+, JTs, T9s, A8o+, KTo+, QJo'
+
+                # Flop equity (3 cards)
+                if len(board_e7) >= 3 and 'flop' in actions_by_street:
+                    flop_board = board_e7[:3]
+                    flop_eq = re.equity_vs_range(cards, board_cards[:3],
+                                                  default_range, iterations=5000)
+                    equity_data.append({
+                        'street': 'flop',
+                        'action': actions_by_street['flop'],
+                        'equity': round(flop_eq, 3),
+                    })
+
+                # Turn equity (4 cards)
+                if len(board_e7) >= 4 and 'turn' in actions_by_street:
+                    turn_eq = re.equity_vs_range(cards, board_cards[:4],
+                                                  default_range, iterations=5000)
+                    equity_data.append({
+                        'street': 'turn',
+                        'action': actions_by_street['turn'],
+                        'equity': round(turn_eq, 3),
+                    })
+
+                # River equity (5 cards — exact)
+                if len(board_e7) >= 5 and 'river' in actions_by_street:
+                    river_eq = re.equity_vs_range(cards, board_cards[:5],
+                                                   default_range, iterations=5000)
+                    equity_data.append({
+                        'street': 'river',
+                        'action': actions_by_street['river'],
+                        'equity': round(river_eq, 3),
+                    })
+
+        except Exception as e:
+            log.debug(f"Showdown equity computation failed for {player_id}: {e}")
+
+        # Store the shown hand with equity data
+        shown_entry = {
+            'cards': cards[:2],
+            'won': won,
+            'equity_at_action': equity_data,
+        }
+        if actions_by_street:
+            shown_entry['actions'] = actions_by_street
+
+        p._shown_hands.append(shown_entry)
+        if len(p._shown_hands) > 50:
+            p._shown_hands = p._shown_hands[-50:]
+
+        if equity_data:
+            log.info(f"SHOWDOWN LEARNING: {player_id} showed {cards} "
+                     f"(won={won}) equity_at_action={equity_data}")
+
     def get_profile(self, player_id):
         """Get player profile dict. Returns defaults for unknown players."""
         if player_id not in self._profiles:
