@@ -819,19 +819,10 @@ class MultiTableRunner:
 
     def grab_full_screen(self):
         """Grab one full-screen screenshot (shared across all tables).
-        Uses mss for 12x faster capture (35ms vs 421ms for PIL).
+        Note: mss is faster but returns 1x on Retina (breaks coordinate system).
+        Sticking with PIL ImageGrab which returns correct 2x Retina pixels.
         """
-        try:
-            import mss
-            if not hasattr(self, '_mss'):
-                self._mss = mss.mss()
-            sct_img = self._mss.grab(self._mss.monitors[0])
-            # Convert to PIL Image (RGB)
-            from PIL import Image
-            return Image.frombytes('RGB', (sct_img.width, sct_img.height),
-                                   sct_img.rgb)
-        except (ImportError, Exception):
-            return ImageGrab.grab()  # Fallback to PIL
+        return ImageGrab.grab()
 
     def get_table_screenshot(self, window: TableWindow, full_screen=None):
         """Crop a table from a full-screen screenshot.
