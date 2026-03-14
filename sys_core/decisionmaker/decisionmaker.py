@@ -1233,13 +1233,25 @@ class Decision(DecisionBase):
             raise_amount = min(raise_amount, my_stack)  # Can't bet more than stack
 
             if raise_amount > 0:
-                # Equity when called: opponent folds weak hands, calling range is stronger
-                # Use a tighter range estimate for when villain calls our raise
-                eq_when_called = equity * 0.90  # Discount ~10% (calling range is stronger)
+                # Equity when called: opponent folds weak hands, calling range
+                # is MUCH stronger than their overall range. When we bet A-high
+                # on K92, opponent calls with Kx+ and our equity drops heavily.
+                #
+                # Discount based on bet size (bigger bet = tighter calling range):
+                if bet_frac <= 0.40:
+                    call_discount = 0.75  # Small bet: opponent calls fairly wide
+                elif bet_frac <= 0.70:
+                    call_discount = 0.65  # Medium bet: moderate tightening
+                else:
+                    call_discount = 0.55  # Large bet: only strong hands call
+
+                # Adjust for opponent type
                 if ptype == 'nit':
-                    eq_when_called = equity * 0.80  # Nits only call with very strong
-                elif ptype in ('fish_passive', 'maniac'):
-                    eq_when_called = equity * 0.95  # Fish call wide
+                    call_discount *= 0.80  # Nits call even tighter
+                elif ptype in ('fish_passive', 'fish_aggro', 'maniac'):
+                    call_discount = min(call_discount * 1.15, 0.95)  # Fish call wider
+
+                eq_when_called = equity * call_discount
 
                 # Total pot if called: pot + our raise + villain's call
                 # Villain calls our raise_amount (they match our bet)
@@ -1267,6 +1279,22 @@ class Decision(DecisionBase):
         elif spr < 1.5 and equity >= 0.20:
             spr_committed = True
 
+        # ── ICM adjustment for EV engine ────────────────────────────────
+        # In tournaments, the value of chips is non-linear. Losing chips
+        # hurts more than winning chips helps. Apply a "risk premium" that
+        # penalizes EV(call) and EV(raise) proportionally to ICM pressure.
+        icm_ev_adj = 0.0
+        ev_icm_pressure = getattr(t, '_icm_pressure', 0.0) or 0.0
+        if ev_icm_pressure > 0 and call_amount > 0:
+            # Risk premium: penalize putting chips at risk
+            # Higher ICM = bigger penalty for calling/raising
+            icm_ev_adj = ev_icm_pressure * call_amount * 0.3
+            ev_call -= icm_ev_adj
+            if ev_raise is not None:
+                ev_raise -= icm_ev_adj * 1.2  # Raising is even riskier
+            log.debug(f"EV ICM ADJ: pressure={ev_icm_pressure:.2f} "
+                      f"penalty={icm_ev_adj:.2f} on call/raise")
+
         # ── Pick best action ──────────────────────────────────────────────
         reasoning_parts = []
         reasoning_parts.append(f"eq={equity:.1%} pot={pot:.1f} call={call_amount:.1f} "
@@ -1274,6 +1302,8 @@ class Decision(DecisionBase):
         reasoning_parts.append(f"EV: fold=0, call={ev_call:.2f}")
         if ev_raise is not None:
             reasoning_parts.append(f"raise={ev_raise:.2f}")
+        if icm_ev_adj > 0:
+            reasoning_parts.append(f"ICM_adj=-{icm_ev_adj:.2f}")
 
         # Determine which action has highest EV
         best_ev = ev_fold
@@ -1340,46 +1370,93 @@ class Decision(DecisionBase):
         """Calculate ICM pressure for tournament decisions.
 
         Returns a positive equity offset (need MORE equity to call/commit).
-        0.0 for cash games, 0.02-0.10 for tournaments.
-        """
-        # Only applies to tournaments (detected by table name)
-        table_name = getattr(t, '_table_name', '') or ''
-        if not table_name:
-            # Fallback: check window name stored on t
-            table_name = getattr(t, '_window_name', '') or ''
+        0.0 for cash games, 0.02-0.15 for tournaments.
 
-        is_tournament = any(kw in table_name for kw in ('Spin', 'Gold', 'Tournament', 'SNG', 'MTT'))
-        if not is_tournament:
+        Uses real tournament data from OCR when available:
+        - t._icm_pressure: pre-computed from rank/total/paid (0.0-1.0 scale)
+        - t._game_type: 'cash', 'spin', 'tournament'
+        Falls back to stack-commitment heuristic when OCR data is unavailable.
+        """
+        # --- Use real OCR tournament data if available ---
+        game_type = getattr(t, '_game_type', None)
+        ocr_icm = getattr(t, '_icm_pressure', None)
+
+        # Cash games: no ICM
+        if game_type == 'cash':
             return 0.0
 
-        hero_stack = max(getattr(t, 'myFunds', 100), 1.0)
-        pot = max(getattr(t, 'totalPotValue', 0), 0.01)
-        call_amount = max(getattr(t, 'currentCallValue', 0) or 0, 0)
+        # Spin & Gold: winner-take-all, minimal ICM
+        if game_type == 'spin':
+            hero_stack = max(getattr(t, 'myFunds', 100), 1.0)
+            call_amount = max(getattr(t, 'currentCallValue', 0) or 0, 0)
+            commitment = call_amount / hero_stack if hero_stack > 0 else 0
+            if commitment > 0.50:
+                return 0.03  # Tiny pressure even in WTA
+            return 0.0
 
-        # Stack commitment ratio: how much of our stack is at risk
+        # Check if this is a tournament by name (fallback)
+        if game_type is None or game_type == 'unknown':
+            table_name = getattr(t, '_table_name', '') or ''
+            if not table_name:
+                table_name = getattr(t, '_window_name', '') or ''
+            is_tournament = any(kw in table_name.lower() for kw in (
+                'spin', 'gold', 'tournament', 'sng', 'mtt', 'buy-in',
+                'daily', 'weekly', 'bounty', 'ggmasters'))
+            if not is_tournament:
+                return 0.0
+            # Unknown game type but looks like tournament: use old heuristic
+            ocr_icm = None
+
+        # --- Common values ---
+        hero_stack = max(getattr(t, 'myFunds', 100), 1.0)
+        call_amount = max(getattr(t, 'currentCallValue', 0) or 0, 0)
         commitment = call_amount / hero_stack if hero_stack > 0 else 0
 
-        # Base ICM pressure: always need slightly more equity in tournaments
+        # --- Real ICM pressure from tournament rank OCR ---
+        if ocr_icm is not None and ocr_icm > 0:
+            # Scale 0.0-1.0 ICM to equity offset (max 0.12)
+            base_pressure = ocr_icm * 0.12
+
+            # Commitment amplifies ICM pressure
+            if commitment > 0.50:
+                commit_mult = 1.5
+            elif commitment > 0.30:
+                commit_mult = 1.2
+            elif commitment > 0.10:
+                commit_mult = 1.0
+            else:
+                commit_mult = 0.7
+
+            pressure = base_pressure * commit_mult
+
+            # Stack-size adjustment
+            if hero_stack > 40:
+                pressure *= 0.6   # Big stack can afford to gamble
+            elif hero_stack < 8:
+                pressure *= 0.4   # Short stack must push, reduce ICM
+
+            rank = getattr(t, '_tournament_rank', None)
+            total = getattr(t, '_tournament_total', None)
+            paid = getattr(t, '_tournament_players_paid', None)
+            if rank:
+                log.debug(f"ICM (real data): rank={rank}/{total} paid={paid} "
+                          f"icm={ocr_icm:.2f} -> pressure={pressure:.3f}")
+
+            return min(pressure, 0.15)
+
+        # --- Fallback: stack-commitment heuristic (no OCR data) ---
         pressure = 0.02
 
-        # High commitment = tournament life at stake
         if commitment > 0.50:
-            # All-in or near all-in: significant ICM penalty
             pressure = 0.08
         elif commitment > 0.30:
-            # Large pot: moderate ICM penalty
             pressure = 0.05
         elif commitment > 0.15:
-            # Medium pot: small ICM penalty
             pressure = 0.03
 
-        # Big stack advantage: reduce pressure (we can afford to lose)
-        # Typical Spin & Gold starts with ~25 BB
-        if hero_stack > 40:  # Deep stacked (40+ BB)
+        if hero_stack > 40:
             pressure *= 0.5
-        elif hero_stack < 10:  # Short stacked (< 10 BB)
-            # Short stack: ICM pressure is LOWER because we need to sys_core
-            # Can't blind out — must take spots
+        elif hero_stack < 10:
             pressure *= 0.3
 
         return pressure
@@ -1558,7 +1635,14 @@ class Decision(DecisionBase):
         # --- ICM pressure for tournaments ---
         icm_adj = self._get_icm_pressure(t)
         if icm_adj > 0:
-            log.info(f"ICM PRESSURE: +{icm_adj:.3f} equity required (tournament)")
+            rank_str = ''
+            _rank = getattr(t, '_tournament_rank', None)
+            _total = getattr(t, '_tournament_total', None)
+            _paid = getattr(t, '_tournament_players_paid', None)
+            if _rank:
+                rank_str = f" rank={_rank}/{_total} paid={_paid}"
+            log.info(f"ICM PRESSURE: +{icm_adj:.3f} equity required "
+                     f"(game={getattr(t, '_game_type', '?')}{rank_str})")
 
         # --- Bayesian exploit adjustment (beyond-GTO) ---
         bayesian_adj = 0.0
@@ -1748,37 +1832,6 @@ class Decision(DecisionBase):
 
         # flop turn river
         if t.gameStage != GameStages.PreFlop.value:
-            # ── ANTI-DONK-BET: Check to the preflop raiser ────────────────
-            # GTO principle: the CALLER should almost never lead (donk-bet)
-            # into the preflop RAISER. The raiser has the range advantage.
-            # Only donk-bet with very strong hands (sets+, two pair) or
-            # strong draws on wet boards.
-            hero_was_caller = not getattr(t, 'other_player_has_initiative', False)
-            opponent_was_raiser = not np.isnan(getattr(t, 'first_raiser_utg', float('nan')))
-            is_flop = t.gameStage == GameStages.Flop.value
-            has_check = getattr(t, 'checkButton', False)
-
-            if hero_was_caller and opponent_was_raiser and has_check:
-                # We called preflop, opponent raised — check to them
-                hand_info = self._classify_hand(t) if hasattr(self, '_classify_hand') else None
-                hand_str = hand_info['strength'] if hand_info else 'unknown'
-
-                # Only donk-bet with monsters (sets+, two pair) on flop
-                # On turn/river, can lead with strong hands
-                allow_donk = False
-                if hand_str in ('monster', 'very_strong'):
-                    allow_donk = True  # Sets, flushes, straights — can lead
-                elif hand_str == 'strong' and not is_flop:
-                    allow_donk = True  # Top pair+ on turn/river OK to lead
-                elif self.equity >= 0.70:
-                    allow_donk = True  # Very high equity = lead
-
-                if not allow_donk:
-                    log.info(f"ANTI-DONK: Checking to preflop raiser "
-                             f"(hand={hand_str}, equity={self.equity:.2f}, "
-                             f"street={t.gameStage})")
-                    return  # Don't bet — check to raiser
-
             # ── EV-BASED BETTING (postflop) ────────────────────────────────
             # Use the unified EV engine for all postflop betting decisions.
             # The EV engine computes EV(fold/check) vs EV(call) vs EV(raise)
