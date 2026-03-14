@@ -1,0 +1,63 @@
+{
+  "_comment": "Ground truth for GGPoker replay tests. Each key is a screenshot filename. Capture screenshots during live sessions and fill in expected values.",
+  "_instructions": "To add a new test case: 1) Save a screenshot as gg_<scenario>_<cards>.png 2) Add an entry here with expected detection results",
+  "examples": {
+    "gg_preflop_AhKs.png": {
+      "my_cards": [
+        "AH",
+        "KS"
+      ],
+      "board_cards": [],
+      "is_my_turn": true,
+      "available_actions": [
+        "fold",
+        "call",
+        "raise"
+      ],
+      "pot_min": 1.0,
+      "pot_max": 10.0,
+      "street": "PREFLOP"
+    },
+    "gg_flop_action.png": {
+      "my_cards": [
+        "TH",
+        "9H"
+      ],
+      "board_cards": [
+        "QS",
+        "JD",
+        "2C"
+      ],
+      "is_my_turn": true,
+      "available_actions": [
+        "fold",
+        "check",
+        "bet"
+      ],
+      "pot_min": 3.0,
+      "pot_max": 20.0,
+      "street": "FLOP"
+    },
+    "gg_waiting.png": {
+      "my_cards": [],
+      "board_cards": [],
+      "is_my_turn": false,
+      "available_actions": [],
+      "street": "UNKNOWN"
+    }
+  },
+  "live_turn_8S_5S_AD_TC_2D_6C.png": {
+    "my_cards": [
+      "8S",
+      "5S"
+    ],
+    "board_cards": [
+      "AD",
+      "TC",
+      "2D",
+      "6C"
+    ],
+    "is_my_turn": false,
+    "street": "TURN"
+  }
+}

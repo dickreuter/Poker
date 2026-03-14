@@ -1,0 +1,91 @@
+{
+  "ts": "2026-03-14T18:42:39.407852",
+  "window": "Spin & Gold $1 - Blinds 15 | 30",
+  "hero_cards": [
+    "9D",
+    "9C"
+  ],
+  "board_cards": [
+    "AS",
+    "6C",
+    "3D"
+  ],
+  "cards_face_down": false,
+  "street": "Flop",
+  "position": "BTN",
+  "dealer_seat": 0,
+  "opponents_active": 2,
+  "opponents_in_hand": 2,
+  "pot": 23.7,
+  "call_amount": 6.3,
+  "min_raise": 6.3,
+  "hero_stack": 6.3,
+  "hero_stack_estimated": false,
+  "small_blind": 15.0,
+  "big_blind": 30.0,
+  "players": [
+    {
+      "seat": 0,
+      "name": "",
+      "stack": 6.3,
+      "bet": 0,
+      "is_hero": true,
+      "is_active": true
+    },
+    {
+      "seat": 2,
+      "name": "",
+      "stack": 15.0,
+      "bet": 0,
+      "is_hero": false,
+      "is_active": true
+    },
+    {
+      "seat": 4,
+      "name": "",
+      "stack": 4.5,
+      "bet": 0,
+      "is_hero": false,
+      "is_active": true
+    }
+  ],
+  "buttons": [
+    {
+      "type": "call",
+      "amount": 6.3,
+      "rel_x": 0.7994,
+      "rel_y": 0.9325,
+      "confidence": 0.8
+    },
+    {
+      "type": "fold",
+      "amount": 0,
+      "rel_x": 0.6712,
+      "rel_y": 0.9325,
+      "confidence": 0.8
+    },
+    {
+      "type": "raise",
+      "amount": 6.3,
+      "rel_x": 0.7994,
+      "rel_y": 0.9325,
+      "confidence": 0.5
+    }
+  ],
+  "equity": 0.42,
+  "abs_equity": 0.42,
+  "decision": "Allin",
+  "ev": 12.242,
+  "call_limit": 6.3,
+  "bet_limit": 6.3,
+  "outs": 0,
+  "blocker_score": 0.0,
+  "opp_likely": [
+    "middle_pair",
+    "draw",
+    "weak_top_pair"
+  ],
+  "opp_bluff_pct": 0.35,
+  "ocr_latency_ms": 1647.0,
+  "ocr_source": "python"
+}

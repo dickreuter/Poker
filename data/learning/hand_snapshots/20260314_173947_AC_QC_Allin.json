@@ -1,0 +1,68 @@
+{
+  "ts": "2026-03-14T17:39:48.722583",
+  "window": "Rush & Cash - $0.01 / $0.02",
+  "hero_cards": [
+    "AC",
+    "QC"
+  ],
+  "board_cards": [],
+  "cards_face_down": false,
+  "street": "PreFlop",
+  "position": "SB",
+  "dealer_seat": 5,
+  "opponents_active": 0,
+  "opponents_in_hand": -1,
+  "pot": 1.5,
+  "call_amount": 1.0,
+  "min_raise": 2.0,
+  "hero_stack": 5.0,
+  "hero_stack_estimated": false,
+  "small_blind": 0.5,
+  "big_blind": 1.0,
+  "players": [
+    {
+      "seat": 0,
+      "name": "",
+      "stack": 5.0,
+      "bet": 0,
+      "is_hero": true,
+      "is_active": true
+    }
+  ],
+  "buttons": [
+    {
+      "type": "raise",
+      "amount": 2.0,
+      "rel_x": 0.9229,
+      "rel_y": 0.9325,
+      "confidence": 0.8
+    },
+    {
+      "type": "call",
+      "amount": 0,
+      "rel_x": 0.4318,
+      "rel_y": 0.9667,
+      "confidence": 0.7
+    },
+    {
+      "type": "check",
+      "amount": 299.0,
+      "rel_x": 0.4971,
+      "rel_y": 0.8756,
+      "confidence": 0.7
+    }
+  ],
+  "equity": 0.66,
+  "abs_equity": 0.66,
+  "decision": "Allin",
+  "ev": 1.313,
+  "call_limit": 47.22,
+  "bet_limit": 44.39,
+  "outs": 0,
+  "blocker_score": 0.15,
+  "opp_likely": [],
+  "opp_bluff_pct": 0.18,
+  "opp_type": "fish_passive",
+  "ocr_latency_ms": 3411.8,
+  "ocr_source": "python"
+}

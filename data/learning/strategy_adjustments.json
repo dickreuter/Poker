@@ -7,13 +7,13 @@
   "pot_control_spr_threshold": 6.0,
   "barrel_equity_threshold": 0.55,
   "check_raise_freq_offset": -0.05,
-  "last_updated": "2026-03-12T09:44:15.072837",
+  "last_updated": "2026-03-14T17:45:11.536980",
   "hands_analyzed": 500,
   "detected_leaks": [
     "Bluff rate 1% too low (target: 10-20%), loosening",
-    "C-bet rate 83% too high (target: 50-65%), reducing",
-    "Bad call rate 63% (calling without pot odds)",
-    "Missed value rate 22% (folding with good pot odds)",
-    "Postflop raise rate 93% too aggressive (target: 15-30%)"
+    "C-bet rate 75% too high (target: 50-65%), reducing",
+    "Bad call rate 48% (calling without pot odds)",
+    "Missed value rate 52% (folding with good pot odds)",
+    "Postflop raise rate 96% too aggressive (target: 15-30%)"
   ]
 }

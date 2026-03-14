@@ -1,0 +1,65 @@
+{
+  "ts": "2026-03-14T18:00:18.513738",
+  "window": "Rush & Cash - $0.01 / $0.02",
+  "hero_cards": [
+    "KS",
+    "TD"
+  ],
+  "board_cards": [
+    "4C",
+    "2H",
+    "5D"
+  ],
+  "cards_face_down": false,
+  "street": "Flop",
+  "position": "BTN",
+  "dealer_seat": 0,
+  "opponents_active": 0,
+  "opponents_in_hand": 0,
+  "pot": 24.0,
+  "call_amount": 0,
+  "min_raise": 0,
+  "hero_stack": 123.0,
+  "hero_stack_estimated": false,
+  "small_blind": 0.5,
+  "big_blind": 1.0,
+  "players": [
+    {
+      "seat": 0,
+      "name": "",
+      "stack": 123.0,
+      "bet": 0,
+      "is_hero": true,
+      "is_active": true
+    }
+  ],
+  "buttons": [
+    {
+      "type": "fold",
+      "amount": 0,
+      "rel_x": 0.6688,
+      "rel_y": 0.8244,
+      "confidence": 0.5
+    },
+    {
+      "type": "raise",
+      "amount": 0,
+      "rel_x": 0.6806,
+      "rel_y": 0.8057,
+      "confidence": 0.5
+    }
+  ],
+  "equity": 0.38,
+  "abs_equity": 0.38,
+  "decision": "Bet half pot",
+  "ev": 13.191,
+  "call_limit": 10.97,
+  "bet_limit": 7.92,
+  "outs": 0,
+  "blocker_score": 0.1,
+  "opp_likely": [],
+  "opp_bluff_pct": 0.18,
+  "opp_type": "fish_passive",
+  "ocr_latency_ms": 3130.2,
+  "ocr_source": "python"
+}

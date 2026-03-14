@@ -1,0 +1,105 @@
+{
+  "ts": "2026-03-14T19:16:18.566269",
+  "window": "Daily Hyper $8 : Buy-in $8 - Blinds 200 | 400 - Table 54/!)@(#*$&%^|5707354047",
+  "hero_cards": [
+    "AH",
+    "8S"
+  ],
+  "board_cards": [],
+  "cards_face_down": false,
+  "street": "PreFlop",
+  "position": "BB",
+  "dealer_seat": 4,
+  "opponents_active": 5,
+  "opponents_in_hand": -1,
+  "pot": 4.6,
+  "call_amount": 1.2,
+  "min_raise": 0,
+  "hero_stack": 84.1,
+  "hero_stack_estimated": false,
+  "small_blind": 200.0,
+  "big_blind": 400.0,
+  "players": [
+    {
+      "seat": 0,
+      "name": "",
+      "stack": 84.1,
+      "bet": 0,
+      "is_hero": true,
+      "is_active": true
+    },
+    {
+      "seat": 1,
+      "name": "",
+      "stack": 14.5,
+      "bet": 0,
+      "is_hero": false,
+      "is_active": true
+    },
+    {
+      "seat": 2,
+      "name": "",
+      "stack": 94.5,
+      "bet": 0,
+      "is_hero": false,
+      "is_active": true
+    },
+    {
+      "seat": 3,
+      "name": "",
+      "stack": 3.0,
+      "bet": 0,
+      "is_hero": false,
+      "is_active": true
+    },
+    {
+      "seat": 4,
+      "name": "",
+      "stack": 12.6,
+      "bet": 0,
+      "is_hero": false,
+      "is_active": true
+    },
+    {
+      "seat": 5,
+      "name": "",
+      "stack": 28.6,
+      "bet": 0,
+      "is_hero": false,
+      "is_active": true
+    }
+  ],
+  "buttons": [
+    {
+      "type": "fold",
+      "amount": 0,
+      "rel_x": 0.2753,
+      "rel_y": 0.8398,
+      "confidence": 0.5
+    },
+    {
+      "type": "call",
+      "amount": 1.2,
+      "rel_x": 0.81,
+      "rel_y": 0.9203,
+      "confidence": 0.7
+    }
+  ],
+  "equity": 0.55,
+  "abs_equity": 0.55,
+  "decision": "Call",
+  "ev": 2.65,
+  "call_limit": 28.61,
+  "bet_limit": 25.11,
+  "outs": 0,
+  "blocker_score": 0.15,
+  "opp_likely": [
+    "overpair",
+    "top_pair",
+    "big_ace"
+  ],
+  "opp_bluff_pct": 0.12,
+  "opp_type": "fish_passive",
+  "ocr_latency_ms": 1045.3,
+  "ocr_source": "python"
+}

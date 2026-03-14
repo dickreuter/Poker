@@ -1,0 +1,76 @@
+{
+  "ts": "2026-03-14T18:31:10.072463",
+  "window": "Rush & Cash - $0.01 / $0.02",
+  "hero_cards": [
+    "KS",
+    "TC"
+  ],
+  "board_cards": [
+    "KC",
+    "JC",
+    "8S",
+    "7S"
+  ],
+  "cards_face_down": false,
+  "street": "Turn",
+  "position": "SB",
+  "dealer_seat": 5,
+  "opponents_active": 0,
+  "opponents_in_hand": 2,
+  "pot": 13.5,
+  "call_amount": 6.8,
+  "min_raise": 1.0,
+  "hero_stack": 92.0,
+  "hero_stack_estimated": false,
+  "small_blind": 0.5,
+  "big_blind": 1.0,
+  "players": [
+    {
+      "seat": 0,
+      "name": "",
+      "stack": 92.0,
+      "bet": 0,
+      "is_hero": true,
+      "is_active": true
+    }
+  ],
+  "buttons": [
+    {
+      "type": "fold",
+      "amount": 0,
+      "rel_x": 0.6712,
+      "rel_y": 0.9325,
+      "confidence": 0.85
+    },
+    {
+      "type": "call",
+      "amount": 0,
+      "rel_x": 0.7994,
+      "rel_y": 0.9325,
+      "confidence": 0.85
+    },
+    {
+      "type": "raise",
+      "amount": 1.0,
+      "rel_x": 0.9229,
+      "rel_y": 0.9325,
+      "confidence": 0.85
+    }
+  ],
+  "equity": 0.81,
+  "abs_equity": 0.81,
+  "decision": "Bet half pot",
+  "ev": 14.918,
+  "call_limit": 92.0,
+  "bet_limit": 12.15,
+  "outs": 4,
+  "blocker_score": 0.45,
+  "opp_likely": [
+    "overpair",
+    "big_ace"
+  ],
+  "opp_bluff_pct": 0.04,
+  "opp_type": "fish_passive",
+  "ocr_latency_ms": 1986.6,
+  "ocr_source": "python"
+}
