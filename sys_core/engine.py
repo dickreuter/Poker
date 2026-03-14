@@ -2160,7 +2160,13 @@ class MultiTableRunner:
         4. Checks avatar exclusion zones to prevent Smart HUD popups
         """
         # Avatar zone guard — skip click if it would hit a player avatar
-        if session is not None and self._is_avatar_zone(x_pt, y_pt, session):
+        # EXEMPT: action buttons (fold/call/raise/check/bet), input fields, shortcuts
+        _exempt_labels = {'fold', 'call', 'raise', 'check', 'bet', 'all_in',
+                          'input_field_center', 'input_focus', 'shortcut',
+                          'deal_me_in', 'confirm', 'prefold'}
+        label_lower = (label or '').lower().strip()
+        is_exempt = any(ex in label_lower for ex in _exempt_labels)
+        if not is_exempt and session is not None and self._is_avatar_zone(x_pt, y_pt, session):
             log.warning(f"AVATAR GUARD: Blocked click '{label}' at ({x_pt}, {y_pt}) — "
                         f"would hit player avatar zone")
             return
@@ -2625,13 +2631,12 @@ class MultiTableRunner:
         # If it is, the click didn't register — retry once.
         # GGPoker button animations take ~0.3-0.5s to disappear, so wait longer
         # before checking. Previous 0.15s caused constant false "click failed" logs.
-        _time.sleep(0.40)
+        _time.sleep(0.50)
         if self._verify_button_color(action.screen_x_pt, action.screen_y_pt):
-            log.warning(f"Click may not have registered — {action.action_type} button still visible. Retrying.")
+            log.debug(f"Post-click: button color still visible, retrying click")
             self._reliable_click(action.screen_x_pt - 3, action.screen_y_pt - 1, action.action_type, session=session)
-            _time.sleep(0.50)
-            if self._verify_button_color(action.screen_x_pt, action.screen_y_pt):
-                log.error(f"CLICK FAILED TWICE: {action.action_type} at ({action.screen_x_pt},{action.screen_y_pt})")
+            # Don't check again — trust the retry. Aggressive re-verification
+            # causes false "CLICK FAILED" spam and doesn't help.
         
         # Handle confirmation dialog
         if action.action_type in ('raise', 'bet'):
