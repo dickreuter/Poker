@@ -16,7 +16,8 @@ from sys_core.tools.helper import GameStages, DecisionTypes
 from sys_core.decisionmaker.montecarlo_python import MonteCarlo, run_montecarlo_wrapper
 from sys_core.decisionmaker.range_equity import (
     compute_bet_size_bb, geometric_bet_fraction,
-    preflop_raise_size_bb, lookup_preflop_equity
+    preflop_raise_size_bb, lookup_preflop_equity,
+    blocker_adjustment,
 )
 from sys_core.decisionmaker.curvefitting import Curvefitting
 from .outs_calculator import Outs_Calculator
@@ -153,6 +154,65 @@ GTO_BB_DEFEND = {
     '98S', '97S', '96S', '87S', '86S', '76S', '75S', '65S', '64S', '54S', '53S', '43S',
 }
 
+# 4-bet ranges (facing a 3-bet)
+GTO_4BET = {
+    'value': {'AA', 'KK', 'QQ', 'AKS'},          # Always 4-bet
+    'mixed_value': {'JJ'},                          # 4-bet ~60% (rest call)
+    'bluff': {'A5S'},                               # 4-bet ~70% (rest fold)
+    'call_4bet': {'JJ', 'TT', 'AKO', 'AQS'},      # Call the 3-bet (too strong to fold)
+}
+
+# Facing a 4-bet (what to do with our 3-bet range)
+FACING_4BET = {
+    'shove': {'AA', 'KK'},                          # 5-bet shove
+    'call': {'QQ', 'JJ', 'AKS', 'AKO'},            # Call the 4-bet
+    # Everything else folds (all bluff 3-bets: A5s, A4s, 76s, etc.)
+}
+
+# C-bet strategy by board category (for preflop raiser, heads-up, IP)
+CBET_BOARD_STRATEGY = {
+    'paired_high': {    # AA5, KK3, AK8 paired
+        'cbet_freq': 0.90, 'cbet_size': 0.30,
+    },
+    'dry_high': {       # A72r, K83r, AJ2r
+        'cbet_freq': 0.75, 'cbet_size': 0.33,
+    },
+    'two_tone_high': {  # As8h3h, Kd7s4s
+        'cbet_freq': 0.65, 'cbet_size': 0.40,
+    },
+    'paired_low': {     # K88, A55, Q77
+        'cbet_freq': 0.60, 'cbet_size': 0.55,
+    },
+    'dry_low': {        # 862r, 743r, 952r
+        'cbet_freq': 0.50, 'cbet_size': 0.55,
+    },
+    'two_tone_connected': {  # JsTh8c, Qh9s8h
+        'cbet_freq': 0.45, 'cbet_size': 0.55,
+    },
+    'wet': {            # JT9ss, QJ8hh
+        'cbet_freq': 0.35, 'cbet_size': 0.66,
+    },
+    'monotone': {       # Jh8h3h, Ks9s4s
+        'cbet_freq': 0.27, 'cbet_size': 0.33,
+    },
+}
+
+# Multiway pot adjustments (keyed by number of active players)
+MULTIWAY_ADJUSTMENTS = {
+    'cbet_freq_multiplier': {
+        2: 1.0,     # Heads-up: normal
+        3: 0.55,    # 3-way: cut c-bet freq nearly in half
+        4: 0.35,    # 4-way: very selective
+        5: 0.20,    # 5-way: only bet the nuts
+    },
+    'equity_bonus_required': {
+        2: 0.0,     # Heads-up: no extra equity needed
+        3: 0.10,    # 3-way: +10% equity to bet
+        4: 0.15,    # 4-way: +15%
+        5: 0.20,    # 5-way: +20%
+    },
+}
+
 
 def _normalize_hand(crd1: str, crd2: str) -> str:
     """Normalize hand like 'AKS'/'AKO'/'AA' from two card short notations.
@@ -217,6 +277,56 @@ def gto_preflop_decision(crd1: str, crd2: str, position: str,
 
     # Facing a raise
     if has_raiser and call_amount > 0:
+        # ─── 4-BET / FACING 3-BET LOGIC ────────────────────────────────────
+        # Detect facing a 3-bet: call_amount > 5BB typically means 3-bet
+        # (standard open is 2.5BB, 3-bet is ~7-10BB)
+        call_to_stack = call_amount / max(hero_stack, 1.0)
+        is_facing_3bet = call_amount > 5.0
+
+        if is_facing_3bet:
+            # Facing a 3-bet: use 4-bet ranges
+            if hand in GTO_4BET['value']:
+                log.info(f"GTO 4-BET VALUE: {hand} (always 4-bet)")
+                return 'raise'
+            if hand in GTO_4BET.get('mixed_value', set()):
+                if random.random() < 0.60:
+                    log.info(f"GTO 4-BET MIXED: {hand} (60% 4-bet)")
+                    return 'raise'
+                else:
+                    log.info(f"GTO 4-BET MIXED: {hand} (40% flat)")
+                    return 'call'
+            if hand in GTO_4BET.get('bluff', set()):
+                if random.random() < 0.70:
+                    log.info(f"GTO 4-BET BLUFF: {hand} (70% 4-bet)")
+                    return 'raise'
+                else:
+                    return 'fold'
+            if hand in GTO_4BET.get('call_4bet', set()):
+                log.info(f"GTO CALL 3-BET: {hand}")
+                return 'call'
+            # Everything else folds to 3-bet
+            if hand in PREMIUM_HANDS_TIER1:
+                log.info(f"PREMIUM SHIELD vs 3-bet: calling with {hand}")
+                return 'call'
+            log.info(f"FOLD vs 3-BET: {hand} not in 4-bet/call range")
+            return 'fold'
+
+        # ─── FACING 4-BET LOGIC ────────────────────────────────────────────
+        # Detect facing a 4-bet: call_amount > 15BB
+        is_facing_4bet = call_amount > 15.0
+        if is_facing_4bet:
+            if hand in FACING_4BET['shove']:
+                log.info(f"5-BET SHOVE: {hand}")
+                return 'raise'
+            if hand in FACING_4BET['call']:
+                log.info(f"CALL 4-BET: {hand}")
+                return 'call'
+            if hand in PREMIUM_HANDS_TIER1:
+                log.info(f"PREMIUM SHIELD vs 4-bet: calling with {hand}")
+                return 'call'
+            log.info(f"FOLD vs 4-BET: {hand}")
+            return 'fold'
+
         # PREMIUM SHIELD (Action-Facing): Never fold these to a single raise.
         if is_premium:
             log.info(f"PREMIUM SHIELD: defending {hand} against raise")
@@ -226,7 +336,7 @@ def gto_preflop_decision(crd1: str, crd2: str, position: str,
             elif rpos in ('MP',): raiser_key = 'vs_MP'
             elif rpos in ('CO',): raiser_key = 'vs_CO'
             else: raiser_key = 'vs_BTN'
-            
+
             if hand in GTO_3BET.get(raiser_key, set()):
                 return 'raise'
             return 'call'
@@ -1238,6 +1348,20 @@ class Decision(DecisionBase):
                 fold_equity = 0.5 * fold_equity + 0.5 * ftcb
                 log.debug(f"EV FOLD_EQ refined: ftcb={ftcb:.0%} → blended={fold_equity:.0%}")
 
+        # ── Blocker-based fold equity adjustment ─────────────────────────
+        # Quantify how hero's cards affect fold equity (blocks nut flush, etc.)
+        if street != 'preflop' and len(board) >= 3:
+            try:
+                fe_bonus, eq_bonus = blocker_adjustment(mycards, board, v_range)
+                if abs(fe_bonus) > 0.01:
+                    fold_equity = max(0.05, min(0.85, fold_equity + fe_bonus))
+                    log.debug(f"EV BLOCKER: fold_eq {fe_bonus:+.2f} → {fold_equity:.0%}")
+                if abs(eq_bonus) > 0.01:
+                    equity = max(0.0, min(1.0, equity + eq_bonus))
+                    log.debug(f"EV BLOCKER: equity {eq_bonus:+.2f} → {equity:.1%}")
+            except Exception as e:
+                log.debug(f"Blocker adjustment failed: {e}")
+
         # ── EV(raise) ─────────────────────────────────────────────────────
         # Determine raise size
         ev_raise = None
@@ -2186,7 +2310,34 @@ class Decision(DecisionBase):
 
             # C-bet logic when we can check (first action on street)
             if h.round_number == 0 and t.checkButton:
-                cbet_freq = 0.70 - (wetness * 0.40) + _get_adj().get('cbet_freq_offset', 0.0)
+                # --- Board-classified c-bet strategy ---
+                # Use GTO board categories when hero was preflop raiser (has initiative)
+                hand_ctx = getattr(self, '_hand_context', None)
+                hero_has_initiative = (hand_ctx and hand_ctx.hero_was_raiser) or not t.other_player_has_initiative
+
+                board_cat = self._classify_board(t.cardsOnTable)
+                board_strat = CBET_BOARD_STRATEGY.get(board_cat, {})
+                cbet_freq = board_strat.get('cbet_freq', 0.70 - (wetness * 0.40))
+                cbet_size_frac = board_strat.get('cbet_size', 0.50)
+
+                # Apply feedback loop offset
+                cbet_freq += _get_adj().get('cbet_freq_offset', 0.0)
+
+                # --- Multiway pot adjustment ---
+                # When 3+ players: tighten c-bet frequency dramatically
+                if other_players >= 2:
+                    mw_mult = MULTIWAY_ADJUSTMENTS['cbet_freq_multiplier'].get(
+                        min(other_players + 1, 5), 0.35)
+                    old_freq = cbet_freq
+                    cbet_freq *= mw_mult
+                    # In multiway, don't value-bet one pair
+                    hand_info_cbet = self._classify_hand(t) if hasattr(self, '_classify_hand') else None
+                    if hand_info_cbet and hand_info_cbet.get('strength') in ('weak', 'marginal'):
+                        cbet_freq *= 0.30  # Almost never bluff multiway with air
+                    # Cap sizing at 33% in multiway
+                    cbet_size_frac = min(cbet_size_frac, 0.33)
+                    log.info(f"MULTIWAY CBET: {old_freq:.0%}→{cbet_freq:.0%} "
+                             f"(x{mw_mult:.2f}, players={other_players+1}, board={board_cat})")
 
                 # --- Opponent-adaptive c-bet frequency ---
                 opp = self._get_opp()
@@ -2194,15 +2345,12 @@ class Decision(DecisionBase):
                     fold_to_cbet = opp.get('fold_to_cbet', 0.45)
                     ptype = opp.get('type', 'unknown')
                     if fold_to_cbet > 0.55:
-                        # They fold to c-bets a lot → c-bet MORE (print money)
                         cbet_freq = min(cbet_freq + 0.15, 0.90)
                         log.info(f"OPP_ADAPT: c-bet freq UP (fold_to_cbet={fold_to_cbet:.0%})")
                     elif fold_to_cbet < 0.30:
-                        # They rarely fold → only c-bet for value
                         cbet_freq = max(cbet_freq - 0.20, 0.20)
                         log.info(f"OPP_ADAPT: c-bet freq DOWN (fold_to_cbet={fold_to_cbet:.0%})")
                     elif ptype == 'fish_passive':
-                        # Calling stations (no fold_to_cbet data yet): c-bet for thin value
                         cbet_freq = min(cbet_freq + 0.10, 0.85)
                         log.info(f"OPP_ADAPT: c-bet freq UP (fish_passive default)")
 
@@ -2212,14 +2360,26 @@ class Decision(DecisionBase):
                     cbet_freq += _spot.get('cbet_freq_offset', 0.0)
                     cbet_freq = max(0.15, min(0.90, cbet_freq))
 
+                log.debug(f"CBET STRATEGY: board={board_cat} freq={cbet_freq:.0%} "
+                          f"size={cbet_size_frac:.0%}pot initiative={hero_has_initiative}")
+
+                # Map c-bet size fraction to bet button
+                if cbet_size_frac >= 0.60:
+                    cbet_decision = DecisionTypes.bet3  # 2/3 pot
+                elif cbet_size_frac >= 0.40:
+                    cbet_decision = DecisionTypes.bet3  # half pot
+                else:
+                    cbet_decision = DecisionTypes.bet2  # 1/3 pot (small)
+
                 if t.equity >= 0.55:
-                    self.decision = DecisionTypes.bet3
-                    log.info(f"C-BET VALUE: eq={t.equity:.3f} wet={wetness:.2f} "
-                             f"(strong hand, first action)")
+                    self.decision = cbet_decision
+                    log.info(f"C-BET VALUE: eq={t.equity:.3f} board={board_cat} "
+                             f"size={cbet_size_frac:.0%}pot (strong hand)")
                     return
                 elif t.equity >= 0.30 and random.random() < cbet_freq:
-                    self.decision = DecisionTypes.bet3
-                    log.info(f"C-BET: eq={t.equity:.3f} wet={wetness:.2f} freq={cbet_freq:.2f}")
+                    self.decision = cbet_decision
+                    log.info(f"C-BET: eq={t.equity:.3f} board={board_cat} "
+                             f"freq={cbet_freq:.0%} size={cbet_size_frac:.0%}pot")
                     return  # Don't run rest of betting logic
 
             # --- Turn barrel: continue aggression from flop ---
@@ -2505,33 +2665,125 @@ class Decision(DecisionBase):
             log.info(f"CHECK TRAP: eq={t.equity:.3f} stage={t.gameStage} freq={trap_freq:.0%}")
 
     def _board_wetness(self, board_cards):
-        """0.0=bone dry, 1.0=extremely wet. Uses flop cards only."""
+        """0.0=bone dry, 1.0=extremely wet. Uses flop cards only.
+
+        Enhanced algorithm:
+        - Flush draws: 2 suited = +0.15, monotone = +0.40
+        - Straight draws: connected cards within 4 ranks = +0.15 each pair
+        - Paired board = -0.15 (drier)
+        - High card boards (A/K-high) are slightly drier for raiser
+        """
         if not board_cards or len(board_cards) < 3:
             return 0.5
         rank_map = {r: i for i, r in enumerate('23456789TJQKA')}
         ranks, suits = [], []
         for card in board_cards[:3]:
-            if len(card) >= 2:
-                ranks.append(rank_map.get(card[0].upper(), 0))
-                suits.append(card[1].upper())
+            if card and len(card) >= 2:
+                r = card[0].upper()
+                if r == '1' and len(card) >= 3:
+                    r = 'T'
+                    suits.append(card[2].upper())
+                else:
+                    suits.append(card[-1].upper())
+                ranks.append(rank_map.get(r, 0))
         if len(ranks) < 3:
             return 0.5
 
         wetness = 0.0
         from collections import Counter
-        top_suit = Counter(suits).most_common(1)[0][1]
-        if top_suit >= 3: wetness += 0.4      # Monotone
-        elif top_suit >= 2: wetness += 0.2    # Two-tone
 
-        sr = sorted(ranks)
-        gaps = [sr[i+1] - sr[i] for i in range(len(sr)-1)]
-        if all(g <= 2 for g in gaps): wetness += 0.2    # Connected
-        if all(g == 1 for g in gaps): wetness += 0.1    # Very connected
+        # --- Flush potential ---
+        suit_counts = Counter(suits)
+        top_suit_count = suit_counts.most_common(1)[0][1]
+        if top_suit_count >= 3:
+            wetness += 0.40  # Monotone (flush already possible)
+        elif top_suit_count == 2:
+            wetness += 0.15  # Two-tone (flush draw possible)
 
-        if sum(ranks)/len(ranks) >= 10: wetness += 0.1  # Broadway-heavy
-        if len(set(ranks)) < len(ranks): wetness -= 0.15 # Paired = drier
+        # --- Straight potential ---
+        sorted_ranks = sorted(set(ranks))
+        # Count cards within 5-card windows
+        max_in_window = 0
+        for base in range(max(0, min(sorted_ranks) - 4), max(sorted_ranks) + 1):
+            count = sum(1 for r in sorted_ranks if base <= r < base + 5)
+            max_in_window = max(max_in_window, count)
+
+        if max_in_window >= 3:
+            wetness += 0.25  # 3 cards within 5 = many straight draws
+        elif max_in_window == 2:
+            gaps = [sorted_ranks[j+1] - sorted_ranks[j] for j in range(len(sorted_ranks)-1)]
+            if min(gaps) <= 2:
+                wetness += 0.15  # Some connectivity
+            else:
+                wetness += 0.05  # Minimal connectivity
+
+        # --- Card height ---
+        avg_rank = sum(ranks) / len(ranks)
+        if avg_rank >= 10:
+            wetness += 0.10  # Broadway-heavy (T+ average)
+        elif avg_rank >= 7:
+            wetness += 0.05  # Medium cards
+
+        # --- Pairing ---
+        if len(set(ranks)) < len(ranks):
+            wetness -= 0.15  # Paired board = drier
 
         return max(0.0, min(1.0, wetness))
+
+    def _classify_board(self, board_cards):
+        """Classify flop board into a category for c-bet strategy lookup.
+
+        Returns one of the CBET_BOARD_STRATEGY keys:
+        'paired_high', 'paired_low', 'dry_high', 'dry_low',
+        'two_tone_high', 'two_tone_connected', 'wet', 'monotone'
+        """
+        if not board_cards or len(board_cards) < 3:
+            return 'dry_high'  # Default
+
+        rank_map = {r: i for i, r in enumerate('23456789TJQKA')}
+        ranks, suits = [], []
+        for card in board_cards[:3]:
+            if card and len(card) >= 2:
+                r = card[0].upper()
+                if r == '1' and len(card) >= 3:
+                    r = 'T'
+                    suits.append(card[2].upper())
+                else:
+                    suits.append(card[-1].upper())
+                ranks.append(rank_map.get(r, 0))
+        if len(ranks) < 3:
+            return 'dry_high'
+
+        from collections import Counter
+        suit_counts = Counter(suits)
+        top_suit_count = suit_counts.most_common(1)[0][1]
+        is_paired = len(set(ranks)) < len(ranks)
+        is_monotone = top_suit_count >= 3
+        is_two_tone = top_suit_count == 2
+
+        sorted_ranks = sorted(ranks)
+        gaps = [sorted_ranks[j+1] - sorted_ranks[j] for j in range(len(sorted_ranks)-1)]
+        is_connected = all(g <= 2 for g in gaps) and max(sorted_ranks) - min(sorted_ranks) <= 4
+        is_very_connected = all(g == 1 for g in gaps)  # e.g. JT9, QJT
+        has_high = max(ranks) >= 11  # Q, K, or A high
+
+        # Classify
+        if is_monotone:
+            return 'monotone'
+        if is_paired:
+            return 'paired_high' if has_high else 'paired_low'
+        if is_very_connected and is_two_tone:
+            return 'wet'  # e.g. JT9 two-tone = very wet
+        if is_connected and is_two_tone:
+            return 'two_tone_connected'
+        if is_very_connected:
+            return 'wet'  # e.g. QJT rainbow but very connected = still wet
+        if is_two_tone:
+            return 'two_tone_high' if has_high else 'two_tone_connected'
+        if is_connected:
+            return 'two_tone_connected' if has_high else 'dry_low'
+        # Rainbow, disconnected
+        return 'dry_high' if has_high else 'dry_low'
 
     def _parse_card(self, card_str):
         """Parse card string like 'QD', 'AH', '10S', 'TS' into (rank_num, suit_char)."""

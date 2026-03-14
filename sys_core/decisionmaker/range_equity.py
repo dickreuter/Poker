@@ -692,6 +692,128 @@ class RangeEquity:
         )
 
 
+# ── Blocker-based adjustments ─────────────────────────────────────────────
+
+def blocker_adjustment(hero_cards: List[str], board: List[str],
+                       villain_range_str: str = '') -> tuple:
+    """Quantify how hero's cards affect fold equity and range estimation.
+
+    Returns:
+        (fold_equity_bonus, equity_adjustment) — both floats.
+
+    Examples:
+        - Having A of flush suit on 3-flush board: +0.15 fold equity (blocks nut flush)
+        - Having K on K-high board: +0.08 fold equity (blocks top pair combos)
+        - Having low suited card on flush board: -0.06 fold equity (blocks folds)
+    """
+    if not hero_cards or len(hero_cards) < 2 or not board or len(board) < 3:
+        return (0.0, 0.0)
+
+    from collections import Counter
+
+    rank_map = {r: i for i, r in enumerate('23456789TJQKA')}
+
+    # Parse hero cards
+    hero_ranks = []
+    hero_suits = []
+    for c in hero_cards:
+        if c and len(c) >= 2:
+            r = c[0].upper()
+            if r == '1' and len(c) >= 3:
+                r = 'T'  # handle '10X'
+                hero_suits.append(c[2].upper())
+            else:
+                hero_suits.append(c[-1].upper())
+            hero_ranks.append(r)
+
+    # Parse board cards
+    board_ranks = []
+    board_suits = []
+    for c in board:
+        if c and len(c) >= 2:
+            r = c[0].upper()
+            if r == '1' and len(c) >= 3:
+                r = 'T'
+                board_suits.append(c[2].upper())
+            else:
+                board_suits.append(c[-1].upper())
+            board_ranks.append(r)
+
+    if len(hero_ranks) < 2 or len(board_ranks) < 3:
+        return (0.0, 0.0)
+
+    suit_counts = Counter(board_suits)
+    flush_suit = None
+    for s, cnt in suit_counts.items():
+        if cnt >= 3:
+            flush_suit = s
+            break
+
+    fold_eq_bonus = 0.0
+    eq_adj = 0.0
+
+    # Highest board rank
+    board_rank_vals = [rank_map.get(r, 0) for r in board_ranks]
+    highest_board_rank = max(board_rank_vals) if board_rank_vals else 0
+    highest_board_char = '23456789TJQKA'[highest_board_rank] if highest_board_rank < 13 else 'A'
+
+    for i, (rank, suit) in enumerate(zip(hero_ranks, hero_suits)):
+        # --- Flush blocker effects ---
+        if flush_suit:
+            if suit == flush_suit and rank == 'A':
+                # Nut flush blocker: great for bluffing (+15% fold equity)
+                fold_eq_bonus += 0.15
+                eq_adj += 0.03  # Slightly better equity (opponent can't have nut flush)
+            elif suit == flush_suit and rank in ('K', 'Q'):
+                # High flush blocker: moderate bluff benefit
+                fold_eq_bonus += 0.06
+                eq_adj += 0.01
+            elif suit == flush_suit and rank_map.get(rank, 0) <= 5:
+                # Low suited card on flush board: blocks FOLDS (bad for bluffing)
+                fold_eq_bonus -= 0.06
+
+        # --- Top pair / overpair blockers ---
+        if rank == 'A':
+            # Holding an Ace: blocks AA (6→3 combos), AK/AQ (16→12 each)
+            fold_eq_bonus += 0.08
+            eq_adj += 0.02
+        elif rank == 'K':
+            # Holding a King: blocks KK, AK
+            fold_eq_bonus += 0.05
+            eq_adj += 0.01
+
+        # --- Board top card blocker ---
+        if rank == highest_board_char and rank not in ('A', 'K'):
+            # We hold the top board card: blocks their top pair combos
+            fold_eq_bonus += 0.06
+
+        # --- Set blocker: holding a board card blocks their sets ---
+        if rank in board_ranks:
+            fold_eq_bonus += 0.04
+            eq_adj += 0.01
+
+    # --- Straight blocker: holding key connecting cards ---
+    sorted_board = sorted(set(board_rank_vals))
+    if len(sorted_board) >= 2:
+        # If board has 3 connected cards (potential straight), holding a key card
+        # blocks straight combos
+        gaps = [sorted_board[j+1] - sorted_board[j] for j in range(len(sorted_board)-1)]
+        if any(g <= 1 for g in gaps):
+            for r in hero_ranks:
+                rv = rank_map.get(r, 0)
+                # Check if hero rank fills a straight gap
+                for bv in sorted_board:
+                    if abs(rv - bv) <= 2 and rv not in board_rank_vals:
+                        fold_eq_bonus += 0.03
+                        break
+
+    # Clamp values
+    fold_eq_bonus = max(-0.15, min(0.25, fold_eq_bonus))
+    eq_adj = max(-0.05, min(0.08, eq_adj))
+
+    return (fold_eq_bonus, eq_adj)
+
+
 # ── Geometric bet sizing ───────────────────────────────────────────────────
 
 def geometric_bet_fraction(pot: float, stack: float, streets: int) -> float:

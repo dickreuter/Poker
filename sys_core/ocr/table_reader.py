@@ -609,6 +609,7 @@ def read_table(
         tournament_prize=tournament_info.get('first_prize'),
         tournament_players_paid=tournament_info.get('players_paid'),
         icm_pressure=tournament_icm,
+        tournament_subtype=_detect_tournament_subtype(window_name),
         ocr_latency_ms=elapsed_ms,
         ocr_source='python_table_reader',
         hero_stack_is_estimated=hero_stack_is_estimated,
@@ -2583,6 +2584,49 @@ def _detect_game_type(window_name: str) -> str:
     # Generic cash: "$X/$Y" without any tournament keyword
     if re.search(r'\$\d+(?:\.\d+)?\s*/\s*\$\d+', window_name) and 'buy' not in name_lower:
         return 'cash'
+
+    return 'unknown'
+
+
+def _detect_tournament_subtype(window_name: str) -> str:
+    """Detect specific tournament subtype from window title.
+
+    Returns one of:
+        'hyper'        - Hyper turbo (faster blinds, push/fold earlier)
+        'turbo'        - Turbo structure
+        'double_stack' - Double stack (deeper stacks)
+        'bounty'       - Bounty/knockout tournament (wider calling ranges)
+        'spin'         - Spin & Go / Spin & Gold (winner-take-all)
+        'regular'      - Standard tournament structure
+        'unknown'      - Cannot determine subtype
+    """
+    name_lower = window_name.lower()
+
+    # Spin & Gold / Spin & Go
+    if 'spin' in name_lower or 'gold' in name_lower:
+        return 'spin'
+
+    # Hyper turbo (check before turbo — "hyper" is more specific)
+    if 'hyper' in name_lower:
+        return 'hyper'
+
+    # Turbo
+    if 'turbo' in name_lower:
+        return 'turbo'
+
+    # Double stack
+    if 'double' in name_lower and 'stack' in name_lower:
+        return 'double_stack'
+
+    # Bounty / knockout
+    if any(kw in name_lower for kw in ('bounty', 'knockout', 'ko ', 'mystery bounty',
+                                        'progressive ko')):
+        return 'bounty'
+
+    # If it's a tournament but no specific subtype detected
+    game_type = _detect_game_type(window_name)
+    if game_type == 'tournament':
+        return 'regular'
 
     return 'unknown'
 

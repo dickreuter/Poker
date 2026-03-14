@@ -281,6 +281,7 @@ class GameState:
     tournament_prize: Optional[float] = None  # 1st prize in dollars (e.g., 1172.0)
     tournament_players_paid: Optional[int] = None  # Places paid count
     icm_pressure: float = 0.0  # 0.0 (no pressure) to 1.0 (extreme bubble/FT)
+    tournament_subtype: str = "unknown"  # 'hyper', 'turbo', 'double_stack', 'bounty', 'spin', 'regular', 'unknown'
 
     # Metadata
     ocr_latency_ms: float = 0.0
@@ -654,6 +655,7 @@ class GameState:
         t._tournament_prize = self.tournament_prize
         t._tournament_players_paid = self.tournament_players_paid
         t._icm_pressure = self.icm_pressure
+        t._tournament_subtype = self.tournament_subtype
 
         # derive_preflop_sheet_name is inherited from Table — no action needed
 
