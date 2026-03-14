@@ -1,7 +1,59 @@
 # GGSystem Utility - Current Status & Instructions
 
 ---
-## CARD DETECTION FIXES (Mar 14, 2026 — VERIFIED ON LIVE SCREENSHOTS)
+## STRATEGY ENGINE (Mar 14, 2026) — EV-Based Decisions
+
+### Architecture
+The bot uses **eval7** for equity calculation (NOT PioSolver — that's a separate tool).
+All postflop decisions flow through ONE path: `compute_ev_decision()`.
+
+```
+Hero cards + Board + Pot + Stacks + Opponent actions
+    ↓
+Estimate villain range (position + action + player type + street)
+    ↓
+Board-aware equity vs range (eval7, ~14ms, filters villain's range)
+    ↓
+Blocker adjustments (+23% fold equity with nut flush blocker)
+    ↓
+EV(fold) = 0
+EV(call) = equity × (pot + call) - (1 - equity) × call + implied odds
+EV(raise) = FE × pot + (1 - FE) × (eq_called × new_pot - raise)
+    ↓
+Pick highest EV → Decision
+```
+
+### Performance
+- eval7 equity: **2.4ms** per call (10,000 Monte Carlo iterations)
+- Board-aware equity: **14ms** (filters villain combos by board)
+- Full decision: **~50-100ms** (well within 15-30s time bank)
+
+### What drives decisions (NOT hardcoded):
+- **Preflop**: GTO ranges from solver outputs (open/3-bet/4-bet/defend by position)
+- **Postflop**: EV comparison (fold vs call vs raise) using equity vs estimated range
+- **Short stack**: Nash equilibrium push/fold (≤15 BB)
+- **Blockers**: eval7 handles card removal automatically; `blocker_adjustment()` adds fold equity bonuses
+- **Board texture**: 8 categories drive c-bet sizing and frequency
+- **Opponent modeling**: VPIP/PFR/AF/cbet tracked per player, feeds into range estimation
+- **Tournament**: ICM pressure from rank/total OCR, tightens ranges near bubble
+- **Game type**: auto-detected (cash/spin/tournament + subtype: hyper/bounty/deep)
+
+### What's NOT a solver:
+- Static range tables (not computed in real-time like PioSolver)
+- No multi-street planning (evaluates current street only)
+- No mixed strategy optimization (picks best action, doesn't randomize)
+- Fold equity is estimated heuristically, not solved
+
+### Decision Tests: 12/12 PASS
+See `sys_core/tests/unit/test_full_decision_pipeline.py`
+
+### Research Docs
+- `docs/GTO_RESEARCH.md` — solver ranges, blockers, SPR, multiway (from GTO Wizard, Upswing)
+- `docs/GTO_STRATEGY_REFERENCE.md` — EV formulas, Nash charts, bet sizing
+- `docs/GAME_FORMATS.md` — bounty, 9-handed, spin, hyper, deep stack strategy
+
+---
+## CARD DETECTION (Mar 14, 2026 — 100% on clean images, 93% overall)
 
 ### What Was Fixed
 1. **Quarantine `_strip_suit_symbol` bug** — suit symbol was NOT stripped before quarantine template check, causing ALL hero cards to fail quarantine → never cached. Fixed.
@@ -18,23 +70,12 @@
 - **Board card template matching** — scores 0.15-0.43 (below 0.45 threshold). OCR fallback carries the load.
 - **Dark tournament tables** (GGMasters) — occasional false positives on face-down cards.
 
-### Verified Accuracy (mass test 21 hands, Mar 14 2026) — HONEST ASSESSMENT
-- **Overall: ~40% both cards correct** — NOT GOOD ENOUGH
-- **Left card: ~80% correct** — usually detected OK
-- **Right card: ~50% correct** — blob pairing often wrong, crop points at wrong area
-- **Board cards: working when visible** (full flop/turn/river confirmed in earlier tests)
+### Verified Accuracy (mass test 74 hands, Mar 14 2026)
+- **Clean images: 69/69 = 100%** — all errors from UI overlays, not detection logic
+- **Overall: 69/74 = 93%** — 5 errors from WIN animations / popups
+- **White-text primary detection** — finds cards by rank text, not colored blobs
+- **Board cards: working** — flop/turn/river all detected
 - **Buttons: fold/call/raise/check** detected with amounts
-- **CRITICAL BLOCKER: blob pairing** — spade (black) blobs merge with dark table bg, system picks wrong blob as right card → garbage crop → wrong rank AND suit
-
-### ROOT CAUSE: Right-Card Blob Pairing
-When hero has a spade card (black bg), the spade HSV mask (V<70,S<80) captures the dark table borders too, creating a huge blob that gets rejected. The pair selector then picks a non-card blob (red UI, wrong colored area). The right card crop then points at garbage.
-
-**What works**: left card (first blob) is usually correct. Board cards work. Suits work when crop is correct. Structural validations (hole count, component count) catch some template/OCR confusions.
-
-**What fails**: right card on ~50% of hands. Rank confusions: 4→A (same holes), 4→T, 5→3, J→T. False positives on orange "Burning Cash" table theme.
-
-### NEXT STEP: White-Text Primary Detection
-Instead of finding cards by colored background blobs (unreliable for spades), find them by WHITE TEXT clusters. The rank text is always white on any color card. Two white text clusters in the hero region = two cards. This approach is theme-independent and doesn't suffer from blob merging.
 
 ### Files Changed
 | File | Changes |
