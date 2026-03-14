@@ -1527,6 +1527,9 @@ class Decision(DecisionBase):
 
         log.info(f"EV DECISION: {best_action.name} (EV={best_ev:+.2f}) — {reasoning}")
 
+        # Store for EV gate — prevents legacy betting from overriding
+        self._ev_decision_action = best_action
+
         return result
 
     def _get_opp(self):
@@ -2435,6 +2438,15 @@ class Decision(DecisionBase):
                 elif we_bet_prev and t.equity >= 0.45:
                     # Medium hand after barreling: check back for showdown value
                     log.info(f"RIVER SHOWDOWN: was betting, equity={t.equity:.3f}, checking for showdown")
+
+            # ── EV ENGINE GATE ────────────────────────────────────────
+            # If the EV engine already ran and decided fold/check, the legacy
+            # betting logic below must NOT override it with a bet. The EV engine
+            # computed EV(bet) as negative — betting would lose money.
+            ev_said_no_bet = getattr(self, '_ev_decision_action', None)
+            if ev_said_no_bet in (DecisionTypes.fold, DecisionTypes.check, DecisionTypes.call):
+                log.debug(f"EV GATE: Legacy betting skipped — EV engine decided {ev_said_no_bet}")
+                return  # Don't override EV engine's fold/check with a bet
 
             # multiple decision
             if p.selected_strategy['use_pot_multiples']:
