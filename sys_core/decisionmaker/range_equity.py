@@ -527,6 +527,170 @@ class RangeEquity:
 
         return RFI_RANGES.get('CO', '22+, A2s+, KTo+, QJo')
 
+    def estimate_villain_range_with_context(
+        self,
+        hand_context,  # HandContext from game_state.py
+        street: str = 'flop',
+        current_action: str = 'bet',
+        bet_size_pct: float = 0.50,
+        player_type: str = 'unknown',
+        num_opponents: int = 1,
+    ) -> str:
+        """Context-aware villain range estimation using full hand history.
+
+        This method uses the full action sequence to produce a much more
+        accurate range than the single-action estimate_villain_range().
+
+        Key scenarios that produce different ranges:
+        - UTG open + flop c-bet on dry board -> tight (overpairs, TPGK, AK)
+        - BTN open + flop c-bet on dry board -> wide (any pair, overcards, air)
+        - Villain bets flop + turn (double barrel) -> polarized
+        - Villain checks flop, bets turn -> delayed c-bet / medium strength
+        - 3-way pot, villain bets -> much tighter than heads-up
+        - Villain check-raises -> very strong or strong draw
+        """
+        if hand_context is None:
+            # Fallback to basic estimation
+            return self.estimate_villain_range(
+                position='CO', action=current_action,
+                player_type=player_type, street=street,
+                bet_size_pct=bet_size_pct,
+            )
+
+        ptype = player_type if player_type in PLAYER_TYPE_RANGES else 'unknown'
+        type_ranges = PLAYER_TYPE_RANGES.get(ptype, PLAYER_TYPE_RANGES['unknown'])
+
+        # --- Preflop: use existing logic with raiser position ---
+        if street == 'preflop':
+            pos = hand_context.preflop_raiser_position or 'CO'
+            return self.estimate_villain_range(
+                position=pos, action=current_action,
+                player_type=ptype, street='preflop',
+                bet_size_pct=bet_size_pct,
+            )
+
+        # --- Postflop: context-aware narrowing ---
+        pf_raiser_pos = hand_context.preflop_raiser_position or 'CO'
+        v_pattern = hand_context.villain_pattern  # e.g. 'bet-bet', 'check-bet'
+        n_streets_aggro = hand_context.streets_of_aggression
+        is_cbet = hand_context.is_cbet_spot
+        is_donk = hand_context.is_donk_bet
+        is_multiway = num_opponents >= 2 or hand_context.is_multiway
+
+        # Start from the preflop range (villain's starting range)
+        base_range = self.estimate_villain_range(
+            position=pf_raiser_pos,
+            action='open' if hand_context.preflop_raiser_position else 'call',
+            player_type=ptype,
+            street='preflop',
+        )
+
+        # --- Scenario-based narrowing ---
+        # Scenarios are checked in priority order. More specific matches first.
+
+        # SCENARIO 7: Check-raise (any street) — highest priority
+        if current_action == 'raise':
+            v_street_actions = hand_context.villain_actions.get(street, [])
+            if 'check' in v_street_actions and 'raise' in v_street_actions:
+                # Check-raise = polarized: very strong or strong draw
+                if is_multiway:
+                    return 'TT+, AQs+, AKo'  # Multiway CR = nuts
+                return 'JJ+, AKs, AQs, AKo, 99, 88'  # Sets + overpairs + bluffs
+
+            # Non-check-raise (raised our bet directly)
+            if is_multiway:
+                return 'TT+, AQs+, AKo'
+            if street == 'flop':
+                return '99+, AJs+, AQo+'
+            elif street == 'turn':
+                return 'TT+, AQs+, AKo'
+            else:
+                return 'JJ+, AKs, AKo'
+
+        # SCENARIO 4: Triple barrel (bet flop + turn + river)
+        if v_pattern in ('bet-bet-bet',) and street == 'river':
+            if is_multiway:
+                return 'QQ+, AKs'  # Multiway triple barrel = nuts
+            if bet_size_pct >= 0.75:
+                # Large triple barrel = polarized (nuts or bluff)
+                return 'TT+, AQs+, AKo'
+            return 'JJ+, AKs, AQs, AKo'
+
+        # SCENARIO 3: Double barrel (bet flop + bet turn)
+        if v_pattern in ('bet-bet',) and street == 'turn':
+            if is_multiway:
+                # Multiway double barrel = very strong
+                return 'TT+, AQs+, AKo'
+            if pf_raiser_pos in ('UTG', 'MP'):
+                # EP double barrel = very strong or draw
+                return 'JJ+, AKs, AQs, AKo'
+            # Polarized: strong hands + semi-bluffs
+            if bet_size_pct >= 0.66:
+                return 'TT+, AJs+, AQo+, KQs'  # Bigger bets = more polarized
+            return '88+, ATs+, KQs, AJo+'
+
+        # SCENARIO 8: Multiway pot adjustment (before c-bet, because multiway
+        # c-bets are much tighter than heads-up c-bets)
+        if is_multiway and current_action in ('bet',):
+            if street == 'flop':
+                return 'TT+, ATs+, KQs, AJo+'
+            elif street == 'turn':
+                return 'JJ+, AQs+, AKo'
+            else:
+                return 'QQ+, AKs'
+
+        # SCENARIO 2: Donk bet (non-raiser betting into raiser)
+        if is_donk and street == 'flop':
+            # Donk bets are often medium-strength hands or draws
+            if ptype in ('fish_passive', 'fish_aggro'):
+                return '22+, A2s+, K2s+, Q2s+, J2s+, T2s+, A2o+, K2o+'  # Fish donk wide
+            return '77+, A8s+, KTs+, QJs, ATo+, KJo+'
+
+        # SCENARIO 1: C-bet on flop (preflop raiser betting flop)
+        if is_cbet and street == 'flop' and current_action in ('bet',):
+            if pf_raiser_pos in ('UTG', 'MP'):
+                # EP raiser c-bets: tight range (overpairs, top pair+, AK)
+                return 'TT+, ATs+, AJo+, KQs'
+            elif pf_raiser_pos in ('CO', 'BTN'):
+                # LP raiser c-bets: wide range (any pair, overcards, draws, air)
+                return type_ranges.get('flop_bet', '77+, A2s+, K9s+, QTs+, JTs, T9s, A9o+, KTo+')
+            else:
+                # Blind raiser c-bets: medium range
+                return '88+, A8s+, KTs+, QJs, ATo+, KJo+'
+
+        # SCENARIO 5: Checked flop, bet turn (delayed c-bet / trapping)
+        if v_pattern == 'check-bet' and street == 'turn':
+            # Delayed aggression often means:
+            # - Trapping with strong hand
+            # - Hitting turn card
+            # - Giving up bluffs, betting value
+            return '99+, ATs+, KQs, AJo+'
+
+        # SCENARIO 6: Bet flop, check turn (gave up or trapping)
+        # This is informational for when villain bets river after checking turn
+        if v_pattern == 'bet-check' and street == 'river':
+            # Checked turn but now betting river = strong or thin value/bluff
+            return '88+, ATs+, KJs+, ATo+'
+
+        # SCENARIO 9: Generic postflop with street-of-aggression count
+        if n_streets_aggro >= 2:
+            # Multiple streets of aggression = range is narrowing
+            if street == 'turn':
+                return '99+, ATs+, KQs, AJo+'
+            elif street == 'river':
+                return 'TT+, AQs+, AKo'
+        elif n_streets_aggro == 1 and current_action in ('bet', 'raise'):
+            # First street of aggression postflop
+            return type_ranges.get(f'{street}_bet',
+                                   type_ranges.get('flop_bet', '77+, A8s+, KTs+, QTs+, ATo+'))
+
+        # Default: fall back to basic estimation
+        return self.estimate_villain_range(
+            position=pf_raiser_pos, action=current_action,
+            player_type=ptype, street=street,
+            bet_size_pct=bet_size_pct,
+        )
+
 
 # ── Geometric bet sizing ───────────────────────────────────────────────────
 

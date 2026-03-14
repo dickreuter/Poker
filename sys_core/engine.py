@@ -113,7 +113,7 @@ except ImportError:
 # Python OCR pipeline (table_reader)
 try:
     from sys_core.ocr.table_reader import read_table, _detect_buttons
-    from sys_core.ocr.game_state import GameState, AvailableAction
+    from sys_core.ocr.game_state import GameState, AvailableAction, HandContext
     PYTHON_OCR_AVAILABLE = True
 except ImportError:
     PYTHON_OCR_AVAILABLE = False
@@ -312,6 +312,10 @@ class TableSession:
     # Bayesian range tracking (beyond-GTO exploitative engine)
     _bayesian_villain_range: Optional[dict] = None
     _bayesian_last_street: str = ""  # Prevents re-narrowing same street
+
+    # Hand context — full action tracking across streets within one hand
+    _hand_context: Optional[object] = None  # HandContext, created per hand
+    _hand_context_last_street: str = ""  # Prevents re-recording same street
 
 
 class MultiTableRunner:
@@ -836,6 +840,9 @@ class MultiTableRunner:
                         # Not our turn + no board = between hands, clear cache
                         session._cached_cards = None
                         session._last_acted_key = ""  # Reset dedup for new hand
+                        # Reset hand context for new hand
+                        session._hand_context = None
+                        session._hand_context_last_street = ""
 
                 # Handle "Add Chips" rebuy dialog — check BEFORE Deal Me In
                 # because both may be visible simultaneously after busting.
@@ -1768,6 +1775,9 @@ class MultiTableRunner:
                     except Exception as e:
                         log.debug(f"Opponent modeling error (pre-MC): {e}")
 
+                # Update hand context (tracks full action sequence across streets)
+                self._update_hand_context(session, state, t)
+
                 # Run Monte Carlo with timeout to prevent table starvation.
                 # If MC hangs (bad card encoding, infinite loop), we abort
                 # after 8 seconds and use whatever equity we have.
@@ -1830,12 +1840,22 @@ class MultiTableRunner:
                 d._we_bet_prev_street = getattr(session, '_we_bet_last_street', False)
                 d._prev_street_equity = getattr(session, '_last_equity', None)
 
+                # Hand context: full action history for context-aware ranges
+                d._hand_context = session._hand_context
+
                 d.make_decision(t, h, p, session.game_logger)
 
                 # Track our action for multi-street planning
                 dec_str = str(d.decision).lower() if d.decision else ''
                 session._we_bet_last_street = ('bet' in dec_str or 'raise' in dec_str)
                 session._last_equity = t.equity
+
+                # Record hero action in hand context
+                self._record_hero_action_in_context(
+                    session, dec_str, t.gameStage,
+                    amount=getattr(t, 'currentCallValue', 0) or 0,
+                    pot=getattr(t, 'totalPotValue', 0) or 0,
+                )
 
                 mouse_target = d.decision
                 # Push/fold shove: override to Allin so runner types full stack
@@ -1874,6 +1894,17 @@ class MultiTableRunner:
                                    f"/{state.tournament_total}"
                                    f" ICM={state.icm_pressure:.2f}")
 
+                # Hand context summary for logging
+                _ctx = session._hand_context
+                _ctx_str = ""
+                if _ctx is not None:
+                    _vp = _ctx.villain_pattern
+                    if _vp:
+                        _ctx_str = (f" ctx=[{_vp} aggro={_ctx.streets_of_aggression}"
+                                    f" pf_raiser={_ctx.preflop_raiser_position or '-'}"
+                                    f" cbet={'Y' if _ctx.is_cbet_spot else 'N'}"
+                                    f" mw={'Y' if _ctx.is_multiway else 'N'}]")
+
                 log.info(f"DECISION: {mouse_target} | cards={state.my_cards} "
                          f"board={state.board_cards} | pot={state.pot:.1f} call={state.call_amount:.1f} "
                          f"| equity={equity_val:.3f} abs_eq={abs_eq_val:.3f} "
@@ -1881,7 +1912,7 @@ class MultiTableRunner:
                          f"| callLim={d.finalCallLimit:.1f} betLim={d.finalBetLimit:.1f} "
                          f"| stage={t.gameStage} pos={getattr(state, 'position', '?')}"
                          f" opp={t.other_active_players} init={'Y' if t.other_player_has_initiative else 'N'}"
-                         f"{blocker_str}{opp_str}{tourney_log}")
+                         f"{_ctx_str}{blocker_str}{opp_str}{tourney_log}")
 
                 # Track P&L (stack changes between hands)
                 try:
@@ -2889,6 +2920,9 @@ class MultiTableRunner:
             session._bayesian_villain_range = None
             session._bayesian_last_street = ""
             session._last_opp_track_key = None  # Reset dedup for new hand
+            # Reset hand context for new hand
+            session._hand_context = None
+            session._hand_context_last_street = ""
 
         if prev_state is None:
             return
@@ -3025,6 +3059,156 @@ class MultiTableRunner:
 
             except Exception as e:
                 log.debug(f"Bayesian range narrowing in runner failed: {e}")
+
+    def _update_hand_context(self, session: TableSession, state, t):
+        """Build and update the HandContext for the current hand.
+
+        Called each time we detect it's our turn.  Infers villain actions
+        from the game state and records them into session._hand_context.
+        Hero actions are recorded separately after we make our decision.
+        """
+        try:
+            if not PYTHON_OCR_AVAILABLE:
+                return
+
+            # Create new hand context if needed (new hand or first call)
+            if session._hand_context is None:
+                session._hand_context = HandContext()
+                session._hand_context_last_street = ""
+
+            ctx = session._hand_context
+
+            # --- Populate preflop context ---
+            _raiser_utg = getattr(t, 'first_raiser_utg', float('nan'))
+            _utg_to_pos = {0: 'UTG', 1: 'MP', 2: 'CO', 3: 'BTN', 4: 'SB', 5: 'BB'}
+            has_raiser = not np.isnan(_raiser_utg) if isinstance(_raiser_utg, float) else True
+
+            hero_pos = getattr(t, '_gto_position', getattr(state, 'position', 'CO'))
+            curr_board = getattr(state, 'board_cards', []) or []
+            is_preflop = not curr_board
+            opp_has_init = getattr(t, 'other_player_has_initiative', False)
+            call_val = getattr(t, 'currentCallValue', 0) or 0
+            pot_val = getattr(t, 'totalPotValue', 0) or 0
+
+            # Determine current street name
+            if is_preflop:
+                street_name = 'preflop'
+            elif len(curr_board) == 3:
+                street_name = 'flop'
+            elif len(curr_board) == 4:
+                street_name = 'turn'
+            else:
+                street_name = 'river'
+
+            # Set preflop raiser info (once per hand)
+            if not ctx.preflop_raiser_position and has_raiser:
+                ctx.preflop_raiser_seat = int(_raiser_utg) if not np.isnan(_raiser_utg) else -1
+                ctx.preflop_raiser_position = _utg_to_pos.get(
+                    int(_raiser_utg), 'CO') if not np.isnan(_raiser_utg) else ''
+
+            # Detect if hero raised preflop (when we see postflop for the first time)
+            if is_preflop and state.is_my_turn:
+                # If we're facing a raise, hero hasn't acted yet.
+                # If call_val > 1.0 BB, someone raised and we're deciding
+                if call_val > 1.1 and hero_pos not in ('BB',):
+                    pass  # We haven't acted yet
+                elif call_val <= 0.1 and has_raiser:
+                    # No call amount but raiser detected = we might be the raiser
+                    # This is ambiguous; will be set after hero decision
+                    pass
+
+            # Number of active opponents
+            n_opp = getattr(t, 'other_active_players', 1)
+            if not ctx.is_multiway and n_opp >= 2:
+                ctx.is_multiway = True
+                ctx.num_players_to_flop = n_opp + 1
+
+            # Record preflop pot going to flop
+            if street_name == 'flop' and ctx.preflop_pot_bb == 0:
+                ctx.preflop_pot_bb = pot_val
+                ctx.num_players_to_flop = max(n_opp + 1, ctx.num_players_to_flop)
+
+            # --- Record villain action on current street (deduplicated) ---
+            if session._hand_context_last_street != street_name:
+                if opp_has_init and street_name != 'preflop':
+                    # Villain bet into us on this street
+                    v_action = 'bet'
+                    # Check if this is a raise (we already bet this street)
+                    hero_street_actions = ctx.hero_actions.get(street_name, [])
+                    if any(a in ('bet', 'raise') for a in hero_street_actions):
+                        v_action = 'raise'
+                    ctx.record_action(street_name, 'villain', v_action,
+                                      amount=call_val, pot_after=pot_val)
+                elif opp_has_init and street_name == 'preflop' and has_raiser:
+                    # Villain raised preflop
+                    if call_val > 5:
+                        v_action = '3bet'
+                    else:
+                        v_action = 'raise'
+                    ctx.record_action('preflop', 'villain', v_action,
+                                      amount=call_val, pot_after=pot_val)
+                elif not opp_has_init and street_name != 'preflop':
+                    # No initiative = villain checked (or we're first to act)
+                    # Only record check if villain had the opportunity (they acted before us)
+                    has_check_btn = getattr(t, 'checkButton', False)
+                    if has_check_btn:
+                        # We have check available = nobody bet before us
+                        # If villain was supposed to act first (e.g. we have position),
+                        # they checked to us
+                        if hero_pos in ('BTN', 'CO', 'SB') or (hero_pos == 'BB' and len(curr_board) > 0):
+                            # Heuristic: in position means villain checked to us
+                            ctx.record_action(street_name, 'villain', 'check',
+                                              amount=0, pot_after=pot_val)
+
+                session._hand_context_last_street = street_name
+
+            # Attach context to state for downstream consumption
+            if hasattr(state, 'hand_context'):
+                state.hand_context = ctx
+
+            log.debug(f"HAND_CTX: street={street_name} pattern='{ctx.villain_pattern}' "
+                      f"aggro_streets={ctx.streets_of_aggression} "
+                      f"hero_init={ctx.hero_has_initiative} v_init={ctx.villain_has_initiative} "
+                      f"pf_raiser={ctx.preflop_raiser_position} cbet={ctx.is_cbet_spot}")
+
+        except Exception as e:
+            log.debug(f"Hand context update failed: {e}")
+
+    def _record_hero_action_in_context(self, session: TableSession, decision_str: str,
+                                        street: str, amount: float = 0, pot: float = 0):
+        """Record hero's decision into the hand context after it's made."""
+        try:
+            ctx = session._hand_context
+            if ctx is None:
+                return
+
+            # Map decision to action type
+            dec_lower = decision_str.lower() if decision_str else ''
+            if 'fold' in dec_lower:
+                action = 'fold'
+            elif 'call' in dec_lower or 'check' in dec_lower:
+                if amount <= 0:
+                    action = 'check'
+                else:
+                    action = 'call'
+            elif 'bet' in dec_lower or 'raise' in dec_lower or 'allin' in dec_lower:
+                action = 'bet'
+            else:
+                return  # Unknown action, skip
+
+            ctx.record_action(street, 'hero', action, amount=amount, pot_after=pot)
+
+            # Update hero_was_raiser / hero_was_caller
+            _street_map = {'PreFlop': 'preflop', 'Flop': 'flop', 'Turn': 'turn', 'River': 'river'}
+            norm_street = _street_map.get(street, street.lower())
+            if norm_street == 'preflop':
+                if action == 'bet':
+                    ctx.hero_was_raiser = True
+                elif action == 'call':
+                    ctx.hero_was_caller = True
+
+        except Exception as e:
+            log.debug(f"Record hero action failed: {e}")
 
     def _track_pnl(self, session, state, decision_obj=None):
         """Track P&L by comparing stack between decisions.
@@ -4381,12 +4565,22 @@ class MultiTableRunner:
             if session._bayesian_villain_range is not None:
                 d._bayesian_villain_range = session._bayesian_villain_range
 
+            # Hand context: full action history for context-aware ranges
+            d._hand_context = session._hand_context
+
             d.make_decision(t, h, p, session.game_logger)
 
             # Track our action for multi-street planning
             dec_str = str(d.decision).lower() if d.decision else ''
             session._we_bet_last_street = ('bet' in dec_str or 'raise' in dec_str)
             session._last_equity = t.equity
+
+            # Record hero action in hand context
+            self._record_hero_action_in_context(
+                session, dec_str, t.gameStage,
+                amount=getattr(t, 'currentCallValue', 0) or 0,
+                pot=getattr(t, 'totalPotValue', 0) or 0,
+            )
 
             # === PER-HAND SAFETY OVERRIDE (Phase 5.3) ===
             _ph_call = getattr(t, 'minCall', 0) or 0

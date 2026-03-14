@@ -452,12 +452,29 @@ class Decision(DecisionBase):
                 else:
                     v_position = 'CO'  # Safe default
 
-                v_range = re.estimate_villain_range(
-                    position=v_position,
-                    action=v_action,
-                    player_type=ptype,
-                    street=street,
-                )
+                # Use context-aware range when hand context available
+                _hand_ctx = getattr(self, '_hand_context', None)
+                _n_opp = getattr(t, 'other_active_players', 1)
+                _bet_pct = (t.minCall / max(t.totalPotValue, 0.01)
+                            if hasattr(t, 'minCall') and t.totalPotValue > 0 else 0.0)
+
+                if _hand_ctx is not None and street != 'preflop':
+                    v_range = re.estimate_villain_range_with_context(
+                        hand_context=_hand_ctx,
+                        street=street,
+                        current_action=v_action,
+                        bet_size_pct=_bet_pct,
+                        player_type=ptype,
+                        num_opponents=_n_opp,
+                    )
+                else:
+                    v_range = re.estimate_villain_range(
+                        position=v_position,
+                        action=v_action,
+                        player_type=ptype,
+                        street=street,
+                        bet_size_pct=_bet_pct,
+                    )
 
                 board = getattr(t, 'cardsOnTable', []) or []
 
@@ -574,6 +591,9 @@ class Decision(DecisionBase):
         self._prev_street_action = None   # Set by runner: 'bet', 'check', 'call', 'fold'
         self._prev_street_equity = None   # Set by runner: equity on previous street
         self._we_bet_prev_street = False  # Set by runner: True if we bet/raised prev street
+
+        # --- Hand context: full action history for context-aware ranges ---
+        self._hand_context = None  # Set by runner: HandContext from engine.py
 
         # --- Bayesian range tracking (beyond-GTO exploitative engine) ---
         # These persist across streets within the SAME hand
@@ -1101,6 +1121,7 @@ class Decision(DecisionBase):
         # ── Estimate villain range ─────────────────────────────────────────
         opp = self._get_opp()
         ptype = opp.get('type', 'unknown') if opp else 'unknown'
+        n_opponents = getattr(t, 'other_active_players', 1)
 
         # Determine villain action context
         if t.allInCallButton:
@@ -1122,13 +1143,38 @@ class Decision(DecisionBase):
         else:
             v_position = 'CO'
 
+        # Bet size as fraction of pot (for range narrowing)
+        bet_size_pct = call_amount / pot if pot > 0 else 0.0
+
+        # Use context-aware range estimation when hand context is available
+        hand_ctx = getattr(self, '_hand_context', None)
+
         try:
             from sys_core.decisionmaker.range_equity import get_range_equity
             re = get_range_equity()
-            v_range = re.estimate_villain_range(
-                position=v_position, action=v_action,
-                player_type=ptype, street=street,
-            )
+
+            if hand_ctx is not None and street != 'preflop':
+                # Context-aware: uses full action history across streets
+                v_range = re.estimate_villain_range_with_context(
+                    hand_context=hand_ctx,
+                    street=street,
+                    current_action=v_action,
+                    bet_size_pct=bet_size_pct,
+                    player_type=ptype,
+                    num_opponents=n_opponents,
+                )
+                log.info(f"EV RANGE (context-aware): street={street} "
+                         f"pattern='{hand_ctx.villain_pattern}' "
+                         f"aggro={hand_ctx.streets_of_aggression} "
+                         f"cbet={hand_ctx.is_cbet_spot} "
+                         f"multiway={hand_ctx.is_multiway}")
+            else:
+                # Fallback: single-action estimation
+                v_range = re.estimate_villain_range(
+                    position=v_position, action=v_action,
+                    player_type=ptype, street=street,
+                    bet_size_pct=bet_size_pct,
+                )
         except Exception as e:
             log.debug(f"EV engine: range estimation failed: {e}")
             v_range = '22+, A2s+, K9s+, QTs+'
@@ -2794,10 +2840,22 @@ class Decision(DecisionBase):
                     v_action = 'bet' if not t.checkButton else 'check'
                     from sys_core.decisionmaker.range_equity import get_range_equity
                     re = get_range_equity()
-                    v_range = re.estimate_villain_range(
-                        position='CO', action=v_action,
-                        player_type=ptype, street=street,
-                    )
+                    _hand_ctx = getattr(self, '_hand_context', None)
+                    _n_opp = getattr(t, 'other_active_players', 1)
+                    if _hand_ctx is not None and street != 'preflop':
+                        v_range = re.estimate_villain_range_with_context(
+                            hand_context=_hand_ctx,
+                            street=street,
+                            current_action=v_action,
+                            bet_size_pct=bet_size_fraction,
+                            player_type=ptype,
+                            num_opponents=_n_opp,
+                        )
+                    else:
+                        v_range = re.estimate_villain_range(
+                            position='CO', action=v_action,
+                            player_type=ptype, street=street,
+                        )
                 if v_range:
                     fe_result = compute_range_fold_equity(
                         cards, board, v_range, bet_size_fraction)
@@ -2876,51 +2934,108 @@ class Decision(DecisionBase):
         - Postflop raise = very strong
         - Check then call = medium/drawing
         - Check then fold = weak (but we don't see this)
+
+        Uses HandContext when available for much more accurate estimation.
         """
         strength = 0.5  # Default: unknown
+        hand_ctx = getattr(self, '_hand_context', None)
 
-        # --- Preflop raiser position narrows range ---
-        if not np.isnan(getattr(t, 'first_raiser_utg', np.nan)):
-            raiser_utg = t.first_raiser_utg
-            # Earlier position = tighter range = stronger
-            if raiser_utg <= 1:    # UTG/UTG+1
+        # --- HandContext-based estimation (preferred) ---
+        if hand_ctx is not None:
+            # Preflop raiser position
+            pf_pos = hand_ctx.preflop_raiser_position
+            if pf_pos in ('UTG',):
+                strength += 0.18
+            elif pf_pos in ('MP',):
+                strength += 0.12
+            elif pf_pos in ('CO',):
+                strength += 0.07
+            elif pf_pos in ('BTN',):
+                strength += 0.02
+            # SB/BB open or no raiser = wide
+
+            # 3-bet or 4-bet preflop
+            pf_v_actions = hand_ctx.villain_actions.get('preflop', [])
+            if '3bet' in pf_v_actions or '4bet' in pf_v_actions:
+                strength += 0.18
+
+            # Multi-street aggression pattern
+            pattern = hand_ctx.villain_pattern
+            if pattern == 'bet-bet-bet':
+                # Triple barrel = very strong or bluff (polarized)
+                strength += 0.20
+            elif pattern == 'bet-bet':
+                # Double barrel = committed/strong
+                strength += 0.12
+            elif pattern in ('check-bet',):
+                # Delayed aggression = trapping or turned hand
+                strength += 0.08
+            elif pattern == 'bet-check':
+                # Gave up = weaker (if they bet river after, it's thin value/bluff)
+                strength -= 0.05
+            elif pattern.startswith('raise') or 'raise' in pattern:
+                # Raised at any point postflop = very strong
                 strength += 0.15
-            elif raiser_utg <= 2:  # MP
-                strength += 0.10
-            elif raiser_utg <= 3:  # CO
-                strength += 0.05
-            # BTN/SB open = wide range, no bonus
 
-        # --- 3-bettor = very strong range ---
-        if not np.isnan(getattr(t, 'second_raiser_utg', np.nan)):
-            strength += 0.15  # 3-bet = strong range
+            # C-bet spot is slightly weaker than raw betting (wider range c-bets)
+            if hand_ctx.is_cbet_spot and hand_ctx.streets_of_aggression == 1:
+                strength -= 0.05
 
-        # --- Postflop actions indicate strength ---
-        if t.gameStage != GameStages.PreFlop.value:
-            # Opponent has initiative = they were betting/raising
-            if t.other_player_has_initiative:
+            # Donk bet = often weak/medium (fish) or strong (regs)
+            if hand_ctx.is_donk_bet:
+                strength -= 0.03  # Slightly weaker on average
+
+            # Multiway aggression = much stronger
+            if hand_ctx.is_multiway and hand_ctx.streets_of_aggression >= 1:
                 strength += 0.10
 
-            # Opponent raised us (we bet, they raised) = very strong
-            if not t.checkButton and t.minCall > 0:
-                # We're facing a bet/raise
-                call_to_pot = t.minCall / max(t.totalPotValue, 0.01)
-                if call_to_pot > 0.5:
-                    strength += 0.10  # Big bet/raise = strong
-                if call_to_pot > 1.0:
-                    strength += 0.10  # Overbet = polarized (very strong or bluff)
+            # Number of streets of aggression
+            strength += hand_ctx.streets_of_aggression * 0.03
 
-            # Later streets with continued aggression = stronger
-            if t.gameStage == GameStages.Turn.value and t.other_player_has_initiative:
-                strength += 0.05  # Firing second barrel
-            elif t.gameStage == GameStages.River.value and t.other_player_has_initiative:
-                strength += 0.10  # Triple barrel = very strong or bluff
+        else:
+            # --- Fallback: legacy single-snapshot estimation ---
+            # Preflop raiser position narrows range
+            if not np.isnan(getattr(t, 'first_raiser_utg', np.nan)):
+                raiser_utg = t.first_raiser_utg
+                if raiser_utg <= 1:    # UTG/UTG+1
+                    strength += 0.15
+                elif raiser_utg <= 2:  # MP
+                    strength += 0.10
+                elif raiser_utg <= 3:  # CO
+                    strength += 0.05
 
-        # --- Board texture modifies range strength ---
-        # On very wet boards, opponent's range includes more draws (weaker)
+            # 3-bettor = very strong range
+            if not np.isnan(getattr(t, 'second_raiser_utg', np.nan)):
+                strength += 0.15
+
+            # Postflop actions indicate strength
+            if t.gameStage != GameStages.PreFlop.value:
+                if t.other_player_has_initiative:
+                    strength += 0.10
+                if not t.checkButton and t.minCall > 0:
+                    call_to_pot = t.minCall / max(t.totalPotValue, 0.01)
+                    if call_to_pot > 0.5:
+                        strength += 0.10
+                    if call_to_pot > 1.0:
+                        strength += 0.10
+                if t.gameStage == GameStages.Turn.value and t.other_player_has_initiative:
+                    strength += 0.05
+                elif t.gameStage == GameStages.River.value and t.other_player_has_initiative:
+                    strength += 0.10
+
+        # --- Board texture modifies range strength (always applies) ---
         if t.cardsOnTable and len(t.cardsOnTable) >= 3:
             wetness = self._board_wetness(t.cardsOnTable)
             strength -= wetness * 0.08  # Wet boards = more draws in range
+
+        # --- Current bet sizing adjustment ---
+        if t.gameStage != GameStages.PreFlop.value:
+            if not t.checkButton and t.minCall > 0:
+                call_to_pot = t.minCall / max(t.totalPotValue, 0.01)
+                if call_to_pot > 0.5:
+                    strength += 0.05  # Big bet
+                if call_to_pot > 1.0:
+                    strength += 0.05  # Overbet
 
         return max(0.1, min(0.95, strength))
 
@@ -3363,6 +3478,7 @@ class Decision(DecisionBase):
             bluff_prob = 0.10
 
         # Postflop actions narrow further
+        hand_ctx = getattr(self, '_hand_context', None)
         if t.gameStage != 'PreFlop':
             if not t.checkButton and t.minCall > 0:
                 # Opponent bet into us
@@ -3384,14 +3500,60 @@ class Decision(DecisionBase):
                     bluff_prob = 0.35
                     narrowness = 0.4
 
-            # Multi-street aggression = stronger
-            if getattr(t, 'other_player_has_initiative', False):
-                if t.gameStage == 'Turn':
-                    bluff_prob *= 0.7  # Fewer bluffs on turn
-                    narrowness = min(narrowness + 0.1, 1.0)
-                elif t.gameStage == 'River':
-                    bluff_prob *= 0.5  # Even fewer on river
-                    narrowness = min(narrowness + 0.2, 1.0)
+            # --- Context-aware narrowing using HandContext ---
+            if hand_ctx is not None:
+                v_pattern = hand_ctx.villain_pattern
+
+                if v_pattern == 'bet-bet-bet':
+                    # Triple barrel = very polarized (nuts or bluff)
+                    likely = ['monster', 'bluff']
+                    bluff_prob = 0.25  # Balanced villains bluff ~25% on river
+                    narrowness = 0.90
+                    estimated_opp_eq = 0.70
+                elif v_pattern == 'bet-bet':
+                    # Double barrel = strong or committed draw
+                    likely = ['overpair', 'top_pair', 'two_pair', 'strong_draw']
+                    bluff_prob = 0.20
+                    narrowness = 0.75
+                    estimated_opp_eq = 0.62
+                elif v_pattern == 'check-bet':
+                    # Delayed aggression = trapping or turned hand
+                    likely = ['strong_made_hand', 'slow_play', 'turned_pair']
+                    bluff_prob = 0.15
+                    narrowness = 0.65
+                    estimated_opp_eq = 0.60
+                elif v_pattern == 'bet-check':
+                    # Gave up after flop bet = medium/weak
+                    likely = ['weak_pair', 'missed_draw', 'give_up']
+                    bluff_prob = 0.10  # Not really bluffing anymore
+                    narrowness = 0.40
+                    estimated_opp_eq = 0.40
+                elif 'raise' in v_pattern:
+                    # Any raise = very strong or big draw
+                    likely = ['set', 'two_pair', 'strong_draw', 'bluff_raise']
+                    bluff_prob = 0.20
+                    narrowness = 0.85
+                    estimated_opp_eq = 0.72
+
+                # Multiway pots reduce bluff probability significantly
+                if hand_ctx.is_multiway:
+                    bluff_prob *= 0.50  # Half as likely to bluff in multiway
+                    narrowness = min(narrowness + 0.10, 1.0)
+
+                # C-bet spot is wider range (many villains c-bet 60-80%)
+                if hand_ctx.is_cbet_spot and hand_ctx.streets_of_aggression <= 1:
+                    bluff_prob = max(bluff_prob, 0.35)
+                    narrowness = max(narrowness - 0.10, 0.3)
+
+            else:
+                # Legacy: multi-street aggression from single snapshot
+                if getattr(t, 'other_player_has_initiative', False):
+                    if t.gameStage == 'Turn':
+                        bluff_prob *= 0.7  # Fewer bluffs on turn
+                        narrowness = min(narrowness + 0.1, 1.0)
+                    elif t.gameStage == 'River':
+                        bluff_prob *= 0.5  # Even fewer on river
+                        narrowness = min(narrowness + 0.2, 1.0)
 
         # Adjust based on opponent profile (if available)
         opp_profile = getattr(self, '_opp_profile', None)

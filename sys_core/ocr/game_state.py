@@ -13,6 +13,149 @@ from typing import List, Optional, Dict, Any
 log = logging.getLogger('game_state')
 
 
+# ---------------------------------------------------------------------------
+#  Hand Context — tracks full action history within a single hand
+# ---------------------------------------------------------------------------
+
+@dataclass
+class HandAction:
+    """A single action taken during a hand."""
+    street: str           # 'preflop', 'flop', 'turn', 'river'
+    actor: str            # 'hero' or 'villain'
+    action: str           # 'raise', 'call', 'check', 'bet', 'fold', '3bet', '4bet'
+    amount: float = 0.0   # Amount in BB (0 for checks)
+    pot_after: float = 0.0  # Pot size after this action
+
+
+@dataclass
+class HandContext:
+    """Full action context for the current hand — persists across streets.
+
+    Built incrementally by the engine as new information arrives each poll
+    cycle.  Passed into DecisionMaker and range estimation so they can
+    produce context-aware villain ranges (e.g. UTG open + flop c-bet + turn
+    barrel -> narrow/polarized range).
+    """
+    # --- Preflop context ---
+    preflop_raiser_seat: int = -1       # -1 = limped pot / no raiser detected
+    preflop_raiser_position: str = ''   # 'UTG', 'MP', 'CO', 'BTN', 'SB', 'BB', or ''
+    hero_was_raiser: bool = False       # Did hero raise preflop?
+    hero_was_caller: bool = False       # Did hero flat-call preflop?
+    hero_was_3bettor: bool = False      # Did hero 3-bet preflop?
+    num_players_to_flop: int = 2        # How many players saw the flop
+    preflop_pot_bb: float = 0.0         # Pot going to flop (in BB)
+
+    # --- Per-street villain actions ---
+    # Each list contains the villain actions observed on that street.
+    # Example: villain_actions['flop'] = ['bet'], villain_actions['turn'] = ['bet']
+    # means villain double-barreled.
+    villain_actions: Dict[str, List[str]] = field(
+        default_factory=lambda: {'preflop': [], 'flop': [], 'turn': [], 'river': []}
+    )
+
+    # --- Per-street hero actions ---
+    hero_actions: Dict[str, List[str]] = field(
+        default_factory=lambda: {'preflop': [], 'flop': [], 'turn': [], 'river': []}
+    )
+
+    # --- Full action sequence ---
+    action_history: List[HandAction] = field(default_factory=list)
+
+    # --- Derived context (updated after each street) ---
+    hero_has_initiative: bool = False   # Is hero the last aggressor?
+    villain_has_initiative: bool = False  # Is villain the last aggressor?
+    is_cbet_spot: bool = False          # Preflop raiser betting flop
+    is_donk_bet: bool = False           # Non-raiser betting into raiser
+    streets_of_aggression: int = 0      # How many streets villain has bet/raised
+    is_multiway: bool = False           # 3+ players to flop
+
+    def record_action(self, street: str, actor: str, action: str,
+                      amount: float = 0.0, pot_after: float = 0.0):
+        """Record an action and update derived context."""
+        ha = HandAction(street=street, actor=actor, action=action,
+                        amount=amount, pot_after=pot_after)
+        self.action_history.append(ha)
+
+        if actor == 'hero':
+            self.hero_actions.setdefault(street, []).append(action)
+        else:
+            self.villain_actions.setdefault(street, []).append(action)
+
+        # Update initiative tracking
+        if action in ('raise', 'bet', '3bet', '4bet'):
+            if actor == 'hero':
+                self.hero_has_initiative = True
+                self.villain_has_initiative = False
+            else:
+                self.villain_has_initiative = True
+                self.hero_has_initiative = False
+        elif action == 'call':
+            pass  # Caller does NOT gain initiative
+
+        # Count villain streets of aggression
+        self.streets_of_aggression = sum(
+            1 for s_actions in self.villain_actions.values()
+            if any(a in ('bet', 'raise', '3bet', '4bet') for a in s_actions)
+        )
+
+        # Detect c-bet spot: preflop raiser bets flop
+        if street == 'flop' and action == 'bet':
+            if actor == 'villain' and self.villain_has_initiative and self.preflop_raiser_position:
+                self.is_cbet_spot = True
+            elif actor == 'hero' and self.hero_was_raiser:
+                self.is_cbet_spot = True
+
+        # Detect donk bet: non-preflop-raiser bets into the raiser
+        if street == 'flop' and action == 'bet':
+            if actor == 'villain' and self.hero_was_raiser:
+                self.is_donk_bet = True
+            elif actor == 'hero' and not self.hero_was_raiser and self.preflop_raiser_position:
+                self.is_donk_bet = True
+
+    @property
+    def villain_pattern(self) -> str:
+        """Summarize villain's multi-street action pattern.
+
+        Returns strings like:
+          'bet-bet'      (flop bet + turn bet = double barrel)
+          'bet-bet-bet'  (triple barrel)
+          'check-bet'    (checked flop, bet turn = delayed c-bet)
+          'bet-check'    (bet flop, gave up turn)
+          'raise'        (check-raised or raised our bet)
+        """
+        parts = []
+        for s in ('flop', 'turn', 'river'):
+            actions = self.villain_actions.get(s, [])
+            if not actions:
+                continue  # Street hasn't happened yet
+            # Summarize: take the most aggressive action on this street
+            if any(a in ('raise', '3bet', '4bet') for a in actions):
+                parts.append('raise')
+            elif 'bet' in actions:
+                parts.append('bet')
+            elif 'call' in actions:
+                parts.append('call')
+            elif 'check' in actions:
+                parts.append('check')
+        return '-'.join(parts) if parts else ''
+
+    def to_dict(self) -> dict:
+        """Serialize for logging."""
+        return {
+            'preflop_raiser_position': self.preflop_raiser_position,
+            'hero_was_raiser': self.hero_was_raiser,
+            'hero_was_caller': self.hero_was_caller,
+            'num_players_to_flop': self.num_players_to_flop,
+            'villain_pattern': self.villain_pattern,
+            'streets_of_aggression': self.streets_of_aggression,
+            'hero_has_initiative': self.hero_has_initiative,
+            'villain_has_initiative': self.villain_has_initiative,
+            'is_cbet_spot': self.is_cbet_spot,
+            'is_multiway': self.is_multiway,
+            'action_count': len(self.action_history),
+        }
+
+
 @dataclass
 class ReadConfidence:
     """Per-field confidence scores for OCR reads (0.0–1.0).
@@ -148,6 +291,9 @@ class GameState:
 
     # Confidence metadata — populated by read_table()
     confidence: ReadConfidence = field(default_factory=ReadConfidence)
+
+    # Hand context — full action history for this hand (built by engine.py)
+    hand_context: Optional[HandContext] = None
 
     # -- Backward-compatible properties for existing code --
 
