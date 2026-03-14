@@ -130,6 +130,7 @@ class SystemServiceTray:
         self._start_time = None
         self._icon_active = _make_icon(active=True)
         self._icon_inactive = _make_icon(active=False)
+        self._strategy = 'ev'  # 'ev' or 'deepcfr'
 
         # Cached data
         self._stats = None
@@ -208,6 +209,31 @@ class SystemServiceTray:
             a = self._add_info("  --")
             a.setVisible(False)
             self.hand_actions.append(a)
+
+        self.menu.addSeparator()
+
+        # --- Strategy switch ---
+        self.strategy_header = self._add_info("Strategy")
+        self.strategy_ev = QAction("✓ EV Engine (eval7)")
+        self.strategy_ev.triggered.connect(lambda: self._set_strategy('ev'))
+        self.menu.addAction(self.strategy_ev)
+        self.strategy_dcfr = QAction("   Deep CFR (neural net)")
+        self.strategy_dcfr.triggered.connect(lambda: self._set_strategy('deepcfr'))
+        self.menu.addAction(self.strategy_dcfr)
+
+        self.menu.addSeparator()
+
+        # --- Game info (populated from log) ---
+        self.game_header = self._add_info("Table Info")
+        self.game_type_action = self._add_info("  --")
+        self.game_players_action = self._add_info("  --")
+        self.game_position_action = self._add_info("  --")
+        self.game_tournament_action = self._add_info("  --")
+        self.game_header.setVisible(False)
+        self.game_type_action.setVisible(False)
+        self.game_players_action.setVisible(False)
+        self.game_position_action.setVisible(False)
+        self.game_tournament_action.setVisible(False)
 
         self.menu.addSeparator()
 
@@ -295,6 +321,7 @@ class SystemServiceTray:
         self._load_recent_hands()
         self._update_stats_display()
         self._update_hands_display()
+        self._update_game_info()
         self._update_tooltip()
 
     def _load_session_stats(self):
@@ -430,6 +457,90 @@ class SystemServiceTray:
             else:
                 a.setVisible(False)
 
+    def _set_strategy(self, strategy: str):
+        """Switch between EV Engine and Deep CFR."""
+        self._strategy = strategy
+        if strategy == 'ev':
+            self.strategy_ev.setText("✓ EV Engine (eval7)")
+            self.strategy_dcfr.setText("   Deep CFR (neural net)")
+        else:
+            self.strategy_ev.setText("   EV Engine (eval7)")
+            self.strategy_dcfr.setText("✓ Deep CFR (neural net)")
+        # If bot is running, restart with new strategy
+        if self._is_running:
+            self.stop_service()
+            QTimer.singleShot(2000, self.start_service)
+
+    def _update_game_info(self):
+        """Read latest game info from log."""
+        try:
+            log_path = os.path.join(self.project_root, "log", "multi_table.log")
+            if not os.path.exists(log_path):
+                return
+            with open(log_path, 'r') as f:
+                lines = f.readlines()[-200:]  # last 200 lines
+
+            game_type = ''
+            players = ''
+            position = ''
+            tournament = ''
+
+            for line in reversed(lines):
+                if 'game=' in line and not game_type:
+                    # Extract game type
+                    idx = line.find('game=')
+                    if idx >= 0:
+                        gt = line[idx+5:].split()[0].split('|')[0].strip()
+                        game_type = gt.upper()
+
+                if 'TOURNEY:' in line and not tournament:
+                    idx = line.find('TOURNEY:')
+                    tournament = line[idx:].split('|')[0].strip()
+
+                if 'pos=' in line and not position:
+                    idx = line.find('pos=')
+                    if idx >= 0:
+                        position = line[idx+4:].split()[0].split('|')[0].strip()
+
+                if 'opp=' in line and not players:
+                    idx = line.find('opp=')
+                    if idx >= 0:
+                        try:
+                            opp = int(line[idx+4:].split()[0].split('|')[0].strip())
+                            players = f"{opp + 1} players ({opp} opponents)"
+                        except ValueError:
+                            pass
+
+                if 'Detected window:' in line:
+                    # Extract tournament name
+                    w = line.split('Detected window:')[1].strip().split('(')[0].strip()
+                    if 'Bounty' in w:
+                        game_type = 'BOUNTY TOURNAMENT'
+                    elif 'Hyper' in w:
+                        game_type = 'HYPER TOURNAMENT'
+                    elif 'Spin' in w or 'Gold' in w:
+                        game_type = 'SPIN & GO'
+                    elif 'Rush' in w and 'Cash' in w:
+                        game_type = 'CASH (Rush & Cash)'
+                    break  # Window name is most reliable
+
+            if game_type or players or position or tournament:
+                self.game_header.setVisible(True)
+                if game_type:
+                    self.game_type_action.setText(f"  Type: {game_type}")
+                    self.game_type_action.setVisible(True)
+                if players:
+                    self.game_players_action.setText(f"  {players}")
+                    self.game_players_action.setVisible(True)
+                if position:
+                    self.game_position_action.setText(f"  Position: {position}")
+                    self.game_position_action.setVisible(True)
+                if tournament:
+                    self.game_tournament_action.setText(f"  {tournament}")
+                    self.game_tournament_action.setVisible(True)
+        except Exception:
+            pass
+
     def _update_tooltip(self):
         if not self._is_running:
             self.tray.setToolTip("Poker Bot - Stopped")
@@ -456,10 +567,16 @@ class SystemServiceTray:
         except FileNotFoundError:
             pass
 
+        # Start with selected strategy
+        strategy_flag = f"--strategy {self._strategy}" if self._strategy != 'ev' else ""
         run_script = os.path.join(self.project_root, "run_sys.sh")
+        env = os.environ.copy()
+        env['BOT_STRATEGY'] = self._strategy
         subprocess.Popen(["bash", run_script], cwd=self.project_root,
-                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        self.status_action.setText("Bot: Starting...")
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                         env=env)
+        strategy_label = "EV Engine" if self._strategy == 'ev' else "Deep CFR"
+        self.status_action.setText(f"Bot: Starting ({strategy_label})...")
         self.start_action.setEnabled(False)
         QTimer.singleShot(2000, self._check_status)
 
