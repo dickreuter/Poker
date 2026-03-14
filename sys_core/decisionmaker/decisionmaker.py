@@ -1748,6 +1748,37 @@ class Decision(DecisionBase):
 
         # flop turn river
         if t.gameStage != GameStages.PreFlop.value:
+            # ── ANTI-DONK-BET: Check to the preflop raiser ────────────────
+            # GTO principle: the CALLER should almost never lead (donk-bet)
+            # into the preflop RAISER. The raiser has the range advantage.
+            # Only donk-bet with very strong hands (sets+, two pair) or
+            # strong draws on wet boards.
+            hero_was_caller = not getattr(t, 'other_player_has_initiative', False)
+            opponent_was_raiser = not np.isnan(getattr(t, 'first_raiser_utg', float('nan')))
+            is_flop = t.gameStage == GameStages.Flop.value
+            has_check = getattr(t, 'checkButton', False)
+
+            if hero_was_caller and opponent_was_raiser and has_check:
+                # We called preflop, opponent raised — check to them
+                hand_info = self._classify_hand(t) if hasattr(self, '_classify_hand') else None
+                hand_str = hand_info['strength'] if hand_info else 'unknown'
+
+                # Only donk-bet with monsters (sets+, two pair) on flop
+                # On turn/river, can lead with strong hands
+                allow_donk = False
+                if hand_str in ('monster', 'very_strong'):
+                    allow_donk = True  # Sets, flushes, straights — can lead
+                elif hand_str == 'strong' and not is_flop:
+                    allow_donk = True  # Top pair+ on turn/river OK to lead
+                elif self.equity >= 0.70:
+                    allow_donk = True  # Very high equity = lead
+
+                if not allow_donk:
+                    log.info(f"ANTI-DONK: Checking to preflop raiser "
+                             f"(hand={hand_str}, equity={self.equity:.2f}, "
+                             f"street={t.gameStage})")
+                    return  # Don't bet — check to raiser
+
             # ── EV-BASED BETTING (postflop) ────────────────────────────────
             # Use the unified EV engine for all postflop betting decisions.
             # The EV engine computes EV(fold/check) vs EV(call) vs EV(raise)
