@@ -3343,6 +3343,23 @@ class Decision(DecisionBase):
                 log.debug(f"Push/fold check failed: {e}")
 
             if _push_fold_done:
+                # EV SANITY CHECK: If Nash says fold but calling is cheap and +EV, call.
+                # Nash push/fold is "shove or fold" but sometimes a cheap call exists.
+                # QJo in BB with 0.5BB to call into 1.5BB pot = obviously profitable call.
+                if self.decision == DecisionTypes.fold and t.minCall > 0:
+                    call_amt = float(t.minCall)
+                    pot_total = float(t.totalPotValue) + call_amt
+                    pot_odds = call_amt / pot_total if pot_total > 0 else 1.0
+                    abs_eq = float(getattr(t, 'equity', 0) or 0)
+                    if abs_eq > pot_odds and call_amt <= self.hero_stack_bb * 0.15:
+                        # Cheap call that's +EV — override fold
+                        ev_call = abs_eq * pot_total - (1.0 - abs_eq) * call_amt
+                        log.info(f"EV OVERRIDE NASH FOLD: call={call_amt:.1f}BB into "
+                                 f"pot={pot_total:.1f}BB, eq={abs_eq:.0%} > pot_odds={pot_odds:.0%}, "
+                                 f"EV(call)={ev_call:+.2f}BB → CALL instead of fold")
+                        self.decision = DecisionTypes.call
+                        _push_fold_done = True
+
                 # Log "wait for better spot" analysis for marginal decisions
                 try:
                     if self.decision == DecisionTypes.fold and t.mycards:
