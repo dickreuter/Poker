@@ -1,31 +1,39 @@
 {
-  "ts": "2026-03-14T16:23:32.187072",
-  "window": "Rush & Cash - $0.01 / $0.02",
+  "ts": "2026-03-14T20:03:10.277672",
+  "window": "Spin & Gold $0.25 - Blinds 15 | 30",
   "hero_cards": [
-    "4S",
-    "7D"
+    "7D",
+    "7C"
   ],
   "board_cards": [],
   "cards_face_down": false,
   "street": "PreFlop",
   "position": "MP",
   "dealer_seat": 2,
-  "opponents_active": 0,
+  "opponents_active": 1,
   "opponents_in_hand": -1,
-  "pot": 1.5,
-  "call_amount": 1.0,
-  "min_raise": 2.0,
-  "hero_stack": 116.5,
+  "pot": 11.0,
+  "call_amount": 7.0,
+  "min_raise": 12.2,
+  "hero_stack": 11.2,
   "hero_stack_estimated": false,
-  "small_blind": 0.5,
-  "big_blind": 1.0,
+  "small_blind": 15.0,
+  "big_blind": 30.0,
   "players": [
     {
       "seat": 0,
       "name": "",
-      "stack": 116.5,
+      "stack": 11.2,
       "bet": 0,
       "is_hero": true,
+      "is_active": true
+    },
+    {
+      "seat": 2,
+      "name": "",
+      "stack": 1.0,
+      "bet": 0,
+      "is_hero": false,
       "is_active": true
     }
   ],
@@ -39,30 +47,33 @@
     },
     {
       "type": "call",
-      "amount": 1.0,
+      "amount": 7.0,
       "rel_x": 0.7994,
       "rel_y": 0.9325,
       "confidence": 0.85
     },
     {
       "type": "raise",
-      "amount": 2.0,
+      "amount": 0,
       "rel_x": 0.9229,
       "rel_y": 0.9325,
       "confidence": 0.85
     }
   ],
-  "equity": 0.34,
-  "abs_equity": 0.34,
-  "decision": "Fold",
-  "ev": 0.0,
-  "call_limit": 12.26,
-  "bet_limit": 9.44,
+  "equity": 0.3225,
+  "abs_equity": 0.57,
+  "decision": "Allin",
+  "ev": 4.228,
+  "call_limit": 11.2,
+  "bet_limit": 30.86,
   "outs": 0,
   "blocker_score": 0.0,
-  "opp_likely": [],
-  "opp_bluff_pct": 0.18,
-  "opp_type": "fish_passive",
-  "ocr_latency_ms": 1207.9,
+  "opp_likely": [
+    "overpair",
+    "top_pair",
+    "big_ace"
+  ],
+  "opp_bluff_pct": 0.2,
+  "ocr_latency_ms": 784.8,
   "ocr_source": "python"
 }

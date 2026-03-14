@@ -2980,6 +2980,19 @@ class Decision(DecisionBase):
         if not t.other_player_has_initiative:
             fold_eq += 0.08
 
+        # --- Opponent bet into us (raising into aggression) → MUCH less fold equity ---
+        # When villain bets, they've shown strength. Raising has lower fold equity
+        # than betting into a check. Larger bets = stronger range = less fold equity.
+        if t.other_player_has_initiative and not t.checkButton:
+            fold_eq -= 0.12  # Major penalty: raising into a bettor
+            # Extra penalty for large bets (pot-size or bigger = very strong)
+            if hasattr(t, 'minCall') and hasattr(t, 'totalPotValue'):
+                bet_to_pot = t.minCall / max(t.totalPotValue - t.minCall, 1.0)
+                if bet_to_pot >= 0.75:  # 3/4 pot or bigger
+                    fold_eq -= 0.08  # Very strong bet → even less fold equity
+                elif bet_to_pot >= 0.50:
+                    fold_eq -= 0.04  # Half-pot bet → moderate penalty
+
         # --- Opponent showed weakness (checked to us) ---
         if t.checkButton:
             fold_eq += 0.06

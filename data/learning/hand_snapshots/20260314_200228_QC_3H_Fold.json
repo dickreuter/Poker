@@ -1,31 +1,39 @@
 {
-  "ts": "2026-03-14T16:24:57.409972",
-  "window": "Rush & Cash - $0.01 / $0.02",
+  "ts": "2026-03-14T20:02:32.112193",
+  "window": "WSOP-SC: $15 Mini Saturday Showdown [Mystery Bounty] : Buy-in $15 - Blinds 700 | 1,400 - Table 583/!)@(#*$&%^|5707895384",
   "hero_cards": [
-    "6H",
-    "8C"
+    "QC",
+    "3H"
   ],
   "board_cards": [],
   "cards_face_down": false,
   "street": "PreFlop",
   "position": "MP",
   "dealer_seat": 2,
-  "opponents_active": 0,
+  "opponents_active": 1,
   "opponents_in_hand": -1,
-  "pot": 1.5,
+  "pot": 1.0,
   "call_amount": 1.0,
-  "min_raise": 2.0,
-  "hero_stack": 119.5,
+  "min_raise": 0,
+  "hero_stack": 79.3,
   "hero_stack_estimated": false,
-  "small_blind": 0.5,
+  "small_blind": 700.0,
   "big_blind": 1.0,
   "players": [
     {
       "seat": 0,
       "name": "",
-      "stack": 119.5,
+      "stack": 79.3,
       "bet": 0,
       "is_hero": true,
+      "is_active": true
+    },
+    {
+      "seat": 3,
+      "name": "",
+      "stack": 8.0,
+      "bet": 0,
+      "is_hero": false,
       "is_active": true
     }
   ],
@@ -33,36 +41,29 @@
     {
       "type": "fold",
       "amount": 0,
-      "rel_x": 0.6712,
-      "rel_y": 0.9325,
-      "confidence": 0.85
+      "rel_x": 0.4859,
+      "rel_y": 0.861,
+      "confidence": 0.5
     },
     {
       "type": "call",
       "amount": 1.0,
-      "rel_x": 0.7994,
-      "rel_y": 0.9325,
-      "confidence": 0.85
-    },
-    {
-      "type": "raise",
-      "amount": 2.0,
-      "rel_x": 0.9229,
-      "rel_y": 0.9325,
-      "confidence": 0.85
+      "rel_x": 0.8276,
+      "rel_y": 0.926,
+      "confidence": 0.7
     }
   ],
   "equity": 0.36,
   "abs_equity": 0.36,
   "decision": "Fold",
   "ev": 0.0,
-  "call_limit": 13.8,
-  "bet_limit": 10.89,
+  "call_limit": 11.94,
+  "bet_limit": 9.02,
   "outs": 0,
   "blocker_score": 0.0,
   "opp_likely": [],
   "opp_bluff_pct": 0.18,
   "opp_type": "fish_passive",
-  "ocr_latency_ms": 468.2,
+  "ocr_latency_ms": 3411.3,
   "ocr_source": "python"
 }
