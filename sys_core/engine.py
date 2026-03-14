@@ -5081,16 +5081,24 @@ class MultiTableRunner:
                     self.running = False
                     break
 
-                # 1. Find all poker windows
-                try:
-                    windows = self.find_poker_windows()
+                # 1. Find all poker windows (cached — only refresh every 3s)
+                # Window detection via Quartz takes ~2s. Caching avoids this
+                # on every loop, letting the bot poll table state much faster.
+                now_t = time.time()
+                if not hasattr(self, '_cached_windows') or now_t - getattr(self, '_windows_cache_time', 0) > 3.0:
+                    try:
+                        windows = self.find_poker_windows()
+                        self._cached_windows = windows
+                        self._windows_cache_time = now_t
+                        current_window_ids = {w.window_id for w in windows}
+                    except Exception as e:
+                        log.error(f"Window detection failed: {e}")
+                        time.sleep(2)
+                        continue
+                    log.debug(f"Found {len(windows)} poker tables")
+                else:
+                    windows = self._cached_windows
                     current_window_ids = {w.window_id for w in windows}
-                except Exception as e:
-                    log.error(f"Window detection failed: {e}")
-                    time.sleep(2)
-                    continue  # Don't crash, retry
-
-                log.debug(f"Found {len(windows)} poker tables")
 
                 # 2. Update sessions - remove closed, add new (thread-safe)
                 try:
