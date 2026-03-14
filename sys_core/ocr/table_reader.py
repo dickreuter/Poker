@@ -2382,9 +2382,12 @@ def _detect_board_colored(
                     rank = 'A'
 
                 # K↔9: K has 0 holes, 9 has 1
-                if rank == '9' and n_holes == 0:
-                    log.info(f"BOARD K/9 FIX: rank={rank} but 0 holes → K")
-                    rank = 'K'
+                # CAUTION: Board card crops are small and binarization can
+                # destroy the 9's loop, making it look like 0 holes.
+                # Only change K→9 (if holes found), NOT 9→K (unreliable).
+                if rank == 'K' and n_holes >= 1:
+                    log.info(f"BOARD K/9 FIX: rank={rank} but {n_holes} holes → 9")
+                    rank = '9'
 
                 # 8↔5: 8 has 2 holes, 5 has 0
                 if rank == '5' and n_holes >= 2:
