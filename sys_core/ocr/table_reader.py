@@ -514,7 +514,19 @@ def read_table(
     # Using len(players) caused UTG to appear 27% of hands (should be 17%)
     # because unreadable stacks reduced num_active to 4, compressing the
     # position names array and mapping CO/MP → UTG.
-    num_seats = 6  # Hardcode for 6-max
+    # Determine number of seats from game type and detected players
+    # Spin & Go = 3 seats, cash/tournament = 6 (or detect from active players)
+    num_seats = 6
+    if game_type == 'spin':
+        num_seats = 3
+    elif len(players) > 0:
+        active = sum(1 for p in players if p.stack > 0)
+        if active <= 3:
+            num_seats = 3  # Heads-up or 3-handed (late tournament, Spin)
+        elif active <= 6:
+            num_seats = 6
+        else:
+            num_seats = 9
     position = _hero_position(hero_seat, dealer_seat, num_seats)
 
     # 10. Count opponents actually in the hand (card back detection)
