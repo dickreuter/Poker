@@ -19,7 +19,7 @@ import cv2
 import numpy as np
 from PIL import Image
 
-from sys_core.ocr.card_reader import read_player_cards
+from sys_core.ocr.card_reader import read_player_cards, _pixel_hash_cache
 from sys_core.ocr.game_state import AvailableAction, GameState, PlayerInfo, ReadConfidence, Street
 
 try:
@@ -2279,9 +2279,20 @@ def _detect_board_colored(
 
     board = []
     for bx, by, bw, bh, suit in deduped:
+        # ── Hash cache lookup (same cache as hero cards) ─────────
+        # Crop the full board card body for hashing.
+        card_body_crop = img[by:by+bh, bx:bx+bw]
+        if card_body_crop.size > 0:
+            cached = _pixel_hash_cache.lookup_fuzzy(card_body_crop)
+            if cached and len(cached) >= 2:
+                board.append(cached)
+                log.debug(f"Board card HASH HIT: {cached} at ({bx},{by}) {bw}x{bh}")
+                continue  # Skip OCR entirely
+
+        # ── OCR path (hash cache missed) ─────────────────────────
         # Try BOTH corner and center rank, then pick the best.
-        # Corner is cleaner (no suit symbol) but very small → OCR struggles.
-        # Center is larger but may include the suit symbol → confuses OCR.
+        # Corner is cleaner (no suit symbol) but very small -> OCR struggles.
+        # Center is larger but may include the suit symbol -> confuses OCR.
         margin_x = max(int(bw * 0.07), 3)
         margin_y = max(int(bh * 0.03), 2)
         corner_w = max(int(bw * 0.45), 15)
@@ -2305,13 +2316,13 @@ def _detect_board_colored(
         # - If both agree, use that.
         # - If only one succeeded, use it.
         # - If they disagree, prefer corner (less noise) UNLESS corner
-        #   returned "10" (common misread of "9" as "0"→"10") and center
-        #   returned a single digit — trust center in that case.
+        #   returned "10" (common misread of "9" as "0"->"10") and center
+        #   returned a single digit -- trust center in that case.
         if corner_rank and center_rank:
             if corner_rank == center_rank:
                 rank = corner_rank
             elif corner_rank == '10' and center_rank != '10':
-                rank = center_rank  # "0"→"10" is often a misread "9"
+                rank = center_rank  # "0"->"10" is often a misread "9"
             else:
                 rank = corner_rank  # corner is generally cleaner
         else:
@@ -2319,7 +2330,7 @@ def _detect_board_colored(
 
         # Rescue: try an alternate center crop when detection is uncertain.
         # Characters like "J" have descenders the standard crop clips, and
-        # corner often misreads "J" as "0"→"10" (the J-hook looks like 0).
+        # corner often misreads "J" as "0"->"10" (the J-hook looks like 0).
         # Start at 25% from left to skip the small corner suit symbol, and
         # use 65% height to capture descenders.
         if not rank or (rank == '10' and not center_rank):
@@ -2340,22 +2351,16 @@ def _detect_board_colored(
         if verified_suit != '?':
             suit = verified_suit
 
-        # Double-check 6↔A confusion: re-read with looser binarization
+        # Double-check 6<->A confusion: re-read with looser binarization
         if rank == 'A':
             rank = _verify_not_six(img, bx, by, bw, bh, rank)
 
         # ── Structural disambiguation for board cards ──────────────
-        # Board cards use the same _read_rank_at as hole cards, but the
-        # corner/center/alt voting above may pick a wrong rank.
-        # Apply the same structural tests used for hole cards:
-        # A↔3 (holes: A=1, 3=0), K↔9 (holes: K=0, 9=1),
-        # 8↔5 (holes: 8=2, 5=0), 10↔J/3/4 (components: 10=2, others=1)
+        # Only run when hash cache missed AND OCR produced a result.
+        # These heuristics fix common OCR confusions but can themselves
+        # cause errors (e.g. the 9->K direction was wrong). The hash
+        # cache bypasses all of this once a card is seen once.
         if rank:
-            # Get a binarized glyph for structural analysis.
-            # CRITICAL: crop ONLY the rank number area (top 20% of card),
-            # NOT the suit symbol below it. Including the suit symbol
-            # creates a false second connected component that makes every
-            # single-char rank look like "10".
             from sys_core.ocr.card_reader import (
                 _binarize_white_on_colored, _count_enclosed_loops,
                 _disambiguate_10_from_single, _strip_suit_symbol,
@@ -2374,41 +2379,49 @@ def _detect_board_colored(
                 bw_struct = _strip_suit_symbol(bw_struct)
                 n_holes = _count_enclosed_loops(bw_struct)
 
-                # 3↔A: 3 has 0 holes, A has 1
-                # NOTE: 4 also has 1 hole (triangle) — do NOT use this
-                # to change 4→A or A→4. Only 3↔A is safe.
+                # 3->A: 3 has 0 holes, A has 1
+                # NOTE: 4 also has 1 hole (triangle) -- do NOT use this
+                # to change 4->A or A->4. Only 3->A is safe.
                 if rank == '3' and n_holes >= 1:
-                    log.info(f"BOARD A/3 FIX: rank={rank} but {n_holes} holes → A")
+                    log.info(f"BOARD A/3 FIX: rank={rank} but {n_holes} holes -> A")
                     rank = 'A'
 
-                # K↔9: K has 0 holes, 9 has 1
-                # CAUTION: Board card crops are small and binarization can
-                # destroy the 9's loop, making it look like 0 holes.
-                # Only change K→9 (if holes found), NOT 9→K (unreliable).
+                # K->9: K has 0 holes, 9 has 1
+                # ONLY safe direction: K->9 (if holes found).
+                # The reverse (9->K when 0 holes) was REMOVED because
+                # binarization often destroys the 9's loop on small
+                # board card crops, causing correct 9 reads to become K.
                 if rank == 'K' and n_holes >= 1:
-                    log.info(f"BOARD K/9 FIX: rank={rank} but {n_holes} holes → 9")
+                    log.info(f"BOARD K/9 FIX: rank={rank} but {n_holes} holes -> 9")
                     rank = '9'
 
-                # 8↔5: 8 has 2 holes, 5 has 0
+                # 8<->5: 8 has 2 holes, 5 has 0
                 if rank == '5' and n_holes >= 2:
-                    log.info(f"BOARD 8/5 FIX: rank={rank} but {n_holes} holes → 8")
+                    log.info(f"BOARD 8/5 FIX: rank={rank} but {n_holes} holes -> 8")
                     rank = '8'
                 elif rank == '8' and n_holes == 0:
-                    log.info(f"BOARD 8/5 FIX: rank={rank} but 0 holes → 5")
+                    log.info(f"BOARD 8/5 FIX: rank={rank} but 0 holes -> 5")
                     rank = '5'
 
-                # 10↔J/3/4: 10 has 2 connected components (1 + 0)
+                # 10<->J/3/4: 10 has 2 connected components (1 + 0)
                 # ONLY apply after suit symbol is stripped
                 if rank in ('J', '3', '4'):
                     if _disambiguate_10_from_single(bw_struct):
-                        log.info(f"BOARD 10/SINGLE FIX: rank={rank} but 2 components → 10")
+                        log.info(f"BOARD 10/SINGLE FIX: rank={rank} but 2 components -> 10")
                         rank = '10'
 
         if rank:
             if rank == '10':
                 rank = 'T'
-            board.append(f"{rank}{suit}")
-            log.debug(f"Board card (colored): {rank}{suit} at ({bx},{by}) {bw}x{bh}")
+            card_string = f"{rank}{suit}"
+            board.append(card_string)
+            log.debug(f"Board card (colored): {card_string} at ({bx},{by}) {bw}x{bh}")
+
+            # ── Cache the OCR result for future reads ─────────────
+            if card_body_crop.size > 0:
+                _pixel_hash_cache.record_with_neighbors(
+                    card_body_crop, card_string, confidence=0.85,
+                )
         else:
             # Save debug images for board cards where rank detection failed
             try:
@@ -2419,7 +2432,7 @@ def _detect_board_colored(
                 card_crop = img[by:by+bh, bx:bx+bw]
                 if card_crop.size > 0:
                     cv2.imwrite(f"{debug_dir_path}/{ts}_board_{suit}_crop.png", card_crop)
-                    log.warning(f"BOARD RANK FAIL: suit={suit} at ({bx},{by}) {bw}x{bh} — saved debug")
+                    log.warning(f"BOARD RANK FAIL: suit={suit} at ({bx},{by}) {bw}x{bh} -- saved debug")
             except Exception:
                 pass
 
