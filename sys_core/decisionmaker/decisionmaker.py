@@ -1051,6 +1051,284 @@ class Decision(DecisionBase):
 
             t.currentBluff = 0
 
+    # ══════════════════════════════════════════════════════════════════════
+    # EV-BASED DECISION ENGINE (March 2026)
+    #
+    # Replaces threshold cascades with direct EV comparison:
+    #   EV(fold) = 0
+    #   EV(call) = equity * (pot + call) - (1 - equity) * call
+    #   EV(raise) = fold_equity * pot + (1-FE) * [eq_called * new_pot - raise]
+    #
+    # Picks the action with the highest EV.
+    # ══════════════════════════════════════════════════════════════════════
+
+    def compute_ev_decision(self, t, h, p):
+        """Compute EV for fold/call/raise and return the best action.
+
+        Returns:
+            dict with keys:
+                'action': DecisionTypes enum value
+                'ev_fold': float (always 0)
+                'ev_call': float
+                'ev_raise': float or None
+                'equity': float (equity used)
+                'villain_range': str
+                'fold_equity': float
+                'spr': float
+                'reasoning': str
+            Returns None if EV computation is not possible (missing data).
+        """
+        import math as _math
+
+        # ── Gather game state ──────────────────────────────────────────────
+        pot = max(getattr(t, 'totalPotValue', 0) or 0, 0.01)
+        call_amount = max(getattr(t, 'minCall', 0) or 0, 0)
+        my_stack = max(getattr(t, 'myFunds', 0) or 0, 0)
+        bb = t.bigBlind if t.bigBlind > 0 else 1.0
+        equity = t.equity if hasattr(t, 'equity') else 0.5
+        board = getattr(t, 'cardsOnTable', []) or []
+        mycards = getattr(t, 'mycards', None)
+
+        if not mycards or len(mycards) != 2:
+            return None
+
+        street_map = {'PreFlop': 'preflop', 'Flop': 'flop', 'Turn': 'turn', 'River': 'river'}
+        street = street_map.get(t.gameStage, 'flop')
+
+        spr = self.spr
+        hero_pos = getattr(t, '_gto_position', 'CO')
+
+        # ── Estimate villain range ─────────────────────────────────────────
+        opp = self._get_opp()
+        ptype = opp.get('type', 'unknown') if opp else 'unknown'
+
+        # Determine villain action context
+        if t.allInCallButton:
+            v_action = 'all_in'
+        elif call_amount > 0 and not t.checkButton:
+            v_action = 'bet'
+        elif street == 'preflop' and not _math.isnan(getattr(t, 'first_raiser_utg', float('nan'))):
+            v_action = 'open'
+        else:
+            v_action = 'check'
+
+        # Villain position estimate
+        _utg_to_pos = {0: 'UTG', 1: 'MP', 2: 'CO', 3: 'BTN', 4: 'SB', 5: 'BB'}
+        _raiser_utg = getattr(t, 'first_raiser_utg', float('nan'))
+        if not _math.isnan(_raiser_utg):
+            v_position = _utg_to_pos.get(int(_raiser_utg), 'CO')
+        elif hero_pos in ('BB', 'SB'):
+            v_position = 'BTN'
+        else:
+            v_position = 'CO'
+
+        try:
+            from sys_core.decisionmaker.range_equity import get_range_equity
+            re = get_range_equity()
+            v_range = re.estimate_villain_range(
+                position=v_position, action=v_action,
+                player_type=ptype, street=street,
+            )
+        except Exception as e:
+            log.debug(f"EV engine: range estimation failed: {e}")
+            v_range = '22+, A2s+, K9s+, QTs+'
+
+        # ── Compute equity vs villain range ────────────────────────────────
+        # Use board-aware filtering for postflop (more accurate vs betting range)
+        try:
+            from sys_core.decisionmaker.range_equity import get_range_equity
+            re = get_range_equity()
+            if street != 'preflop' and len(board) >= 3:
+                eq_val, eq_info = re.equity_vs_board_aware_range(
+                    mycards, board, v_range,
+                    street=street, action=v_action, player_type=ptype,
+                )
+                log.debug(f"EV EQUITY (board-aware): {eq_val:.1%} — {eq_info}")
+            else:
+                eq_val = re.equity_vs_range(mycards, board, v_range, iterations=10000)
+                log.debug(f"EV EQUITY (range): {eq_val:.1%}")
+            equity = eq_val
+        except Exception as e:
+            log.debug(f"EV engine: equity calc failed, using existing: {e}")
+            # Fall back to whatever equity was already computed
+
+        # ── EV(fold) ──────────────────────────────────────────────────────
+        ev_fold = 0.0
+
+        # ── EV(call) ──────────────────────────────────────────────────────
+        if call_amount > 0:
+            ev_call = equity * (pot + call_amount) - (1.0 - equity) * call_amount
+        elif t.checkButton:
+            # Free check: EV = equity * pot (we see more cards for free)
+            ev_call = equity * pot
+        else:
+            ev_call = equity * pot
+
+        # ── Implied odds adjustment for draws ─────────────────────────────
+        # On flop/turn with draws, we can win more money on future streets
+        implied_bonus = 0.0
+        if street in ('flop', 'turn') and self.outs >= 4:
+            # Estimate future winnings: deeper stacks = more implied odds
+            remaining_stack = max(my_stack - call_amount, 0)
+            # With 8+ outs (flush/OESD), expect to win ~1.5-2x call on future streets
+            # With 4-7 outs (gutshot), expect ~0.5-1x call
+            if self.outs >= 8:
+                implied_mult = min(2.0, remaining_stack / max(call_amount, 1))
+                implied_bonus = (self.outs / 46.0) * call_amount * min(implied_mult, 2.0)
+            else:
+                implied_mult = min(1.0, remaining_stack / max(call_amount, 1))
+                implied_bonus = (self.outs / 46.0) * call_amount * min(implied_mult, 1.0)
+            ev_call += implied_bonus
+            log.debug(f"EV IMPLIED: +{implied_bonus:.2f} ({self.outs} outs)")
+
+        # ── Fold equity estimation ────────────────────────────────────────
+        fold_equity = self._estimate_fold_equity(t, h)
+
+        # Refine with opponent cbet/fold-to-cbet stats if available
+        if opp:
+            ftcb = opp.get('fold_to_cbet', None)
+            if ftcb is not None and opp.get('fold_to_cbet_n', 0) >= 5:
+                # Blend tracked fold rate with estimated fold equity
+                fold_equity = 0.5 * fold_equity + 0.5 * ftcb
+                log.debug(f"EV FOLD_EQ refined: ftcb={ftcb:.0%} → blended={fold_equity:.0%}")
+
+        # ── EV(raise) ─────────────────────────────────────────────────────
+        # Determine raise size
+        ev_raise = None
+        raise_amount = 0.0
+        bet_frac = 0.0
+        can_raise = hasattr(t, 'raiseButton') and t.raiseButton or t.checkButton
+
+        if can_raise:
+            # Calculate optimal raise size
+            streets_map = {'flop': 3, 'turn': 2, 'river': 1, 'preflop': 0}
+            streets_left = streets_map.get(street, 1)
+
+            if streets_left > 0:
+                geo = geometric_bet_fraction(pot / bb, my_stack / bb, streets_left)
+            else:
+                geo = 0.66
+
+            # Board wetness affects sizing
+            wetness = self._board_wetness(board)
+            if street == 'flop':
+                if wetness < 0.3:
+                    bet_frac = 0.33
+                elif wetness > 0.7:
+                    bet_frac = 0.75
+                else:
+                    bet_frac = 0.50
+            elif street == 'turn':
+                bet_frac = min(geo, 0.80)
+            else:
+                bet_frac = 0.75  # River: polarized
+
+            # SPR-based commitment: low SPR = shove
+            if spr < 1.5:
+                bet_frac = 1.0  # Shove
+            elif spr < 3.0:
+                bet_frac = max(bet_frac, geo)
+
+            raise_amount = bet_frac * pot
+            raise_amount = min(raise_amount, my_stack)  # Can't bet more than stack
+
+            if raise_amount > 0:
+                # Equity when called: opponent folds weak hands, calling range is stronger
+                # Use a tighter range estimate for when villain calls our raise
+                eq_when_called = equity * 0.90  # Discount ~10% (calling range is stronger)
+                if ptype == 'nit':
+                    eq_when_called = equity * 0.80  # Nits only call with very strong
+                elif ptype in ('fish_passive', 'maniac'):
+                    eq_when_called = equity * 0.95  # Fish call wide
+
+                # Total pot if called: pot + our raise + villain's call
+                # Villain calls our raise_amount (they match our bet)
+                if call_amount > 0:
+                    # We're raising over their bet: total new pot = pot + raise + (raise - call_already_in)
+                    # Simplified: pot already includes their bet, we add raise_amount
+                    total_if_called = pot + raise_amount + raise_amount
+                else:
+                    # We're betting into them: they call our bet
+                    total_if_called = pot + raise_amount + raise_amount
+
+                # EV(raise) = FE * pot + (1-FE) * [eq_called * total_pot_called - raise_amount]
+                ev_raise = (fold_equity * pot
+                            + (1.0 - fold_equity) * (eq_when_called * total_if_called - raise_amount))
+
+                log.debug(f"EV RAISE: FE={fold_equity:.0%} eq_called={eq_when_called:.0%} "
+                          f"raise={raise_amount:.1f} total_if_called={total_if_called:.1f} → EV={ev_raise:.2f}")
+
+        # ── SPR commitment override ───────────────────────────────────────
+        # SPR < 3: with any decent equity, we're mathematically committed.
+        # Don't fold when pot-committed regardless of EV calculation.
+        spr_committed = False
+        if spr < 3.0 and equity >= 0.30:
+            spr_committed = True
+        elif spr < 1.5 and equity >= 0.20:
+            spr_committed = True
+
+        # ── Pick best action ──────────────────────────────────────────────
+        reasoning_parts = []
+        reasoning_parts.append(f"eq={equity:.1%} pot={pot:.1f} call={call_amount:.1f} "
+                               f"spr={spr:.1f} FE={fold_equity:.0%}")
+        reasoning_parts.append(f"EV: fold=0, call={ev_call:.2f}")
+        if ev_raise is not None:
+            reasoning_parts.append(f"raise={ev_raise:.2f}")
+
+        # Determine which action has highest EV
+        best_ev = ev_fold
+        best_action = DecisionTypes.fold
+
+        if ev_call > best_ev:
+            best_ev = ev_call
+            best_action = DecisionTypes.call
+
+        if ev_raise is not None and ev_raise > best_ev:
+            best_ev = ev_raise
+            # Map to bet sizing
+            if raise_amount >= my_stack * 0.85:
+                best_action = DecisionTypes.bet4  # All-in / pot
+            elif bet_frac >= 0.60:
+                best_action = DecisionTypes.bet3  # Half pot+
+            elif bet_frac >= 0.30:
+                best_action = DecisionTypes.bet2  # Small-medium
+            else:
+                best_action = DecisionTypes.bet1  # Min bet
+
+        # SPR commitment: override fold with call if committed
+        if best_action == DecisionTypes.fold and spr_committed:
+            best_action = DecisionTypes.call
+            best_ev = ev_call
+            reasoning_parts.append(f"SPR_COMMIT: spr={spr:.1f} eq={equity:.1%}")
+
+        # Check button: convert fold/call to check
+        if t.checkButton:
+            if best_action == DecisionTypes.fold:
+                best_action = DecisionTypes.check
+            elif best_action == DecisionTypes.call and call_amount <= 0:
+                best_action = DecisionTypes.check
+
+        reasoning = ' | '.join(reasoning_parts)
+
+        result = {
+            'action': best_action,
+            'ev_fold': ev_fold,
+            'ev_call': ev_call,
+            'ev_raise': ev_raise,
+            'equity': equity,
+            'villain_range': v_range[:60],
+            'fold_equity': fold_equity,
+            'spr': spr,
+            'raise_amount': raise_amount if ev_raise is not None else 0,
+            'bet_fraction': bet_frac if ev_raise is not None else 0,
+            'implied_bonus': implied_bonus,
+            'reasoning': reasoning,
+        }
+
+        log.info(f"EV DECISION: {best_action.name} (EV={best_ev:+.2f}) — {reasoning}")
+
+        return result
+
     def _get_opp(self):
         """Get opponent profile dict (safe accessor)."""
         opp = getattr(self, '_opp_profile', None)
@@ -1124,6 +1402,47 @@ class Decision(DecisionBase):
             self.decision = DecisionTypes.call
             log.info(f"Always-call override active (call {t.minCall} <= limit {self.finalCallLimit:.1f})")
             return
+
+        # ── EV-BASED CALLING (postflop) ───────────────────────────────────
+        # For postflop decisions with call_amount > 0, use the unified EV engine
+        # instead of the threshold cascade below. The EV engine computes
+        # EV(fold) vs EV(call) vs EV(raise) and picks the highest.
+        # Preflop is excluded: GTO ranges + Nash push/fold handle that.
+        if t.gameStage != GameStages.PreFlop.value and t.minCall > 0:
+            try:
+                ev_result = self.compute_ev_decision(t, h, p)
+                if ev_result is not None:
+                    action = ev_result['action']
+
+                    # PREMIUM SAFETY: never fold monsters postflop via EV engine
+                    hand_info = self._classify_hand(t)
+                    if (action == DecisionTypes.fold
+                            and hand_info
+                            and hand_info['strength'] in ('monster', 'very_strong')):
+                        action = DecisionTypes.call
+                        log.info(f"EV PREMIUM OVERRIDE: {hand_info['name']} → call "
+                                 f"(was fold, EV={ev_result['ev_call']:+.2f})")
+
+                    # All-in guard: if facing all-in with low equity, respect the fold
+                    # but keep the pot-odds floor
+                    if t.allInCallButton and action != DecisionTypes.fold:
+                        pot = max(t.totalPotValue, 0.01)
+                        call = max(t.minCall, 0)
+                        pot_odds = call / (pot + call) if (pot + call) > 0 else 0
+                        if ev_result['equity'] < max(0.18, pot_odds):
+                            action = DecisionTypes.fold
+                            log.info(f"EV ALL-IN GUARD: eq={ev_result['equity']:.1%} "
+                                     f"< threshold={max(0.18, pot_odds):.1%} → fold")
+
+                    self.decision = action
+                    # Store EV for logging
+                    self.decision_ev = max(ev_result['ev_fold'],
+                                           ev_result['ev_call'],
+                                           ev_result['ev_raise'] or float('-inf'))
+                    log.info(f"EV CALLING: {action.name} — {ev_result['reasoning']}")
+                    return
+            except Exception as e:
+                log.warning(f"EV engine failed in calling(), falling back to thresholds: {e}")
 
         pot = max(t.totalPotValue, 0.01)
         call = max(t.minCall, 0)
@@ -1429,6 +1748,52 @@ class Decision(DecisionBase):
 
         # flop turn river
         if t.gameStage != GameStages.PreFlop.value:
+            # ── EV-BASED BETTING (postflop) ────────────────────────────────
+            # Use the unified EV engine for all postflop betting decisions.
+            # The EV engine computes EV(fold/check) vs EV(call) vs EV(raise)
+            # and selects the optimal action with proper sizing.
+            #
+            # Only override if calling() hasn't already set a raise via EV
+            # (calling() handles the "facing a bet" case; betting() handles
+            # "we have initiative or check button").
+            if (self.decision not in (DecisionTypes.bet1, DecisionTypes.bet2,
+                                       DecisionTypes.bet3, DecisionTypes.bet4)):
+                try:
+                    ev_result = self.compute_ev_decision(t, h, p)
+                    if ev_result is not None:
+                        action = ev_result['action']
+
+                        # If EV says bet/raise, use the EV sizing
+                        if action in (DecisionTypes.bet1, DecisionTypes.bet2,
+                                      DecisionTypes.bet3, DecisionTypes.bet4):
+                            # Store optimal sizing for engine.py's mouse action
+                            self.optimal_bet_bb = ev_result.get('raise_amount', 0) / max(t.bigBlind, 0.01)
+                            self.finalBetLimit = ev_result.get('raise_amount', 0)
+
+                            # PREMIUM SAFETY: always bet/raise monsters
+                            hand_info_ev = self._classify_hand(t)
+                            if (hand_info_ev and hand_info_ev['strength'] in ('monster', 'very_strong')
+                                    and action in (DecisionTypes.bet1, DecisionTypes.bet2)):
+                                action = DecisionTypes.bet3  # At least half pot with monsters
+                                log.info(f"EV MONSTER SIZING UP: {hand_info_ev['name']} → bet3")
+
+                            self.decision = action
+                            self.push_fold_shove = (action == DecisionTypes.bet4
+                                                    and ev_result.get('raise_amount', 0) >= getattr(t, 'myFunds', 0) * 0.85)
+                            log.info(f"EV BETTING: {action.name} (raise={ev_result.get('raise_amount', 0):.1f}) "
+                                     f"— {ev_result['reasoning']}")
+                            return
+
+                        # If EV says check (ev_raise <= 0 and check is free), do nothing here
+                        # — let the existing check/call logic handle it
+                        if action in (DecisionTypes.check, DecisionTypes.call):
+                            log.debug(f"EV BETTING: no profitable bet (EV_raise={ev_result.get('ev_raise', 'N/A')}), "
+                                      f"keeping {self.decision.name}")
+                            # Fall through to legacy betting which handles check-raise planning, etc.
+
+                except Exception as e:
+                    log.warning(f"EV engine failed in betting(), falling back to legacy: {e}")
+
             other_players = getattr(t, 'other_active_players', 1)
             stage = t.gameStage.lower()
             wetness = self._board_wetness(t.cardsOnTable)
