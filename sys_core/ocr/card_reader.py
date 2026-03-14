@@ -262,6 +262,67 @@ def read_player_cards(
         log.debug(f"No card area found (img {W}x{H})")
         return []
 
+    # Validate: both rank crops must contain visible text (white pixels).
+    # If the right rank crop is blank (dark), the blob pairing picked a
+    # wrong second blob. Find the actual right card by scanning for white
+    # text in the hero card region to the right of the left card.
+    for side in ['right']:  # Only validate right card (left is usually OK)
+        rx, ry, rw, rh = positions[f'{side}_rank']
+        rank_crop = img_np[ry:ry+rh, rx:rx+rw]
+        if rank_crop.size == 0:
+            continue
+        white_frac = float(np.sum(np.all(rank_crop > 160, axis=2))) / max(rw * rh, 1)
+        if white_frac >= 0.02:
+            continue  # Crop has visible text, OK
+
+        log.warning(f"RANK CROP BLANK: {side} at ({rx},{ry}) {rw}x{rh} "
+                    f"white={white_frac:.1%} — searching for right card via white text")
+
+        # Use the LEFT card's rank crop as a size reference
+        lx, ly, lw, lh = positions['left_rank']
+        left_right_edge = lx + lw + 10
+
+        # Search for white text RIGHT of left card, at the same Y as left rank
+        scan_y1 = max(ly - 20, 0)
+        scan_y2 = min(ly + lh + 20, H)
+        scan_x1 = left_right_edge
+        scan_x2 = min(int(W * 0.62), W)
+        if scan_x2 <= scan_x1:
+            continue
+
+        search = img_np[scan_y1:scan_y2, scan_x1:scan_x2]
+        white = np.all(search > 180, axis=2)
+        col_sum = np.sum(white, axis=0)
+        threshold = max(3, col_sum.max() * 0.3) if col_sum.max() > 0 else 3
+        above = col_sum > threshold
+        start_col = None
+        for ci in range(len(above)):
+            if above[ci] and start_col is None:
+                start_col = ci
+            elif not above[ci] and start_col is not None:
+                cluster_x = scan_x1 + start_col
+                cluster_w = ci - start_col
+                if cluster_w >= 5:
+                    # Use same dimensions as left rank crop
+                    new_rx = cluster_x - 5
+                    new_ry = ly  # Same Y as left card
+                    new_rw = max(lw, cluster_w + 10)  # At least as wide as left
+                    new_rh = lh  # Same height as left card rank
+                    new_rw = min(new_rw, W - new_rx)
+                    log.info(f"RIGHT CARD RESCUE: white text at x={cluster_x}, "
+                             f"new rank crop ({new_rx},{new_ry}) {new_rw}x{new_rh}")
+                    positions['right_rank'] = (new_rx, new_ry, new_rw, new_rh)
+                    # Body for suit: below rank, same width
+                    body_y = new_ry + new_rh
+                    body_h = min(int(new_rh * 0.8), H - body_y)
+                    positions['right_body'] = (new_rx, body_y, new_rw, body_h)
+                    # Center rank: same position but taller
+                    positions['right_center_rank'] = (
+                        new_rx, new_ry + int(new_rh * 0.3),
+                        new_rw, int(new_rh * 1.5))
+                    break
+                start_col = None
+
     deck_style = positions.get('_deck_style', STYLE_WHITE)
     log.debug(f"Deck style: {deck_style}")
 
@@ -306,13 +367,21 @@ def read_player_cards(
                                 f"rank template says {template_rank} — EVICTING")
                     _pixel_hash_cache.evict(body_crop)
                     # Fall through to OCR below (don't use cached result)
-                elif cached_rank in ('8', 'A'):
-                    # Structural 8/A check: count enclosed loops
+                elif cached_rank in ('8', 'A', '2', '5'):
+                    # Structural hole check: 8=2 holes, A=1, 2/5/7=0
                     n_holes = _count_enclosed_loops(bw_check)
-                    expected_rank = '8' if n_holes >= 2 else 'A'
-                    if expected_rank != cached_rank:
-                        log.warning(f"STRUCTURAL 8/A FIX: cache says {hash_card} but "
-                                    f"glyph has {n_holes} holes → {expected_rank} — EVICTING")
+                    if cached_rank == '8' and n_holes < 2:
+                        # Not 8 — evict and let OCR re-read
+                        log.warning(f"STRUCTURAL FIX: cache says {hash_card} but "
+                                    f"glyph has {n_holes} holes (8 needs 2) — EVICTING")
+                        _pixel_hash_cache.evict(body_crop)
+                    elif cached_rank == 'A' and n_holes != 1:
+                        log.warning(f"STRUCTURAL FIX: cache says {hash_card} but "
+                                    f"glyph has {n_holes} holes (A needs 1) — EVICTING")
+                        _pixel_hash_cache.evict(body_crop)
+                    elif cached_rank == '2' and n_holes > 0:
+                        log.warning(f"STRUCTURAL FIX: cache says {hash_card} but "
+                                    f"glyph has {n_holes} holes (2 needs 0) — EVICTING")
                         _pixel_hash_cache.evict(body_crop)
                     else:
                         validated = True
@@ -359,6 +428,14 @@ def read_player_cards(
             # Normalize '10' -> 'T' for Monte Carlo compatibility
             if rank == '10':
                 rank = 'T'
+
+            # Per-card structural checks REMOVED — hole position analysis
+            # (disambiguate_6_9) cannot reliably distinguish A from 6 because
+            # the A's triangular hole centroid can fall below midpoint in many
+            # fonts, causing real A's to be misread as 6.
+            # Instead, rely on the QUARANTINE step below which cross-checks OCR
+            # against human-verified rank templates and trusts the template.
+
             card = f"{rank}{suit}"
             cards.append(card)
             log.debug(f"OCR {side} card: {card}")
@@ -375,19 +452,50 @@ def read_player_cards(
             if rank_crop_q.size > 0 and rank_crop_q.shape[0] >= 3:
                 if deck_style == STYLE_COLORED:
                     bw_q = _binarize_white_on_colored(rank_crop_q)
+                    bw_q = _strip_suit_symbol(bw_q)
                 else:
                     bw_q = _binarize_colored_on_white(rank_crop_q)
                 _, bw_q = cv2.threshold(bw_q, 127, 255, cv2.THRESH_BINARY)
                 tmpl_rank = matcher.match_rank_multi(bw_q)
+                # Structural validation of template result before trusting it
+                if tmpl_rank is not None:
+                    q_holes = _count_enclosed_loops(bw_q)
+                    q_is_two_components = _disambiguate_10_from_single(bw_q)
+                    if tmpl_rank == '8' and q_holes < 2:
+                        log.warning(f"QUARANTINE: template says {tmpl_rank} but "
+                                    f"only {q_holes} holes — rejecting template, trusting OCR")
+                        tmpl_rank = None  # Don't trust this template
+                    elif tmpl_rank == 'A' and q_holes == 0:
+                        log.warning(f"QUARANTINE: template says {tmpl_rank} but "
+                                    f"0 holes — rejecting template, trusting OCR")
+                        tmpl_rank = None
+                    elif tmpl_rank in ('10', 'T') and not q_is_two_components:
+                        log.warning(f"QUARANTINE: template says {tmpl_rank} but "
+                                    f"glyph has 1 component (10 needs 2) — rejecting template, trusting OCR")
+                        tmpl_rank = None
+                    elif tmpl_rank not in ('10', 'T') and q_is_two_components:
+                        log.warning(f"QUARANTINE: template says {tmpl_rank} but "
+                                    f"glyph has 2 components → likely 10 — rejecting template")
+                        tmpl_rank = '10'  # Override to 10
                 if tmpl_rank is not None and tmpl_rank != rank:
                     log.warning(f"QUARANTINE: OCR says {card} but template says "
-                                f"rank={tmpl_rank} — NOT caching (using OCR for this hand)")
+                                f"rank={tmpl_rank} — TRUSTING TEMPLATE (human-verified)")
+                    rank = tmpl_rank
+                    if rank == '10':
+                        rank = 'T'
+                    card = f"{rank}{suit}"
+                    cards[-1] = card  # Replace the wrong OCR card
                     cache_ok = False
                 elif tmpl_rank is None:
-                    # No template available — cache with lower confidence
-                    log.debug(f"QUARANTINE: No template for {rank}, caching with low conf")
-                    _pixel_hash_cache.record_with_neighbors(body_crop, card, confidence=0.5)
-                    cache_ok = False  # Already recorded with low conf
+                    if matcher.ready:
+                        # Templates are complete but couldn't match this crop.
+                        # OCR result is unverified — don't cache, don't trust blindly.
+                        log.warning(f"QUARANTINE: Templates ready but can't match "
+                                    f"rank for {card} — OCR unverified, NOT caching")
+                    else:
+                        log.debug(f"QUARANTINE: No template for {rank}, caching with low conf")
+                        _pixel_hash_cache.record_with_neighbors(body_crop, card, confidence=0.5)
+                    cache_ok = False
             if cache_ok:
                 _pixel_hash_cache.record_with_neighbors(body_crop, card, confidence=0.9)
         else:
@@ -402,7 +510,7 @@ def read_player_cards(
     # use structural glyph analysis:
     # - "10" has 2 connected components (1+0), single chars have 1
     # - "8" has 2 holes, "A" has 1, "5" has 0
-    _CONFUSABLE_SETS = [{'J', '3'}, {'T', '10', '4'}, {'8', 'A'}, {'8', '5'}, {'A', '3'}, {'K', '9'}]
+    _CONFUSABLE_SETS = [{'J', '3'}, {'T', '10', '4'}, {'8', 'A'}, {'8', '5'}, {'A', '3'}, {'K', '9'}, {'6', 'A'}, {'6', '8'}]
     if len(cards) == 2:
         r1 = cards[0][:-1]  # rank without suit
         r2 = cards[1][:-1]
@@ -442,6 +550,22 @@ def read_player_cards(
                             if new_rank == '10':
                                 new_rank = 'T'
                             log.info(f"STRUCTURAL FIX: T → {new_rank} (1 component)")
+                    # 6/A/8 disambiguation using hole count + position
+                    # 6 has 1 hole in bottom; A has 1 hole in center; 8 has 2 holes
+                    elif confusable_set & {'6', 'A', '8'}:
+                        n_holes = _count_enclosed_loops(bw)
+                        if n_holes >= 2:
+                            new_rank = '8'
+                        elif n_holes == 1:
+                            result_69 = _disambiguate_6_9(bw)
+                            if result_69 == '6':
+                                new_rank = '6'  # hole in bottom half
+                            else:
+                                new_rank = 'A'  # hole in top/center
+                        else:
+                            new_rank = '5'  # 0 holes fallback
+                        if new_rank != old_rank:
+                            log.info(f"STRUCTURAL FIX: {old_rank} → {new_rank} (hole position)")
                     # 8/A/5 disambiguation
                     elif confusable_set & {'8', 'A', '5'}:
                         n_holes = _count_enclosed_loops(bw)
@@ -528,30 +652,307 @@ def _auto_save_card_crops(img_np, positions, cards):
 #  Card position finding — supports both deck styles
 # ---------------------------------------------------------------------------
 
+
+def _find_cards_by_white_text(img_np: np.ndarray, W: int, H: int) -> Optional[Dict]:
+    """Find hero cards by locating WHITE RANK TEXT clusters.
+
+    Unlike blob detection (which finds colored card backgrounds and fails when
+    spade-black merges with the dark table), this method finds the white rank
+    text that is present on ALL card colors.  Two distinct clusters of white
+    columns in the hero card region = two cards.
+
+    Algorithm:
+        1. Crop to rank-text band: Y=72-81%, X=37-59% of table.
+        2. Build white pixel mask (all channels > 180).
+        3. Compute column-wise sum (vertical projection).
+        4. Smooth and find two peaks separated by a valley.
+        5. For each peak cluster, compute bounding box of white text.
+        6. Expand downward to define full card body (card extends ~13% of
+           table height below the rank text top).
+        7. Detect suit by sampling the colored background around the text.
+
+    Returns positions dict matching _build_positions format, or None.
+    """
+    # --- 1. Define the rank-text search band ---
+    # Cards sit at Y=73-86% of table.  Corner rank text is in the top ~25%
+    # of each card, so Y=73-78%.  Keeping this narrow avoids picking up the
+    # large center rank glyph which inflates the text bbox.
+    TEXT_Y_MIN, TEXT_Y_MAX = 0.72, 0.78
+    TEXT_X_MIN, TEXT_X_MAX = 0.37, 0.59
+
+    ty1 = int(H * TEXT_Y_MIN)
+    ty2 = int(H * TEXT_Y_MAX)
+    tx1 = int(W * TEXT_X_MIN)
+    tx2 = int(W * TEXT_X_MAX)
+
+    if ty2 <= ty1 or tx2 <= tx1:
+        return None
+
+    search = img_np[ty1:ty2, tx1:tx2]
+    sh, sw = search.shape[:2]
+    if sh < 10 or sw < 20:
+        return None
+
+    # --- 2. White pixel mask ---
+    white = np.all(search > 180, axis=2)
+    total_white = int(np.sum(white))
+    if total_white < 30:
+        log.debug(f"WHITE-TEXT: only {total_white} white px in rank band, skipping")
+        return None
+
+    # --- 3. Vertical projection (column-wise sum of white pixels) ---
+    v_proj = white.sum(axis=0).astype(float)
+
+    # Smooth to reduce noise (kernel ~3% of search width)
+    kernel_size = max(3, sw // 30)
+    if kernel_size % 2 == 0:
+        kernel_size += 1
+    smoothed = np.convolve(v_proj, np.ones(kernel_size) / kernel_size, mode='same')
+
+    peak_val = float(smoothed.max())
+    if peak_val < 3.0:
+        log.debug(f"WHITE-TEXT: peak projection {peak_val:.1f} too low, skipping")
+        return None
+
+    # --- 4. Find two clusters separated by a valley ---
+    # Threshold: columns with at least 15% of peak value are "significant"
+    threshold = peak_val * 0.15
+    above = smoothed > threshold
+
+    if not np.any(above):
+        return None
+
+    # Find contiguous runs of above-threshold columns
+    cols_above = np.where(above)[0]
+    diffs = np.diff(cols_above)
+    # A gap of >8 columns separates clusters
+    gap_indices = np.where(diffs > 8)[0]
+
+    clusters = []
+    start_idx = 0
+    for gi in gap_indices:
+        end_idx = gi
+        cluster_cols = cols_above[start_idx:end_idx + 1]
+        clusters.append(cluster_cols)
+        start_idx = gi + 1
+    # Last cluster
+    cluster_cols = cols_above[start_idx:]
+    clusters.append(cluster_cols)
+
+    # Filter tiny clusters (noise): must span at least 8 columns
+    clusters = [c for c in clusters if len(c) >= 8]
+
+    if len(clusters) < 2:
+        # Could be a single merged cluster (same-suit pair or only 1 card).
+        # Try to split the largest cluster at its deepest internal valley.
+        if len(clusters) == 1 and len(clusters[0]) > 30:
+            c = clusters[0]
+            seg = smoothed[c[0]:c[-1] + 1]
+            if len(seg) > 15:
+                # Look for valley in the middle 60%
+                s_start = int(len(seg) * 0.20)
+                s_end = int(len(seg) * 0.80)
+                mid_seg = seg[s_start:s_end]
+                if len(mid_seg) > 5:
+                    valley_rel = int(np.argmin(mid_seg))
+                    valley_val = mid_seg[valley_rel]
+                    left_peak = seg[:s_start + valley_rel].max() if s_start + valley_rel > 0 else 0
+                    right_peak = seg[s_start + valley_rel:].max() if s_start + valley_rel < len(seg) else 0
+                    peak_avg = (left_peak + right_peak) / 2
+                    if peak_avg > 2.0 and valley_val < peak_avg * 0.50:
+                        split_col = c[0] + s_start + valley_rel
+                        left_c = c[c < split_col]
+                        right_c = c[c >= split_col]
+                        if len(left_c) >= 5 and len(right_c) >= 5:
+                            clusters = [left_c, right_c]
+                            log.debug(f"WHITE-TEXT: split merged cluster at col {split_col + tx1}")
+
+        if len(clusters) < 2:
+            log.debug(f"WHITE-TEXT: found {len(clusters)} cluster(s), need 2")
+            return None
+
+    # Take the two strongest clusters (by total white pixel count in projection)
+    cluster_scores = []
+    for c in clusters:
+        score = float(smoothed[c].sum())
+        cluster_scores.append((score, c))
+    cluster_scores.sort(key=lambda x: -x[0])
+    best_two = sorted(cluster_scores[:2], key=lambda x: x[1][0])  # sort left-to-right
+    left_cols = best_two[0][1]
+    right_cols = best_two[1][1]
+
+    # --- 5. Bounding boxes of white text in each cluster ---
+    def _text_bbox(cluster_cols):
+        """Get (x, y, w, h) of white text within a cluster (relative to search region)."""
+        c_start, c_end = int(cluster_cols[0]), int(cluster_cols[-1])
+        col_slice = white[:, c_start:c_end + 1]
+        if col_slice.size == 0:
+            return None
+        # Row projection: find top and bottom of white text
+        row_proj = col_slice.sum(axis=1)
+        row_thresh = max(row_proj.max() * 0.10, 1)
+        rows_above = np.where(row_proj > row_thresh)[0]
+        if len(rows_above) == 0:
+            return None
+        r_top = int(rows_above[0])
+        r_bot = int(rows_above[-1])
+        return (c_start, r_top, c_end - c_start + 1, r_bot - r_top + 1)
+
+    left_bbox = _text_bbox(left_cols)
+    right_bbox = _text_bbox(right_cols)
+
+    if left_bbox is None or right_bbox is None:
+        log.debug("WHITE-TEXT: could not compute text bounding box")
+        return None
+
+    # Convert to absolute image coordinates
+    lx, ly, lw_text, lh_text = left_bbox
+    rx, ry, rw_text, rh_text = right_bbox
+    abs_lx = lx + tx1
+    abs_ly = ly + ty1
+    abs_rx = rx + tx1
+    abs_ry = ry + ty1
+
+    log.debug(f"WHITE-TEXT: left text at ({abs_lx},{abs_ly}) {lw_text}x{lh_text}, "
+              f"right text at ({abs_rx},{abs_ry}) {rw_text}x{rh_text}")
+
+    # --- 6. Build full card regions from text positions ---
+    # The rank text is in the top ~35% of each card.
+    # Estimate card height from the text height (text_h ~ 35% of card_h).
+    # Cards extend from ~Y=73% to ~Y=86% of table = ~13% of H.
+    est_card_h = max(int(H * 0.13), int(max(lh_text, rh_text) / 0.35))
+    # Card width: distance from left text start to right text start gives
+    # a rough card pitch.  Each card is ~7% of W.
+    est_card_w = max(int(W * 0.07), lw_text + 10)
+
+    # Each card has its own top Y — use per-card text position, not shared.
+    margin_x = max(int(est_card_w * 0.06), 3)
+    left_card_x = max(0, abs_lx - margin_x)
+    right_card_x = max(0, abs_rx - margin_x)
+
+    # Per-card Y: a small margin above each card's own text top
+    rank_margin_y = max(int(est_card_h * 0.04), 2)
+    left_card_y = max(0, abs_ly - rank_margin_y)
+    right_card_y = max(0, abs_ry - rank_margin_y)
+
+    # Split X between the two cards
+    split_x = (abs_lx + lw_text + abs_rx) // 2
+
+    # --- 7. Build positions dict ---
+    card_h = est_card_h
+
+    # Rank crops (corner — top-left of each card, around the white text).
+    # Use the actual text bounding boxes to position crops precisely.
+
+    # Left rank: start a small margin before the text, cover the full text
+    left_rank_x = max(0, abs_lx - max(int(lw_text * 0.15), 3))
+    left_rank_w = max(lw_text + 10, int(card_h * 0.30))
+    left_rank_h = max(lh_text + 8, int(card_h * 0.35))
+    # Cap to avoid oversized crops
+    left_rank_w = min(left_rank_w, int(card_h * 0.45))
+
+    # Right rank: start a small margin before the right text cluster.
+    # The right card's rank text starts at abs_rx — use that directly
+    # instead of split_x (which can be far from the actual text).
+    right_rank_x = max(0, abs_rx - max(int(rw_text * 0.15), 3))
+    right_rank_w = max(rw_text + 10, int(card_h * 0.22))
+    right_rank_h = max(rh_text + 8, int(card_h * 0.35))
+    right_rank_w = min(right_rank_w, int(card_h * 0.45))
+
+    # Center rank crops (larger area in middle of card — fallback for OCR)
+    center_rank_x_off = int(est_card_w * 0.10)
+    center_rank_y_off = int(card_h * 0.30)
+    center_rank_w = max(int(est_card_w * 0.70), 25)
+    center_rank_h = max(int(card_h * 0.55), 20)
+    # For right center rank, start from where the right card begins
+    right_center_x = abs_rx - max(int(est_card_w * 0.05), 3)
+    right_center_y_off = int(card_h * 0.30)
+    right_center_w = max(int(est_card_w * 0.80), 30)
+    right_center_h = max(int(card_h * 0.40), 25)
+
+    # Suit region (just below the rank text on each card)
+    suit_y_off = int(card_h * 0.35)
+    suit_w = max(int(est_card_w * 0.35), 15)
+    suit_h = max(int(card_h * 0.18), 10)
+
+    # Body region for suit color sampling (20-50% down the card)
+    # Exclude the white text by sampling from 20-50% of card height
+    body_w = max(int(est_card_w * 0.6), 20)
+    body_h = max(int(card_h * 0.30), 20)
+    left_body_y = left_card_y + int(card_h * 0.20)
+    right_body_y = right_card_y + int(card_h * 0.20)
+
+    positions = {
+        'left_rank': (left_rank_x, left_card_y,
+                      left_rank_w, left_rank_h),
+        'right_rank': (right_rank_x, right_card_y,
+                       right_rank_w, right_rank_h),
+        'left_center_rank': (left_card_x + center_rank_x_off,
+                             left_card_y + center_rank_y_off,
+                             center_rank_w, center_rank_h),
+        'right_center_rank': (right_center_x,
+                              right_card_y + right_center_y_off,
+                              right_center_w, right_center_h),
+        'left_suit': (left_rank_x, left_card_y + suit_y_off,
+                      suit_w, suit_h),
+        'right_suit': (right_rank_x, right_card_y + suit_y_off,
+                       suit_w, suit_h),
+        'left_body': (left_rank_x, left_body_y, body_w, body_h),
+        'right_body': (right_rank_x, right_body_y, body_w, body_h),
+        '_deck_style': STYLE_COLORED,
+        '_debug': {
+            'method': 'white_text',
+            'left_text': (abs_lx, abs_ly, lw_text, lh_text),
+            'right_text': (abs_rx, abs_ry, rw_text, rh_text),
+            'split_x': split_x,
+        },
+    }
+
+    log.debug(f"WHITE-TEXT: positions built — left_rank=({positions['left_rank'][0]},"
+              f"{positions['left_rank'][1]}) {positions['left_rank'][2]}x{positions['left_rank'][3]}, "
+              f"right_rank=({positions['right_rank'][0]},{positions['right_rank'][1]}) "
+              f"{positions['right_rank'][2]}x{positions['right_rank'][3]}, "
+              f"split_x={split_x}")
+
+    return positions
+
+
 def _find_card_positions(img_np: np.ndarray, W: int, H: int) -> Optional[Dict]:
     """Find crop positions for rank and suit of both cards.
 
-    PRIMARY: Fixed-position cropping — always works, even for same-suit pairs.
-    FALLBACK: Blob detection (colored/white) for non-standard table layouts.
+    PRIMARY: White-text detection — finds cards by white rank text clusters.
+    Works for all suits including spades (which fail blob detection).
+    FALLBACK 1: Blob detection (colored/white) for non-standard layouts.
+    FALLBACK 2: Fixed-position cropping for same-suit pairs.
+    FALLBACK 3: White card detection (showdown views).
     """
     y1, y2, x1, x2 = _search_band(W, H)
     log.debug(f"Card search: img={W}x{H}, band=({x1},{y1})-({x2},{y2})")
 
-    # PRIMARY: Fixed-position cropping — no blob detection needed.
-    # Each card is cropped independently, so same-suit pairs work perfectly.
-    result = _find_cards_fixed_position(img_np, W, H)
+    # PRIMARY: White-text detection — finds cards by white rank text clusters.
+    # Robust to all card colors including spades (black bg merges with dark
+    # table in blob detection, but white rank text is always visible).
+    result = _find_cards_by_white_text(img_np, W, H)
     if result is not None:
         return result
 
-    # Fallback 1: blob-based colored card detection
+    # Fallback 1: Blob-based colored card detection — dynamically finds cards
+    # regardless of table layout. Works for all suits except same-suit pairs
+    # where both cards merge into one blob.
     result = _find_colored_cards(img_np, W, H)
     if result is not None:
         return result
 
-    # Fallback 2: white cards (showdown/hand review views)
+    # Fallback 2: Fixed-position cropping — handles same-suit pairs where
+    # blob detection merges both cards. Only used when blob detection fails.
+    result = _find_cards_fixed_position(img_np, W, H)
+    if result is not None:
+        return result
+
+    # Fallback 3: white cards (showdown/hand review views)
     result = _find_white_cards(img_np, W, H)
     if result is None:
-        log.debug("No cards detected (fixed-position, colored, or white)")
+        log.debug("No cards detected (white-text, colored, fixed-position, or white)")
     return result
 
 
@@ -565,13 +966,13 @@ def _find_cards_fixed_position(img_np: np.ndarray, W: int, H: int) -> Optional[D
     Only succeeds if both card regions have enough white text pixels
     (indicating face-up colored cards with white rank text).
     """
-    # Fixed card positions — verified against live GGSystem screenshot
-    # (KD+QD same-suit pair, 800x614pt table).
-    # Left card measured: 42-49% X, 72-88% Y
-    # Right card measured: 48-56% X, 72-88% Y
-    # Margins added: ~1% each side for window size variance.
-    LEFT_X1, LEFT_Y1, LEFT_X2, LEFT_Y2 = 0.40, 0.71, 0.51, 0.89
-    RIGHT_X1, RIGHT_Y1, RIGHT_X2, RIGHT_Y2 = 0.47, 0.71, 0.58, 0.89
+    # Fixed card positions — measured from live Rush & Cash screenshots
+    # (Mar 14, 2026: 1700x1230 table, 850x615pt window).
+    # Left card rank text at X≈44%, right at X≈50%, Y≈74-78%.
+    # Card blobs: left X=30-50%, right X=48-57%, Y=73-86%.
+    # Using tight crop around each card with 2% margin.
+    LEFT_X1, LEFT_Y1, LEFT_X2, LEFT_Y2 = 0.38, 0.72, 0.50, 0.87
+    RIGHT_X1, RIGHT_Y1, RIGHT_X2, RIGHT_Y2 = 0.47, 0.72, 0.58, 0.87
 
     lx1 = int(W * LEFT_X1)
     ly1 = int(H * LEFT_Y1)
@@ -585,7 +986,9 @@ def _find_cards_fixed_position(img_np: np.ndarray, W: int, H: int) -> Optional[D
     left_crop = img_np[ly1:ly2, lx1:lx2]
     right_crop = img_np[ry1:ry2, rx1:rx2]
 
-    # Verify both regions have white text (face-up colored cards)
+    # Verify both regions actually contain a colored card (not green felt or UI).
+    # Cards have: (a) white text (>2%), AND (b) a saturated colored background
+    # (red/blue/green/black) — NOT the green felt which is H=30-85 S>40 V>60.
     for side, crop in [('left', left_crop), ('right', right_crop)]:
         if crop.size == 0:
             return None
@@ -594,6 +997,21 @@ def _find_cards_fixed_position(img_np: np.ndarray, W: int, H: int) -> Optional[D
         if white_frac < 0.02:
             log.debug(f"Fixed-position {side} card: only {white_frac:.1%} white, "
                       f"cards likely not face-up")
+            return None
+        # Check that the center of the crop has a card-colored background,
+        # not green felt. Sample the center 50% of the crop.
+        ch, cw = crop.shape[:2]
+        center = crop[ch//4:3*ch//4, cw//4:3*cw//4]
+        hsv_center = cv2.cvtColor(center, cv2.COLOR_RGB2HSV)
+        h_ch = hsv_center[:,:,0]
+        s_ch = hsv_center[:,:,1]
+        v_ch = hsv_center[:,:,2]
+        # Green felt: H=30-85, S>40, V=60-200
+        felt_px = np.sum((h_ch >= 30) & (h_ch <= 85) & (s_ch > 40) & (v_ch > 60) & (v_ch < 200))
+        felt_frac = felt_px / max(center.shape[0] * center.shape[1], 1)
+        if felt_frac > 0.50:
+            log.debug(f"Fixed-position {side} card: {felt_frac:.0%} green felt, "
+                      f"no card present")
             return None
 
     log.debug(f"Fixed-position card detection: left=({lx1},{ly1})-({lx2},{ly2}), "
@@ -840,15 +1258,15 @@ def _find_colored_cards(img_np: np.ndarray, W: int, H: int) -> Optional[Dict]:
 
     # Define per-suit masks — each processed independently
     suit_masks = {
-        # Blue (diamonds): H=95-125, S>100, V>50
-        'D': (h_ch >= 95) & (h_ch <= 125) & (s_ch > 100) & (v_ch > 50),
+        # Blue (diamonds): H=102-125, S>100, V>50
+        'D': (h_ch >= 102) & (h_ch <= 125) & (s_ch > 100) & (v_ch > 50),
         # Red (hearts): H<10 or H>168, S>120, V>100
         # Tightened: S>120 and V>100 to reject subtle red tints from dark
         # card edges/UI.  Card backs have V~80-100 but NO white text.
         'H': ((h_ch < 10) | (h_ch > 168)) & (s_ch > 120) & (v_ch > 100),
-        # Green (clubs): H=35-85, V>120 — cards are brighter than felt (V~83)
+        # Green (clubs): H=30-98, V>120 — cards are brighter than felt (V~83)
         # Felt has H~61 S~146 V~83; green cards have H~42 S~105 V~149
-        'C': (h_ch >= 30) & (h_ch <= 85) & (s_ch > 60) & (v_ch > 120),
+        'C': (h_ch >= 30) & (h_ch <= 98) & (s_ch > 60) & (v_ch > 120),
         # Black (spades): low V, low S — expand to V<70 to catch charcoal
         # card backgrounds; white-text check later rejects dark table areas
         'S': (v_ch < 70) & (s_ch < 60) & (v_ch > 15),
@@ -1800,14 +2218,95 @@ def _read_rank_at(img_np: np.ndarray, box: Tuple[int, int, int, int],
     # reducing template scores by 0.10-0.15 (turning correct 0.81 → 0.70).
     from sys_core.ocr.rank_templates import get_rank_matcher
     matcher = get_rank_matcher()
+
+    # Structural validation: reject template if hole count contradicts rank.
+    # This catches 2→8, A→8, 5→8 etc. mismatches at the template level.
+    n_holes_bw = _count_enclosed_loops(bw)
+
+    is_two_components = _disambiguate_10_from_single(bw)
+
+    def _validate_template_rank(rank_candidate, strategy_name):
+        """Reject rank if structural analysis contradicts it."""
+        if rank_candidate == '8' and n_holes_bw < 2:
+            log.warning(f"TEMPLATE REJECTED ({strategy_name}): {rank_candidate} "
+                        f"but only {n_holes_bw} holes (8 needs 2)")
+            return None
+        if rank_candidate == 'A' and n_holes_bw == 0:
+            log.warning(f"TEMPLATE REJECTED ({strategy_name}): {rank_candidate} "
+                        f"but 0 holes (A needs 1)")
+            return None
+        if rank_candidate in ('2', '5', '7') and n_holes_bw >= 2:
+            log.warning(f"TEMPLATE REJECTED ({strategy_name}): {rank_candidate} "
+                        f"but {n_holes_bw} holes (expected 0)")
+            return None
+        # "10" must have 2 connected components; single-char ranks must have 1
+        if rank_candidate == '10' and not is_two_components:
+            log.warning(f"TEMPLATE REJECTED ({strategy_name}): 10 but glyph has "
+                        f"1 component (10 needs 2)")
+            return None
+        if rank_candidate != '10' and is_two_components:
+            log.warning(f"TEMPLATE REJECTED ({strategy_name}): {rank_candidate} "
+                        f"but glyph has 2 components → likely 10")
+            return None
+        log.debug(f"Rank TEMPLATE ({strategy_name}): {rank_candidate} for box ({x},{y},{w},{h})")
+        return rank_candidate
+
     rank = matcher.match_rank_multi(bw)
     if rank:
-        log.debug(f"Rank TEMPLATE: {rank} for box ({x},{y},{w},{h})")
-        return rank
+        validated = _validate_template_rank(rank, 'normal')
+        if validated:
+            return validated
+
+    # Strategy 1b: Try template matching with morph-cleaned binarization.
+    try:
+        k = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
+        bw_morph = cv2.morphologyEx(bw.copy(), cv2.MORPH_CLOSE, k)
+        _, bw_morph = cv2.threshold(bw_morph, 127, 255, cv2.THRESH_BINARY)
+        rank = matcher.match_rank_multi(bw_morph)
+        if rank:
+            validated = _validate_template_rank(rank, 'morph')
+            if validated:
+                return validated
+    except Exception:
+        pass
+
+    # Strategy 1c: Try with inverted binarization.
+    rank = matcher.match_rank_multi(255 - bw)
+    if rank:
+        validated = _validate_template_rank(rank, 'inverted')
+        if validated:
+            return validated
+
+    # ── DEBUG: Save failed template crops for analysis ──────────────
+    # When all 3 template strategies fail, save the crops so we can see
+    # exactly what the template matcher is being given.
+    if matcher.ready:
+        try:
+            import os, time as _dbg_time
+            debug_dir_path = os.path.join(os.path.dirname(__file__), 'debug_failed_templates')
+            os.makedirs(debug_dir_path, exist_ok=True)
+            ts = int(_dbg_time.time() * 1000)
+            prefix = f"{debug_dir_path}/{ts}_{x}_{y}"
+            cv2.imwrite(f"{prefix}_crop_rgb.png", crop)
+            cv2.imwrite(f"{prefix}_bw.png", bw_pre_morph)
+            # Also extract and save the glyph that _extract_glyph sees
+            from sys_core.ocr.rank_templates import _extract_glyph, _normalize_glyph
+            glyph = _extract_glyph(bw_pre_morph)
+            if glyph is not None:
+                cv2.imwrite(f"{prefix}_glyph.png", glyph)
+                normalized = _normalize_glyph(glyph)
+                cv2.imwrite(f"{prefix}_normalized.png", normalized)
+            else:
+                cv2.imwrite(f"{prefix}_NO_GLYPH.png", bw_pre_morph)
+            log.warning(f"TEMPLATE FAIL: All 3 strategies failed for box ({x},{y},{w},{h}) "
+                        f"crop={crop.shape} — saved debug to {prefix}_*.png")
+        except Exception as e:
+            log.debug(f"Failed to save template debug: {e}")
 
     # Apply morph opening for OCR strategies. Skip for small crops where
     # the 2x2 kernel destroys thin strokes (e.g. turns "2" into "4").
-    is_small_crop = (w < 50 and h < 50)
+    # Board card corner crops are ~55×37 — h < 50 is enough to flag them.
+    is_small_crop = (w < 70 or h < 50)
     if not is_small_crop:
         # OPEN removes small noise dots (pepper)
         morph_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
@@ -1817,17 +2316,9 @@ def _read_rank_at(img_np: np.ndarray, box: Tuple[int, int, int, int],
         _, bw = cv2.threshold(bw, 127, 255, cv2.THRESH_BINARY)
 
     # ── Strategy 2: Pytesseract OCR (fallback) ──────────────────────
-    # Skip OCR for SMALL crops (board cards) when templates are ready —
-    # those are noise/garbage that OCR won't help with.
-    # For LARGE crops (hero cards, h > 80px), ALWAYS try OCR as fallback.
-    # This catches hash collisions where a wrong MD5 entry gets rejected
-    # by template cross-validation but we still need OCR to identify the rank.
-    hash_collision_suspected = getattr(matcher, '_last_hash_collision', False)
-    is_hero_sized = (h > 70)
-    if matcher.ready and not hash_collision_suspected and not is_hero_sized:
-        log.debug(f"Rank failed (templates ready, skipping OCR) "
-                  f"for box ({x},{y},{w},{h})")
-        return None
+    # Always allow OCR fallback regardless of crop size.
+    # Templates were captured from hero cards (~84px) and may not match
+    # smaller board card glyphs. OCR handles both sizes.
 
     if not PYTESSERACT_AVAILABLE:
         log.debug(f"Rank failed (no pytesseract) for box ({x},{y},{w},{h})")
@@ -1864,11 +2355,16 @@ def _read_rank_at(img_np: np.ndarray, box: Tuple[int, int, int, int],
     rank7 = _parse_rank(text7)
 
     # If psm 7 says "10" and psm 10 said something else, trust psm 7 —
-    # "10" is the only two-character rank and psm 7 handles it reliably.
+    # BUT only if glyph actually has 2 connected components. A "4" glyph
+    # has 1 component and OCR often misreads it as "10".
     if rank7 == '10' and rank != '10':
-        log.debug(f"Rank OCR: psm10={text!r}->{rank}, psm7={text7!r}->10 — using 10")
-        _auto_capture_template(matcher, '10', bw_pre_morph)
-        return '10'
+        if is_two_components:
+            log.debug(f"Rank OCR: psm10={text!r}->{rank}, psm7={text7!r}->10 — using 10 (2 components confirmed)")
+            _auto_capture_template(matcher, '10', bw_pre_morph)
+            return '10'
+        else:
+            log.info(f"Rank OCR: psm7 says 10 but glyph has 1 component — REJECTING 10, keeping psm10={rank}")
+            rank7 = rank  # Override rank7 so it doesn't poison later checks
 
     # ── A/3 structural disambiguation ──────────────────────────────
     # OCR misreads "A" as "3" on colored cards because the white-on-color
@@ -1926,13 +2422,15 @@ def _read_rank_at(img_np: np.ndarray, box: Tuple[int, int, int, int],
             _auto_capture_template(matcher, 'J', bw_pre_morph)
             return 'J'
 
-    # ── 10/J/3/4 structural disambiguation ─────────────────────────
+    # ── 10/single structural disambiguation ──────────────────────────
     # "10" is unique: it has TWO connected components (the "1" and "0").
     # All other ranks are single connected components. When OCR reads
-    # J, 3, or 4 but the glyph has 2 components, it's actually "10".
-    if rank in ('J', '3', '4') or rank7 in ('J', '3', '4'):
+    # ANY single-char rank but the glyph has 2 components, it's "10".
+    # Confirmed misreads from live screenshots: 10→4, 10→7, 10→3, 10→J
+    _SINGLE_CHAR_ALL = {'A', 'K', 'Q', 'J', '9', '8', '7', '6', '5', '4', '3', '2'}
+    if rank in _SINGLE_CHAR_ALL or rank7 in _SINGLE_CHAR_ALL:
         candidate = rank or rank7
-        if _disambiguate_10_from_single(bw):
+        if candidate in _SINGLE_CHAR_ALL and _disambiguate_10_from_single(bw):
             log.info(f"10/SINGLE DISAMBIGUATION: OCR says {candidate} but glyph has "
                      f"2 components → using 10")
             _auto_capture_template(matcher, '10', bw_pre_morph)
@@ -1947,6 +2445,30 @@ def _read_rank_at(img_np: np.ndarray, box: Tuple[int, int, int, int],
                          f"1 component → using {alt}")
                 _auto_capture_template(matcher, alt, bw_pre_morph)
                 return alt
+            # Both PSMs say 10 but glyph has 1 component — try psm10 re-read
+            # which often correctly reads '4' when forced to single-char mode
+            if not alt or alt == '10':
+                # Re-read with inverted binarization to get a fresh single-char read
+                inv_bw = 255 - bw
+                inv_big = cv2.resize(inv_bw, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
+                _, inv_big = cv2.threshold(inv_big, 127, 255, cv2.THRESH_BINARY)
+                inv_padded = np.full((inv_big.shape[0] + 2 * pad, inv_big.shape[1] + 2 * pad), 255, dtype=np.uint8)
+                inv_padded[pad:pad + inv_big.shape[0], pad:pad + inv_big.shape[1]] = inv_big
+                inv_text = pytesseract.image_to_string(
+                    Image.fromarray(inv_padded), config=f'--psm 10 --oem 3 {whitelist}'
+                ).strip()
+                inv_rank = _parse_rank(inv_text)
+                if inv_rank and inv_rank != '10':
+                    log.info(f"10/SINGLE DISAMBIGUATION: both PSMs say 10 but 1 component, "
+                             f"inverted psm10 says {inv_rank} → using {inv_rank}")
+                    _auto_capture_template(matcher, inv_rank, bw_pre_morph)
+                    return inv_rank
+                else:
+                    # Last resort: "4" is the most common 10-misread for single-component glyphs
+                    log.info(f"10/SINGLE DISAMBIGUATION: both PSMs say 10 but 1 component, "
+                             f"inverted read={inv_rank} — defaulting to 4")
+                    _auto_capture_template(matcher, '4', bw_pre_morph)
+                    return '4'
 
     # ── 8/A disambiguation ──────────────────────────────────────────
     # OCR frequently reads "8" as "A" (and vice versa) because both have
@@ -1993,6 +2515,46 @@ def _read_rank_at(img_np: np.ndarray, box: Tuple[int, int, int, int],
                 _auto_capture_template(matcher, correct, bw_pre_morph)
                 return correct
 
+    # ── 2/8 disambiguation ──────────────────────────────────────────
+    # OCR reads "2" as "8" (the curved top of 2 looks like 8's top loop).
+    # Structural test: "8" has 2 holes, "2" has 0 holes.
+    if rank == '8' or rank7 == '8':
+        candidate = rank or rank7
+        if candidate == '8':
+            n_holes = _count_enclosed_loops(bw)
+            if n_holes == 0:
+                log.info(f"2/8 DISAMBIGUATION: OCR says 8 but glyph has 0 holes → using 2")
+                _auto_capture_template(matcher, '2', bw_pre_morph)
+                return '2'
+
+    # ── 2→9/8 disambiguation ──────────────────────────────────────────
+    # OCR reads "9" as "2" when the loop is cut. "9" has 1 hole, "2" has 0.
+    # But "8" has 2 holes — if we see 2+ holes, it's "8" not "9".
+    if rank == '2' or rank7 == '2':
+        candidate = rank or rank7
+        if candidate == '2':
+            n_holes = _count_enclosed_loops(bw)
+            if n_holes >= 2:
+                log.info(f"2/8 DISAMBIGUATION: OCR says 2 but glyph has {n_holes} holes → using 8")
+                _auto_capture_template(matcher, '8', bw_pre_morph)
+                return '8'
+            elif n_holes == 1:
+                log.info(f"2/9 DISAMBIGUATION: OCR says 2 but glyph has {n_holes} holes → using 9")
+                _auto_capture_template(matcher, '9', bw_pre_morph)
+                return '9'
+
+    # ── 7/9 disambiguation ──────────────────────────────────────────
+    # OCR reads "9" as "7" when the crop clips the loop. Structural test:
+    # "9" has 1 enclosed hole (the loop), "7" has 0 holes.
+    if rank == '7' or rank7 == '7':
+        candidate = rank or rank7
+        if candidate == '7':
+            n_holes = _count_enclosed_loops(bw)
+            if n_holes >= 1:
+                log.info(f"7/9 DISAMBIGUATION: OCR says 7 but glyph has {n_holes} holes → using 9")
+                _auto_capture_template(matcher, '9', bw_pre_morph)
+                return '9'
+
     # ── 6/9 disambiguation ──────────────────────────────────────────
     # OCR can confuse 6 and 9 (rotations). Use hole position: "6" has its
     # hole in the bottom half, "9" has its hole in the top half.
@@ -2012,6 +2574,26 @@ def _read_rank_at(img_np: np.ndarray, box: Tuple[int, int, int, int],
         log.info(f"10/4 DISAMBIGUATION: psm10={text!r}->4, psm7={text7!r}->{rank7} — using {rank7}")
         _auto_capture_template(matcher, rank7, bw_pre_morph)
         return rank7
+
+    # Final guard: if rank is '10' but glyph has 1 component, it's NOT 10.
+    # Use the other PSM's result, or fall through to Otsu.
+    if rank == '10' and not is_two_components:
+        log.info(f"FINAL 10-GUARD (psm10): rank=10 but 1 component — rejecting")
+        alt = rank7 if rank7 and rank7 != '10' else None
+        if alt:
+            log.info(f"FINAL 10-GUARD: using psm7={alt} instead")
+            _auto_capture_template(matcher, alt, bw_pre_morph)
+            return alt
+        rank = None  # Fall through to Otsu
+
+    if rank7 == '10' and not is_two_components:
+        log.info(f"FINAL 10-GUARD (psm7): rank7=10 but 1 component — rejecting")
+        alt = rank if rank and rank != '10' else None
+        if alt:
+            log.info(f"FINAL 10-GUARD: using psm10={alt} instead")
+            _auto_capture_template(matcher, alt, bw_pre_morph)
+            return alt
+        rank7 = None  # Fall through to Otsu
 
     if rank:
         log.debug(f"Rank OCR (psm10): raw={text!r} -> {rank}")
@@ -2037,8 +2619,34 @@ def _read_rank_at(img_np: np.ndarray, box: Tuple[int, int, int, int],
     ).strip()
     rank = _parse_rank(text)
     if rank:
-        log.debug(f"Rank OCR (otsu): raw={text!r} -> {rank}")
-        # Capture template from pre-morph bw — matches template matching path.
+        # Apply structural validation to Otsu result too
+        n_holes_otsu = _count_enclosed_loops(bw)
+        if rank == '10' and not is_two_components:
+            # Otsu says 10 but glyph has 1 component — use psm10 single-char result
+            # (saved from Strategy 2 above). "4" is the most common misread.
+            alt_rank = _parse_rank(text)  # Otsu's own psm7 result
+            # Try a psm10 read on the Otsu image for a single-char alternative
+            otsu_text10 = pytesseract.image_to_string(
+                Image.fromarray(padded_otsu), config=f'--psm 10 --oem 3 {whitelist}'
+            ).strip()
+            otsu_rank10 = _parse_rank(otsu_text10)
+            if otsu_rank10 and otsu_rank10 != '10':
+                rank = otsu_rank10
+                log.info(f"Rank OCR (otsu): raw={text!r} -> 10, but 1 component → using psm10={rank}")
+            else:
+                rank = '4'  # Most common 10→single confusion
+                log.info(f"Rank OCR (otsu): raw={text!r} -> 10, but 1 component → defaulting to 4")
+        elif rank == '8' and n_holes_otsu < 2:
+            rank = '2'
+            log.info(f"Rank OCR (otsu): raw={text!r} -> 8, but {n_holes_otsu} holes → 2")
+        elif rank == '2' and n_holes_otsu >= 1:
+            rank = '9'
+            log.info(f"Rank OCR (otsu): raw={text!r} -> 2, but {n_holes_otsu} holes → 9")
+        elif rank == '7' and n_holes_otsu >= 1:
+            rank = '9'
+            log.info(f"Rank OCR (otsu): raw={text!r} -> 7, but {n_holes_otsu} holes → 9")
+        else:
+            log.debug(f"Rank OCR (otsu): raw={text!r} -> {rank}")
         _auto_capture_template(matcher, rank, bw_pre_morph)
         return rank
 
@@ -2108,8 +2716,11 @@ def _disambiguate_6_9(bw: np.ndarray) -> Optional[str]:
 def _disambiguate_10_from_single(bw: np.ndarray) -> bool:
     """Determine if a glyph is "10" (two components) or a single-character rank.
 
-    "10" is unique: it has TWO separate connected components (the "1" and "0").
-    All other ranks (J, 3, 4, Q, K, etc.) are single connected components.
+    "10" is unique: it has TWO separate connected components (the "1" and "0")
+    that are HORIZONTALLY SEPARATED (side by side).
+
+    Single chars like "4" can also have 2 components due to thin-stroke breaks,
+    but those components OVERLAP horizontally and have very unequal areas.
 
     Returns True if the glyph looks like "10", False otherwise.
     """
@@ -2123,23 +2734,69 @@ def _disambiguate_10_from_single(bw: np.ndarray) -> bool:
     if n_labels <= 2:  # 0=bg + 1 component = single char
         return False
 
-    # Count components that are large enough to be a real glyph part
-    # (filter out tiny noise specks)
+    # Collect all significant components (>= 10% of total foreground OR >= 50 pixels)
+    # Use a higher threshold (10%) to filter noise more aggressively.
     total_fg = np.sum(fg > 0)
-    min_component_area = max(total_fg * 0.05, 10)  # At least 5% of total foreground
-    big_components = 0
+    min_component_area = max(total_fg * 0.10, 15)
+    all_components = []
     for label_id in range(1, n_labels):
         area = np.sum(labels == label_id)
         if area >= min_component_area:
-            big_components += 1
+            ys, xs = np.where(labels == label_id)
+            all_components.append({
+                'area': area,
+                'x_min': int(xs.min()), 'x_max': int(xs.max()),
+                'y_min': int(ys.min()), 'y_max': int(ys.max()),
+            })
 
-    # "10" has exactly 2 significant components (the "1" and the "0")
-    # Single chars have 1 significant component (even with noise dots)
-    if big_components == 2:
-        log.debug(f"10/SINGLE DISAMBIGUATION: {big_components} significant components "
-                  f"(of {n_labels-1} total) → likely '10'")
-        return True
-    return False
+    # If we got exactly 2 significant components, check if they look like "10"
+    # If we got 3+, try all pairs of the 2 largest to see if any pair looks like "10"
+    if len(all_components) < 2:
+        return False
+
+    # Sort by area descending — take the 2 largest for "10" check
+    all_components.sort(key=lambda c: c['area'], reverse=True)
+    candidates = all_components[:2]
+
+    # Sort by x position (left component first) for spatial analysis
+    candidates.sort(key=lambda c: c['x_min'])
+    c1, c2 = candidates
+
+    # CHECK 1: Area ratio — "10" has two real glyphs, so area ratio should be
+    # reasonable (>= 0.15). A broken "4" has a tiny fragment (ratio < 0.15).
+    area_ratio = min(c1['area'], c2['area']) / max(c1['area'], c2['area'])
+
+    # CHECK 2: Horizontal separation — "10" components are side-by-side with
+    # minimal overlap. A broken "4" has overlapping components.
+    x_overlap = max(0, min(c1['x_max'], c2['x_max']) - max(c1['x_min'], c2['x_min']))
+    total_width = max(c1['x_max'], c2['x_max']) - min(c1['x_min'], c2['x_min'])
+    overlap_ratio = x_overlap / total_width if total_width > 0 else 1.0
+
+    # CHECK 3: In "10", the LEFT component is the "1" — tall and narrow.
+    # A suit symbol leaking into the crop is roughly square (aspect ~1.0).
+    # The "1" in "10" is always on the LEFT and has aspect (h/w) >= 2.0.
+    # If the left component is square-ish, it's a suit symbol, not "1".
+    c1_w = c1['x_max'] - c1['x_min'] + 1
+    c1_h = c1['y_max'] - c1['y_min'] + 1
+    c2_w = c2['x_max'] - c2['x_min'] + 1
+    c2_h = c2['y_max'] - c2['y_min'] + 1
+
+    # c1 is the LEFT component (sorted by x_min above).
+    # For "10": c1 is "1" — narrow and tall, aspect >= 2.0
+    left_aspect = c1_h / max(c1_w, 1)
+    # Also require the LEFT component to be the smaller-area one (the "1"
+    # is always smaller than the "0")
+    left_is_smaller = c1['area'] <= c2['area']
+
+    is_ten = (area_ratio >= 0.15 and overlap_ratio < 0.35
+              and left_aspect >= 2.0 and left_is_smaller)
+
+    log.debug(f"10/SINGLE DISAMBIGUATION: {len(all_components)} significant components "
+              f"(of {n_labels-1} total), top-2 area_ratio={area_ratio:.2f}, "
+              f"overlap_ratio={overlap_ratio:.2f}, left_aspect={left_aspect:.2f}, "
+              f"left_smaller={left_is_smaller} "
+              f"→ {'10' if is_ten else 'single char'}")
+    return is_ten
 
 
 def _auto_capture_template(matcher, rank: str, bw: np.ndarray):
@@ -2250,8 +2907,8 @@ def _detect_suit_at(img_np: np.ndarray, box: Tuple[int, int, int, int]) -> str:
 
     black_count = int(np.sum(v_vals < 80))
     red_count = int(np.sum(((h_vals < 12) | (h_vals > 168)) & (s_vals > 50) & (v_vals >= 80)))
-    blue_count = int(np.sum((h_vals >= 90) & (h_vals <= 145) & (s_vals > 35) & (v_vals >= 50)))
-    green_count = int(np.sum((h_vals >= 33) & (h_vals <= 88) & (s_vals > 35) & (v_vals >= 50)))
+    blue_count = int(np.sum((h_vals >= 102) & (h_vals <= 145) & (s_vals > 35) & (v_vals >= 50)))
+    green_count = int(np.sum((h_vals >= 33) & (h_vals <= 98) & (s_vals > 35) & (v_vals >= 50)))
 
     counts = {'S': black_count, 'H': red_count, 'D': blue_count, 'C': green_count}
     best = max(counts, key=counts.get)
@@ -2293,12 +2950,12 @@ def _detect_suit_colored(img_np: np.ndarray, box: Tuple[int, int, int, int]) -> 
     s_vals = bg_hsv[:, 1].astype(float)
     v_vals = bg_hsv[:, 2].astype(float)
 
-    # Blue (diamonds): H=95-125, S>80
-    blue_count = int(np.sum((h_vals >= 95) & (h_vals <= 125) & (s_vals > 80)))
+    # Blue (diamonds): H=102-125, S>80
+    blue_count = int(np.sum((h_vals >= 102) & (h_vals <= 125) & (s_vals > 80)))
     # Red (hearts): H<12 or H>168, S>80
     red_count = int(np.sum(((h_vals < 12) | (h_vals > 168)) & (s_vals > 80)))
-    # Green (clubs): H=35-85, S>80
-    green_count = int(np.sum((h_vals >= 35) & (h_vals <= 85) & (s_vals > 80)))
+    # Green (clubs): H=35-98, S>80  (extended to 98 — no gap with diamonds at 102)
+    green_count = int(np.sum((h_vals >= 35) & (h_vals <= 98) & (s_vals > 80)))
     # Black (spades): V<70, S<80 — charcoal card bg can be V=55-70
     black_count = int(np.sum((v_vals < 70) & (s_vals < 80)))
 

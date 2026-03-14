@@ -75,13 +75,18 @@ BOARD_X_MAX = 0.85
 SEAT_REGIONS_6MAX = [
     # (x_center, y_center, width, height) as fractions of table image.
     # Stack text is cyan on dark background, below the player avatar.
-    # Shifted down slightly vs avatar center to avoid level badge overlap.
-    (0.500, 0.930, 0.14, 0.040),  # Seat 0: Hero (bottom center)
-    (0.068, 0.765, 0.14, 0.040),  # Seat 1: Left-bottom
-    (0.115, 0.378, 0.14, 0.040),  # Seat 2: Left-top
-    (0.500, 0.268, 0.14, 0.040),  # Seat 3: Top center
-    (0.888, 0.378, 0.14, 0.040),  # Seat 4: Right-top
-    (0.915, 0.765, 0.14, 0.040),  # Seat 5: Right-bottom
+    # Re-calibrated Mar 14 2026 from live Rush & Cash 1700x1230 screenshots.
+    # Seats 2 & 4 (left-top, right-top) were shifted: x and y adjusted to
+    # center on the stack number text instead of the avatar area.
+    # Height increased from 0.040 to 0.060 for opponent seats — the thin
+    # muted-teal text needs more vertical pixels to avoid clipping character
+    # bottoms (which caused "0" → "U", "5" → "J" OCR errors).
+    (0.500, 0.930, 0.14, 0.040),  # Seat 0: Hero (bottom center) — bright cyan, 0.040 is fine
+    (0.068, 0.765, 0.16, 0.060),  # Seat 1: Left-bottom
+    (0.150, 0.370, 0.16, 0.060),  # Seat 2: Left-top  (was x=0.115 y=0.378 h=0.040)
+    (0.500, 0.268, 0.16, 0.060),  # Seat 3: Top center
+    (0.870, 0.370, 0.16, 0.060),  # Seat 4: Right-top (was x=0.888 y=0.378 h=0.040)
+    (0.915, 0.765, 0.16, 0.060),  # Seat 5: Right-bottom
 ]
 
 # Dealer button detection area (within the felt, away from edges)
@@ -793,7 +798,11 @@ def _detect_buttons(img: np.ndarray, W: int, H: int, deal_me_in_only: bool = Fal
             ry1 = int(H * 0.82)
             ry2 = int(H * 0.98)
             amount, text = _ocr_button_text(img, rx1, ry1, rx2 - rx1, ry2 - ry1)
-            if 'rais' in text.lower() or 'bet' in text.lower() or 'all' in text.lower():
+            t_lower = text.lower()
+            # NOTE: Use word-boundary-aware checks. 'all' in 'call' was a false positive.
+            has_raise = 'rais' in t_lower or 'bet' in t_lower
+            has_allin = ('all' in t_lower and 'in' in t_lower and 'call' not in t_lower)
+            if has_raise or has_allin:
                 log.info(f"Aggressive OCR scan found MISSED raise button: {text!r}")
                 # Use a default center on the right side if we can't find exact rect
                 buttons['raise'] = {
@@ -1681,6 +1690,26 @@ def _count_opponents_in_hand(img: np.ndarray, W: int, H: int) -> int:
     return opponents_with_cards
 
 
+def _strip_ui_borders(bw: np.ndarray) -> np.ndarray:
+    """Remove UI frame borders from a binarized image.
+
+    GGPoker player info boxes have bright rounded-rectangle borders that pass
+    the blue channel threshold.  These wide horizontal/vertical lines confuse
+    tesseract.  We detect them as rows/columns where >50% of pixels are white
+    and zero them out.
+    """
+    out = bw.copy()
+    row_frac = np.mean(out > 0, axis=1)
+    for r in range(out.shape[0]):
+        if row_frac[r] > 0.50:
+            out[r, :] = 0
+    col_frac = np.mean(out > 0, axis=0)
+    for c in range(out.shape[1]):
+        if col_frac[c] > 0.80:
+            out[:, c] = 0
+    return out
+
+
 def _ocr_stack_value(region: np.ndarray) -> Optional[float]:
     """OCR a stack value from a small region. Returns the numeric value or None.
 
@@ -1715,6 +1744,10 @@ def _ocr_stack_value(region: np.ndarray) -> Optional[float]:
     # Scale 3 first (fast, "$" recognition reliable). Only retry at scale 4 if
     # scale 3 result looks like a dropped decimal (integer > 100 in a poker game).
     _, bw = cv2.threshold(blue_ch, 130, 255, cv2.THRESH_BINARY)
+    # Remove UI frame borders: rows/cols where >50% of pixels are white are
+    # player info box edges, not text.  Seat 3 (top center) has a bright
+    # horizontal border that otherwise confuses tesseract.
+    bw = _strip_ui_borders(bw)
     if np.sum(bw > 0) >= 15:
         r3 = _ocr_single(bw, 3, pad)
         if r3 is not None:
@@ -1733,6 +1766,7 @@ def _ocr_stack_value(region: np.ndarray) -> Optional[float]:
     # Fallback: green channel (catches opponent muted teal text)
     green_ch = region[:, :, 1]
     _, bw = cv2.threshold(green_ch, 100, 255, cv2.THRESH_BINARY)
+    bw = _strip_ui_borders(bw)
     if np.sum(bw > 0) >= 15:
         result = _ocr_single(bw, 3, pad)
         if result is not None:
@@ -1743,6 +1777,7 @@ def _ocr_stack_value(region: np.ndarray) -> Optional[float]:
     clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(4, 4))
     enhanced = clahe.apply(gray)
     _, bw = cv2.threshold(enhanced, 100, 255, cv2.THRESH_BINARY)
+    bw = _strip_ui_borders(bw)
     if np.sum(bw > 0) >= 10:
         result = _ocr_single(bw, 3, pad)
         if result is not None:
@@ -1755,7 +1790,9 @@ def _ocr_single(bw: np.ndarray, scale: int, pad: int) -> Optional[float]:
     """Run OCR on a single binarized image and parse the amount.
 
     Uses full charset first (recognizes '$' correctly), falls back to
-    digit whitelist if no amount is found.
+    digit whitelist if no amount is found.  Also tries a top-60% crop
+    as a fallback: bottom portions often contain player avatar artifacts
+    that confuse tesseract's single-line mode.
     """
     big = cv2.resize(bw, None, fx=scale, fy=scale,
                      interpolation=cv2.INTER_CUBIC)
@@ -1782,6 +1819,20 @@ def _ocr_single(bw: np.ndarray, scale: int, pad: int) -> Optional[float]:
     ).strip()
     if text2:
         return _parse_amount(text2)
+
+    # Pass 3: top-60% crop fallback — bottom portions may contain player avatar
+    # or UI artifacts that confuse tesseract's single-line layout analysis.
+    # Crop to top 60% and retry with PSM 7.
+    h_padded = padded.shape[0]
+    top_crop = padded[:int(h_padded * 0.6), :]
+    if top_crop.size > 0 and np.sum(top_crop > 0) >= 10:
+        text3 = pytesseract.image_to_string(
+            Image.fromarray(top_crop), config='--psm 7 --oem 3'
+        ).strip()
+        if text3:
+            result3 = _parse_amount(text3)
+            if result3 is not None:
+                return result3
 
     return None
 
@@ -2099,7 +2150,7 @@ def _detect_board_colored(
     suit_masks = {
         'D': (h_ch >= 95) & (h_ch <= 125) & (s_ch > 100) & (v_ch > 50),
         'H': ((h_ch < 10) | (h_ch > 168)) & (s_ch > 100) & (v_ch > 120),
-        'C': (h_ch >= 30) & (h_ch <= 85) & (s_ch > 60) & (v_ch > 120),
+        'C': (h_ch >= 30) & (h_ch <= 95) & (s_ch > 60) & (v_ch > 120),
         'S': (v_ch < 55) & (s_ch < 60) & (v_ch > 15),
     }
 
@@ -2197,10 +2248,15 @@ def _detect_board_colored(
         corner_box = (bx + margin_x, by + margin_y, corner_w, corner_h)
         corner_rank = _read_rank_at(img, corner_box, STYLE_COLORED)
 
-        center_x = bx + int(bw * 0.15)
-        center_y = by + int(bh * 0.40)
-        center_w = int(bw * 0.70)
-        center_h = int(bh * 0.50)
+        # Center crop: capture the large central rank numeral ONLY.
+        # Start at 25% X to skip the small suit symbol that sits left-of-center,
+        # while keeping enough of wide ranks like J.
+        # Start at 35% Y to skip the top-left corner rank/suit, end at 70%
+        # to EXCLUDE the central suit symbol below the rank number.
+        center_x = bx + int(bw * 0.25)
+        center_y = by + int(bh * 0.35)
+        center_w = int(bw * 0.65)
+        center_h = int(bh * 0.35)
         center_box = (center_x, center_y, center_w, center_h)
         center_rank = _read_rank_at(img, center_box, STYLE_COLORED)
 
@@ -2309,6 +2365,19 @@ def _detect_board_colored(
                 rank = 'T'
             board.append(f"{rank}{suit}")
             log.debug(f"Board card (colored): {rank}{suit} at ({bx},{by}) {bw}x{bh}")
+        else:
+            # Save debug images for board cards where rank detection failed
+            try:
+                import os, time as _dbg_time
+                debug_dir_path = os.path.join(os.path.dirname(__file__), 'debug_failed_templates')
+                os.makedirs(debug_dir_path, exist_ok=True)
+                ts = int(_dbg_time.time() * 1000)
+                card_crop = img[by:by+bh, bx:bx+bw]
+                if card_crop.size > 0:
+                    cv2.imwrite(f"{debug_dir_path}/{ts}_board_{suit}_crop.png", card_crop)
+                    log.warning(f"BOARD RANK FAIL: suit={suit} at ({bx},{by}) {bw}x{bh} — saved debug")
+            except Exception:
+                pass
 
     return board
 

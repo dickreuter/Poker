@@ -783,6 +783,11 @@ class MultiTableRunner:
             table_dict=td,
         )
         log.info(f"Created session for table: {window.name} ({window.width}x{window.height}pt)")
+        # Log avatar exclusion zones once per new session (for debugging)
+        try:
+            self._log_avatar_zones(session)
+        except Exception:
+            pass
         return session
 
     def grab_full_screen(self):
@@ -859,7 +864,11 @@ class MultiTableRunner:
                 deal_me_in = state.get_action_by_type('deal_me_in')
                 if deal_me_in and not state.is_my_turn:
                     import pyautogui
-                    pyautogui.click(deal_me_in.screen_x_pt, deal_me_in.screen_y_pt)
+                    if self._is_avatar_zone(deal_me_in.screen_x_pt, deal_me_in.screen_y_pt, session):
+                        log.warning(f"AVATAR GUARD: Deal Me In at ({deal_me_in.screen_x_pt}, {deal_me_in.screen_y_pt}) "
+                                    f"overlaps avatar — skipping")
+                    else:
+                        pyautogui.click(deal_me_in.screen_x_pt, deal_me_in.screen_y_pt)
                     log.info(f"Table {session.window.name}: Clicked 'Deal Me In' at "
                              f"({deal_me_in.screen_x_pt}, {deal_me_in.screen_y_pt})")
                     session.last_action_time = datetime.datetime.utcnow()
@@ -960,6 +969,13 @@ class MultiTableRunner:
             session.priority = 1
             return session.state
 
+        # Close any popup windows (Smart HUD, player profiles) that block the view
+        # Only check every 10 seconds to avoid overhead
+        now_ts = time.time()
+        if now_ts - getattr(session, '_last_popup_check', 0) > 10:
+            session._last_popup_check = now_ts
+            self._close_popups(session)
+
         if PYTHON_OCR_AVAILABLE:
             state = self.capture_game_state(session, full_screen=full_screen)
             if state is not None:
@@ -1031,7 +1047,10 @@ class MultiTableRunner:
                             if h_norm in trash:
                                 log.info(f"AUTO-FOLD: checking 'Fold to any bet' for trash hand {h_norm}")
                                 import pyautogui
-                                pyautogui.click(pre_fold_pos[0], pre_fold_pos[1])
+                                if not self._is_avatar_zone(pre_fold_pos[0], pre_fold_pos[1], session):
+                                    pyautogui.click(pre_fold_pos[0], pre_fold_pos[1])
+                                else:
+                                    log.warning(f"AVATAR GUARD: Pre-fold checkbox overlaps avatar — skipping")
                                 session._pre_fold_checkbox = None # Only click once per hand
 
                 # Save verification screenshot periodically
@@ -1043,13 +1062,19 @@ class MultiTableRunner:
         return self.check_table_state(session)
 
     def _maybe_save_verification(self, session: TableSession, state, full_screen):
-        """Periodically save card crops for live verification (~every 15s per table)."""
+        """Save card crops for live verification (~every 5s per table).
+
+        Saves:
+          1. Full table screenshot with detected cards/board in filename
+          2. Individual hero card crops (left + right) for visual audit
+          3. Board card region crop (when board is detected)
+        """
         if not state.my_cards or len(state.my_cards) < 1:
             return
 
         now = time.time()
         last_save = getattr(session, '_last_verify_save', 0)
-        if now - last_save < 15:
+        if now - last_save < 5:
             return
         session._last_verify_save = now
 
@@ -1061,6 +1086,8 @@ class MultiTableRunner:
             w = session.window
             bounds = w.bounds_pixels
             table_img = full_screen.crop(bounds)
+            table_np = np.array(table_img)
+            H, W = table_np.shape[:2]
 
             # Save full table with cards/board annotation in filename
             cards_str = '_'.join(state.my_cards)
@@ -1070,9 +1097,26 @@ class MultiTableRunner:
             table_img.save(str(verify_dir / filename))
             log.debug(f"Saved verification: {filename}")
 
-            # Keep only last 50 files to avoid filling disk
+            # Save hero card region crop (Y=53-88%, X=34-65%)
+            hero_y1, hero_y2 = int(H * 0.53), int(H * 0.88)
+            hero_x1, hero_x2 = int(W * 0.34), int(W * 0.65)
+            hero_crop = table_np[hero_y1:hero_y2, hero_x1:hero_x2]
+            if hero_crop.size > 0:
+                cv2.imwrite(str(verify_dir / f"{ts}_hero_{cards_str}.png"),
+                            cv2.cvtColor(hero_crop, cv2.COLOR_RGB2BGR))
+
+            # ALWAYS save board region crop (Y=30-55%, X=15-85%) for audit
+            # even when board=[] so we can see what should have been detected
+            board_y1, board_y2 = int(H * 0.30), int(H * 0.55)
+            board_x1, board_x2 = int(W * 0.15), int(W * 0.85)
+            board_crop = table_np[board_y1:board_y2, board_x1:board_x2]
+            if board_crop.size > 0:
+                cv2.imwrite(str(verify_dir / f"{ts}_board_{board_str}.png"),
+                            cv2.cvtColor(board_crop, cv2.COLOR_RGB2BGR))
+
+            # Keep only last 100 files to avoid filling disk
             files = sorted(verify_dir.glob('*.png'))
-            for old_file in files[:-50]:
+            for old_file in files[:-100]:
                 old_file.unlink(missing_ok=True)
         except Exception as e:
             log.debug(f"Verify save failed: {e}")
@@ -1131,6 +1175,10 @@ class MultiTableRunner:
                         screen_y = w.y + int(cy_px * scale_y)
                         
                         import pyautogui
+                        if self._is_avatar_zone(screen_x, screen_y, session):
+                            log.warning(f"AVATAR GUARD: FAST Deal Me In at ({screen_x}, {screen_y}) "
+                                        f"overlaps avatar — skipping")
+                            break
                         pyautogui.click(screen_x, screen_y)
                         log.info(f"FAST Deal Me In: clicked on {w.name} "
                                  f"at ({screen_x}, {screen_y}) (ratio {scale_x:.2f})")
@@ -1861,16 +1909,44 @@ class MultiTableRunner:
                 except Exception:
                     pass  # Never let logging break decision flow
 
+                # Ghost board warning (no forced fold — board OCR is primary now)
+                board_len_check = len(state.board_cards) if state.board_cards else 0
+                pot_check = state.pot or 0
+                if board_len_check == 0 and pot_check > 20:
+                    log.warning(f"GHOST BOARD: pot={pot_check:.1f}BB but 0 board cards. "
+                                f"Board detection may have failed. Proceeding with decision anyway.")
+
+                # --- POT-COMMITTED OVERRIDE ---
+                # If hero has <= 3 BB left and there's a pot, NEVER fold.
+                # You're pot-committed — calling is mathematically correct
+                # regardless of hand strength. This prevents the bot from
+                # folding after raising with 1 BB behind.
+                hero_stack_now = state.hero_stack if state.hero_stack else 0
+                pot_now = state.pot if state.pot else 0
+                call_now = state.call_amount if state.call_amount else 0
+                target_str_check = str(mouse_target).split('.')[-1].lower() if hasattr(mouse_target, 'name') else str(mouse_target).lower()
+
+                if target_str_check == 'fold' and hero_stack_now <= 3.0 and pot_now > 0:
+                    log.warning(f"POT-COMMITTED OVERRIDE: Decision was Fold but hero has "
+                                f"only {hero_stack_now:.1f} BB with pot={pot_now:.1f} BB — "
+                                f"FORCING CALL (pot committed)")
+                    mouse_target = 'call'
+
+                # Also: never fold when call amount is <= 1 BB and pot is large
+                if target_str_check == 'fold' and call_now <= 1.0 and pot_now >= 4.0:
+                    log.warning(f"POT-ODDS OVERRIDE: Decision was Fold but call={call_now:.1f} "
+                                f"into pot={pot_now:.1f} (getting {pot_now/max(call_now,0.1):.0f}:1) — "
+                                f"FORCING CALL (great pot odds)")
+                    mouse_target = 'call'
+
                 # --- IRON-CLAD EXECUTION FLOW (Safe Version) ---
                 # Map DecisionMaker output to available action
                 action = self._map_decision_to_action(state, mouse_target)
                 target_str = str(mouse_target).split('.')[-1].lower() if hasattr(mouse_target, 'name') else str(mouse_target).lower()
 
-                # SAFETY: If decision is 'Check' but we are facing a bet, this is a logic mismatch.
-                # Force a fold rather than accidentally calling.
-                if target_str == 'check' and state.call_amount > 0:
-                    log.warning(f"SAFETY: Decision was 'Check' but facing {state.call_amount} BB bet. Forcing re-evaluation.")
-                    return False # Trigger retry
+                # NOTE: DecisionTypes.check means "check if free, call if not" —
+                # it maps to the Call button. No safety guard needed here;
+                # the old guard caused infinite retry loops when call_amount > 0.
 
                 # GUARANTEED ACTION: ONLY for 'Fold'. 
                 # We can safely fallback to a coordinate click for Fold to save the hand.
@@ -1965,14 +2041,89 @@ class MultiTableRunner:
 
         return None
 
-    def _reliable_click(self, x_pt: int, y_pt: int, label: str = ""):
+    # --- Avatar exclusion zones ---
+    # Derived from SEAT_REGIONS_6MAX in table_reader.py.
+    # Each entry: (x_center_frac, y_center_frac, width_frac, height_frac)
+    # We expand by a margin to cover the full avatar+name area above the stack text.
+    _SEAT_FRACTIONS_6MAX = [
+        (0.500, 0.930, 0.14, 0.040),  # Seat 0: Hero (bottom center)
+        (0.068, 0.765, 0.16, 0.060),  # Seat 1: Left-bottom
+        (0.150, 0.370, 0.16, 0.060),  # Seat 2: Left-top
+        (0.500, 0.268, 0.16, 0.060),  # Seat 3: Top center
+        (0.870, 0.370, 0.16, 0.060),  # Seat 4: Right-top
+        (0.915, 0.765, 0.16, 0.060),  # Seat 5: Right-bottom
+    ]
+
+    # Margin in points added around each seat region to cover avatar + name.
+    # The SEAT_REGIONS_6MAX centers on the stack *text* line, but the clickable
+    # avatar is ~40-60pt above that. We extend upward more than downward.
+    _AVATAR_MARGIN_TOP_PT = 55   # avatar is above the stack text
+    _AVATAR_MARGIN_BOTTOM_PT = 15
+    _AVATAR_MARGIN_X_PT = 20
+
+    def _get_avatar_zones(self, session) -> list:
+        """Return avatar exclusion zones as [(x1_pt, y1_pt, x2_pt, y2_pt), ...].
+
+        Coordinates are absolute macOS screen POINTS.
+        Excludes seat 0 (hero) because action buttons overlap the hero area.
+        """
+        w = session.window if hasattr(session, 'window') else session
+        zones = []
+        for idx, (xf, yf, wf, hf) in enumerate(self._SEAT_FRACTIONS_6MAX):
+            if idx == 0:
+                continue  # Skip hero seat — buttons overlap this area
+            # Convert fractions to points relative to window
+            cx_pt = w.x + xf * w.width
+            cy_pt = w.y + yf * w.height
+            half_w = (wf * w.width) / 2 + self._AVATAR_MARGIN_X_PT
+            top = cy_pt - self._AVATAR_MARGIN_TOP_PT
+            bot = cy_pt + (hf * w.height) / 2 + self._AVATAR_MARGIN_BOTTOM_PT
+            zones.append((
+                cx_pt - half_w,
+                top,
+                cx_pt + half_w,
+                bot,
+            ))
+        return zones
+
+    def _is_avatar_zone(self, x_pt: float, y_pt: float, session) -> bool:
+        """Check if screen-point (x_pt, y_pt) falls inside any player avatar zone.
+
+        Returns True if clicking there would open a Smart HUD popup.
+        """
+        zones = self._get_avatar_zones(session)
+        for (x1, y1, x2, y2) in zones:
+            if x1 <= x_pt <= x2 and y1 <= y_pt <= y2:
+                return True
+        return False
+
+    def _log_avatar_zones(self, session):
+        """Print avatar exclusion zones for debugging. Call once on startup."""
+        zones = self._get_avatar_zones(session)
+        # Seat 0 (hero) is excluded — zones correspond to seats 1-5 only
+        seat_names = ['Seat1:Left-bottom', 'Seat2:Left-top',
+                      'Seat3:Top-center', 'Seat4:Right-top', 'Seat5:Right-bottom']
+        w = session.window if hasattr(session, 'window') else session
+        log.info(f"AVATAR ZONES for table {w.width}x{w.height}pt at ({w.x},{w.y}) "
+                 f"[{len(zones)} opponent zones, hero excluded]:")
+        for (x1, y1, x2, y2), name in zip(zones, seat_names):
+            log.info(f"  {name}: ({x1:.0f},{y1:.0f}) - ({x2:.0f},{y2:.0f})  "
+                     f"[{x2-x1:.0f}x{y2-y1:.0f} pt]")
+
+    def _reliable_click(self, x_pt: int, y_pt: int, label: str = "", session=None):
         """Click at macOS POINT coordinates with move-before-click.
 
         More reliable than pyautogui.click() because:
         1. Moves mouse to position first (prevents teleport-swallowed clicks)
         2. Sets kCGMouseEventClickState for proper click registration
         3. Small delay between down/up events
+        4. Checks avatar exclusion zones to prevent Smart HUD popups
         """
+        # Avatar zone guard — skip click if it would hit a player avatar
+        if session is not None and self._is_avatar_zone(x_pt, y_pt, session):
+            log.warning(f"AVATAR GUARD: Blocked click '{label}' at ({x_pt}, {y_pt}) — "
+                        f"would hit player avatar zone")
+            return
         try:
             from Quartz import (
                 CGEventCreateMouseEvent, CGEventPost, CGPoint,
@@ -2195,9 +2346,9 @@ class MultiTableRunner:
         # Mandatory delay for macOS focus to register
         _time.sleep(0.3)
 
-        # Compute desired raise amount for bet sizing decisions
+        # Recompute raise amount (may differ from dry-run computation above
+        # if state was updated during window activation).
         target_amount = self._compute_raise_amount(state, decision_label)
-        log.info(f"ACTION START: label={decision_label} type={action.action_type} target={target_amount:.1f}BB")
 
         if target_amount and target_amount > 0 and action.action_type in ('raise', 'bet'):
             raise_x = action.screen_x_pt
@@ -2213,14 +2364,14 @@ class MultiTableRunner:
             # Find the 'bet' or 'raise' button center
             bet_btn = state.get_action_by_type('bet') or state.get_action_by_type('raise')
             if bet_btn:
-                # GGSystem macOS Calibration:
-                # The input box is ~45 pixels (points) ABOVE and ~50 pixels LEFT of the raise button center.
-                input_x = bet_btn.screen_x_pt - 50
-                input_y = bet_btn.screen_y_pt - 45
+                # GGSystem macOS Calibration (Mar 14 2026):
+                # The input box is ~51 points LEFT and ~59 points ABOVE the raise button center.
+                input_x = bet_btn.screen_x_pt - 51
+                input_y = bet_btn.screen_y_pt - 59
             else:
                 # Use the passed-in action (even if it's the fallback)
-                input_x = action.screen_x_pt - 50
-                input_y = action.screen_y_pt - 45
+                input_x = action.screen_x_pt - 51
+                input_y = action.screen_y_pt - 59
 
             # BB display mode is ON — input field expects BB amounts directly
             bb_amount = round(target_amount, 1)
@@ -2232,39 +2383,63 @@ class MultiTableRunner:
                 return
 
             # --- POT SIZE SHORTCUTS (Fast Path) ---
-            # Use standard UI buttons for standard sizes (33, 50, 75, 100) for 100% reliability.
+            # Only use shortcuts when POSTFLOP and the computed target_amount
+            # matches the pot-fraction amount within tolerance.
+            # Preflop sizing uses GTO open/3bet/4bet which rarely matches pot %.
+            # Offsets calibrated from live GGPoker Rush & Cash (Mar 14 2026):
+            #   33%:  ref_x - 259, ref_y - 58
+            #   50%:  ref_x - 217, ref_y - 58
+            #   75%:  ref_x - 175, ref_y - 58
+            #   100%: ref_x - 136, ref_y - 58
             ref_x = bet_btn.screen_x_pt if bet_btn else action.screen_x_pt
             ref_y = bet_btn.screen_y_pt if bet_btn else action.screen_y_pt
 
             shortcut_used = False
-            # Decision mapping to GGSystem standard shortcuts
-            # ALWAYS use shortcuts when possible — typing is slow and error-prone
-            dl = decision_label.lower()
-            if 'half pot' in dl or 'bet2' in dl or 'bet 2' in dl:
-                self._reliable_click(ref_x - 120, ref_y - 45, 'shortcut_50%')
-                shortcut_used = True
-            elif 'bet pot' in dl or '100%' in dl or 'bet4' in dl or 'bet 4' in dl:
-                self._reliable_click(ref_x - 35, ref_y - 45, 'shortcut_100%')
-                shortcut_used = True
-            elif 'bet 33%' in dl or 'bet1' in dl or 'bet 1' in dl:
-                self._reliable_click(ref_x - 170, ref_y - 45, 'shortcut_33%')
-                shortcut_used = True
-            elif 'bet 75%' in dl or 'bet3' in dl or 'bet 3' in dl:
-                self._reliable_click(ref_x - 80, ref_y - 45, 'shortcut_75%')
-                shortcut_used = True
-            elif 'allin' in dl or 'all_in' in dl or 'all in' in dl:
-                self._reliable_click(ref_x - 35, ref_y - 45, 'shortcut_100%')
-                shortcut_used = True
+            # Only use shortcuts postflop — preflop needs precise GTO sizing
+            if not is_preflop:
+                shortcut_map = {
+                    0.33: (-259, -58, 'shortcut_33%'),
+                    0.50: (-217, -58, 'shortcut_50%'),
+                    0.75: (-175, -58, 'shortcut_75%'),
+                    1.00: (-136, -58, 'shortcut_100%'),
+                }
+                # Check if target_amount is close to any pot-fraction shortcut
+                for frac, (dx, dy, label) in shortcut_map.items():
+                    shortcut_amount = pot_bb * frac
+                    # Allow 15% tolerance for matching
+                    if shortcut_amount > 0 and abs(bb_amount - shortcut_amount) / max(shortcut_amount, 1) < 0.15:
+                        self._reliable_click(ref_x + dx, ref_y + dy, label, session=session)
+                        shortcut_used = True
+                        log.info(f"Using {frac:.0%} POT shortcut (target={bb_amount:.1f}BB "
+                                 f"≈ {frac:.0%} pot={shortcut_amount:.1f}BB)")
+                        break
+
+            if not shortcut_used and not is_preflop:
+                # Log why shortcut was NOT used (for debugging)
+                log.debug(f"No shortcut match: target={bb_amount:.1f}BB pot={pot_bb:.1f}BB "
+                          f"(33%={pot_bb*0.33:.1f} 50%={pot_bb*0.50:.1f} "
+                          f"75%={pot_bb*0.75:.1f} 100%={pot_bb:.1f})")
 
             if shortcut_used:
-                log.info(f"Using {decision_label} POT shortcut button (Fast Path)")
                 _time.sleep(0.2)
-                # Confirm the raise immediately
-                self._reliable_click(action.screen_x_pt, action.screen_y_pt, 'confirm_raise_shortcut')
+                # Click the raise/bet button to confirm the shortcut amount
+                self._reliable_click(action.screen_x_pt, action.screen_y_pt, 'confirm_raise_shortcut', session=session)
+                log.info(f"EXECUTION: Clicked {action.action_type} via shortcut for decision {decision_label}")
+                # Post-click verification (wait for GGPoker animation)
+                _time.sleep(0.40)
+                if self._verify_button_color(action.screen_x_pt, action.screen_y_pt):
+                    log.warning(f"Click may not have registered — {action.action_type} button still visible. Retrying.")
+                    self._reliable_click(action.screen_x_pt - 3, action.screen_y_pt - 1, action.action_type, session=session)
+                session.last_action_time = datetime.datetime.utcnow()
+                cards_key = ','.join(sorted(state.my_cards)) if state.my_cards else ''
+                board_count = len(state.board_cards) if state.board_cards else 0
+                pot_key = round(state.pot, 1) if state.pot else 0
+                actions_key = ','.join(sorted(a.action_type for a in state.available_actions)) if state.available_actions else ''
+                session._last_acted_key = f"{cards_key}|{board_count}|{pot_key}|{actions_key}"
                 return True
 
             # --- FINE-TUNE INPUT POSITION ---
-            # Scan a 40x40 region around (input_x, input_y) for the white/light-gray 
+            # Scan a 40x40 region around (input_x, input_y) for the white/light-gray
             # background of the input box to ensure we click inside it.
             try:
                 from PIL import ImageGrab
@@ -2287,7 +2462,7 @@ class MultiTableRunner:
 
             # Click input field (Multiple dithered clicks to ensure focus)
             log.info(f"PREPARING to type {bb_amount:.1f} BB into {session.window.name}")
-            self._reliable_click(input_x, input_y, 'input_field_center')
+            self._reliable_click(input_x, input_y, 'input_field_center', session=session)
             _time.sleep(0.1)
             # Triple click to select all (standard Mac/GGSystem behavior)
             pyautogui.click(clicks=3, interval=0.05)
@@ -2302,14 +2477,17 @@ class MultiTableRunner:
             _time.sleep(0.2)
             
             # --- VERIFIED TYPING LOOP ---
-            max_typing_retries = 1  # Reduced from 3 — each retry costs 2-3s, causing timeouts
+            # Use 2 retries for all-in (critical), 1 for normal bets (speed)
+            hero_stack = state.hero_stack if state.hero_stack and state.hero_stack > 0 else 100
+            is_allin = (decision_label == 'Allin' or target_amount >= hero_stack * 0.9)
+            max_typing_retries = 2 if is_allin else 1
             typing_success = False
             
             for t_attempt in range(max_typing_retries):
                 log.info(f"Typing Attempt {t_attempt+1}/{max_typing_retries}: {amount_str} BB")
                 
                 # Ensure focus
-                self._reliable_click(input_x, input_y, 'input_focus')
+                self._reliable_click(input_x, input_y, 'input_focus', session=session)
                 pyautogui.hotkey('command', 'a')
                 pyautogui.press('backspace')
                 _time.sleep(0.2)
@@ -2363,7 +2541,7 @@ class MultiTableRunner:
                                 btn_x = input_x + (80 if diff > 0 else -80)
                                 clicks = int(abs(diff) / 0.1) # Assuming 0.1 BB per click
                                 for _ in range(min(clicks, 10)):
-                                    self._reliable_click(btn_x, input_y, 'fine_tune_button')
+                                    self._reliable_click(btn_x, input_y, 'fine_tune_button', session=session)
                                     _time.sleep(0.1)
                                 
                                 # Quick re-verify after fine-tune
@@ -2388,30 +2566,30 @@ class MultiTableRunner:
                 log.warning(f"Failed to verify bet after {max_typing_retries} attempts. FORCING action anyway to avoid loop.")
                 typing_success = True # Force success to click whatever is there
 
-            # --- DIALOG SHIELD ---
-            dialog_x = session.window.x + int(session.window.width * 0.43)
-            dialog_y = session.window.y + int(session.window.height * 0.62)
-            self._reliable_click(dialog_x, dialog_y, 'dismiss_bet_dialog')
-            _time.sleep(0.3)
+            # DIALOG SHIELD removed — the hardcoded (43%, 62%) position
+            # hits the hero avatar, opening the profile popup.
+            # _handle_bet_confirmation (called after FINAL CLICK) handles dialogs.
 
         # FINAL CLICK (Double-tap for reliability)
-        self._reliable_click(action.screen_x_pt, action.screen_y_pt, action.action_type)
-        
+        self._reliable_click(action.screen_x_pt, action.screen_y_pt, action.action_type, session=session)
+
         # Only double-tap if it's a critical bet or if we are not in high pressure
         if not high_pressure or action.action_type in ('raise', 'bet', 'all_in'):
             _time.sleep(0.05)
-            self._reliable_click(action.screen_x_pt + 2, action.screen_y_pt + 1, action.action_type)
+            self._reliable_click(action.screen_x_pt + 2, action.screen_y_pt + 1, action.action_type, session=session)
         
         log.info(f"EXECUTION: Clicked {action.action_type} for decision {decision_label}")
 
         # --- Post-click verification (Phase 4A) ---
         # For ALL actions, check if the button is still visible after clicking.
         # If it is, the click didn't register — retry once.
-        _time.sleep(0.15)
+        # GGPoker button animations take ~0.3-0.5s to disappear, so wait longer
+        # before checking. Previous 0.15s caused constant false "click failed" logs.
+        _time.sleep(0.40)
         if self._verify_button_color(action.screen_x_pt, action.screen_y_pt):
             log.warning(f"Click may not have registered — {action.action_type} button still visible. Retrying.")
-            self._reliable_click(action.screen_x_pt - 3, action.screen_y_pt - 1, action.action_type)
-            _time.sleep(0.15)
+            self._reliable_click(action.screen_x_pt - 3, action.screen_y_pt - 1, action.action_type, session=session)
+            _time.sleep(0.50)
             if self._verify_button_color(action.screen_x_pt, action.screen_y_pt):
                 log.error(f"CLICK FAILED TWICE: {action.action_type} at ({action.screen_x_pt},{action.screen_y_pt})")
         
@@ -2471,18 +2649,74 @@ class MultiTableRunner:
                 click_y = (cy1 + center_y) / 2
                 
                 log.info(f"AUTONOMOUS: Detected 'Are you sure?' dialog. Clicking RED BET BUTTON at ({click_x:.1f}, {click_y:.1f})")
-                
-                # Small random offset for human-like click
+
+                # Small random offset for human-like click (reduced from ±5 to ±2)
                 import random
-                pyautogui.click(click_x + random.randint(-5, 5), click_y + random.randint(-5, 5))
+                final_x = click_x + random.randint(-2, 2)
+                final_y = click_y + random.randint(-2, 2)
+                # Avatar zone guard
+                if self._is_avatar_zone(final_x, final_y, session):
+                    log.warning(f"AVATAR GUARD: Bet confirmation at ({final_x:.1f}, {final_y:.1f}) "
+                                f"overlaps avatar zone — using exact center instead")
+                    final_x, final_y = click_x, click_y
+                pyautogui.click(final_x, final_y)
                 _time.sleep(0.3)
                 # One more click just in case
-                pyautogui.click(click_x + random.randint(-5, 5), click_y + random.randint(-5, 5))
+                final_x2 = click_x + random.randint(-2, 2)
+                final_y2 = click_y + random.randint(-2, 2)
+                if self._is_avatar_zone(final_x2, final_y2, session):
+                    final_x2, final_y2 = click_x, click_y
+                pyautogui.click(final_x2, final_y2)
                 return True
             return False
         except Exception as e:
             log.debug(f"Bet confirmation check failed: {e}")
         return False
+
+    def _close_popups(self, session: TableSession):
+        """Detect and close any popup windows (Smart HUD, player profiles, etc.).
+
+        GGPoker opens a popup when you click a player avatar showing VPIP/PFR
+        stats. These popups block the table view and must be closed by clicking
+        the X button in their top-right corner, or by finding and closing the
+        popup window via AppleScript.
+        """
+        try:
+            # Method 1: Close any non-table GGPoker windows via AppleScript
+            # The Smart HUD popup is a separate window with the player's name
+            script = '''tell application "System Events"
+                tell process "GGnet"
+                    set popupsClosed to 0
+                    repeat with w in windows
+                        set winName to name of w as text
+                        -- Close windows that are NOT the main table or lobby
+                        if winName does not contain "Rush" and winName does not contain "Cash" and winName does not contain "Spin" and winName does not contain "Gold" and winName does not contain "GGPoker" and winName does not contain "Hold" and winName does not contain "Blinds" and winName does not contain "Masters" and winName does not contain "NL" and winName does not contain "Cashier" then
+                            -- This is likely a popup (player profile, Smart HUD, etc.)
+                            click (first button of w whose subrole is "AXCloseButton")
+                            set popupsClosed to popupsClosed + 1
+                        end if
+                    end repeat
+                    return popupsClosed
+                end tell
+            end tell'''
+            result = subprocess.run(['osascript', '-e', script],
+                                    capture_output=True, text=True, timeout=3)
+            closed = result.stdout.strip()
+            if closed and closed != '0':
+                log.info(f"POPUP: Closed {closed} popup window(s)")
+        except Exception as e:
+            # Fallback: try clicking top-right X of any overlay
+            try:
+                import pyautogui
+                w = session.window
+                # Smart HUD popup X button is typically at top-right of a popup
+                # that overlaps the table. Try clicking a likely X position.
+                # The popup is roughly centered on the clicked player.
+                # Just press Escape which closes most GGPoker popups.
+                pyautogui.press('escape')
+                log.debug(f"POPUP: Pressed Escape to close popup ({e})")
+            except Exception:
+                pass
 
     def _maybe_auto_adjust(self):
         """Autonomous feedback loop: reload/retune strategy adjustments."""
@@ -3912,27 +4146,29 @@ class MultiTableRunner:
                     log.debug(f"Template collection error (non-fatal): {e}")
 
             # Get table cards (community cards)
-            t.get_table_cards2()
+            # PRIMARY: Use OCR-based colored card detection (reliable on GGPoker).
+            # MongoDB template matching (get_table_cards2) uses hardcoded regions
+            # that don't match the current table layout, so it misses cards constantly.
+            table_cards = []
+            try:
+                from sys_core.ocr.table_reader import _detect_board_cards
+                img = np.array(screenshot)
+                if img.ndim == 3 and img.shape[2] == 4:
+                    img = img[:, :, :3]
+                H_img, W_img = img.shape[:2]
+                table_cards = _detect_board_cards(img, W_img, H_img) or []
+                if table_cards:
+                    log.info(f"Board cards detected: {table_cards}")
+            except Exception as e:
+                log.debug(f"OCR board detection failed: {e}")
 
-            # Determine game stage from table cards
-            table_cards = getattr(t, 'cardsOnTable', None) or getattr(t, 'table_cards', None) or []
+            # FALLBACK: Try old template matching if OCR found nothing
+            if not table_cards:
+                t.get_table_cards2()
+                table_cards = getattr(t, 'cardsOnTable', None) or getattr(t, 'table_cards', None) or []
 
-            # FALLBACK: If template matching found 0 cards, try OCR detection
-            if len(table_cards) == 0:
-                try:
-                    from sys_core.ocr.table_reader import _detect_board_cards
-                    img = np.array(screenshot)
-                    if img.ndim == 3 and img.shape[2] == 4:
-                        img = img[:, :, :3]
-                    H_img, W_img = img.shape[:2]
-                    ocr_board = _detect_board_cards(img, W_img, H_img)
-                    if ocr_board:
-                        table_cards = ocr_board
-                        t.cardsOnTable = ocr_board
-                        t.table_cards = ocr_board
-                        log.info(f"OCR fallback detected board cards: {ocr_board}")
-                except Exception as e:
-                    log.debug(f"OCR board fallback failed: {e}")
+            t.cardsOnTable = table_cards
+            t.table_cards = table_cards
 
             num_table_cards = len(table_cards)
             if num_table_cards == 0:

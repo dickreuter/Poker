@@ -1,6 +1,52 @@
 # GGSystem Utility - Current Status & Instructions
 
 ---
+## CARD DETECTION FIXES (Mar 14, 2026 — VERIFIED ON LIVE SCREENSHOTS)
+
+### What Was Fixed
+1. **Quarantine `_strip_suit_symbol` bug** — suit symbol was NOT stripped before quarantine template check, causing ALL hero cards to fail quarantine → never cached. Fixed.
+2. **Template structural validation** — template matcher returned "8" for "2" glyphs. Added hole-count validation: 8 needs 2 holes, A needs 1, 2/5/7 need 0. Runs on ALL template strategies AND quarantine.
+3. **Morph threshold for board cards** — board corner crops (55×37px) had morph opening destroy thin glyphs. Changed `is_small_crop = (w < 70 or h < 50)` to skip morph for small crops.
+4. **Board center crop excludes suit symbol** — center crop was Y=40-90%, included central suit symbol (♣/♦). Now Y=35-70%, rank only.
+5. **Blob detection as primary** — was fixed-position first (wrong coordinates). Now blob detection runs first, fixed-position only as fallback for same-suit pairs.
+6. **Expanded 10→single disambiguation** — catches 10→7, 10→4, 10→3 for ALL single-char ranks (was only J/3/4).
+7. **Added 2/8, 2/9, 7/9 disambiguations** — structural hole analysis at template, OCR, AND Otsu levels.
+8. **Poisoned hash cache cleared** — had 15 entries mapping "2" cards as "8".
+
+### Known Remaining Issues
+- **10→7 on same-suit pairs** — blob detection sometimes merges same-suit cards, right card crop points at wrong area. Fixed-position fallback has approximate coordinates.
+- **Board card template matching** — scores 0.15-0.43 (below 0.45 threshold). OCR fallback carries the load.
+- **Dark tournament tables** (GGMasters) — occasional false positives on face-down cards.
+
+### Verified Accuracy (mass test 21 hands, Mar 14 2026) — HONEST ASSESSMENT
+- **Overall: ~40% both cards correct** — NOT GOOD ENOUGH
+- **Left card: ~80% correct** — usually detected OK
+- **Right card: ~50% correct** — blob pairing often wrong, crop points at wrong area
+- **Board cards: working when visible** (full flop/turn/river confirmed in earlier tests)
+- **Buttons: fold/call/raise/check** detected with amounts
+- **CRITICAL BLOCKER: blob pairing** — spade (black) blobs merge with dark table bg, system picks wrong blob as right card → garbage crop → wrong rank AND suit
+
+### ROOT CAUSE: Right-Card Blob Pairing
+When hero has a spade card (black bg), the spade HSV mask (V<70,S<80) captures the dark table borders too, creating a huge blob that gets rejected. The pair selector then picks a non-card blob (red UI, wrong colored area). The right card crop then points at garbage.
+
+**What works**: left card (first blob) is usually correct. Board cards work. Suits work when crop is correct. Structural validations (hole count, component count) catch some template/OCR confusions.
+
+**What fails**: right card on ~50% of hands. Rank confusions: 4→A (same holes), 4→T, 5→3, J→T. False positives on orange "Burning Cash" table theme.
+
+### NEXT STEP: White-Text Primary Detection
+Instead of finding cards by colored background blobs (unreliable for spades), find them by WHITE TEXT clusters. The rank text is always white on any color card. Two white text clusters in the hero region = two cards. This approach is theme-independent and doesn't suffer from blob merging.
+
+### Files Changed
+| File | Changes |
+|------|---------|
+| `sys_core/ocr/card_reader.py` | Quarantine fix, template validation, morph threshold, blob-first priority, disambiguations |
+| `sys_core/ocr/table_reader.py` | Board center crop fix |
+| `sys_core/engine.py` | Enhanced verification saving (5s interval, always save board region) |
+
+### Verification Images
+Saved to `/tmp/table_debug/card_verify/` — filenames include detected cards and board.
+
+---
 ## ⭐⭐⭐ THE ONE COMMAND TO RUN THE BOT ⭐⭐⭐
 
 ```bash
@@ -31,7 +77,7 @@ tail -f log/multi_table.log
 6. **Self-healing** (adaptive_learner adjusts thresholds in real-time)
 7. **Window standardization** (resizes/tiles tables on startup)
 8. **Never crashes** (error handling at every level)
-9. Uses **2-color deck** detection (Hearts/Diamonds=Red, Spades/Clubs=Black)
+9. Uses **4-color deck** detection (Hearts=Red, Diamonds=Blue, Clubs=Green, Spades=Black)
 10. **Fast fold DISABLED** - strategy makes all decisions
 
 ### Recent Fixes (Jan 5, 2026):
@@ -46,7 +92,7 @@ tail -f log/multi_table.log
 - ✅ Wired in self-learning (vision_analyzer, adaptive_learner)
 - ✅ Added window standardization on startup
 - ✅ Added never-stop error handling
-- ✅ Fixed suit detection (was 4-color, now 2-color)
+- ✅ Fixed suit detection (4-color deck: S=black, H=red, D=blue, C=green)
 - ✅ Disabled fast fold (was causing premature folds)
 
 ### Files in the Unified System:
