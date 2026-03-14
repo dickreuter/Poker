@@ -810,23 +810,40 @@ class Decision(DecisionBase):
             else:
                 self.decision = DecisionTypes.fold
 
-            # SAFETY: equity floors prevent misread cards from causing raises
-            # PREMIUM EXEMPTION: Never fold premium hands due to safety floors
+            # SAFETY: equity floors prevent misread cards from causing raises.
+            # When FACING a raise (call_amount > 0), use much tighter floors because
+            # the raiser has a strong range (top 12-25%) and our equity vs random
+            # over-estimates our actual equity vs that range.
+            # PREMIUM EXEMPTION: Never fold premium hands due to safety floors.
             hand_norm = _normalize_hand(crd1, crd2)
             is_premium_hand = hand_norm in PREMIUM_HANDS
+            _facing_raise = has_raiser and float(call_amt) > 0
 
             if self.decision in (DecisionTypes.bet3, DecisionTypes.bet4):
-                if t.equity < 0.22 and not is_premium_hand:
-                    log.info(f'Preflop raise overridden to FOLD: equity {t.equity:.3f} < 0.22')
+                # 3-betting/raising requires higher equity when facing action
+                if _facing_raise:
+                    _raise_floor = 0.40  # Need 40%+ equity to 3-bet vs a raiser
+                else:
+                    _raise_floor = 0.22  # Opening: 22% is fine (wide range)
+                if t.equity < _raise_floor and not is_premium_hand:
+                    log.info(f'Preflop raise overridden to FOLD: equity {t.equity:.3f} '
+                             f'< {_raise_floor} (facing_raise={_facing_raise})')
                     self.decision = DecisionTypes.fold
             elif self.decision == DecisionTypes.call:
                 _ca = float(call_amt) if call_amt else 0
                 pot = max(getattr(t, 'totalPotValue', 0) or 0, 1.5)
                 if _ca > 0:
                     pot_odds = _ca / (pot + _ca)
-                    if t.equity < pot_odds and t.equity < 0.28 and not is_premium_hand:
+                    # When facing a raise, need 35%+ equity to call (raiser has
+                    # narrow range, our vs-random equity overstates real equity)
+                    if _facing_raise:
+                        _call_floor = 0.35  # Tighter floor vs raiser's range
+                    else:
+                        _call_floor = 0.28  # Limped pot / unraised
+                    if t.equity < _call_floor and not is_premium_hand:
                         log.info(f'Preflop call overridden to FOLD: equity {t.equity:.3f} '
-                                 f'< pot_odds {pot_odds:.3f} and < 0.28')
+                                 f'< {_call_floor} (facing_raise={_facing_raise}, '
+                                 f'pot_odds={pot_odds:.3f})')
                         self.decision = DecisionTypes.fold
 
             t.currentBluff = 0

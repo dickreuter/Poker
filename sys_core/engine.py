@@ -428,8 +428,10 @@ class MultiTableRunner:
         # === POSITION ADJUSTMENTS ===
         # Reduce required equity by ~2% per position closer to BTN
         s['pre_flop_equity_reduction_by_position'] = 0.02
-        # Increase required equity by 3% when facing a raiser, 2% when facing a caller
-        s['pre_flop_equity_increase_if_bet'] = 0.03
+        # Increase required equity when facing a raiser/caller.
+        # A raiser has top 12-25% of hands, so our equity requirement should
+        # jump significantly (was 0.03, far too small).
+        s['pre_flop_equity_increase_if_bet'] = 0.10   # +10% equity needed vs raiser
         s['pre_flop_equity_increase_if_call'] = 0.02
 
         # === POT ADJUSTMENTS ===

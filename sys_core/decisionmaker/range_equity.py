@@ -1169,43 +1169,48 @@ def lookup_call_shove(
 # What an opener calls a reshove with, by their position and effective stack.
 # Tighter than their open range — they only call our all-in with premium.
 OPENER_CALL_VS_RESHOVE = {
+    # Calling ranges vs reshove — WIDER at smaller effective stacks because
+    # villain gets better pot odds.  At 12BB reshove vs 2.5BB open, villain
+    # calls ~9.5BB more into ~28BB pot = only needs ~34% equity.
+    # Previous ranges were far too tight (e.g. UTG calling only KK+ at 12BB),
+    # which inflated fold equity and let trash hands reshove profitably.
     'UTG': {
         3: 'TT+, AKs, AKo',
-        5: 'JJ+, AKs',
-        8: 'QQ+, AKs',
-        10: 'QQ+, AKs',
-        12: 'KK+, AKs',
-        15: 'KK+',
+        5: 'TT+, AKs, AKo',
+        8: 'JJ+, AKs, AKo',
+        10: 'JJ+, AKs, AKo, AQs',
+        12: 'QQ+, AKs, AKo, AQs',
+        15: 'QQ+, AKs, AKo',
     },
     'MP': {
         3: '99+, AQs+, AKo',
-        5: 'TT+, AKs, AKo',
-        8: 'JJ+, AKs, AKo',
-        10: 'JJ+, AKs',
-        12: 'QQ+, AKs',
-        15: 'QQ+, AKs',
+        5: '99+, AQs+, AKo',
+        8: 'TT+, AKs, AKo, AQs',
+        10: 'TT+, AKs, AKo, AQs',
+        12: 'JJ+, AKs, AKo, AQs',
+        15: 'QQ+, AKs, AKo',
     },
     'CO': {
         3: '77+, ATs+, KQs, AJo+',
-        5: '88+, AJs+, AKo',
-        8: 'TT+, AQs+, AKo',
-        10: 'JJ+, AKs, AKo',
-        12: 'QQ+, AKs, AKo',
-        15: 'QQ+, AKs',
+        5: '88+, AJs+, KQs, AKo',
+        8: '99+, AQs+, AKo, KQs',
+        10: 'TT+, AQs+, AKo',
+        12: 'JJ+, AKs, AKo, AQs',
+        15: 'QQ+, AKs, AKo',
     },
     'BTN': {
         3: '55+, A9s+, KJs+, ATo+, KQo',
         5: '77+, ATs+, KQs, AJo+',
         8: '88+, AJs+, KQs, AQo+',
-        10: 'TT+, AQs+, AKo',
-        12: 'JJ+, AKs, AKo',
-        15: 'QQ+, AKs',
+        10: '99+, AQs+, AKo, KQs',
+        12: 'TT+, AQs+, AKo',
+        15: 'JJ+, AKs, AKo',
     },
     'SB': {
         3: '55+, A8s+, KTs+, ATo+, KQo',
         5: '66+, A9s+, KJs+, ATo+, KQo',
         8: '77+, ATs+, KQs, AJo+',
-        10: '99+, AJs+, AQo+',
+        10: '88+, AJs+, AQo+, KQs',
         12: 'TT+, AQs+, AKo',
         15: 'JJ+, AKs, AKo',
     },
@@ -1446,15 +1451,25 @@ def reshove_decision(
         result['call_range'] = call_range[:60]
         result['opener_position'] = pos
 
-        # SAFETY: Only block reshove if EV isActually negative or equity is dismal.
+        # SAFETY: Block reshove when equity-when-called is too low.
+        # Even with high fold equity, reshoving with < 30% equity vs calling
+        # range is extremely high variance and relies on optimistic FE estimates.
+        # Two independent gates:
+        #   1) Hard floor: eq_called < 28% always blocks (no hand is worth it)
+        #   2) Soft floor: eq_called < 35% blocks unless EV is very high (>1.5BB)
         eq_called = result.get('equity_when_called', 0)
-        # Tighter safety for GTO: require 32% equity when called or high absolute EV
-        if result['action'] == 'shove' and (eq_called < 0.32 and result['ev'] < 0.8):
+        if result['action'] == 'shove':
             hero_canonical = _hero_to_canonical(hero_cards)
-            log.info(f"RESHOVE BLOCKED: {hero_canonical} vs {pos} open "
-                     f"(eq_called={eq_called:.0%} < 20% minimum, "
-                     f"EV={result['ev']:+.2f}BB too marginal)")
-            result['action'] = 'fold'
+            if eq_called < 0.28:
+                log.info(f"RESHOVE BLOCKED (hard floor): {hero_canonical} vs {pos} open "
+                         f"(eq_called={eq_called:.0%} < 28% minimum, "
+                         f"EV={result['ev']:+.2f}BB)")
+                result['action'] = 'fold'
+            elif eq_called < 0.35 and result['ev'] < 1.5:
+                log.info(f"RESHOVE BLOCKED (soft floor): {hero_canonical} vs {pos} open "
+                         f"(eq_called={eq_called:.0%} < 35%, "
+                         f"EV={result['ev']:+.2f}BB < 1.5BB)")
+                result['action'] = 'fold'
 
         log.info(f"RESHOVE: {_hero_to_canonical(hero_cards)} vs {pos} open "
                  f"(FE={result['fold_equity']:.0%}, eq_called={result['equity_when_called']:.0%}, "
@@ -1523,16 +1538,17 @@ def shove_over_limpers_decision(
     if result:
         result['num_limpers'] = num_limpers
 
-        # SAFETY: Only block shove if EV is actually negative.
-        # Don't override +EV shoves just because eq_called is low —
-        # fold equity makes many low-equity hands profitable shoves.
+        # SAFETY: Block shove when equity-when-called is terrible.
+        # Hard floor at 25%: even with high fold equity, shoving with < 25%
+        # equity vs the calling range is too high variance.
         eq_called = result.get('equity_when_called', 0)
-        if result['action'] == 'shove' and eq_called < 0.20 and result['ev'] < 0.5:
+        if result['action'] == 'shove':
             hero_canonical = _hero_to_canonical(hero_cards)
-            log.info(f"SHOVE OVER LIMPERS BLOCKED: {hero_canonical} "
-                     f"(eq_called={eq_called:.0%} < 20% minimum, "
-                     f"EV={result['ev']:+.2f}BB too marginal)")
-            result['action'] = 'fold'
+            if eq_called < 0.25 and result['ev'] < 0.8:
+                log.info(f"SHOVE OVER LIMPERS BLOCKED: {hero_canonical} "
+                         f"(eq_called={eq_called:.0%} < 25%, "
+                         f"EV={result['ev']:+.2f}BB too marginal)")
+                result['action'] = 'fold'
 
         log.info(f"SHOVE OVER {num_limpers} LIMPER(S): {_hero_to_canonical(hero_cards)} "
                  f"(FE={result['fold_equity']:.0%}, eq_called={result['equity_when_called']:.0%}, "
