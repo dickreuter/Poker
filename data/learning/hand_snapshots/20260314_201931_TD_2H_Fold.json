@@ -1,0 +1,80 @@
+{
+  "ts": "2026-03-14T20:19:34.668858",
+  "window": "WSOP-SC: $15 Mini Saturday Showdown [Mystery Bounty] : Buy-in $15 - Blinds 900 | 1,800 - Table 583/!)@(#*$&%^|5707897683",
+  "hero_cards": [
+    "TD",
+    "2H"
+  ],
+  "board_cards": [],
+  "cards_face_down": false,
+  "street": "PreFlop",
+  "position": "BB",
+  "dealer_seat": 4,
+  "opponents_active": 1,
+  "opponents_in_hand": -1,
+  "pot": 6.8,
+  "call_amount": 2.3,
+  "min_raise": 2.0,
+  "hero_stack": 103.1,
+  "hero_stack_estimated": false,
+  "small_blind": 900.0,
+  "big_blind": 1.0,
+  "players": [
+    {
+      "seat": 0,
+      "name": "",
+      "stack": 103.1,
+      "bet": 0,
+      "is_hero": true,
+      "is_active": true
+    },
+    {
+      "seat": 3,
+      "name": "",
+      "stack": 36.4,
+      "bet": 0,
+      "is_hero": false,
+      "is_active": true
+    }
+  ],
+  "buttons": [
+    {
+      "type": "fold",
+      "amount": 0,
+      "rel_x": 0.4859,
+      "rel_y": 0.861,
+      "confidence": 0.5
+    },
+    {
+      "type": "call",
+      "amount": 2.3,
+      "rel_x": 0.81,
+      "rel_y": 0.926,
+      "confidence": 0.7
+    },
+    {
+      "type": "raise",
+      "amount": 2.0,
+      "rel_x": 0.0994,
+      "rel_y": 0.9439,
+      "confidence": 0.7
+    }
+  ],
+  "equity": 0.32,
+  "abs_equity": 0.32,
+  "decision": "Fold",
+  "ev": 0.0,
+  "call_limit": 7.62,
+  "bet_limit": 5.03,
+  "outs": 0,
+  "blocker_score": 0.0,
+  "opp_likely": [
+    "overpair",
+    "top_pair",
+    "big_ace"
+  ],
+  "opp_bluff_pct": 0.12,
+  "opp_type": "fish_passive",
+  "ocr_latency_ms": 4569.1,
+  "ocr_source": "python"
+}
