@@ -1,45 +1,5 @@
 {
-  "2": {
-    "count": 3,
-    "trusted": true
-  },
-  "3": {
-    "count": 1,
-    "trusted": true
-  },
-  "4": {
-    "count": 2,
-    "trusted": true
-  },
-  "5": {
-    "count": 3,
-    "trusted": true
-  },
-  "6": {
-    "count": 2,
-    "trusted": true
-  },
-  "7": {
-    "count": 3,
-    "trusted": true
-  },
-  "8": {
-    "count": 2,
-    "trusted": true
-  },
-  "9": {
-    "count": 3,
-    "trusted": true
-  },
-  "10": {
-    "count": 3,
-    "trusted": true
-  },
-  "J": {
-    "count": 3,
-    "trusted": true
-  },
-  "Q": {
+  "A": {
     "count": 3,
     "trusted": true
   },
@@ -47,7 +7,47 @@
     "count": 3,
     "trusted": true
   },
-  "A": {
+  "Q": {
+    "count": 3,
+    "trusted": true
+  },
+  "J": {
+    "count": 1,
+    "trusted": true
+  },
+  "10": {
+    "count": 3,
+    "trusted": true
+  },
+  "9": {
+    "count": 3,
+    "trusted": true
+  },
+  "8": {
+    "count": 3,
+    "trusted": true
+  },
+  "7": {
+    "count": 2,
+    "trusted": true
+  },
+  "6": {
+    "count": 1,
+    "trusted": true
+  },
+  "5": {
+    "count": 3,
+    "trusted": true
+  },
+  "4": {
+    "count": 3,
+    "trusted": true
+  },
+  "3": {
+    "count": 1,
+    "trusted": true
+  },
+  "2": {
     "count": 3,
     "trusted": true
   }
