@@ -102,6 +102,16 @@ except ImportError:
     OPPONENT_MODELER_AVAILABLE = False
     def get_opponent_modeler(): return None
 
+# Deep CFR neural network strategy
+try:
+    from sys_core.decisionmaker.deepcfr_wrapper import deepcfr_decision, is_available as deepcfr_is_available, get_status as deepcfr_get_status
+    DEEPCFR_AVAILABLE = True
+except ImportError:
+    DEEPCFR_AVAILABLE = False
+    def deepcfr_decision(t, h, p): return None
+    def deepcfr_is_available(): return False
+    def deepcfr_get_status(): return "Deep CFR: Not installed"
+
 # Rust OCR bridge
 try:
     from sys_core.ocr.rust_bridge import RustOCRBridge
@@ -346,11 +356,13 @@ class MultiTableRunner:
                  max_tables: int = 12,
                  target_tables: int = 9,
                  table_scraper_name: str = "Official GGPoker 6player",
-                 dry_run: bool = False):
+                 dry_run: bool = False,
+                 strategy_mode: str = 'ev'):
         self.max_tables = max_tables
         self.target_tables = target_tables
         self.table_scraper_name = table_scraper_name
         self.dry_run = dry_run
+        self.strategy_mode = strategy_mode  # 'ev' or 'deepcfr'
 
         self.sessions: Dict[int, TableSession] = {}  # window_id -> session
         self._session_lock = threading.Lock()  # Protects session dict mutations
@@ -509,6 +521,15 @@ class MultiTableRunner:
                  f"preflop call/bet={s['PreFlopMinCallEquity']}/{s['PreFlopMinBetEquity']}, "
                  f"3bet_adj={s['secondRoundAdjustmentPreFlop']}, "
                  f"bluff flop={s['FlopBluffMinEquity']}-{s['FlopBluffMaxEquity']}")
+
+        # Strategy mode: 'ev' (default EV engine) or 'deepcfr' (neural network)
+        log.info(f"Strategy mode: {self.strategy_mode}")
+        if self.strategy_mode == 'deepcfr':
+            if DEEPCFR_AVAILABLE and deepcfr_is_available():
+                log.info(f"Deep CFR engine: READY ({deepcfr_get_status()})")
+            else:
+                log.warning(f"Deep CFR requested but unavailable ({deepcfr_get_status()}), "
+                           f"will fall back to EV engine")
 
         # Game type tracking — detected from window name, adapts strategy
         self._detected_game_type = None  # 'cash', 'mtt', 'spin', 'rush'
@@ -4557,21 +4578,42 @@ class MultiTableRunner:
                 smart_range=smart_range
             )
 
-            # === DECISION MAKING (Original) ===
-            d = Decision(t, h, p, session.game_logger)
+            # === DECISION MAKING ===
+            # Deep CFR mode: use neural network, fall back to EV on failure
+            _used_deepcfr = False
+            if self.strategy_mode == 'deepcfr' and DEEPCFR_AVAILABLE:
+                try:
+                    cfr_result = deepcfr_decision(t, h, p)
+                    if cfr_result and cfr_result.get('decision'):
+                        # Create a Decision object with the Deep CFR result
+                        d = Decision(t, h, p, session.game_logger)
+                        d.decision = cfr_result['decision']
+                        d._deepcfr_probs = cfr_result.get('probs', {})
+                        d._deepcfr_confidence = cfr_result.get('confidence', 0)
+                        d._deepcfr_inference_ms = cfr_result.get('inference_ms', 0)
+                        log.info(f"DEEP CFR decision: {d.decision} "
+                                 f"(conf={d._deepcfr_confidence:.0%}, "
+                                 f"{d._deepcfr_inference_ms:.1f}ms)")
+                        _used_deepcfr = True
+                except Exception as e:
+                    log.warning(f"Deep CFR failed, falling back to EV: {e}")
 
-            # Multi-street planning: pass previous street info to decision
-            d._we_bet_prev_street = getattr(session, '_we_bet_last_street', False)
-            d._prev_street_equity = getattr(session, '_last_equity', None)
+            if not _used_deepcfr:
+                # EV engine (original decision path)
+                d = Decision(t, h, p, session.game_logger)
 
-            # Pass Bayesian villain range from runner → DecisionMaker
-            if session._bayesian_villain_range is not None:
-                d._bayesian_villain_range = session._bayesian_villain_range
+                # Multi-street planning: pass previous street info to decision
+                d._we_bet_prev_street = getattr(session, '_we_bet_last_street', False)
+                d._prev_street_equity = getattr(session, '_last_equity', None)
 
-            # Hand context: full action history for context-aware ranges
-            d._hand_context = session._hand_context
+                # Pass Bayesian villain range from runner → DecisionMaker
+                if session._bayesian_villain_range is not None:
+                    d._bayesian_villain_range = session._bayesian_villain_range
 
-            d.make_decision(t, h, p, session.game_logger)
+                # Hand context: full action history for context-aware ranges
+                d._hand_context = session._hand_context
+
+                d.make_decision(t, h, p, session.game_logger)
 
             # Track our action for multi-street planning
             dec_str = str(d.decision).lower() if d.decision else ''
@@ -5395,6 +5437,8 @@ def main():
                             'Full pipeline test: OCR → equity → decision → log.')
     parser.add_argument('--replay', type=str, default=None,
                        help='Replay a screenshot through the full pipeline (no live tables needed)')
+    parser.add_argument('--strategy', type=str, default='ev', choices=['ev', 'deepcfr'],
+                       help='Decision engine: "ev" (default EV engine) or "deepcfr" (neural network)')
     args = parser.parse_args()
 
     # Screenshot replay mode — process a single image and exit
@@ -5407,8 +5451,9 @@ def main():
     init_logger(screenlevel=logging.INFO, filename='multi_table', logdir='log')
 
     mode_str = " [DRY-RUN — NO CLICKS]" if args.dry_run else ""
+    strategy_str = f" [STRATEGY: {args.strategy.upper()}]"
     log.info("=" * 60)
-    log.info(f"MULTI-TABLE RUNNER{mode_str}")
+    log.info(f"MULTI-TABLE RUNNER{mode_str}{strategy_str}")
     log.info("=" * 60)
 
     target = args.target_tables
@@ -5438,6 +5483,7 @@ def main():
         target_tables=target,
         table_scraper_name=args.table_name,
         dry_run=args.dry_run,
+        strategy_mode=args.strategy,
     )
 
     try:
