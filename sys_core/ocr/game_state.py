@@ -129,6 +129,16 @@ class GameState:
     # Opponent detection
     opponents_in_hand: int = -1  # -1 = unknown, 0+ = from card-back detection
 
+    # Tournament info (from info bar OCR)
+    game_type: str = "unknown"  # 'cash', 'tournament', 'spin'
+    is_tournament: bool = False
+    tournament_level: Optional[int] = None    # Blind level (e.g., 9)
+    tournament_rank: Optional[int] = None     # My rank (e.g., 12)
+    tournament_total: Optional[int] = None    # Total players (e.g., 546)
+    tournament_prize: Optional[float] = None  # 1st prize in dollars (e.g., 1172.0)
+    tournament_players_paid: Optional[int] = None  # Places paid count
+    icm_pressure: float = 0.0  # 0.0 (no pressure) to 1.0 (extreme bubble/FT)
+
     # Metadata
     ocr_latency_ms: float = 0.0
     ocr_source: str = "unknown"
@@ -488,6 +498,16 @@ class GameState:
         t.max_X = 0.95 if self.street == Street.PREFLOP else 1.0
         t.PlayerNames = [p.name for p in active_opponents]
         t.entireScreenPIL = None  # placeholder for error screenshots
+
+        # Tournament info — passed to DecisionMaker for ICM-aware decisions
+        t._game_type = self.game_type
+        t._is_tournament = self.is_tournament
+        t._tournament_level = self.tournament_level
+        t._tournament_rank = self.tournament_rank
+        t._tournament_total = self.tournament_total
+        t._tournament_prize = self.tournament_prize
+        t._tournament_players_paid = self.tournament_players_paid
+        t._icm_pressure = self.icm_pressure
 
         # derive_preflop_sheet_name is inherited from Table — no action needed
 

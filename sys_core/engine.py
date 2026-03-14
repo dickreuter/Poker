@@ -1867,6 +1867,13 @@ class MultiTableRunner:
                     opp_str = (f" | opp_range={opp_range['likely_hands'][:3]} "
                                f"bluff%={opp_range.get('bluff_probability', 0):.0%}{opp_type}")
 
+                # Tournament context for logging
+                tourney_log = ''
+                if state.is_tournament and state.tournament_rank:
+                    tourney_log = (f" | TOURNEY: rank={state.tournament_rank}"
+                                   f"/{state.tournament_total}"
+                                   f" ICM={state.icm_pressure:.2f}")
+
                 log.info(f"DECISION: {mouse_target} | cards={state.my_cards} "
                          f"board={state.board_cards} | pot={state.pot:.1f} call={state.call_amount:.1f} "
                          f"| equity={equity_val:.3f} abs_eq={abs_eq_val:.3f} "
@@ -1874,7 +1881,7 @@ class MultiTableRunner:
                          f"| callLim={d.finalCallLimit:.1f} betLim={d.finalBetLimit:.1f} "
                          f"| stage={t.gameStage} pos={getattr(state, 'position', '?')}"
                          f" opp={t.other_active_players} init={'Y' if t.other_player_has_initiative else 'N'}"
-                         f"{blocker_str}{opp_str}")
+                         f"{blocker_str}{opp_str}{tourney_log}")
 
                 # Track P&L (stack changes between hands)
                 try:

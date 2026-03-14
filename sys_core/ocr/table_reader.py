@@ -321,6 +321,19 @@ def read_table(
     # 5. Blinds from window title
     sb, bb = _parse_blinds(window_name)
 
+    # 5b. Game type and tournament info
+    game_type = _detect_game_type(window_name)
+    is_tournament = game_type == 'tournament'
+    tournament_info = {}
+    if is_tournament and is_my_turn:
+        tournament_info = _read_tournament_info(img, W, H, window_id=window_id)
+    tournament_icm = compute_icm_pressure(
+        rank=tournament_info.get('my_rank'),
+        total_players=tournament_info.get('total_players'),
+        players_paid=tournament_info.get('players_paid'),
+        game_type=game_type,
+    )
+
     # 6. Call/raise amounts from button OCR
     call_amount = 0.0
     min_raise_amount = 0.0
@@ -588,14 +601,29 @@ def read_table(
         is_my_turn=is_my_turn,
         position=position,
         opponents_in_hand=opponents_in_hand,
+        game_type=game_type,
+        is_tournament=is_tournament,
+        tournament_level=tournament_info.get('blind_level'),
+        tournament_rank=tournament_info.get('my_rank'),
+        tournament_total=tournament_info.get('total_players'),
+        tournament_prize=tournament_info.get('first_prize'),
+        tournament_players_paid=tournament_info.get('players_paid'),
+        icm_pressure=tournament_icm,
         ocr_latency_ms=elapsed_ms,
         ocr_source='python_table_reader',
         hero_stack_is_estimated=hero_stack_is_estimated,
         confidence=confidence,
     )
 
+    tourney_str = ''
+    if is_tournament and (tournament_info.get('my_rank') or tournament_info.get('blind_level')):
+        tourney_str = (f" | TOURNEY: rank={tournament_info.get('my_rank')}"
+                       f"/{tournament_info.get('total_players')}"
+                       f" level={tournament_info.get('blind_level')}"
+                       f" ICM={tournament_icm:.2f}")
     log.info(f"Table read in {elapsed_ms:.0f}ms: cards={my_cards} board={board_cards} "
-             f"buttons={list(buttons.keys())} pot={pot} turn={is_my_turn}")
+             f"buttons={list(buttons.keys())} pot={pot} turn={is_my_turn} "
+             f"game={game_type}{tourney_str}")
 
     if debug_dir:
         _save_debug(img, W, H, buttons, button_rects, board_cards, pot, debug_dir)
@@ -2504,6 +2532,238 @@ def _detect_board_white(
             log.debug(f"Board card (white): {rank}{suit} at ({bx},{by})")
 
     return board
+
+
+# ---------------------------------------------------------------------------
+#  Tournament info detection
+# ---------------------------------------------------------------------------
+
+# Cache tournament info per window to avoid re-OCR every frame
+_TOURNAMENT_INFO_CACHE: Dict[int, Tuple[int, dict]] = {}  # window_id -> (hash, info_dict)
+
+
+def _detect_game_type(window_name: str) -> str:
+    """Detect game type from window title.
+
+    Returns:
+        'cash' for Rush & Cash / cash games
+        'spin' for Spin & Gold
+        'tournament' for MTTs and SNGs
+        'unknown' if unrecognizable
+    """
+    name_lower = window_name.lower()
+
+    # Rush & Cash
+    if 'rush' in name_lower and 'cash' in name_lower:
+        return 'cash'
+
+    # Spin & Gold
+    if 'spin' in name_lower or 'gold' in name_lower:
+        return 'spin'
+
+    # Tournament indicators: "Buy-in" with high blinds, or explicit tournament keywords
+    if any(kw in name_lower for kw in ('tournament', 'tourney', 'mtt', 'sng',
+                                        'daily', 'weekly', 'bounty', 'mystery',
+                                        'ggmasters', 'million', 'zodiac',
+                                        'battle royale', 'omaholic')):
+        return 'tournament'
+
+    # "Buy-in $X" pattern with "Blinds N | M" where N >= 25 is likely tournament
+    # (cash games have low blinds like 0.5/1.0 or 1/2)
+    if 'buy-in' in name_lower or 'buy in' in name_lower:
+        blind_match = re.search(r'Blinds\s+(\d+)', window_name)
+        if blind_match and int(blind_match.group(1)) >= 25:
+            return 'tournament'
+        return 'tournament'  # "Buy-in" almost always means tournament
+
+    # Cash game patterns (NLH $X/$Y without Buy-in, or $X/$Y with no tournament keywords)
+    if re.search(r'NL\s*H', name_lower) and 'buy' not in name_lower:
+        return 'cash'
+
+    # Generic cash: "$X/$Y" without any tournament keyword
+    if re.search(r'\$\d+(?:\.\d+)?\s*/\s*\$\d+', window_name) and 'buy' not in name_lower:
+        return 'cash'
+
+    return 'unknown'
+
+
+def _read_tournament_info(img: np.ndarray, W: int, H: int, window_id: int = 0) -> dict:
+    """Read tournament info bar from the top of the table.
+
+    The tournament info bar is at the very top of the table image (Y=0-8%, X=0-50%).
+    It shows:
+        - "Level 9" and a countdown timer
+        - "Late Reg." and countdown
+        - "1st Prize" and "$1,172"
+        - "My Rank" and "12 / 546"
+        - "Places Paid" count
+
+    Returns:
+        dict with keys:
+            'blind_level': int or None
+            'my_rank': int or None
+            'total_players': int or None
+            'first_prize': float or None
+            'players_paid': int or None
+            'raw_text': str (OCR text for debugging)
+    """
+    if not PYTESSERACT_AVAILABLE:
+        return {}
+
+    result = {
+        'blind_level': None,
+        'my_rank': None,
+        'total_players': None,
+        'first_prize': None,
+        'players_paid': None,
+        'raw_text': '',
+    }
+
+    # Crop the top info bar region (Y=0 to 8%, X=0 to 60%)
+    # Tournament info is in the top-left area
+    y_end = int(H * 0.08)
+    x_end = int(W * 0.60)
+    if y_end < 10 or x_end < 50:
+        return result
+
+    info_bar = img[0:y_end, 0:x_end]
+
+    # Hash-based cache: skip OCR if pixels haven't changed
+    bar_hash = hash(info_bar[::2, ::2].tobytes())
+    cached = _TOURNAMENT_INFO_CACHE.get(window_id)
+    if cached and cached[0] == bar_hash:
+        return cached[1]
+
+    # Convert to grayscale for OCR
+    if len(info_bar.shape) == 3:
+        gray = cv2.cvtColor(info_bar, cv2.COLOR_BGR2GRAY)
+    else:
+        gray = info_bar
+
+    # Threshold to enhance white/light text on dark background
+    # Tournament info bar has light text on dark gradient
+    _, thresh = cv2.threshold(gray, 140, 255, cv2.THRESH_BINARY)
+
+    # Scale up for better OCR (info bar text is small)
+    scale = 3
+    scaled = cv2.resize(thresh, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
+
+    try:
+        # PSM 6 = assume uniform block of text
+        text = pytesseract.image_to_string(scaled, config='--psm 6 --oem 3').strip()
+        result['raw_text'] = text
+    except Exception as e:
+        log.debug(f"Tournament info OCR failed: {e}")
+        _TOURNAMENT_INFO_CACHE[window_id] = (bar_hash, result)
+        return result
+
+    # Parse blind level: "Level 9", "Level 12", "Lv 9", "Lv. 12"
+    level_match = re.search(r'(?:Level|Lv\.?)\s*(\d+)', text, re.IGNORECASE)
+    if level_match:
+        result['blind_level'] = int(level_match.group(1))
+
+    # Parse rank: "12 / 546", "12/546", "My Rank" nearby then digits
+    rank_match = re.search(r'(\d{1,5})\s*/\s*(\d{1,5})', text)
+    if rank_match:
+        rank_val = int(rank_match.group(1))
+        total_val = int(rank_match.group(2))
+        # Sanity: rank should be <= total, total >= 2
+        if 1 <= rank_val <= total_val and total_val >= 2:
+            result['my_rank'] = rank_val
+            result['total_players'] = total_val
+
+    # Parse 1st prize: "$1,172", "$500", "$10,000"
+    prize_match = re.search(r'\$\s*([\d,]+(?:\.\d{1,2})?)', text)
+    if prize_match:
+        prize_str = prize_match.group(1).replace(',', '')
+        try:
+            prize_val = float(prize_str)
+            if prize_val >= 1.0:  # Minimum sensible prize
+                result['first_prize'] = prize_val
+        except ValueError:
+            pass
+
+    # Parse places paid: "Places Paid" followed by number, or "Paid: 80"
+    paid_match = re.search(r'(?:Places?\s*Paid|Paid)\s*:?\s*(\d+)', text, re.IGNORECASE)
+    if paid_match:
+        result['players_paid'] = int(paid_match.group(1))
+
+    if result['blind_level'] or result['my_rank']:
+        log.info(f"TOURNAMENT INFO: level={result['blind_level']} "
+                 f"rank={result['my_rank']}/{result['total_players']} "
+                 f"prize=${result['first_prize']} paid={result['players_paid']}")
+
+    _TOURNAMENT_INFO_CACHE[window_id] = (bar_hash, result)
+    return result
+
+
+def compute_icm_pressure(rank: Optional[int],
+                         total_players: Optional[int],
+                         players_paid: Optional[int],
+                         game_type: str = 'unknown') -> float:
+    """Compute ICM pressure: 0.0 (no pressure) to 1.0 (extreme pressure).
+
+    Near bubble: high pressure (tighten up significantly)
+    Deep in money: medium pressure (still ladder value)
+    Final table: highest pressure (each spot = big money jump)
+    Early tournament: low pressure (play for chips)
+
+    Special cases:
+    - Spin & Gold: 0.0 (winner-take-all, no ladder value)
+    - Cash games: 0.0 (no tournament considerations)
+    """
+    # Spin & Gold = winner-take-all, no ICM
+    if game_type == 'spin':
+        return 0.0
+
+    # Cash games = no tournament pressure
+    if game_type == 'cash':
+        return 0.0
+
+    # Need at least rank and total to compute
+    if not rank or not total_players or total_players < 2:
+        return 0.0
+
+    pct_field_remaining = rank / total_players
+
+    # --- Final table (top ~2% or last 9) ---
+    if rank <= 9 or pct_field_remaining <= 0.02:
+        return 0.9  # Extreme: each spot = huge prize jump
+
+    # --- Near bubble ---
+    if players_paid:
+        bubble_distance = rank - players_paid
+        if bubble_distance <= 0:
+            # Already in the money
+            pct_into_money = rank / players_paid if players_paid > 0 else 1.0
+
+            if pct_into_money <= 0.10:
+                # Top 10% of paid places (approaching final table)
+                return 0.7
+            elif pct_into_money <= 0.30:
+                # Top 30% of paid places
+                return 0.5
+            else:
+                # Deep in money but not near final table
+                return 0.3
+
+        elif bubble_distance <= max(5, int(total_players * 0.01)):
+            # Within 5 spots (or 1% of field) of the money
+            return 0.8  # Very high bubble pressure
+
+        elif bubble_distance <= max(15, int(total_players * 0.03)):
+            # Close to the bubble (within ~3% of field)
+            return 0.5
+
+    # --- Early/middle tournament ---
+    if pct_field_remaining > 0.50:
+        return 0.05  # Very early, almost no ICM considerations
+    elif pct_field_remaining > 0.30:
+        return 0.1   # Middle stages
+    elif pct_field_remaining > 0.15:
+        return 0.2   # Approaching money
+
+    return 0.15  # Default moderate pressure
 
 
 # ---------------------------------------------------------------------------
