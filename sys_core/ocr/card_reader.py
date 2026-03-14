@@ -61,8 +61,9 @@ _CARD_HASH_CACHE_PATH = pathlib.Path(__file__).parent / 'card_hash_cache.json'
 _HASH_NORM_W = 60
 _HASH_NORM_H = 90
 # Minimum confidence (0-1) required to record a new hash.
-# Confidence is computed as int(suit_ok) * 0.5 + int(rank_ok) * 0.5
-_MIN_RECORD_CONFIDENCE = 0.90
+# Lowered from 0.90 to 0.80 to build cache faster.
+# When OCR reads a rank and suit detection is confident, record even at 0.80.
+_MIN_RECORD_CONFIDENCE = 0.80
 
 
 class PixelHashCardCache:
@@ -80,6 +81,7 @@ class PixelHashCardCache:
     def __init__(self, cache_path: pathlib.Path = _CARD_HASH_CACHE_PATH):
         self._path = cache_path
         self._cache: dict[str, str] = {}  # md5_hex → card ('AH', 'KS', …)
+        self._conflicts: dict[str, dict[str, int]] = {}  # md5_hex → {card: count}
         self._dirty = False
         self._load()
 
@@ -103,12 +105,87 @@ class PixelHashCardCache:
         if len(card) < 2 or len(card) > 3:
             return
         key = self._hash(crop_np)
-        if self._cache.get(key) == card:
+        existing = self._cache.get(key)
+        if existing == card:
             return  # Already recorded, skip disk write
+        if existing is not None and existing != card:
+            # Track conflicts — if many reads disagree, the original may be wrong
+            conflicts = self._conflicts.get(key, {})
+            conflicts[card] = conflicts.get(card, 0) + 1
+            self._conflicts[key] = conflicts
+
+            # If 3+ reads agree on a DIFFERENT card, the original was wrong — fix it
+            if conflicts[card] >= 3:
+                log.warning(f"HASH SELF-CORRECT: {key[:12]}… was {existing}, "
+                            f"{conflicts[card]} reads say {card} — CORRECTING")
+                self._cache[key] = card
+                self._dirty = True
+                self._flush()
+                del self._conflicts[key]
+                return
+
+            log.warning(f"HASH CONFLICT #{conflicts[card]}: {key[:12]}… "
+                        f"was {existing}, OCR says {card} — keeping {existing}")
+            return
         self._cache[key] = card
         self._dirty = True
         log.debug(f"PixelHashCache: recorded {card} (confidence={confidence:.2f})")
         self._flush()
+
+    def lookup_fuzzy(self, crop_np: np.ndarray) -> Optional[str]:
+        """Try exact hash first, then ±2px shifted crops to tolerate window jitter."""
+        # Exact match
+        result = self.lookup(crop_np)
+        if result:
+            return result
+
+        # Try shifted crops (handles window position drift of ±2px)
+        h, w = crop_np.shape[:2]
+        if h < 6 or w < 6:
+            return None
+        for dy in (-2, -1, 1, 2):
+            for dx in (-2, -1, 1, 2):
+                y0 = max(0, dy)
+                y1 = min(h, h + dy)
+                x0 = max(0, dx)
+                x1 = min(w, w + dx)
+                shifted = crop_np[y0:y1, x0:x1]
+                if shifted.shape[0] < h - 3 or shifted.shape[1] < w - 3:
+                    continue
+                result = self.lookup(shifted)
+                if result:
+                    log.debug(f"PixelHashCache: fuzzy match at shift ({dx},{dy}): {result}")
+                    return result
+        return None
+
+    def record_with_neighbors(self, crop_np: np.ndarray, card: str, confidence: float) -> None:
+        """Record hash for this crop AND ±1px cardinal shifts (5 total).
+
+        Previously recorded 25 entries (±2px in both axes). This amplified
+        poison when OCR misread a card — one bad read spawned 25 wrong entries.
+        Now limited to 5 entries (exact + 4 cardinal) to reduce blast radius.
+        """
+        self.record(crop_np, card, confidence)
+        h, w = crop_np.shape[:2]
+        if h < 6 or w < 6:
+            return
+        for dy, dx in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+            y0 = max(0, dy)
+            y1 = min(h, h + dy)
+            x0 = max(0, dx)
+            x1 = min(w, w + dx)
+            shifted = crop_np[y0:y1, x0:x1]
+            if shifted.shape[0] >= h - 3 and shifted.shape[1] >= w - 3:
+                self.record(shifted, card, confidence)
+
+    def evict(self, crop_np: np.ndarray) -> None:
+        """Remove a hash entry that was found to be wrong."""
+        key = self._hash(crop_np)
+        if key in self._cache:
+            old = self._cache.pop(key)
+            self._dirty = True
+            log.info(f"PixelHashCache: EVICTED {old} (hash {key[:12]}…)")
+            self._flush()
 
     def size(self) -> int:
         return len(self._cache)
@@ -202,11 +279,55 @@ def read_player_cards(
             rx, ry, rw, rh = rank_box
             body_crop = img_np[ry:ry+rh, rx:rx+rw]
 
-        hash_card = _pixel_hash_cache.lookup(body_crop)
+        hash_card = _pixel_hash_cache.lookup_fuzzy(body_crop)
         if hash_card:
-            log.debug(f"Hash HIT {side}: {hash_card}")
-            cards.append(hash_card)
-            continue
+            # Cross-validate ALL hash hits against rank template system.
+            # The hash cache can get poisoned by a single OCR error, which
+            # then self-reinforces on every future frame. Template matching
+            # provides an independent check (~3ms, no pytesseract).
+            cached_rank = hash_card[:-1]  # e.g. '3D' -> '3', 'JC' -> 'J'
+            rank_box = positions[f'{side}_rank']
+            rx, ry, rw, rh = rank_box
+            rank_crop = img_np[ry:ry+rh, rx:rx+rw]
+            validated = False
+            if rank_crop.size > 0 and rank_crop.shape[0] >= 3 and rank_crop.shape[1] >= 3:
+                if deck_style == STYLE_COLORED:
+                    bw_check = _binarize_white_on_colored(rank_crop)
+                else:
+                    bw_check = _binarize_colored_on_white(rank_crop)
+                _, bw_check = cv2.threshold(bw_check, 127, 255, cv2.THRESH_BINARY)
+
+                from sys_core.ocr.rank_templates import get_rank_matcher
+                matcher = get_rank_matcher()
+                template_rank = matcher.match_rank_multi(bw_check)
+
+                if template_rank and template_rank != cached_rank:
+                    log.warning(f"HASH CACHE POISONED: cache says {hash_card} but "
+                                f"rank template says {template_rank} — EVICTING")
+                    _pixel_hash_cache.evict(body_crop)
+                    # Fall through to OCR below (don't use cached result)
+                elif cached_rank in ('8', 'A'):
+                    # Structural 8/A check: count enclosed loops
+                    n_holes = _count_enclosed_loops(bw_check)
+                    expected_rank = '8' if n_holes >= 2 else 'A'
+                    if expected_rank != cached_rank:
+                        log.warning(f"STRUCTURAL 8/A FIX: cache says {hash_card} but "
+                                    f"glyph has {n_holes} holes → {expected_rank} — EVICTING")
+                        _pixel_hash_cache.evict(body_crop)
+                    else:
+                        validated = True
+                elif template_rank and template_rank == cached_rank:
+                    validated = True  # Template agrees with cache
+                elif template_rank is None:
+                    validated = True  # No template to check against — trust cache
+                else:
+                    validated = True  # Fallback: trust cache
+
+            if validated:
+                log.debug(f"Hash HIT {side}: {hash_card} (cross-validated)")
+                cards.append(hash_card)
+                continue
+            # Else: hash was evicted, fall through to OCR
 
         # ── Strategy 2: Dynamic OCR ─────────────────────────────────────────
         rank = _read_rank_at(img_np, rank_box, deck_style)
@@ -241,13 +362,106 @@ def read_player_cards(
             card = f"{rank}{suit}"
             cards.append(card)
             log.debug(f"OCR {side} card: {card}")
-            # Both rank AND suit confirmed → record in hash cache (confidence 1.0)
-            _pixel_hash_cache.record(body_crop, card, confidence=1.0)
+
+            # QUARANTINE: Require template agreement before caching ANY rank.
+            # Without this, OCR errors get permanently cached and self-reinforce.
+            # e.g. "10" misread as "J" → cached → every future 10 returns "J" forever
+            from sys_core.ocr.rank_templates import get_rank_matcher
+            matcher = get_rank_matcher()
+            rank_box_q = positions[f'{side}_rank']
+            rx_q, ry_q, rw_q, rh_q = rank_box_q
+            rank_crop_q = img_np[ry_q:ry_q+rh_q, rx_q:rx_q+rw_q]
+            cache_ok = True
+            if rank_crop_q.size > 0 and rank_crop_q.shape[0] >= 3:
+                if deck_style == STYLE_COLORED:
+                    bw_q = _binarize_white_on_colored(rank_crop_q)
+                else:
+                    bw_q = _binarize_colored_on_white(rank_crop_q)
+                _, bw_q = cv2.threshold(bw_q, 127, 255, cv2.THRESH_BINARY)
+                tmpl_rank = matcher.match_rank_multi(bw_q)
+                if tmpl_rank is not None and tmpl_rank != rank:
+                    log.warning(f"QUARANTINE: OCR says {card} but template says "
+                                f"rank={tmpl_rank} — NOT caching (using OCR for this hand)")
+                    cache_ok = False
+                elif tmpl_rank is None:
+                    # No template available — cache with lower confidence
+                    log.debug(f"QUARANTINE: No template for {rank}, caching with low conf")
+                    _pixel_hash_cache.record_with_neighbors(body_crop, card, confidence=0.5)
+                    cache_ok = False  # Already recorded with low conf
+            if cache_ok:
+                _pixel_hash_cache.record_with_neighbors(body_crop, card, confidence=0.9)
         else:
             log.debug(f"OCR {side} failed: rank={rank!r}, suit={suit!r}")
 
     if debug_dir:
         _save_debug(img_np, W, H, positions, cards, debug_dir)
+
+    # ── Cross-validate confusable ranks using STRUCTURAL analysis ──────
+    # OCR often confuses J↔3 and 10↔4 due to similar glyph shapes.
+    # Instead of re-running the same OCR (which gives the same wrong answer),
+    # use structural glyph analysis:
+    # - "10" has 2 connected components (1+0), single chars have 1
+    # - "8" has 2 holes, "A" has 1, "5" has 0
+    _CONFUSABLE_SETS = [{'J', '3'}, {'T', '10', '4'}, {'8', 'A'}, {'8', '5'}, {'A', '3'}, {'K', '9'}]
+    if len(cards) == 2:
+        r1 = cards[0][:-1]  # rank without suit
+        r2 = cards[1][:-1]
+        for confusable_set in _CONFUSABLE_SETS:
+            if r1 in confusable_set and r2 in confusable_set and r1 != r2:
+                log.warning(f"CONFUSABLE PAIR detected: {cards} (ranks {r1}/{r2}) — "
+                            f"using structural analysis to resolve")
+                # Structural re-read: use connected components / holes
+                reread_cards = []
+                for i, side in enumerate(['left', 'right']):
+                    rank_box = positions[f'{side}_rank']
+                    rx, ry, rw, rh = rank_box
+                    rank_crop = img_np[ry:ry+rh, rx:rx+rw]
+                    if rank_crop.size == 0:
+                        reread_cards.append(cards[i])
+                        continue
+
+                    if deck_style == STYLE_COLORED:
+                        bw = _binarize_white_on_colored(rank_crop)
+                    else:
+                        bw = _binarize_colored_on_white(rank_crop)
+                    _, bw = cv2.threshold(bw, 127, 255, cv2.THRESH_BINARY)
+
+                    old_rank = cards[i][:-1]
+                    old_suit = cards[i][-1]
+                    new_rank = old_rank
+
+                    # 10 vs single character (J/3/4)
+                    if confusable_set & {'T', '10', '4', 'J', '3'}:
+                        is_ten = _disambiguate_10_from_single(bw)
+                        if is_ten and old_rank not in ('T', '10'):
+                            new_rank = 'T'
+                            log.info(f"STRUCTURAL FIX: {old_rank} → T (2 components)")
+                        elif not is_ten and old_rank in ('T', '10'):
+                            # It's a single char but OCR said 10 — re-OCR to determine which
+                            new_rank = _read_rank_at(img_np, rank_box, deck_style)
+                            if new_rank == '10':
+                                new_rank = 'T'
+                            log.info(f"STRUCTURAL FIX: T → {new_rank} (1 component)")
+                    # 8/A/5 disambiguation
+                    elif confusable_set & {'8', 'A', '5'}:
+                        n_holes = _count_enclosed_loops(bw)
+                        if n_holes >= 2:
+                            new_rank = '8'
+                        elif n_holes == 1:
+                            new_rank = 'A'
+                        else:
+                            new_rank = '5'
+                        if new_rank != old_rank:
+                            log.info(f"STRUCTURAL FIX: {old_rank} → {new_rank} ({n_holes} holes)")
+
+                    if new_rank and new_rank != '?':
+                        reread_cards.append(f"{new_rank}{old_suit}")
+                    else:
+                        reread_cards.append(cards[i])
+                if len(reread_cards) == 2:
+                    log.info(f"CONFUSABLE re-read: {cards} → {reread_cards}")
+                    cards = reread_cards
+                break
 
     # Reject partial hand — must have TWO cards preflop or NONE
     if len(cards) == 1:
@@ -1640,22 +1854,174 @@ def _read_rank_at(img_np: np.ndarray, box: Tuple[int, int, int, int],
         pil_img, config=f'--psm 10 --oem 3 {whitelist}'
     ).strip()
     rank = _parse_rank(text)
+
+    # ALWAYS also try psm 7 (single line) — it handles "10" better than psm 10.
+    # psm 10 (single char) often reads the "10" glyph as "4" because the thin
+    # "1" stroke merges with the "0" at small sizes.
+    text7 = pytesseract.image_to_string(
+        pil_img, config=f'--psm 7 --oem 3 {whitelist}'
+    ).strip()
+    rank7 = _parse_rank(text7)
+
+    # If psm 7 says "10" and psm 10 said something else, trust psm 7 —
+    # "10" is the only two-character rank and psm 7 handles it reliably.
+    if rank7 == '10' and rank != '10':
+        log.debug(f"Rank OCR: psm10={text!r}->{rank}, psm7={text7!r}->10 — using 10")
+        _auto_capture_template(matcher, '10', bw_pre_morph)
+        return '10'
+
+    # ── A/3 structural disambiguation ──────────────────────────────
+    # OCR misreads "A" as "3" on colored cards because the white-on-color
+    # binarization makes the A's crossbar look like 3's curves.
+    # Structural test: "A" has 1 enclosed hole, "3" has 0 holes.
+    # CAUTION: "4" also has 1 hole (triangle). Only apply when BOTH PSMs
+    # agree on "3" — if one says "4" or "J", let other disambiguations handle it.
+    if rank == '3' and rank7 == '3':
+        n_holes = _count_enclosed_loops(bw)
+        if n_holes >= 1:
+            log.info(f"A/3 DISAMBIGUATION: both PSMs say 3 but glyph has {n_holes} holes → using A")
+            _auto_capture_template(matcher, 'A', bw_pre_morph)
+            return 'A'
+
+    # ── K/9 structural disambiguation ──────────────────────────────
+    # OCR misreads "K" as "9" because K's diagonal lines resemble 9's loop.
+    # Structural test: "K" has 0 holes, "9" has 1 hole.
+    if rank == '9' or rank7 == '9':
+        candidate = rank or rank7
+        n_holes = _count_enclosed_loops(bw)
+        if n_holes == 0 and candidate == '9':
+            # No holes means it's not 9 (9 always has a loop). Could be K or other.
+            alt = rank7 if rank == '9' else rank
+            if alt and alt != '9':
+                log.info(f"K/9 DISAMBIGUATION: OCR says 9 but glyph has 0 holes → using {alt}")
+                _auto_capture_template(matcher, alt, bw_pre_morph)
+                return alt
+
+    # ── J/3 disambiguation: OCR frequently confuses J↔3 ──────────────
+    # If one PSM says "3" and the other says "J", prefer "J" — the J glyph
+    # has a strong horizontal top stroke that OCR sometimes reads as the
+    # curved top of "3".
+    if rank == '3' and rank7 == 'J':
+        log.info(f"J/3 DISAMBIGUATION: psm10={text!r}->3, psm7={text7!r}->J — using J")
+        _auto_capture_template(matcher, 'J', bw_pre_morph)
+        return 'J'
+    if rank == 'J' and rank7 == '3':
+        log.info(f"J/3 DISAMBIGUATION: psm10={text!r}->J, psm7={text7!r}->3 — using J")
+        _auto_capture_template(matcher, 'J', bw_pre_morph)
+        return 'J'
+    # If both PSMs agree on "3", do a third read with inverted binarization
+    # to double-check — "3" is a common J misread.
+    if rank == '3' and rank7 == '3':
+        inv_bw = 255 - bw
+        inv_big = cv2.resize(inv_bw, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
+        _, inv_big = cv2.threshold(inv_big, 127, 255, cv2.THRESH_BINARY)
+        inv_padded = np.full((inv_big.shape[0] + 2 * pad, inv_big.shape[1] + 2 * pad), 255, dtype=np.uint8)
+        inv_padded[pad:pad + inv_big.shape[0], pad:pad + inv_big.shape[1]] = inv_big
+        inv_text = pytesseract.image_to_string(
+            Image.fromarray(inv_padded), config=f'--psm 10 --oem 3 {whitelist}'
+        ).strip()
+        inv_rank = _parse_rank(inv_text)
+        if inv_rank == 'J':
+            log.info(f"J/3 DISAMBIGUATION: both PSMs said 3, inverted read says J — using J")
+            _auto_capture_template(matcher, 'J', bw_pre_morph)
+            return 'J'
+
+    # ── 10/J/3/4 structural disambiguation ─────────────────────────
+    # "10" is unique: it has TWO connected components (the "1" and "0").
+    # All other ranks are single connected components. When OCR reads
+    # J, 3, or 4 but the glyph has 2 components, it's actually "10".
+    if rank in ('J', '3', '4') or rank7 in ('J', '3', '4'):
+        candidate = rank or rank7
+        if _disambiguate_10_from_single(bw):
+            log.info(f"10/SINGLE DISAMBIGUATION: OCR says {candidate} but glyph has "
+                     f"2 components → using 10")
+            _auto_capture_template(matcher, '10', bw_pre_morph)
+            return '10'
+    # Also check reverse: OCR says 10 but glyph is single component
+    if rank == '10' or rank7 == '10':
+        if not _disambiguate_10_from_single(bw):
+            # It's a single char, not 10. Trust the other PSM or re-OCR
+            alt = rank7 if rank == '10' else rank
+            if alt and alt != '10':
+                log.info(f"10/SINGLE DISAMBIGUATION: OCR says 10 but glyph has "
+                         f"1 component → using {alt}")
+                _auto_capture_template(matcher, alt, bw_pre_morph)
+                return alt
+
+    # ── 8/A disambiguation ──────────────────────────────────────────
+    # OCR frequently reads "8" as "A" (and vice versa) because both have
+    # rounded shapes. Use structural analysis: "8" has TWO enclosed loops
+    # (holes), "A" has ONE. This is a deterministic geometric test.
+    if rank in ('8', 'A') or rank7 in ('8', 'A'):
+        candidate = rank or rank7
+        n_holes = _count_enclosed_loops(bw)
+        if n_holes >= 2 and candidate == 'A':
+            log.info(f"8/A DISAMBIGUATION: OCR says A but glyph has {n_holes} holes → using 8")
+            _auto_capture_template(matcher, '8', bw_pre_morph)
+            return '8'
+        elif n_holes <= 1 and candidate == '8':
+            log.info(f"8/A DISAMBIGUATION: OCR says 8 but glyph has {n_holes} holes → using A")
+            _auto_capture_template(matcher, 'A', bw_pre_morph)
+            return 'A'
+        # If both PSMs disagree (one says 8, other says A), use hole count
+        if rank and rank7 and rank != rank7 and {rank, rank7} == {'8', 'A'}:
+            correct = '8' if n_holes >= 2 else 'A'
+            log.info(f"8/A DISAMBIGUATION: psm10={rank} psm7={rank7} holes={n_holes} → {correct}")
+            _auto_capture_template(matcher, correct, bw_pre_morph)
+            return correct
+
+    # ── 8/5 disambiguation ──────────────────────────────────────────
+    # OCR sometimes reads "8" as "5" (open top of 5 looks like closed 8
+    # at low resolution). Use structural analysis: "8" has TWO enclosed
+    # loops, "5" has ZERO (it's an open shape with no holes).
+    if rank in ('8', '5') or rank7 in ('8', '5'):
+        candidate = rank or rank7
+        if candidate in ('8', '5'):
+            n_holes = _count_enclosed_loops(bw)
+            if n_holes >= 2 and candidate == '5':
+                log.info(f"8/5 DISAMBIGUATION: OCR says 5 but glyph has {n_holes} holes → using 8")
+                _auto_capture_template(matcher, '8', bw_pre_morph)
+                return '8'
+            elif n_holes == 0 and candidate == '8':
+                log.info(f"8/5 DISAMBIGUATION: OCR says 8 but glyph has {n_holes} holes → using 5")
+                _auto_capture_template(matcher, '5', bw_pre_morph)
+                return '5'
+            # If PSMs disagree (one says 8, other says 5), use hole count
+            if rank and rank7 and rank != rank7 and {rank, rank7} == {'8', '5'}:
+                correct = '8' if n_holes >= 2 else '5'
+                log.info(f"8/5 DISAMBIGUATION: psm10={rank} psm7={rank7} holes={n_holes} → {correct}")
+                _auto_capture_template(matcher, correct, bw_pre_morph)
+                return correct
+
+    # ── 6/9 disambiguation ──────────────────────────────────────────
+    # OCR can confuse 6 and 9 (rotations). Use hole position: "6" has its
+    # hole in the bottom half, "9" has its hole in the top half.
+    if rank in ('6', '9') or rank7 in ('6', '9'):
+        if rank and rank7 and rank != rank7 and {rank, rank7} == {'6', '9'}:
+            correct = _disambiguate_6_9(bw)
+            if correct:
+                log.info(f"6/9 DISAMBIGUATION: psm10={rank} psm7={rank7} → {correct}")
+                _auto_capture_template(matcher, correct, bw_pre_morph)
+                return correct
+
+    # ── 10/4 disambiguation ──────────────────────────────────────────
+    # psm 10 (single char) often reads "10" as "4" because the thin "1"
+    # merges with the "0" at small sizes. If psm10 says "4" but psm7 says
+    # something different, prefer psm7.
+    if rank == '4' and rank7 and rank7 != '4':
+        log.info(f"10/4 DISAMBIGUATION: psm10={text!r}->4, psm7={text7!r}->{rank7} — using {rank7}")
+        _auto_capture_template(matcher, rank7, bw_pre_morph)
+        return rank7
+
     if rank:
         log.debug(f"Rank OCR (psm10): raw={text!r} -> {rank}")
-        # Capture template from PRE-MORPH bw so templates match the
-        # binarization used during template matching.
         _auto_capture_template(matcher, rank, bw_pre_morph)
         return rank
 
-    # Try psm 7 (single line) — handles "10" and multi-glyph
-    text = pytesseract.image_to_string(
-        pil_img, config=f'--psm 7 --oem 3 {whitelist}'
-    ).strip()
-    rank = _parse_rank(text)
-    if rank:
-        log.debug(f"Rank OCR (psm7): raw={text!r} -> {rank}")
-        _auto_capture_template(matcher, rank, bw_pre_morph)
-        return rank
+    if rank7:
+        log.debug(f"Rank OCR (psm7): raw={text7!r} -> {rank7}")
+        _auto_capture_template(matcher, rank7, bw_pre_morph)
+        return rank7
 
     # ── Strategy 3: Otsu binarization + OCR (last resort) ───────────
     gray = cv2.cvtColor(crop, cv2.COLOR_RGB2GRAY)
@@ -1678,6 +2044,102 @@ def _read_rank_at(img_np: np.ndarray, box: Tuple[int, int, int, int],
 
     log.debug(f"Rank failed ALL strategies for box ({x},{y},{w},{h})")
     return None
+
+
+def _count_enclosed_loops(bw: np.ndarray) -> int:
+    """Count enclosed loops (holes) in a binarized glyph.
+
+    "8" has 2 holes, "A" has 1, "K" has 0, "0" has 1, "B" has 2.
+    Uses contour hierarchy: holes are contours whose parent is an outer contour.
+    """
+    if bw.size == 0:
+        return 0
+    # Ensure foreground is white (255) on black (0) for findContours
+    fg = bw.copy()
+    if np.mean(fg) > 127:
+        fg = 255 - fg  # Invert if background is white
+    contours, hierarchy = cv2.findContours(fg, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+    if hierarchy is None:
+        return 0
+    # RETR_CCOMP gives 2-level hierarchy: outer contours and their holes.
+    # Holes have hierarchy[0][i][3] >= 0 (parent exists)
+    # AND hierarchy[0][i][3] != -1
+    holes = 0
+    for i in range(len(contours)):
+        parent = hierarchy[0][i][3]
+        if parent >= 0:
+            # This is a hole inside a parent contour
+            area = cv2.contourArea(contours[i])
+            if area > 5:  # Ignore tiny noise holes
+                holes += 1
+    return holes
+
+
+def _disambiguate_6_9(bw: np.ndarray) -> Optional[str]:
+    """Disambiguate 6 vs 9 using hole position.
+
+    "6" has its enclosed loop in the bottom half.
+    "9" has its enclosed loop in the top half.
+    """
+    if bw.size == 0:
+        return None
+    fg = bw.copy()
+    if np.mean(fg) > 127:
+        fg = 255 - fg
+    contours, hierarchy = cv2.findContours(fg, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+    if hierarchy is None:
+        return None
+
+    h_img = bw.shape[0]
+    mid_y = h_img // 2
+
+    for i in range(len(contours)):
+        parent = hierarchy[0][i][3]
+        if parent >= 0:
+            area = cv2.contourArea(contours[i])
+            if area > 5:
+                M = cv2.moments(contours[i])
+                if M['m00'] > 0:
+                    cy = int(M['m01'] / M['m00'])
+                    return '6' if cy > mid_y else '9'
+    return None
+
+
+def _disambiguate_10_from_single(bw: np.ndarray) -> bool:
+    """Determine if a glyph is "10" (two components) or a single-character rank.
+
+    "10" is unique: it has TWO separate connected components (the "1" and "0").
+    All other ranks (J, 3, 4, Q, K, etc.) are single connected components.
+
+    Returns True if the glyph looks like "10", False otherwise.
+    """
+    if bw.size == 0:
+        return False
+    fg = bw.copy()
+    if np.mean(fg) > 127:
+        fg = 255 - fg
+    # Count connected components and filter by size
+    n_labels, labels = cv2.connectedComponents(fg)
+    if n_labels <= 2:  # 0=bg + 1 component = single char
+        return False
+
+    # Count components that are large enough to be a real glyph part
+    # (filter out tiny noise specks)
+    total_fg = np.sum(fg > 0)
+    min_component_area = max(total_fg * 0.05, 10)  # At least 5% of total foreground
+    big_components = 0
+    for label_id in range(1, n_labels):
+        area = np.sum(labels == label_id)
+        if area >= min_component_area:
+            big_components += 1
+
+    # "10" has exactly 2 significant components (the "1" and the "0")
+    # Single chars have 1 significant component (even with noise dots)
+    if big_components == 2:
+        log.debug(f"10/SINGLE DISAMBIGUATION: {big_components} significant components "
+                  f"(of {n_labels-1} total) → likely '10'")
+        return True
+    return False
 
 
 def _auto_capture_template(matcher, rank: str, bw: np.ndarray):

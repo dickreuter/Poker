@@ -13,6 +13,28 @@ from typing import List, Optional, Dict, Any
 log = logging.getLogger('game_state')
 
 
+@dataclass
+class ReadConfidence:
+    """Per-field confidence scores for OCR reads (0.0–1.0).
+
+    Used to gate decisions: if overall < 0.5, re-read; if < 0.4, default to check/fold.
+    """
+    cards: float = 0.0       # hash hit=1.0, template=0.85, OCR=0.7, cached=0.5
+    pot: float = 0.0         # double-read match=1.0, single=0.6, estimated=0.3
+    call_amount: float = 0.0 # parsed cleanly=0.9, heuristic-corrected=0.5
+    stacks: float = 0.0      # OCR success=0.8, cached=0.5, default=0.3
+    buttons: float = 0.0     # color-detected=0.9, OCR-text=0.7
+
+    @property
+    def overall(self) -> float:
+        """Minimum of the critical fields (cards, pot, call_amount)."""
+        return min(self.cards, self.pot, self.call_amount)
+
+    def __repr__(self):
+        return (f"Conf(cards={self.cards:.2f} pot={self.pot:.2f} "
+                f"call={self.call_amount:.2f} overall={self.overall:.2f})")
+
+
 class Street(Enum):
     PREFLOP = "Preflop"
     FLOP = "Flop"
@@ -113,6 +135,9 @@ class GameState:
 
     # Safety flags
     hero_stack_is_estimated: bool = False  # True when hero stack OCR failed → default 100 BB
+
+    # Confidence metadata — populated by read_table()
+    confidence: ReadConfidence = field(default_factory=ReadConfidence)
 
     # -- Backward-compatible properties for existing code --
 

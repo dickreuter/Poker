@@ -349,6 +349,7 @@ class MultiTableRunner:
         self.dry_run = dry_run
 
         self.sessions: Dict[int, TableSession] = {}  # window_id -> session
+        self._session_lock = threading.Lock()  # Protects session dict mutations
         self._last_tile_time = 0  # Grid Lockdown Timer
         self.running = False
 
@@ -964,11 +965,12 @@ class MultiTableRunner:
             if state is not None:
                 session._cached_game_state = state
 
-                # Clear cached cards when board is empty (new hand started)
-                if not state.board_cards or len(state.board_cards) == 0:
-                    if state.my_cards and len(state.my_cards) == 2:
-                        session._cached_cards = list(state.my_cards)
-                    elif not state.is_my_turn:
+                # Cache cards whenever successfully detected (warm cache for process_table)
+                if state.my_cards and len(state.my_cards) == 2:
+                    session._cached_cards = list(state.my_cards)
+                elif not state.board_cards or len(state.board_cards) == 0:
+                    # New hand started and no cards visible — clear stale cache
+                    if not state.is_my_turn:
                         session._cached_cards = None
                         session._last_acted_key = ""
 
@@ -1472,29 +1474,66 @@ class MultiTableRunner:
         if len(real_actions) < 2:
             log.debug(f"Only {[a.action_type for a in real_actions]} detected in process, "
                       f"waiting for full button set")
+            self.stats['detection_success']['buttons_fail'] += 1
             return False
+
+        # Track successful button detection
+        self.stats['detection_success']['buttons'] += 1
+
+        # --- CONFIDENCE GATE (Phase 1B): Don't act on bad OCR data ---
+        conf = getattr(state, 'confidence', None)
+        # Skip re-read if: (a) only call/pot OCR failed (cards fine), or
+        # (b) no cards AND no pot (hand likely not started — Deal Me In screen).
+        if conf and conf.overall < 0.5 and conf.cards < 0.7 \
+                and not (len(state.my_cards) == 0 and state.pot <= 0):
+            log.warning(f"Low confidence {conf} — re-reading table {session.window.name}")
+            retry_state = self.capture_game_state(session)
+            if retry_state and retry_state.is_my_turn:
+                retry_conf = getattr(retry_state, 'confidence', None)
+                if retry_conf and retry_conf.overall >= 0.4:
+                    state = retry_state
+                    conf = retry_conf
+                    log.info(f"Confidence improved after re-read: {conf}")
+                elif retry_conf and retry_conf.overall < 0.4:
+                    # Still bad — if free check available, take it; else skip
+                    available_types = {a.action_type for a in (retry_state or state).available_actions}
+                    if 'check' in available_types:
+                        check_action = next(a for a in (retry_state or state).available_actions if a.action_type == 'check')
+                        log.warning(f"Very low confidence {retry_conf} — clicking free check")
+                        self._click_action(check_action, session, retry_state or state, "low_conf_check")
+                        return True
+                    # Don't just skip — fold to avoid timing out
+                    if 'fold' in available_types:
+                        fold_action = next(a for a in (retry_state or state).available_actions if a.action_type == 'fold')
+                        log.warning(f"Very low confidence {retry_conf} — folding to avoid timeout")
+                        self._click_action(fold_action, session, retry_state or state, "low_conf_fold")
+                        return True
+                    log.warning(f"Very low confidence {retry_conf} — skipping decision")
+                    return False
 
         # Dedup guard: don't act twice on the exact same situation.
         # Include pot size (rounded) so a 3-bet/re-raise creates a new key.
         cards_key = ','.join(sorted(state.my_cards)) if state.my_cards and len(state.my_cards) == 2 else ''
         board_count = len(state.board_cards) if state.board_cards else 0
         pot_key = round(state.pot, 1) if state.pot else 0
-        current_key = f"{cards_key}|{board_count}|{pot_key}"
+        actions_key = ','.join(sorted(a.action_type for a in state.available_actions))
+        current_key = f"{cards_key}|{board_count}|{pot_key}|{actions_key}"
         if current_key and current_key == session._last_acted_key:
             log.debug(f"Dedup: already acted on {current_key}, skipping")
             return False
 
-        # Ensure table object exists
-        if session._table is None:
-            session._table = TableScreenBased(
-                self.strategy, session.table_dict,
-                MockSignalsMC(), session.game_logger,
-                version=6.76, nn_model=None
-            )
-            if self.preflop_sheet is not None:
-                session.history.preflop_sheet = self.preflop_sheet
+        # Create a FRESH TableScreenBased per call for thread safety.
+        # When multiple tables run process_table_new_ocr concurrently via
+        # ThreadPoolExecutor, sharing session._table causes data races
+        # (one thread's cards/equity overwriting another's).
+        t = TableScreenBased(
+            self.strategy, session.table_dict,
+            MockSignalsMC(), session.game_logger,
+            version=6.76, nn_model=None
+        )
+        if self.preflop_sheet is not None:
+            session.history.preflop_sheet = self.preflop_sheet
 
-        t = session._table
         h = session.history
         p = self.strategy
 
@@ -1510,12 +1549,15 @@ class MultiTableRunner:
             session._cached_cards = list(state.my_cards)
             session._no_cards_retries = 0
         elif not state.my_cards or len(state.my_cards) != 2:
+            # Only reuse cached cards if pot > 0 (we're actually in a hand).
+            # When pot=0 and cards=[], we're between hands — don't reuse stale cache.
             cached = getattr(session, '_cached_cards', None)
-            if cached and len(cached) == 2:
-                has_board = state.board_cards and len(state.board_cards) >= 3
-                if has_board:
-                    log.info(f"Using cached cards {cached} (OCR failed but board visible: {state.board_cards})")
-                    state.my_cards = list(cached)
+            if cached and len(cached) == 2 and state.pot > 0:
+                log.info(f"Using cached cards {cached} (OCR failed, reusing same-hand cache)")
+                state.my_cards = list(cached)
+            elif cached and state.pot <= 0:
+                log.debug(f"Clearing stale card cache {cached} (pot=0, likely between hands)")
+                session._cached_cards = None
 
         # If no cards yet, retry with increasing delays (animation timing)
         if not state.my_cards or len(state.my_cards) != 2:
@@ -1523,11 +1565,11 @@ class MultiTableRunner:
                 session._no_cards_retries = 0
 
             partial = state.my_cards if state.my_cards else []
-            log.warning(f"Incomplete card detection: {partial} — retrying up to 4 times")
+            log.warning(f"Incomplete card detection: {partial} — retrying up to 5 times")
 
-            for attempt in range(4):
+            retry_delays = [0.15, 0.30, 0.45, 0.60, 0.80]
+            for attempt, delay in enumerate(retry_delays):
                 session._no_cards_retries += 1
-                delay = 0.15 + attempt * 0.15  # 0.15, 0.30, 0.45, 0.60s
                 _time.sleep(delay)
                 retry_state = self.capture_game_state(session)
                 if retry_state and retry_state.is_my_turn and retry_state.my_cards and len(retry_state.my_cards) == 2:
@@ -1555,8 +1597,7 @@ class MultiTableRunner:
                     pass
 
         # FINAL VALIDATION: We MUST have 2 cards to act.
-        # If we reach here and still don't have cards, abort the decision to avoid
-        # incorrect folds/checks.
+        # If we reach here and still don't have cards, check if we can free-check.
         if not state.my_cards or len(state.my_cards) != 2:
             # Fix: Temporal Consistency Check
             if not hasattr(session, '_no_cards_count'): session._no_cards_count = 0
@@ -1564,12 +1605,44 @@ class MultiTableRunner:
             if session._no_cards_count < 2:
                 log.info(f"Blink Protection: No cards detected once for {session.window.name}, retrying next frame...")
                 return False
-            
-            log.warning(f"Aborting decision for {session.window.name}: No valid hole cards detected after {session._no_cards_count} frames.")
+
+            # Free-check fallback: if CHECK is available, clicking it is always +EV
+            # (it's free). Don't waste the turn just because cards are unreadable.
+            available_action_types = {a.action_type for a in state.available_actions}
+            if 'check' in available_action_types:
+                check_action = next(a for a in state.available_actions if a.action_type == 'check')
+                log.info(f"Cards unreadable but CHECK available — checking (free) for {session.window.name}")
+                self._click_action(check_action, session, state, "free_check_no_cards")
+                session._no_cards_count = 0
+                return True
+
+            # Small-blind call fallback: if call ≤ 1 BB, just call (better than timeout)
+            if 'call' in available_action_types:
+                call_action = next(a for a in state.available_actions if a.action_type == 'call')
+                if call_action.amount is not None and call_action.amount <= 1.0:
+                    log.warning(f"Cards unreadable, calling small blind ({call_action.amount} BB) for {session.window.name}")
+                    self._click_action(call_action, session, state, "blind_call_no_cards")
+                    session._no_cards_count = 0
+                    self.stats['detection_success']['cards_fail'] += 1
+                    return True
+
+            # Explicit fold (better than timeout which wastes time bank)
+            if 'fold' in available_action_types:
+                fold_action = next(a for a in state.available_actions if a.action_type == 'fold')
+                log.warning(f"Cards unreadable — folding explicitly for {session.window.name} (better than timeout)")
+                self._click_action(fold_action, session, state, "fold_no_cards")
+                session._no_cards_count = 0
+                self.stats['detection_success']['cards_fail'] += 1
+                return True
+
+            log.warning(f"Aborting decision for {session.window.name}: No valid hole cards and no actionable buttons after {session._no_cards_count} frames.")
+            self.stats['detection_success']['cards_fail'] += 1
             return False
-        
+
         # Reset protection if cards found
         session._no_cards_count = 0
+        # Track successful card detection
+        self.stats['detection_success']['cards'] += 1
 
         # --- HAND CONFIRMATION (lightweight) ---
         # We already validated 2 cards exist above + did up to 4 retries.
@@ -1622,6 +1695,10 @@ class MultiTableRunner:
                         log.warning(f"Board still incomplete after 3 retries ({board_len} cards), skipping")
                         return False
 
+                # Always set _table_name so ICM/tournament detection works
+                # even if opponent modeler is disabled.
+                t._table_name = getattr(session.window, 'name', '') if session.window else ''
+
                 # Fetch opponent profile BEFORE Monte Carlo so VPIP can
                 # override the static opponent_range parameter.
                 opp_profile = None
@@ -1634,7 +1711,6 @@ class MultiTableRunner:
                         profile['fold_equity_bonus'] = adj.get('fold_equity_bonus', 0.0)
                         opp_profile = profile
                         t._opp_profile = opp_profile  # For range-based MC equity
-                        t._table_name = getattr(session.window, 'name', '') if session.window else ''
                         if profile.get('type', 'unknown') != 'unknown':
                             log.info(f"OPP_PROFILE: {villain_id} = {profile['type']} "
                                      f"(VPIP={profile['vpip']:.0%} PFR={profile['pfr']:.0%} "
@@ -1647,8 +1723,16 @@ class MultiTableRunner:
                 # after 8 seconds and use whatever equity we have.
                 mock_signals = MockSignalsMC()
                 config = get_config()
-                mc_result = [None]  # Mutable container for thread result
                 mc_error = [None]
+
+                # Reset equity BEFORE MC so stale value from previous hand
+                # doesn't leak through if MC fails/times out.
+                t.equity = 0
+
+                # Use threading.Event for clean synchronization — the MC
+                # thread signals when equity is finalized, preventing races
+                # where we read t.equity while the daemon is still writing.
+                equity_ready = threading.Event()
 
                 def _run_mc():
                     try:
@@ -1657,21 +1741,31 @@ class MultiTableRunner:
                             t, session.game_logger,
                             session.preflop_state, h,
                         )
-                        mc_result[0] = True
                     except Exception as e:
                         mc_error[0] = e
+                    finally:
+                        equity_ready.set()
 
                 mc_thread = threading.Thread(target=_run_mc, daemon=True)
                 mc_thread.start()
-                mc_thread.join(timeout=8.0)
+                equity_ready.wait(timeout=8.0)
 
-                if mc_thread.is_alive():
+                if not equity_ready.is_set():
                     log.error(f"MONTE CARLO TIMEOUT (8s) for {session.window.name} — "
                               f"using default equity {t.equity:.3f}")
-                    # Thread will eventually finish or die; we proceed with
-                    # whatever equity was set before the timeout.
+                    # Snapshot whatever equity exists, then set conservative default
+                    equity_snapshot = t.equity
+                    if equity_snapshot == 0:
+                        t.equity = 0.35  # Conservative — call only with pot odds
+                        log.warning(f"MC TIMEOUT: Using default equity 0.35")
+                    else:
+                        t.equity = equity_snapshot  # Use partial result
+                        log.warning(f"MC TIMEOUT: Using partial equity {equity_snapshot:.3f}")
                 elif mc_error[0]:
                     log.error(f"Monte Carlo error: {mc_error[0]}")
+                    if not hasattr(t, 'equity') or t.equity == 0:
+                        t.equity = 0.35
+                        log.warning(f"MC ERROR: Using default equity 0.35")
 
                 # Make decision
                 d = Decision(t, h, p, session.game_logger)
@@ -1753,6 +1847,13 @@ class MultiTableRunner:
                 session._last_opp_estimate = opp_range
                 session._cached_board = state.board_cards or []
 
+                # --- HAND SNAPSHOT: Screenshot + detection overlay for verification ---
+                try:
+                    self._save_hand_snapshot(session, state, mouse_target,
+                                            equity_val, abs_eq_val, decision_obj=d)
+                except Exception as e:
+                    log.debug(f"Failed to save hand snapshot: {e}")
+
                 # Log hand to local history file
                 try:
                     self._log_hand_locally(state, mouse_target, equity_val, abs_eq_val,
@@ -1795,6 +1896,24 @@ class MultiTableRunner:
 
             except Exception as e:
                 log.error(f"Decision failed: {e}\n{traceback.format_exc()}")
+                # FALLBACK: Check if free, fold otherwise (better than timeout)
+                try:
+                    if not state.available_actions:
+                        log.error("FALLBACK: No available_actions detected — cannot act, will timeout")
+                        return False
+                    available_types = {a.action_type for a in state.available_actions}
+                    if 'check' in available_types:
+                        check_action = next(a for a in state.available_actions if a.action_type == 'check')
+                        log.warning("FALLBACK: Decision crashed, checking (free)")
+                        self._click_action(check_action, session, state, "fallback_check")
+                        return True
+                    elif 'fold' in available_types:
+                        fold_action = next(a for a in state.available_actions if a.action_type == 'fold')
+                        log.warning("FALLBACK: Decision crashed, folding")
+                        self._click_action(fold_action, session, state, "fallback_fold")
+                        return True
+                except Exception as fallback_err:
+                    log.error(f"Fallback action also failed: {fallback_err}")
                 return False
 
         # No cards after all retries — DO NOT ACT.
@@ -1902,30 +2021,50 @@ class MultiTableRunner:
     def _activate_table_window(self, session: TableSession):
         """Bring the specific table window to front before clicking.
 
-        Uses Quartz CGWindowID for reliable window identification.
-        AppleScript 'window N' is a 1-based index, NOT a CGWindowID —
-        using it with kCGWindowNumber from Quartz would raise the wrong window.
-        Instead we match by window name which is stable across the session.
+        Matches by window name AND position to disambiguate tables with
+        identical names (common in multi-table). Falls back to name-only
+        matching if position matching fails.
+
+        Caches the last activated window ID to skip redundant AppleScript
+        calls when processing the same table consecutively.
         """
         try:
+            wid = session.window.window_id
             name = session.window.name
-            log.debug(f"Activating window: {name}")
+            wx, wy = session.window.x, session.window.y
+
+            # Skip if this window is already frontmost (by window ID, not name)
+            if self._last_activated_window == wid:
+                log.debug(f"Window already active: {name} (id={wid})")
+                return True
+
+            log.debug(f"Activating window: {name} (id={wid} pos={wx},{wy})")
 
             # Escape double quotes in window name for AppleScript
             escaped_name = name.replace('"', '\\"')
 
-            # Match by window name (stable) instead of numeric ID.
-            # Iterate windows and AXRaise the first one whose name contains
-            # our table name. This handles GGSystem's identical-name edge case
-            # by at least raising *a* matching window.
+            # Match by window name AND position to disambiguate same-named tables.
+            # Position matching uses a ±20pt tolerance for window manager drift.
             script = f'''
             tell application "System Events"
                 tell process "GGnet"
                     set frontmost to true
                     repeat with w in windows
                         if name of w contains "{escaped_name}" then
+                            set p to position of w
+                            set px to item 1 of p
+                            set py to item 2 of p
+                            if (px - {wx}) > -20 and (px - {wx}) < 20 and (py - {wy}) > -20 and (py - {wy}) < 20 then
+                                perform action "AXRaise" of w
+                                return "ok_pos"
+                            end if
+                        end if
+                    end repeat
+                    -- Fallback: name-only match (position may have changed)
+                    repeat with w in windows
+                        if name of w contains "{escaped_name}" then
                             perform action "AXRaise" of w
-                            return "ok"
+                            return "ok_name"
                         end if
                     end repeat
                 end tell
@@ -1938,11 +2077,15 @@ class MultiTableRunner:
             if 'ok' in result.stdout:
                 # Quick settle time for the window manager
                 time.sleep(0.05)
+                self._last_activated_window = wid
+                if 'ok_name' in result.stdout and 'ok_pos' not in result.stdout:
+                    log.debug(f"Window matched by name only (position changed?)")
                 return True
 
             # Fallback: just bring the process to front (better than nothing)
-            log.warning(f"Window name match failed for '{name}', using frontmost fallback")
+            log.warning(f"Window match failed for '{name}', using frontmost fallback")
             time.sleep(0.05)
+            self._last_activated_window = wid
             return True  # Process is frontmost at least
         except Exception as e:
             log.debug(f"Window activation failed: {e}")
@@ -1982,7 +2125,19 @@ class MultiTableRunner:
             return True  # Can't verify, proceed anyway
 
     def _click_action(self, action, session: TableSession, state, decision_label: str, high_pressure: bool = False):
-        """Click an action button using screen coordinates from GameState."""
+        """Click an action button using screen coordinates from GameState.
+
+        Uses _click_lock to serialize window activation + clicking across
+        parallel table-processing threads (only one mouse cursor).
+        """
+        import pyautogui
+        import time as _time
+
+        with self._click_lock:
+            self._click_action_inner(action, session, state, decision_label, high_pressure)
+
+    def _click_action_inner(self, action, session: TableSession, state, decision_label: str, high_pressure: bool = False):
+        """Inner click logic, called under _click_lock."""
         import pyautogui
         import time as _time
         w = session.window
@@ -2020,7 +2175,8 @@ class MultiTableRunner:
             cards_key = ','.join(sorted(state.my_cards)) if state.my_cards else ''
             board_count = len(state.board_cards) if state.board_cards else 0
             pot_key = round(state.pot, 1) if state.pot else 0
-            session._last_acted_key = f"{cards_key}|{board_count}|{pot_key}"
+            actions_key = ','.join(sorted(a.action_type for a in state.available_actions)) if state.available_actions else ''
+            session._last_acted_key = f"{cards_key}|{board_count}|{pot_key}|{actions_key}"
             self.stats['hands_played'] += 1
             action_key = action.action_type
             if action_key in self.stats['decisions']:
@@ -2082,18 +2238,22 @@ class MultiTableRunner:
 
             shortcut_used = False
             # Decision mapping to GGSystem standard shortcuts
-            # (x_offset, label_match)
-            if 'half pot' in decision_label.lower():
+            # ALWAYS use shortcuts when possible — typing is slow and error-prone
+            dl = decision_label.lower()
+            if 'half pot' in dl or 'bet2' in dl or 'bet 2' in dl:
                 self._reliable_click(ref_x - 120, ref_y - 45, 'shortcut_50%')
                 shortcut_used = True
-            elif 'bet pot' in decision_label.lower() or '100%' in decision_label.lower():
+            elif 'bet pot' in dl or '100%' in dl or 'bet4' in dl or 'bet 4' in dl:
                 self._reliable_click(ref_x - 35, ref_y - 45, 'shortcut_100%')
                 shortcut_used = True
-            elif 'bet 33%' in decision_label.lower():
+            elif 'bet 33%' in dl or 'bet1' in dl or 'bet 1' in dl:
                 self._reliable_click(ref_x - 170, ref_y - 45, 'shortcut_33%')
                 shortcut_used = True
-            elif 'bet 75%' in decision_label.lower():
+            elif 'bet 75%' in dl or 'bet3' in dl or 'bet 3' in dl:
                 self._reliable_click(ref_x - 80, ref_y - 45, 'shortcut_75%')
+                shortcut_used = True
+            elif 'allin' in dl or 'all_in' in dl or 'all in' in dl:
+                self._reliable_click(ref_x - 35, ref_y - 45, 'shortcut_100%')
                 shortcut_used = True
 
             if shortcut_used:
@@ -2142,7 +2302,7 @@ class MultiTableRunner:
             _time.sleep(0.2)
             
             # --- VERIFIED TYPING LOOP ---
-            max_typing_retries = 3
+            max_typing_retries = 1  # Reduced from 3 — each retry costs 2-3s, causing timeouts
             typing_success = False
             
             for t_attempt in range(max_typing_retries):
@@ -2243,16 +2403,17 @@ class MultiTableRunner:
             self._reliable_click(action.screen_x_pt + 2, action.screen_y_pt + 1, action.action_type)
         
         log.info(f"EXECUTION: Clicked {action.action_type} for decision {decision_label}")
-        
-        # --- NEW: FAST Verification (Only for bets) ---
-        if action.action_type in ('raise', 'bet', 'all_in'):
-            # Wait briefly for UI to potentially change
-            _time.sleep(0.3)
-            # FAST check: is there still red in the action area?
-            # If so, the click might have been swallowed.
+
+        # --- Post-click verification (Phase 4A) ---
+        # For ALL actions, check if the button is still visible after clicking.
+        # If it is, the click didn't register — retry once.
+        _time.sleep(0.15)
+        if self._verify_button_color(action.screen_x_pt, action.screen_y_pt):
+            log.warning(f"Click may not have registered — {action.action_type} button still visible. Retrying.")
+            self._reliable_click(action.screen_x_pt - 3, action.screen_y_pt - 1, action.action_type)
+            _time.sleep(0.15)
             if self._verify_button_color(action.screen_x_pt, action.screen_y_pt):
-                log.warning(f"ACTION MIGHT HAVE FAILED: {action.action_type} button still visible. Re-clicking.")
-                self._reliable_click(action.screen_x_pt - 5, action.screen_y_pt - 2, action.action_type)
+                log.error(f"CLICK FAILED TWICE: {action.action_type} at ({action.screen_x_pt},{action.screen_y_pt})")
         
         # Handle confirmation dialog
         if action.action_type in ('raise', 'bet'):
@@ -2264,7 +2425,8 @@ class MultiTableRunner:
         cards_key = ','.join(sorted(state.my_cards)) if state.my_cards else ''
         board_count = len(state.board_cards) if state.board_cards else 0
         pot_key = round(state.pot, 1) if state.pot else 0
-        session._last_acted_key = f"{cards_key}|{board_count}|{pot_key}"
+        actions_key = ','.join(sorted(a.action_type for a in state.available_actions)) if state.available_actions else ''
+        session._last_acted_key = f"{cards_key}|{board_count}|{pot_key}|{actions_key}"
 
         self.stats['hands_played'] += 1
         action_key = action.action_type
@@ -3298,6 +3460,291 @@ class MultiTableRunner:
         if len(set(ranks)) < len(ranks): wetness -= 0.15
         return max(0.0, min(1.0, wetness))
 
+    def _save_hand_snapshot(self, session, state, decision_label, equity, abs_equity,
+                            decision_obj=None):
+        """Save an annotated screenshot + JSON sidecar for every decision.
+
+        Draws EVERYTHING OCR read onto the screenshot so you can visually
+        cross-reference detection vs reality:
+        - Hero cards, board cards
+        - All player stacks (in BB) at their seat positions
+        - Pot size, call amount, min raise
+        - Blinds, hero BB stack
+        - Equity, EV, decision
+        - Position, street, dealer button seat
+        - Detected button locations
+        - Opponents in hand count
+        """
+        import json as _json
+        from PIL import Image
+        snap_dir = os.path.join('data', 'learning', 'hand_snapshots')
+        os.makedirs(snap_dir, exist_ok=True)
+
+        # Limit folder size: keep at most 500 snapshots (delete oldest)
+        try:
+            existing = sorted(f for f in os.listdir(snap_dir) if f.endswith('.png'))
+            if len(existing) > 500:
+                for old in existing[:len(existing) - 500]:
+                    try:
+                        os.remove(os.path.join(snap_dir, old))
+                        json_old = old.replace('.png', '.json')
+                        try:
+                            os.remove(os.path.join(snap_dir, json_old))
+                        except FileNotFoundError:
+                            pass
+                    except OSError:
+                        pass
+        except OSError:
+            pass
+
+        # Build filename
+        ts = datetime.datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+        cards_str = '_'.join(state.my_cards) if state.my_cards else 'XX_XX'
+        dec_str = str(decision_label).split('.')[-1] if decision_label else 'none'
+        base_name = f"{ts}_{cards_str}_{dec_str}"
+
+        # Capture the table screenshot
+        screenshot = self.get_table_screenshot(session.window)
+        img = np.array(screenshot).copy()
+        h_img, w_img = img.shape[:2]
+
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        white = (255, 255, 255)
+        green = (0, 255, 0)
+        yellow = (0, 255, 255)
+        orange = (0, 165, 255)
+        red = (0, 0, 255)
+        cyan = (255, 255, 0)
+        gray = (180, 180, 180)
+
+        # --- Semi-transparent info panel at top ---
+        panel_h = 170
+        overlay = img.copy()
+        cv2.rectangle(overlay, (0, 0), (w_img, panel_h), (0, 0, 0), -1)
+        cv2.addWeighted(overlay, 0.65, img, 0.35, 0, img)
+
+        y = 20  # current text y position
+        line_h = 22  # line height
+
+        # Row 1: Hero cards + Board
+        cards_text = ' '.join(state.my_cards) if state.my_cards else '?? ??'
+        board_text = ' '.join(state.board_cards) if state.board_cards else '--'
+        cv2.putText(img, f"HERO: {cards_text}", (10, y), font, 0.65, green, 2)
+        cv2.putText(img, f"BOARD: {board_text}", (250, y), font, 0.65, yellow, 2)
+        y += line_h
+
+        # Row 2: Pot, Call, Min Raise
+        pot = state.pot or 0
+        call_amt = state.call_amount or 0
+        min_raise = getattr(state, 'min_raise_amount', 0) or 0
+        cv2.putText(img, f"Pot: {pot:.1f} BB", (10, y), font, 0.6, white, 2)
+        cv2.putText(img, f"Call: {call_amt:.1f} BB", (180, y), font, 0.6,
+                    red if call_amt > 0 else green, 2)
+        if min_raise > 0:
+            cv2.putText(img, f"MinRaise: {min_raise:.1f} BB", (350, y), font, 0.6, orange, 2)
+        y += line_h
+
+        # Row 3: Hero stack, Blinds
+        hero_stack = getattr(state, 'hero_stack', 0) or 0
+        sb = getattr(state, 'small_blind', 0) or 0
+        bb = getattr(state, 'big_blind', 0) or 0
+        estimated = getattr(state, 'hero_stack_is_estimated', False)
+        stack_flag = ' (est!)' if estimated else ''
+        cv2.putText(img, f"Hero Stack: {hero_stack:.1f} BB{stack_flag}", (10, y), font, 0.6, white, 2)
+        if bb > 0:
+            cv2.putText(img, f"Blinds: {sb}/{bb}", (350, y), font, 0.6, gray, 2)
+        y += line_h
+
+        # Row 4: Equity, EV, Decision
+        ev = getattr(decision_obj, 'decision_ev', 0) if decision_obj else 0
+        ev_str = f"+{ev:.2f}" if ev > 0 else f"{ev:.2f}"
+        dec_color = green if 'raise' in dec_str.lower() or 'bet' in dec_str.lower() else \
+                    yellow if 'call' in dec_str.lower() or 'check' in dec_str.lower() else red
+        cv2.putText(img, f"Eq: {equity:.1%}  AbsEq: {abs_equity:.1%}", (10, y), font, 0.6, cyan, 2)
+        cv2.putText(img, f"EV: {ev_str} BB", (350, y), font, 0.6,
+                    green if ev > 0 else red, 2)
+        y += line_h
+
+        # Row 5: Position, Street, Dealer, Opponents, Decision
+        pos = getattr(state, 'position', '?')
+        stage = getattr(state, 'game_stage', '?')
+        dealer = getattr(state, 'dealer_seat', '?')
+        opps = getattr(state, 'other_active_players', '?')
+        opps_in = getattr(state, 'opponents_in_hand', -1)
+        opps_str = f"Opps: {opps}"
+        if opps_in >= 0:
+            opps_str += f" (in hand: {opps_in})"
+        cv2.putText(img, f"Pos: {pos}  Street: {stage}  Dealer: Seat {dealer}",
+                    (10, y), font, 0.55, gray, 1)
+        cv2.putText(img, opps_str, (450, y), font, 0.55, gray, 1)
+        y += line_h
+
+        # Row 6: Call/Bet limits from strategy
+        if decision_obj:
+            cl = getattr(decision_obj, 'finalCallLimit', 0)
+            bl = getattr(decision_obj, 'finalBetLimit', 0)
+            cv2.putText(img, f"CallLimit: {cl:.1%}  BetLimit: {bl:.1%}", (10, y),
+                        font, 0.5, gray, 1)
+
+        # Row 7: DECISION in large text
+        cv2.putText(img, f"=> {dec_str.upper()}", (w_img - 250, 35), font, 0.9, dec_color, 3)
+
+        # --- Player stacks around the table ---
+        # 6-max seat layout (approximate % positions on table image)
+        # Seat 0 = hero (bottom center), seats go clockwise
+        seat_positions = {
+            0: (0.50, 0.88),  # Hero - bottom center
+            1: (0.15, 0.70),  # Left bottom
+            2: (0.10, 0.35),  # Left top
+            3: (0.40, 0.22),  # Top left
+            4: (0.70, 0.22),  # Top right  (was 0.60)
+            5: (0.88, 0.35),  # Right top
+        }
+        # Additional position for 6th opponent if present
+        # seat 6 wraps or seat 5 might be right-bottom
+        # Adjust if 3-max: only seats 0, 3, (and maybe 1)
+
+        players = getattr(state, 'players', []) or []
+        for p in players:
+            seat = getattr(p, 'seat', -1)
+            stack = getattr(p, 'stack', 0) or 0
+            bet = getattr(p, 'current_bet', 0) or 0
+            is_hero = getattr(p, 'is_hero', False)
+            is_active = getattr(p, 'is_active', True)
+            name = getattr(p, 'name', '')
+
+            if seat in seat_positions:
+                sx, sy = seat_positions[seat]
+                px = int(sx * w_img)
+                py = int(sy * h_img)
+
+                # Background box
+                box_w, box_h = 140, 45
+                bx1 = max(0, px - box_w // 2)
+                by1 = max(0, py - 5)
+                bx2 = min(w_img, bx1 + box_w)
+                by2 = min(h_img, by1 + box_h)
+                overlay2 = img.copy()
+                border_color = green if is_hero else (cyan if is_active else (100, 100, 100))
+                cv2.rectangle(overlay2, (bx1, by1), (bx2, by2), (0, 0, 0), -1)
+                cv2.addWeighted(overlay2, 0.6, img, 0.4, 0, img)
+                cv2.rectangle(img, (bx1, by1), (bx2, by2), border_color, 2)
+
+                # Stack text
+                label = "HERO" if is_hero else (name[:8] if name else f"S{seat}")
+                cv2.putText(img, f"{label}: {stack:.1f}", (bx1 + 4, by1 + 18),
+                            font, 0.45, white, 1)
+                # Current bet
+                if bet > 0:
+                    cv2.putText(img, f"Bet: {bet:.1f}", (bx1 + 4, by1 + 36),
+                                font, 0.4, orange, 1)
+                elif is_hero:
+                    cv2.putText(img, f"({stack:.0f} BB)", (bx1 + 4, by1 + 36),
+                                font, 0.4, gray, 1)
+
+        # --- Draw detected button locations ---
+        if state.available_actions:
+            for act in state.available_actions:
+                ax = getattr(act, 'rel_x', None)
+                ay = getattr(act, 'rel_y', None)
+                atype = getattr(act, 'action_type', '?')
+                amt = getattr(act, 'amount', None)
+                conf = getattr(act, 'confidence', 0)
+                if ax is not None and ay is not None:
+                    bpx = int(ax * w_img)
+                    bpy = int(ay * h_img)
+                    btn_color = green if 'call' in atype or 'check' in atype else \
+                                orange if 'raise' in atype or 'bet' in atype else \
+                                red if 'fold' in atype else gray
+                    cv2.circle(img, (bpx, bpy), 10, btn_color, -1)
+                    cv2.circle(img, (bpx, bpy), 10, white, 1)
+                    amt_str = f" {amt:.1f}" if amt else ''
+                    cv2.putText(img, f"{atype}{amt_str} ({conf:.0%})",
+                                (bpx + 14, bpy + 5), font, 0.45, btn_color, 1)
+
+        # Save annotated screenshot
+        annotated = Image.fromarray(img)
+        annotated.save(os.path.join(snap_dir, f"{base_name}.png"), optimize=True)
+
+        # --- Save JSON sidecar with EVERYTHING ---
+        sidecar = {
+            'ts': datetime.datetime.utcnow().isoformat(),
+            'window': state.window_name if hasattr(state, 'window_name') else session.window.name,
+            # Cards
+            'hero_cards': state.my_cards,
+            'board_cards': state.board_cards,
+            'cards_face_down': getattr(state, 'cards_face_down', False),
+            # Street & Position
+            'street': stage,
+            'position': pos,
+            'dealer_seat': dealer,
+            'opponents_active': opps,
+            'opponents_in_hand': opps_in,
+            # Money (all in BB)
+            'pot': round(pot, 2),
+            'call_amount': round(call_amt, 2),
+            'min_raise': round(min_raise, 2),
+            'hero_stack': round(hero_stack, 2),
+            'hero_stack_estimated': estimated,
+            'small_blind': sb,
+            'big_blind': bb,
+            # All players
+            'players': [],
+            # Buttons detected
+            'buttons': [],
+            # Strategy
+            'equity': round(equity, 4),
+            'abs_equity': round(abs_equity, 4),
+            'decision': str(decision_label),
+        }
+
+        # All player details
+        for p in players:
+            sidecar['players'].append({
+                'seat': getattr(p, 'seat', -1),
+                'name': getattr(p, 'name', ''),
+                'stack': round(getattr(p, 'stack', 0) or 0, 2),
+                'bet': round(getattr(p, 'current_bet', 0) or 0, 2),
+                'is_hero': getattr(p, 'is_hero', False),
+                'is_active': getattr(p, 'is_active', True),
+            })
+
+        # All button details
+        for act in (state.available_actions or []):
+            sidecar['buttons'].append({
+                'type': getattr(act, 'action_type', '?'),
+                'amount': round(getattr(act, 'amount', 0) or 0, 2),
+                'rel_x': round(getattr(act, 'rel_x', 0) or 0, 4),
+                'rel_y': round(getattr(act, 'rel_y', 0) or 0, 4),
+                'confidence': round(getattr(act, 'confidence', 0) or 0, 3),
+            })
+
+        # Decision details
+        if decision_obj:
+            sidecar['ev'] = round(getattr(decision_obj, 'decision_ev', 0), 3)
+            sidecar['call_limit'] = round(getattr(decision_obj, 'finalCallLimit', 0), 3)
+            sidecar['bet_limit'] = round(getattr(decision_obj, 'finalBetLimit', 0), 3)
+            sidecar['outs'] = getattr(decision_obj, 'outs', 0)
+            blockers = getattr(decision_obj, 'blockers_info', {})
+            if blockers:
+                sidecar['blocker_score'] = round(blockers.get('blocker_score', 0), 2)
+            opp_range = getattr(decision_obj, 'opponent_range_estimate', {})
+            if opp_range:
+                sidecar['opp_likely'] = opp_range.get('likely_hands', [])[:3]
+                sidecar['opp_bluff_pct'] = round(opp_range.get('bluff_probability', 0), 2)
+            opp_prof = getattr(decision_obj, '_opp_profile', None)
+            if opp_prof and opp_prof.get('type', 'unknown') != 'unknown':
+                sidecar['opp_type'] = opp_prof['type']
+
+        # OCR diagnostics
+        sidecar['ocr_latency_ms'] = round(getattr(state, 'ocr_latency_ms', 0), 1)
+        sidecar['ocr_source'] = getattr(state, 'ocr_source', '?')
+
+        with open(os.path.join(snap_dir, f"{base_name}.json"), 'w') as f:
+            _json.dump(sidecar, f, indent=2)
+
+        log.debug(f"Hand snapshot saved: {base_name}")
+
     def _log_hand_locally(self, state, decision_label, equity, abs_equity,
                           decision_obj=None):
         """Append one JSON record per decision to local hand history."""
@@ -3625,6 +4072,9 @@ class MultiTableRunner:
             if not hasattr(t, 'minCall'):
                 t.minCall = getattr(t, 'currentCallValue', 0) or 0
 
+            # Always set _table_name so ICM/tournament detection works
+            t._table_name = getattr(session.window, 'name', '') if session.window else ''
+
             # === MONTE CARLO EQUITY CALCULATION ===
             # Set mycards alias (montecarlo uses mycards, we use my_cards)
             t.mycards = t.my_cards
@@ -3830,8 +4280,32 @@ class MultiTableRunner:
                 'table': session.window.name
             })
 
+            # FALLBACK: check if free, fold otherwise (better than timeout)
+            self._fallback_action(session)
+
             # DON'T CRASH - return False and continue
             return False
+
+    def _fallback_action(self, session: TableSession):
+        """Shared fallback: check if free, fold otherwise.
+
+        Used by both process_table (pipeline 2) and process_table_new_ocr
+        (pipeline 1) when the decision pipeline crashes.
+        """
+        try:
+            t = session._table
+            if t is not None:
+                if t.has_check_button():
+                    log.warning("FALLBACK: Decision crashed, checking (free)")
+                    if session._mouse is None:
+                        session._mouse = MouseMoverTableBased(session.table_dict)
+                    tlc = (session.window.x, session.window.y)
+                    session._mouse.mouse_action("Check", tlc)
+                elif t.has_call_button():
+                    log.warning("FALLBACK: Decision crashed, folding")
+                    self._click_fold(session)
+        except Exception as fallback_err:
+            log.error(f"Fallback action also failed: {fallback_err}")
 
     def _execute_action(self, session: TableSession, action: str, table, action_options: dict = None):
         """
@@ -4057,6 +4531,8 @@ class MultiTableRunner:
         self.start_time = datetime.datetime.utcnow()
         self.actions_count = 0
         self.errors_count = 0
+        self._click_lock = threading.Lock()
+        self._last_activated_window = None
 
         # Remove stale stop file from previous runs
         stop_file = '/tmp/poker_bot_stop'
@@ -4117,21 +4593,22 @@ class MultiTableRunner:
 
                 log.debug(f"Found {len(windows)} poker tables")
 
-                # 2. Update sessions - remove closed, add new
+                # 2. Update sessions - remove closed, add new (thread-safe)
                 try:
-                    closed_ids = set(self.sessions.keys()) - current_window_ids
-                    for wid in closed_ids:
-                        log.info(f"Table closed: {self.sessions[wid].window.name}")
-                        del self.sessions[wid]
+                    with self._session_lock:
+                        closed_ids = set(self.sessions.keys()) - current_window_ids
+                        for wid in closed_ids:
+                            log.info(f"Table closed: {self.sessions[wid].window.name}")
+                            del self.sessions[wid]
 
-                    new_windows_found = False
-                    for window in windows:
-                        if window.window_id not in self.sessions:
-                            new_windows_found = True
-                            self.sessions[window.window_id] = self.create_session(window)
-                        else:
-                            # Update window position (may have moved)
-                            self.sessions[window.window_id].window = window
+                        new_windows_found = False
+                        for window in windows:
+                            if window.window_id not in self.sessions:
+                                new_windows_found = True
+                                self.sessions[window.window_id] = self.create_session(window)
+                            else:
+                                # Update window position (may have moved)
+                                self.sessions[window.window_id].window = window
 
                     # Re-tile all tables when new ones appear or every 60s (Lockdown)
                     now = time.time()
@@ -4184,7 +4661,9 @@ class MultiTableRunner:
                             except Exception as e:
                                 log.error(f"State check failed for {session.window.name}: {e}")
 
-                # 4. Process ALL urgent tables (not just one)
+                # 4. Process ALL urgent tables in PARALLEL
+                # Decision computation (OCR + Monte Carlo) runs concurrently;
+                # the actual click step is serialized via _click_lock.
                 urgent_tables = [s for s in self.sessions.values()
                                 if s.state == TableState.NEED_ACTION]
 
@@ -4192,19 +4671,28 @@ class MultiTableRunner:
                     # Sort by priority (highest first)
                     urgent_tables.sort(key=lambda s: s.priority, reverse=True)
 
-                    for urgent_table in urgent_tables:
-                        try:
-                            # Use new OCR pipeline if available, else old path
-                            if PYTHON_OCR_AVAILABLE or self.rust_ocr is not None:
-                                success = self.process_table_new_ocr(urgent_table)
-                            else:
-                                success = self.process_table(urgent_table)
-                            if success:
-                                self.actions_count += 1
-                        except Exception as e:
-                            log.error(f"Process failed for {urgent_table.window.name}: {e}")
-                            self.errors_count += 1
-                            # DON'T CRASH - try next table
+                    def _process_one(session):
+                        if PYTHON_OCR_AVAILABLE or self.rust_ocr is not None:
+                            return self.process_table_new_ocr(session)
+                        else:
+                            return self.process_table(session)
+
+                    max_workers = min(len(urgent_tables), 4)
+                    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                        futures = {
+                            executor.submit(_process_one, ut): ut
+                            for ut in urgent_tables
+                        }
+                        for future in as_completed(futures):
+                            table = futures[future]
+                            try:
+                                success = future.result()
+                                if success:
+                                    self.actions_count += 1
+                            except Exception as e:
+                                log.error(f"Process failed for {table.window.name}: {e}")
+                                self.errors_count += 1
+                                # DON'T CRASH - try next table
 
                 # 5. Auto-open new tables DISABLED — play only what's already open.
                 #    The lobby navigator steals focus and disrupts the user.
@@ -4229,9 +4717,13 @@ class MultiTableRunner:
                     # Save stats to file
                     self.save_stats()
 
-                # Small delay — fast enough to never miss a hand
-                # (GGSystem gives 15-30s per decision, we poll every ~100ms)
-                time.sleep(0.05)
+                # Adaptive sleep: faster polling when tables need action
+                if any(s.state == TableState.NEED_ACTION for s in self.sessions.values()):
+                    time.sleep(0.01)  # 10ms when action needed
+                elif any(s.state == TableState.WAITING for s in self.sessions.values()):
+                    time.sleep(0.03)  # 30ms when tables active
+                else:
+                    time.sleep(0.10)  # 100ms when idle
 
             except KeyboardInterrupt:
                 log.info("Keyboard interrupt, stopping gracefully...")

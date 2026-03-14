@@ -23,6 +23,15 @@ from .outs_calculator import Outs_Calculator
 
 log = logging.getLogger(__name__)
 
+# ─── Premium hands: tiered for safety checks and GTO fallbacks ────────────────
+# TIER1: NEVER fold preflop under any circumstances (safety override).
+PREMIUM_HANDS_TIER1 = {'AA', 'KK', 'QQ', 'JJ', 'AKS', 'AKO'}
+# TIER2: Don't fold to a single raise, but can fold under extreme ICM pressure
+# (e.g., 4-bet all-in on tournament bubble).
+PREMIUM_HANDS_TIER2 = {'TT', '99', 'AQS', 'AQO', 'AJS', 'KQS'}
+# Combined: used where both tiers apply (cash games, standard open ranges).
+PREMIUM_HANDS = PREMIUM_HANDS_TIER1 | PREMIUM_HANDS_TIER2
+
 # --- Load strategy adjustments from feedback loop ---
 _strategy_adj = None
 
@@ -151,6 +160,9 @@ def _normalize_hand(crd1: str, crd2: str) -> str:
     Input: two strings from MonteCarlo.get_two_short_notation(), e.g. 'AKS', 'KAS'
     Returns the canonical form (higher card first).
     """
+    if not crd1 or not crd2 or len(crd1) < 2 or len(crd2) < 2:
+        log.warning(f"_normalize_hand: invalid cards crd1={crd1!r} crd2={crd2!r}")
+        return ''
     # Handle pair
     if len(crd1) >= 2 and crd1[0] == crd1[1]:
         return crd1[0:2]
@@ -182,16 +194,18 @@ def gto_preflop_decision(crd1: str, crd2: str, position: str,
     raiser_position: position of the raiser (UTG/MP/CO/BTN/SB/BB) for 3-bet range lookup.
     """
     hand = _normalize_hand(crd1, crd2)
+    if not hand:
+        log.warning(f"Hand normalization failed for {crd1!r}/{crd2!r}, defaulting to fold")
+        return 'fold'
     pos = position.upper() if position else 'UNKNOWN'
-    
+
     log.info(f"GTO ANALYSIS: hand={hand} pos={pos} raiser={has_raiser} "
              f"call={call_amount:.1f} stack={hero_stack:.1f} rpos={raiser_position}")
 
     # ─── PREMIUM SHIELD ──────────────────────────────────────────────────────
-    # Guaranteed never to fold these hands preflop to a single raise. 
+    # Guaranteed never to fold these hands preflop to a single raise.
     # If not in a 3-bet range, always call.
-    PREMIUMS = {'AA', 'KK', 'QQ', 'JJ', 'TT', '99', 'AKS', 'AKO', 'AQS', 'AQO', 'AJS', 'KQS'}
-    is_premium = hand in PREMIUMS
+    is_premium = hand in PREMIUM_HANDS
 
     # BB with check option (unraised pot / limped pot)
     if has_check and pos == 'BB':
@@ -250,22 +264,24 @@ def gto_preflop_decision(crd1: str, crd2: str, position: str,
                 # Typical raise is 2-2.5BB. If stack is 100BB, call_to_stack is 0.02.
                 # If stack is 25BB (Spin), call_to_stack is 0.08.
                 
-                # Convert call_amount to relative BB size
-                raise_size_bb = call_amount / 1.0 # Approximate
-                
+                # Determine which premium set to use: in tournaments under
+                # high pressure, only TIER1 is exempt from tightening.
+                _is_tourney_bb = False  # Standalone function, no table context
+                _premium_gate = PREMIUM_HANDS_TIER1 if _is_tourney_bb else PREMIUM_HANDS
+
                 if call_to_stack > 0.45 and hand not in GTO_3BET.get('vs_BTN', set()):
                     log.debug(f"BB Defense: folding {hand} vs massive {call_to_stack:.0%} stack raise")
                     return 'fold'
-                
+
                 # Tiered defense vs smaller raises
                 if call_to_stack > 0.15: # Large raise (>4x in Spin, >15x in Cash)
                     # Tighten to only top 50% of defend range + premiums
-                    if random.random() < 0.50 and hand not in PREMIUMS:
+                    if random.random() < 0.50 and hand not in _premium_gate:
                         log.debug(f"BB Defense: tightening vs large raise ({call_to_stack:.2f})")
                         return 'fold'
                 elif call_to_stack > 0.10: # Medium raise (3x-4x in Spin)
                     # Tighten ~30%
-                    if random.random() < 0.30 and hand not in PREMIUMS:
+                    if random.random() < 0.30 and hand not in _premium_gate:
                         log.debug(f"BB Defense: tightening vs medium raise ({call_to_stack:.2f})")
                         return 'fold'
 
@@ -796,9 +812,8 @@ class Decision(DecisionBase):
 
             # SAFETY: equity floors prevent misread cards from causing raises
             # PREMIUM EXEMPTION: Never fold premium hands due to safety floors
-            PREMIUMS = {'AA', 'KK', 'QQ', 'JJ', 'AKS', 'AKO', 'AQS'}
             hand_norm = _normalize_hand(crd1, crd2)
-            is_premium_hand = hand_norm in PREMIUMS
+            is_premium_hand = hand_norm in PREMIUM_HANDS
 
             if self.decision in (DecisionTypes.bet3, DecisionTypes.bet4):
                 if t.equity < 0.22 and not is_premium_hand:
@@ -948,9 +963,8 @@ class Decision(DecisionBase):
                          f'raiser={has_raiser}, call={call_amt})')
 
             # PREMIUM EXEMPTION: Never fold premium hands due to safety floors or stack gates
-            PREMIUMS = {'AA', 'KK', 'QQ', 'JJ', 'TT', 'AKS', 'AKO', 'AQS', 'AJS', 'KQS'}
             hand_norm = _normalize_hand(crd1, crd2)
-            is_premium_hand = hand_norm in PREMIUMS
+            is_premium_hand = hand_norm in PREMIUM_HANDS
 
             if gto_action == 'raise':
                 # Use bet3 for opens/3-bets, bet4 for 4-bets
@@ -1006,6 +1020,18 @@ class Decision(DecisionBase):
                 log.info(f"EV SAFETY: Raise overridden to FOLD. Equity {t.equity:.1%} is too low for non-premium.")
                 self.decision = DecisionTypes.fold
 
+        # --- MISREAD SAFETY NET ---
+        # If we're about to fold preflop but equity is suspiciously high (>0.55),
+        # the hand is likely misread (e.g. JJ read as 3J). A genuine trash hand
+        # like 3J offsuit gets ~0.38 equity, but JJ gets ~0.77. If equity says
+        # the hand is strong, override fold → call to avoid folding hidden premiums.
+        if self.decision == DecisionTypes.fold and t.gameStage == 'PreFlop':
+            if hasattr(t, 'equity') and t.equity > 0.55:
+                log.warning(f"MISREAD SAFETY NET: Folding preflop but equity={t.equity:.3f} > 0.55 "
+                            f"— hand {crd1}/{crd2} is likely misread (possible hidden pair). "
+                            f"Overriding FOLD → CALL")
+                self.decision = DecisionTypes.call
+
             t.currentBluff = 0
 
     def _get_opp(self):
@@ -1022,9 +1048,10 @@ class Decision(DecisionBase):
         0.0 for cash games, 0.02-0.10 for tournaments.
         """
         # Only applies to tournaments (detected by table name)
-        table_name = getattr(t, '_table_name', '')
+        table_name = getattr(t, '_table_name', '') or ''
         if not table_name:
-            return 0.0
+            # Fallback: check window name stored on t
+            table_name = getattr(t, '_window_name', '') or ''
 
         is_tournament = any(kw in table_name for kw in ('Spin', 'Gold', 'Tournament', 'SNG', 'MTT'))
         if not is_tournament:
@@ -1063,6 +1090,18 @@ class Decision(DecisionBase):
         return pressure
 
     def calling(self, t, p, h):
+        # --- CHECK-RAISE EXECUTION (Phase 3B) ---
+        # If we planned a check-raise on the previous action (we checked strong),
+        # now that the opponent has bet into us, raise instead of just calling.
+        if getattr(self, '_planned_check_raise', False):
+            self._planned_check_raise = False
+            if t.equity >= 0.50:  # Still strong enough to check-raise
+                self.decision = DecisionTypes.bet4
+                log.info(f"CHECK-RAISE EXECUTED: eq={t.equity:.3f}, raising for value")
+                return
+            else:
+                log.info(f"CHECK-RAISE ABORTED: equity dropped to {t.equity:.3f}, proceeding normally")
+
         # Honour alwaysCallEquity / low-stack overrides set in make_decision()
         if self.finalCallLimit > 0 and t.minCall <= self.finalCallLimit:
             self.decision = DecisionTypes.call
@@ -1216,35 +1255,51 @@ class Decision(DecisionBase):
 
         # --- GG POKER META: Stack Dominance & Bounty Logic ---
         stack_adj = 0.0
-        # If we cover the opponent (we have more BB), we 'win flips more' / bully
-        # Determine opponent stack from minCall + their remaining funds
-        opp_stack = t.minCall # Default to what they bet
-        if hasattr(t, 'other_players') and t.other_players:
-            # Try to find the raiser's stack
-            for op in t.other_players:
-                if op.get('status') == 1 and op.get('pot', 0) >= t.minCall * 0.8:
-                    opp_stack = op.get('pot', 0) + op.get('funds', 0)
-                    break
-        
-        if self.hero_stack_bb > opp_stack * 1.2:
-            # We dominate them: -5% equity required (bully/win flips)
-            stack_adj = -0.05
-            log.info(f"STACK DOMINANCE: Hero ({self.hero_stack_bb:.0f}) > Opp ({opp_stack:.0f}) -> -5% req equity")
-        elif self.hero_stack_bb < opp_stack * 0.8:
-            # They dominate us: +3% equity required (survival)
-            stack_adj = 0.03
-            log.info(f"STACK VULNERABILITY: Hero ({self.hero_stack_bb:.0f}) < Opp ({opp_stack:.0f}) -> +3% req equity")
-
-        # Bounty Logic: If we can KO them, call wider
         bounty_adj = 0.0
-        is_tourney = any(kw in getattr(t, '_table_name', '') for kw in ('Spin', 'Gold', 'Tournament', 'SNG', 'MTT'))
-        if is_tourney and t.allInCallButton and self.hero_stack_bb > opp_stack:
-            # They are all-in and we cover them: Bounty value!
-            # Lower requirement by 5-10% depending on how much we cover
-            bounty_adj = -0.07 if self.hero_stack_bb > opp_stack * 1.5 else -0.04
-            log.info(f"BOUNTY BOOST: Potential KO opportunity -> {bounty_adj:+.1%} req equity")
+        # Determine opponent's TOTAL stack (funds + current pot), not just their bet.
+        # Using t.minCall (just the bet amount) would always be << hero's total stack,
+        # causing dominance/bounty to fire incorrectly on almost every hand.
+        opp_stack = None  # Unknown until we find real data
+        if hasattr(t, 'other_players') and t.other_players:
+            for op in t.other_players:
+                if op.get('status') == 1:
+                    funds = op.get('funds', 0)
+                    if funds > 0:
+                        opp_stack = funds + op.get('pot', 0)
+                        break
 
-        required_equity = max(pot_odds - implied_adj - blocker_adj + opp_call_adj - range_adj + spot_adj + sizing_adj + icm_adj + bayesian_adj + multiway_adj + stack_adj + bounty_adj, 0.05)
+        # Only apply dominance/bounty if we have real opponent stack data
+        if opp_stack is not None and opp_stack > 0:
+            if self.hero_stack_bb > opp_stack * 1.2:
+                # We dominate them: -5% equity required (bully/win flips)
+                stack_adj = -0.05
+                log.info(f"STACK DOMINANCE: Hero ({self.hero_stack_bb:.0f}) > Opp ({opp_stack:.0f}) -> -5% req equity")
+            elif self.hero_stack_bb < opp_stack * 0.8:
+                # They dominate us: +3% equity required (survival)
+                stack_adj = 0.03
+                log.info(f"STACK VULNERABILITY: Hero ({self.hero_stack_bb:.0f}) < Opp ({opp_stack:.0f}) -> +3% req equity")
+
+            # Bounty Logic: If we can KO them, call wider
+            is_tourney = any(kw in getattr(t, '_table_name', '') for kw in ('Spin', 'Gold', 'Tournament', 'SNG', 'MTT'))
+            if is_tourney and t.allInCallButton and self.hero_stack_bb > opp_stack:
+                # They are all-in and we cover them: Bounty value!
+                # Lower requirement by 5-10% depending on how much we cover
+                bounty_adj = -0.07 if self.hero_stack_bb > opp_stack * 1.5 else -0.04
+                log.info(f"BOUNTY BOOST: Potential KO opportunity -> {bounty_adj:+.1%} req equity")
+
+        # Position advantage: in-position (BTN/CO) can call lighter
+        pos_adj = 0.0
+        hero_pos = getattr(t, '_gto_position', None)
+        if hero_pos is not None and t.gameStage != 'PreFlop':
+            # UTG tightest, BTN/CO loosest
+            # 6-max positions mapped by name
+            pos_multipliers = {'UTG': 0.03, 'HJ': 0.02, 'CO': -0.01, 'BTN': -0.03, 'SB': 0.02, 'BB': 0.01}
+            pos_adj = pos_multipliers.get(hero_pos, 0.0)
+            if pos_adj != 0:
+                log.debug(f"Position adj: pos={hero_pos} adj={pos_adj:+.3f}")
+
+        required_equity = max(pot_odds - implied_adj - blocker_adj + opp_call_adj - range_adj + spot_adj + sizing_adj + icm_adj + bayesian_adj + multiway_adj + stack_adj + bounty_adj + pos_adj, 0.05)
+        required_equity = min(required_equity, 0.80)  # Cap: never require > 80% equity to call
 
         # --- Hand strength gate: discount equity when facing bets with weak hands ---
         # Monte Carlo equity is vs RANDOM hands. When opponent bets, their range is
@@ -1282,6 +1337,24 @@ class Decision(DecisionBase):
         # eval7 evaluates each villain combo on the actual board and removes
         # hands too weak to bet, giving accurate equity without bandaid penalties.
 
+        # --- MIXED STRATEGY (Phase 3C) ---
+        # When equity is close to required_equity (within ±3%), use a mixed strategy.
+        # This makes the bot unexploitable at decision boundaries: deterministic
+        # thresholds create sharp exploit points where opponents can adjust.
+        if abs(t.equity - required_equity) < 0.03 and self.spr >= 3.0:
+            # Linear mix: 0% call at -3%, 50% at exact threshold, 100% at +3%
+            call_freq = 0.5 + (t.equity - required_equity) / 0.06
+            call_freq = max(0.0, min(1.0, call_freq))
+            if random.random() < call_freq:
+                self.decision = DecisionTypes.call
+                log.info(f"MIXED CALL: eq={t.equity:.3f} req={required_equity:.3f} "
+                         f"call_freq={call_freq:.0%}")
+            else:
+                self.decision = DecisionTypes.fold
+                log.info(f"MIXED FOLD: eq={t.equity:.3f} req={required_equity:.3f} "
+                         f"call_freq={call_freq:.0%}")
+            return
+
         # SPR commitment: when SPR < 3 and we have decent equity, we're pot-committed
         if self.spr < 3.0 and t.equity >= 0.35:
             self.decision = DecisionTypes.call
@@ -1301,6 +1374,13 @@ class Decision(DecisionBase):
             _opp_tag = f", vs {opp['type']}" if opp else ''
             log.info(f"POT ODDS FOLD: eq={t.equity:.3f} < req={required_equity:.3f} "
                      f"(pot_odds={pot_odds:.3f}, sizing={sizing_adj:+.3f}{_opp_tag})")
+
+        # Pot-odds floor: never fold when equity exceeds mathematical pot odds.
+        # This prevents adjustments from overriding mathematically +EV calls.
+        if self.decision == DecisionTypes.fold and t.equity > pot_odds:
+            self.decision = DecisionTypes.call
+            log.info(f"POT ODDS FLOOR: eq={t.equity:.3f} > pot_odds={pot_odds:.3f} "
+                     f"→ mathematically +EV, overriding fold to call")
 
         # All-in guard — fold low-equity all-in situations
         if t.allInCallButton:
@@ -1332,6 +1412,7 @@ class Decision(DecisionBase):
 
         # flop turn river
         if t.gameStage != GameStages.PreFlop.value:
+            other_players = getattr(t, 'other_active_players', 1)
             stage = t.gameStage.lower()
             wetness = self._board_wetness(t.cardsOnTable)
             pot_bb = float(t.totalPotValue) / t.bigBlind
@@ -1391,6 +1472,19 @@ class Decision(DecisionBase):
                     log.info(f"LOW SPR CHECK/FOLD: spr={self.spr:.1f} "
                              f"hand={hand_info['name'] if hand_info else '?'} eq={t.equity:.3f} — too weak to commit")
 
+            # --- CHECK-RAISE PLANNING (Phase 3B) ---
+            # When OOP (SB/BB) with a strong hand and low SPR, check-raise instead
+            # of donk betting. This traps opponents and builds bigger pots.
+            hero_pos = getattr(t, '_gto_position', 'CO')
+            if (hero_pos in ('BB', 'SB') and t.checkButton
+                    and hand_info and hand_info['strength'] in ('monster', 'very_strong', 'strong')
+                    and self.spr < 6 and random.random() < 0.40):
+                self._planned_check_raise = True
+                self.decision = DecisionTypes.check
+                log.info(f"CHECK-RAISE PLANNED: {hand_info['name']} OOP pos={hero_pos} "
+                         f"SPR={self.spr:.1f} — will raise if opponent bets")
+                return
+
             # --- STRONG HAND VALUE BETTING (never check down flushes/sets!) ---
             if hand_info and hand_info['strength'] in ('monster', 'very_strong'):
                 if t.checkButton:
@@ -1442,6 +1536,41 @@ class Decision(DecisionBase):
                         self.decision = DecisionTypes.bet2
                         log.info(f"THIN VALUE BET: {hand_info['name']} eq={t.equity:.3f} "
                                  f"vs {ptype}")
+                        return
+
+            # --- SEMI-BLUFF DRAWS (Phase 3A): Bet/raise with strong draws ---
+            # With 8+ outs (flush draw / OESD), bet as a semi-bluff ~65% of the time.
+            # This is the #1 missing piece for unexploitable play: currently the bot
+            # only value-bets, so opponents know every bet = strong hand.
+            if t.checkButton and self.outs >= 8 and hand_info and hand_info['strength'] in ('weak', 'marginal'):
+                semi_bluff_freq = 0.65
+                if wetness > 0.6:
+                    semi_bluff_freq = 0.55  # Less bluffing on wet boards (more calls)
+                if self.outs >= 12:
+                    semi_bluff_freq = 0.80  # Combo draw (flush + straight) — almost always bet
+                if random.random() < semi_bluff_freq:
+                    self.decision = DecisionTypes.bet3
+                    log.info(f"SEMI-BLUFF: {self.outs} outs, hand={hand_info['name'] if hand_info else '?'}, "
+                             f"freq={semi_bluff_freq:.0%}")
+                    return
+
+            # --- RIVER BLUFF (Phase 3A): Continue story when draw missed ---
+            # When we bet the turn (have initiative) and missed our draw on the river,
+            # bluff ~30% of the time to remain balanced. Without this, opponents can
+            # safely fold to all our river bets (we'd only bet value hands).
+            if (t.gameStage == GameStages.River.value and t.checkButton
+                    and hand_info and hand_info['strength'] == 'weak'):
+                we_bet_prev = getattr(self, '_we_bet_prev_street', False)
+                if we_bet_prev:
+                    river_bluff_freq = 0.30
+                    # Bluff less in multiway pots
+                    _n_opp = getattr(t, 'other_active_players', 1)
+                    if _n_opp >= 2:
+                        river_bluff_freq = 0.10
+                    if random.random() < river_bluff_freq:
+                        self.decision = DecisionTypes.bet3
+                        log.info(f"RIVER BLUFF: Continuing story from turn bet "
+                                 f"(hand={hand_info['name']}, freq={river_bluff_freq:.0%})")
                         return
 
             # --- Bayesian exploit: bet when villain range is capped/weak ---
@@ -1817,6 +1946,11 @@ class Decision(DecisionBase):
             else:
                 log.debug(f"BLUFF REJECTED: fold_eq={fold_eq:.3f} ev_gain={ev_gain:.3f} "
                           f"eq={t.equity:.3f} min_fold={min_fold_eq:.2f}")
+
+        # Log when no bluff opportunity was found (for frequency tracking)
+        if t.currentBluff == 0:
+            log.debug(f"BLUFF_TRACK: no bluff triggered (stage={t.gameStage}, eq={t.equity:.3f}, "
+                      f"outs={self.outs}, decision={self.decision})")
 
     def check_deception(self, t, p, h):
         self.UseFlopCheckDeception = False

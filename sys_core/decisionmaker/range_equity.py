@@ -17,6 +17,7 @@ STRATEGY ENGINES:
    - Dynamically selects the best range based on position and effective stack.
 """
 import logging
+import random
 from typing import List, Optional, Tuple
 
 log = logging.getLogger('decisionmaker')
@@ -1027,25 +1028,46 @@ def lookup_push_fold(
 
     stack_int = max(3, min(15, int(round(stack_bb))))
 
-    # Find closest defined stack depth
+    # Find closest defined stack depths for interpolation
     defined = sorted(NASH_SHOVE_RANGES.get(pos, {}).keys())
     if not defined:
         return None
 
-    # Use the nearest defined stack (prefer tighter = higher stack if between)
-    best = defined[0]
+    # Find lower and upper bracket stack depths
+    lower = defined[0]
+    upper = defined[-1]
     for d in defined:
         if d <= stack_int:
-            best = d
+            lower = d
         else:
-            # stack_int is between prev and d — use d (tighter) if closer
-            if stack_int - best > d - stack_int:
-                best = d
+            upper = d
             break
+    else:
+        upper = lower  # stack_int >= all defined depths
 
-    shove_set = _shove_range_sets.get((pos, best), set())
-    is_shove = hand_key in shove_set
+    # Check if hand is in range at each bracket
+    in_lower = hand_key in _shove_range_sets.get((pos, lower), set())
+    in_upper = hand_key in _shove_range_sets.get((pos, upper), set())
 
+    if lower == upper or (in_lower == in_upper):
+        # Not a boundary hand — clear shove or fold
+        is_shove = in_lower
+    else:
+        # Boundary hand: in range at one depth but not the other.
+        # Interpolate — more likely to shove at the lower (shorter) stack depth.
+        frac = (stack_bb - lower) / (upper - lower) if upper > lower else 0
+        # At lower depth → shove; at upper depth → fold.
+        # in_lower=True, in_upper=False: shove with prob (1 - frac)
+        # in_lower=False, in_upper=True: shove with prob frac
+        if in_lower:
+            is_shove = random.random() > frac  # More likely to shove at lower depth
+        else:
+            is_shove = random.random() < frac  # More likely to shove at upper depth
+        log.info(f"PUSH/FOLD INTERP: {hand_key} stack={stack_bb:.1f}BB "
+                 f"[{lower}BB={'Y' if in_lower else 'N'}, {upper}BB={'Y' if in_upper else 'N'}] "
+                 f"frac={frac:.2f} → {'shove' if is_shove else 'fold'}")
+
+    shove_set = _shove_range_sets.get((pos, lower), set())
     return {
         'action': 'shove' if is_shove else 'fold',
         'hand': hand_key,

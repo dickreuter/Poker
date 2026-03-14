@@ -316,12 +316,9 @@ class MonteCarlo:
 
         self.use_range_of_range = use_range_of_range
         if player_amount < 2:
-            self.logger.error(f"player_amount={player_amount} < 2, defaulting to 50% equity")
-            self.equity = 0.5
-            self.winnerCardTypeList = Counter()
-            self.runs = 0
-            self.passes = 0
-            return self.equity, self.winnerCardTypeList
+            self.logger.error(f"CRITICAL: player_amount={player_amount} < 2 — "
+                              f"opponent detection likely failed! Defaulting to 2 players")
+            player_amount = 2  # Fix: use 2 players instead of returning 0.5
         if type(opponent_range) == float or type(opponent_range) == int:
             opponent_allowed_cards = self.get_opponent_allowed_cards_list(opponent_range)
             self.logger.info('Preflop reverse tables for ranges for opponent: NO')
@@ -574,11 +571,13 @@ def run_montecarlo_wrapper(p, ui_action_and_signals, config, ui, t, L, preflop_s
                         f"(was {old_range}, type={opp_profile.get('type', '?')}, "
                         f"hands={opp_profile.get('hands', 0)})")
         else:
-            # Multi-way: use average of VPIP and default (opponents vary)
+            # Multi-way: weight VPIP more heavily (70%) since tracked data is more
+            # accurate than static config. This is the biggest EV improvement for
+            # exploiting fish in multi-way pots.
             if isinstance(opponent_range, (int, float)):
-                blended = (float(opponent_range) + float(opp_vpip)) / 2.0
-                logger.debug(f"RANGE BLEND: multi-way, blending config {opponent_range:.2f} "
-                            f"with VPIP {opp_vpip:.2f} -> {blended:.2f}")
+                blended = float(opp_vpip) * 0.7 + float(opponent_range) * 0.3
+                logger.info(f"RANGE BLEND: multi-way, VPIP {opp_vpip:.2f} * 0.7 "
+                            f"+ config {opponent_range:.2f} * 0.3 -> {blended:.2f}")
                 opponent_range = blended
 
     # calculate range equity

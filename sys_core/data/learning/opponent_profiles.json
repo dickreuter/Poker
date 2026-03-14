@@ -1,8 +1,8 @@
 {
  "pool_rush_2nl": {
   "hands_seen": 49,
-  "vpip_count": 138,
-  "pfr_count": 130,
+  "vpip_count": 180,
+  "pfr_count": 172,
   "postflop_bets": 8,
   "postflop_calls": 7,
   "postflop_checks": 0,
@@ -13,34 +13,34 @@
   "fold_to_cbet_count": 0,
   "three_bet_opportunities": 0,
   "three_bet_count": 0,
-  "went_to_showdown": 593,
-  "won_at_showdown": 376,
-  "last_seen": 1773309006.783978,
+  "went_to_showdown": 659,
+  "won_at_showdown": 419,
+  "last_seen": 1773482733.491146,
   "_pos_stats": {
    "BTN": {
-    "hands": 59,
-    "vpip": 59,
-    "pfr": 59
+    "hands": 73,
+    "vpip": 73,
+    "pfr": 73
    },
    "BB": {
-    "hands": 51,
-    "vpip": 51,
-    "pfr": 51
+    "hands": 62,
+    "vpip": 62,
+    "pfr": 62
    },
    "SB": {
-    "hands": 39,
-    "vpip": 39,
-    "pfr": 39
+    "hands": 42,
+    "vpip": 42,
+    "pfr": 42
    },
    "UTG": {
-    "hands": 43,
-    "vpip": 43,
-    "pfr": 43
+    "hands": 55,
+    "vpip": 55,
+    "pfr": 55
    },
    "CO": {
-    "hands": 2,
-    "vpip": 2,
-    "pfr": 2
+    "hands": 3,
+    "vpip": 3,
+    "pfr": 3
    }
   },
   "_recent_vpip": [

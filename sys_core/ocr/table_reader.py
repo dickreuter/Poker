@@ -20,7 +20,7 @@ import numpy as np
 from PIL import Image
 
 from sys_core.ocr.card_reader import read_player_cards
-from sys_core.ocr.game_state import AvailableAction, GameState, PlayerInfo, Street
+from sys_core.ocr.game_state import AvailableAction, GameState, PlayerInfo, ReadConfidence, Street
 
 try:
     import pytesseract
@@ -34,6 +34,14 @@ log = logging.getLogger(__name__)
 # Maps window_id -> {'hash': str, 'cards': List[str]}
 _CARD_CACHE = {}
 _BOARD_CACHE = {}
+# Cache last-known stacks per window to avoid re-OCR on preflop
+_STACK_CACHE: Dict[int, List[PlayerInfo]] = {}
+# Hash of stack regions for pixel-level change detection
+_STACK_HASH_CACHE: Dict[int, int] = {}
+# Hash-based pot cache to avoid re-OCR when pot area unchanged
+_POT_CACHE: Dict[int, Tuple[int, float]] = {}  # window_id -> (hash, pot_value)
+# Per-call OCR cache: cleared at start of each read_table() call
+_OCR_CACHE: Dict[Tuple[int, int, int, int], Tuple[Optional[float], str]] = {}
 
 # ---------------------------------------------------------------------------
 #  Region definitions (percentage of table image)
@@ -65,12 +73,15 @@ BOARD_X_MAX = 0.85
 # Calibrated from live Rush & Cash screenshot pixel scanning (Mar 7 2026).
 # Hero stack is bright cyan (119,204,255); opponents are muted teal (85,135,166).
 SEAT_REGIONS_6MAX = [
-    (0.500, 0.923, 0.14, 0.035),  # Seat 0: Hero (bottom center)
-    (0.068, 0.748, 0.14, 0.035),  # Seat 1: Left-bottom
-    (0.115, 0.362, 0.14, 0.035),  # Seat 2: Left-top
-    (0.500, 0.253, 0.14, 0.035),  # Seat 3: Top center
-    (0.888, 0.362, 0.14, 0.035),  # Seat 4: Right-top
-    (0.915, 0.748, 0.14, 0.035),  # Seat 5: Right-bottom
+    # (x_center, y_center, width, height) as fractions of table image.
+    # Stack text is cyan on dark background, below the player avatar.
+    # Shifted down slightly vs avatar center to avoid level badge overlap.
+    (0.500, 0.930, 0.14, 0.040),  # Seat 0: Hero (bottom center)
+    (0.068, 0.765, 0.14, 0.040),  # Seat 1: Left-bottom
+    (0.115, 0.378, 0.14, 0.040),  # Seat 2: Left-top
+    (0.500, 0.268, 0.14, 0.040),  # Seat 3: Top center
+    (0.888, 0.378, 0.14, 0.040),  # Seat 4: Right-top
+    (0.915, 0.765, 0.14, 0.040),  # Seat 5: Right-bottom
 ]
 
 # Dealer button detection area (within the felt, away from edges)
@@ -108,9 +119,10 @@ BUTTON_HSV = {
 DEAL_ME_IN_HSV = {
     'deal_me_in': {
         # Bright red/salmon "Deal Me In" / "I'm Back" buttons
-        # More lenient S/V (80 instead of 100) to catch various themes
-        'lower': np.array([0, 80, 80]),
-        'upper': np.array([15, 255, 255]),
+        # Tightened S/V minimums: real button is bright (S>120, V>150).
+        # UI decorations (profile borders, red accents) are duller (S=80-120, V=80-140).
+        'lower': np.array([0, 120, 150]),
+        'upper': np.array([12, 255, 255]),
         'label': 'red',
     }
 }
@@ -154,6 +166,10 @@ def read_table(
        to Big Blinds (Spin & Gold / Rush & Cash).
     """
     start = time.time()
+
+    # Clear per-call OCR cache so stale results don't leak across calls
+    global _OCR_CACHE
+    _OCR_CACHE = {}
 
     W, H = table_img.width, table_img.height
     img = np.array(table_img)
@@ -257,18 +273,44 @@ def read_table(
     cards_face_down = len(my_cards) == 0
     t2 = time.time()
 
-    # 3. Pot — only read if it's our turn
+    # 3. Pot — hash-cached, individual OCR when changed
+    pot = 0.0
+    stack_hash_key = 0
     if is_my_turn:
-        pot = _read_pot(img, W, H)
-        # SANITY CAP: BB display mode means pot is in BB.
-        # In a 6-max game, pot can reach ~600 BB (everyone all-in 100 BB).
-        # Values > 600 BB are almost certainly OCR misreads (e.g. reading
-        # opponent profile "$570.75 Total Winnings" as pot).
-        if pot > 600:
-            log.warning(f"POT SANITY CAP: {pot:.1f} BB > 600 — OCR misread, capping at 0")
-            pot = 0.0
-    else:
-        pot = 0.0
+        py1, py2 = int(H * POT_Y_MIN), int(H * POT_Y_MAX)
+        px1, px2 = int(W * POT_X_MIN), int(W * POT_X_MAX)
+        pot_area = img[py1:py2, px1:px2]
+        pot_hash = hash(pot_area[::2, ::2].tobytes())
+        cached_pot = _POT_CACHE.get(window_id)
+        if cached_pot and cached_pot[0] == pot_hash:
+            pot = cached_pot[1]
+            log.debug(f"POT HASH HIT: reusing {pot}")
+        else:
+            pot = _read_pot(img, W, H)
+            if pot > 600:
+                log.warning(f"POT SANITY CAP: {pot:.1f} BB > 600 — using 0")
+                pot = 0.0
+            _POT_CACHE[window_id] = (pot_hash, pot)
+
+        # 3b. Call/raise amounts — OCR only buttons that need amounts
+        for btn_type in ('call', 'raise'):
+            if btn_type in buttons and buttons[btn_type].get('amount') is None:
+                rx, ry, rw, rh = buttons[btn_type]['rect']
+                amount, text = _ocr_button_text(img, rx, ry, rw, rh)
+                if amount is not None:
+                    buttons[btn_type]['amount'] = amount
+                    buttons[btn_type]['text'] = text
+                    for a in available_actions:
+                        if a.action_type == btn_type:
+                            a.amount = amount
+
+        # 3c. Hero stack hash
+        hero_cx, hero_cy, hero_sw, hero_sh = SEAT_REGIONS_6MAX[0]
+        hx1 = max(int((hero_cx - hero_sw / 2) * W), 0)
+        hx2 = min(int((hero_cx + hero_sw / 2) * W), W)
+        hy1 = max(int((hero_cy - hero_sh / 2) * H), 0)
+        hy2 = min(int((hero_cy + hero_sh / 2) * H), H)
+        stack_hash_key = hash(img[hy1:hy2, hx1:hx2][::2, ::2].tobytes())
     t4 = time.time()
 
     # 5. Blinds from window title
@@ -347,10 +389,26 @@ def read_table(
     # 7. Street from board cards
     street = _street_from_board(board_cards)
 
-    # 8. Player stacks — only when it's our turn (expensive: 6 OCR calls)
+    # 8. Player stacks — hero-only on subsequent reads, full read on first sight
     hero_stack_is_estimated = False
     if is_my_turn:
-        players, hero_stack_is_estimated = _read_player_stacks(img, W, H)
+        if window_id in _STACK_HASH_CACHE and _STACK_HASH_CACHE[window_id] == stack_hash_key \
+                and window_id in _STACK_CACHE:
+            players = _STACK_CACHE[window_id]
+            hero_stack_is_estimated = any(p.is_hero and p.stack == 100.0 for p in players)
+            log.debug(f"STACK HASH HIT: reusing {len(players)} stacks")
+        elif window_id in _STACK_CACHE:
+            # Hash changed — read hero only, reuse cached opponents
+            hero_players, hero_stack_is_estimated = _read_player_stacks(img, W, H, hero_only=True)
+            cached_opps = [p for p in _STACK_CACHE[window_id] if not p.is_hero]
+            players = hero_players + cached_opps
+            _STACK_CACHE[window_id] = players
+            _STACK_HASH_CACHE[window_id] = stack_hash_key
+        else:
+            # First read — read all stacks
+            players, hero_stack_is_estimated = _read_player_stacks(img, W, H)
+            _STACK_CACHE[window_id] = players
+            _STACK_HASH_CACHE[window_id] = stack_hash_key
     else:
         # Default hero stack so DecisionMaker doesn't think we're broke
         players = [PlayerInfo(seat=0, name="", stack=100.0, current_bet=0.0,
@@ -403,10 +461,8 @@ def read_table(
             except ValueError:
                 pass
 
-    # 8d. Double-read confirmation + max_expected validation for call/raise.
-    # The 288 BB misread would have been caught if we re-OCR'd with different
-    # preprocessing.  Now that hero_stack is known, reject absurd values and
-    # double-check large amounts with an independent OCR pass.
+    # 8d. Cross-validation for call/raise amounts (NO re-OCR — use logic only).
+    # Reject amounts that exceed hero stack or are unreasonably large.
     max_expected_amt = hero_stk_val if hero_stk_val > 0 and not hero_stack_is_estimated else 200.0
     for btn_type in ('call', 'raise'):
         if btn_type not in buttons:
@@ -416,29 +472,11 @@ def read_table(
         if amount is None or amount <= 0:
             continue
 
-        # max_expected: reject amounts > hero stack (or 200 BB fallback)
+        # Reject amounts > hero stack (or 200 BB fallback)
         if amount > max_expected_amt:
             log.warning(f"MAX_EXPECTED: {btn_type} amount {amount} > max {max_expected_amt}, "
-                        f"attempting re-OCR")
-            rx, ry, rw, rh = btn_info['rect']
-            alt_amount = _reocr_button_region(img, rx, ry, rw, rh)
-            if alt_amount is not None and alt_amount <= max_expected_amt:
-                log.warning(f"MAX_EXPECTED: re-OCR {btn_type} got {alt_amount}, using it")
-                amount = alt_amount
-            else:
-                log.warning(f"MAX_EXPECTED: re-OCR {btn_type} also bad ({alt_amount}), "
-                            f"rejecting — using None")
-                amount = None
-
-        # Double-read confirmation: for any amount > 10 BB, re-OCR and compare.
-        # A 20% divergence means one read is wrong — use the lower (safer) value.
-        if amount is not None and amount > 10:
-            rx, ry, rw, rh = btn_info['rect']
-            alt_amount = _reocr_button_region(img, rx, ry, rw, rh)
-            if alt_amount is not None and abs(amount - alt_amount) / max(amount, 1) > 0.20:
-                log.warning(f"DOUBLE-READ MISMATCH {btn_type}: {amount} vs {alt_amount}, "
-                            f"using lower")
-                amount = min(amount, alt_amount)
+                        f"rejecting")
+            amount = None
 
         # Write back corrected amount
         if btn_type == 'call':
@@ -446,7 +484,6 @@ def read_table(
         else:
             min_raise_amount = amount if amount is not None else min_raise_amount
         btn_info['amount'] = amount
-        # Also update the AvailableAction
         for a in available_actions:
             if a.action_type == btn_type:
                 a.amount = amount
@@ -454,8 +491,13 @@ def read_table(
     # 9. Dealer button and position
     dealer_seat, _, _ = _detect_dealer_button(img, W, H)
     hero_seat = 0  # Always seat 0 (bottom center)
-    num_active = max(len(players), 2)
-    position = _hero_position(hero_seat, dealer_seat, num_active)
+    # Rush & Cash / Spin & Gold are ALWAYS 6-max tables — use 6 seats for
+    # position calculation even if stack OCR only detected 3-5 players.
+    # Using len(players) caused UTG to appear 27% of hands (should be 17%)
+    # because unreadable stacks reduced num_active to 4, compressing the
+    # position names array and mapping CO/MP → UTG.
+    num_seats = 6  # Hardcode for 6-max
+    position = _hero_position(hero_seat, dealer_seat, num_seats)
 
     # 10. Count opponents actually in the hand (card back detection)
     #     Only run when it's our turn (postflop needs accurate count for Monte Carlo)
@@ -469,6 +511,53 @@ def read_table(
     log.debug(f"  Timing: buttons={int((t1-t0)*1000)}ms cards+board={int((t2-t1)*1000)}ms "
               f"pot={int((t4-t2)*1000)}ms stacks={int((t5-t4)*1000)}ms "
               f"opp_cards={int((t6-t5)*1000)}ms")
+
+    # --- Compute confidence scores ---
+    # Cards: hash cache hit=1.0, fresh OCR with 2 cards=0.85, cached from prev frame=0.5
+    cached_cards_obj = _CARD_CACHE.get(window_id)
+    _card_hash_val = card_hash if has_any_buttons else None
+    if my_cards and len(my_cards) == 2:
+        if cached_cards_obj and _card_hash_val and cached_cards_obj['hash'] == _card_hash_val:
+            card_conf = 1.0  # Hash cache hit — image identical
+        else:
+            card_conf = 0.85  # Fresh OCR detection
+    elif my_cards and len(my_cards) == 1:
+        card_conf = 0.3  # Partial detection
+    else:
+        card_conf = 0.0  # No cards
+
+    # Pot: double-read validation happened above; fresh read = 0.8, estimated = 0.3
+    if pot > 0 and is_my_turn:
+        pot_conf = 0.8
+    elif pot > 0:
+        pot_conf = 0.3
+    else:
+        pot_conf = 0.0 if is_my_turn else 1.0  # Not our turn, 0 pot is expected
+
+    # Call amount: cleanly parsed = 0.9, estimated from pot = 0.3
+    if call_amount > 0 and has_call:
+        # Check if it was estimated (from pot heuristic) vs parsed from button text
+        call_was_estimated = (call_amount == max(round((pot or 0) * 0.4, 1), 1.0) or
+                              call_amount == max(round((pot or 0) * 0.5, 1), 1.0))
+        call_conf = 0.4 if call_was_estimated else 0.9
+    elif not has_call:
+        call_conf = 1.0  # No call button — 0 is correct
+    else:
+        call_conf = 0.5  # Call button visible but amount = 0
+
+    # Stacks
+    stack_conf = 0.3 if hero_stack_is_estimated else 0.8
+
+    # Buttons: at least one poker button detected
+    btn_conf = 0.9 if action_types & poker_actions else (0.5 if has_any_buttons else 0.0)
+
+    confidence = ReadConfidence(
+        cards=card_conf,
+        pot=pot_conf,
+        call_amount=call_conf,
+        stacks=stack_conf,
+        buttons=btn_conf,
+    )
 
     state = GameState(
         window_id=window_id,
@@ -497,6 +586,7 @@ def read_table(
         ocr_latency_ms=elapsed_ms,
         ocr_source='python_table_reader',
         hero_stack_is_estimated=hero_stack_is_estimated,
+        confidence=confidence,
     )
 
     log.info(f"Table read in {elapsed_ms:.0f}ms: cards={my_cards} board={board_cards} "
@@ -524,7 +614,10 @@ def _detect_buttons(img: np.ndarray, W: int, H: int, deal_me_in_only: bool = Fal
     Returns:
         (buttons_dict, rects_dict) where buttons_dict maps action type to info.
     """
-    y_min = 0.20 if deal_me_in_only else BUTTON_Y_MIN
+    # Action buttons are at Y=0.78-0.98, much narrower than BUTTON_Y_MIN (0.50).
+    # The wider 0.50 range was needed to catch Deal Me In in the center,
+    # but for action detection it captures too much non-button area (red UI elements).
+    y_min = 0.20 if deal_me_in_only else 0.78
     y1 = int(H * y_min)
     y2 = int(H * BUTTON_Y_MAX)
     x1 = int(W * BUTTON_X_MIN)
@@ -546,117 +639,146 @@ def _detect_buttons(img: np.ndarray, W: int, H: int, deal_me_in_only: bool = Fal
     small_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
     region_w = x2 - x1
 
-    # Use separate HSV dictionaries to prevent color overlap
-    # If not deal_me_in_only, we search BOTH for better rejoining speed
+    # Use separate HSV dictionaries to prevent color overlap.
+    # IMPORTANT: When scanning for action buttons, do NOT include DEAL_ME_IN_HSV.
+    # Deal Me In is handled separately by _fast_deal_me_in_scan() in engine.py.
+    # Including it here causes red UI elements to trigger false deal_me_in detections
+    # which interfere with action button detection.
     if deal_me_in_only:
         search_dicts = [DEAL_ME_IN_HSV]
     else:
-        search_dicts = [BUTTON_HSV, DEAL_ME_IN_HSV]
+        search_dicts = [BUTTON_HSV]
 
     for s_dict in search_dicts:
         for btn_type, hsv_def in s_dict.items():
             mask = cv2.inRange(hsv, hsv_def['lower'], hsv_def['upper'])
 
-        if hsv_def['label'] == 'dark_red':
-            # GGSystem buttons are very close. Use a stronger dilation to 
-            # ensure the whole button is captured as one blob.
-            mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=2)
-            mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, small_kernel, iterations=1)
-        else:
-            mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=1)
-            mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel, iterations=1)
+            if hsv_def['label'] == 'dark_red':
+                # GGSystem buttons are very close. Use a stronger dilation to
+                # ensure the whole button is captured as one blob.
+                mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=2)
+                mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, small_kernel, iterations=1)
+            else:
+                mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=1)
+                mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel, iterations=1)
 
-        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL,
-                                       cv2.CHAIN_APPROX_SIMPLE)
+            contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL,
+                                           cv2.CHAIN_APPROX_SIMPLE)
 
-        # Split abnormally wide dark_red contours (merged buttons)
-        button_rects = []
-        for c in contours:
-            bx, by, bw, bh = cv2.boundingRect(c)
-            area = bw * bh
-            
-            # GGSystem buttons can be smaller than 0.5% in some themes/resolutions.
-            # Relax the area constraint for dark_red significantly (0.2%)
-            this_min_area = min_area if hsv_def['label'] != 'dark_red' else int(W * H * 0.002)
-            
-            if area < this_min_area or bw < (min_btn_w * 0.7) or bh < (min_btn_h * 0.7):
-                continue
+            # Split abnormally wide dark_red contours (merged buttons)
+            button_rects = []
+            for c in contours:
+                bx, by, bw, bh = cv2.boundingRect(c)
+                area = bw * bh
 
-            # HERO ZONE PROTECTION: Action buttons (fold/call/raise) are never 
-            # in the dead center (where cards are). Deal Me In CAN be there.
-            abs_bx = bx + x1
-            center_x_pct = (abs_bx + bw / 2) / W
-            if not deal_me_in_only and btn_type != 'deal_me_in':
-                if 0.35 < center_x_pct < 0.65:
-                    # This is in the hero card zone, likely not an action button
+                # GGSystem buttons can be smaller than 0.5% in some themes/resolutions.
+                # Relax the area constraint for dark_red significantly (0.2%)
+                this_min_area = min_area if hsv_def['label'] != 'dark_red' else int(W * H * 0.002)
+
+                if area < this_min_area or bw < (min_btn_w * 0.7) or bh < (min_btn_h * 0.7):
                     continue
 
-            # If a dark_red contour is wider than 30% of button region,
-            # it's likely multiple buttons merged together
-            if hsv_def['label'] == 'dark_red' and bw > region_w * 0.30:
-                # Try to find gaps by analyzing column-wise mask profile
-                sub_mask = mask[by:by + bh, bx:bx + bw]
-                col_sum = np.sum(sub_mask > 0, axis=0)  # pixels per column
-                max_col = max(col_sum) if len(col_sum) > 0 else 1
+                # If a dark_red contour is wider than 30% of button region,
+                # it's likely multiple buttons merged together
+                if hsv_def['label'] == 'dark_red' and bw > region_w * 0.30:
+                    # Try to find gaps by analyzing column-wise mask profile
+                    sub_mask = mask[by:by + bh, bx:bx + bw]
+                    col_sum = np.sum(sub_mask > 0, axis=0)  # pixels per column
+                    max_col = max(col_sum) if len(col_sum) > 0 else 1
 
-                # Find valleys (columns with < 30% of max density)
-                threshold = max_col * 0.3
-                in_gap = col_sum < threshold
-                splits = []
-                gap_start = None
-                for ci in range(len(in_gap)):
-                    if in_gap[ci] and gap_start is None:
-                        gap_start = ci
-                    elif not in_gap[ci] and gap_start is not None:
-                        gap_mid = (gap_start + ci) // 2
-                        splits.append(gap_mid)
-                        gap_start = None
+                    # Find valleys (columns with < 30% of max density)
+                    threshold = max_col * 0.3
+                    in_gap = col_sum < threshold
+                    splits = []
+                    gap_start = None
+                    for ci in range(len(in_gap)):
+                        if in_gap[ci] and gap_start is None:
+                            gap_start = ci
+                        elif not in_gap[ci] and gap_start is not None:
+                            gap_mid = (gap_start + ci) // 2
+                            splits.append(gap_mid)
+                            gap_start = None
 
-                if len(splits) >= 2:
-                    # Split at the found gaps
-                    edges = [0] + splits[:3] + [bw]
-                    for si in range(len(edges) - 1):
-                        sx = bx + edges[si]
-                        sw = edges[si + 1] - edges[si]
-                        if sw > min_btn_w:
+                    if len(splits) >= 2:
+                        # Split at the found gaps
+                        edges = [0] + splits[:3] + [bw]
+                        for si in range(len(edges) - 1):
+                            sx = bx + edges[si]
+                            sw = edges[si + 1] - edges[si]
+                            if sw > min_btn_w:
+                                button_rects.append((sx, by, sw, bh))
+                        log.debug(f"Split merged {bw}px contour into {len(edges)-1} buttons at gaps {splits}")
+                    elif bw > region_w * 0.55:
+                        # No clear gaps found but very wide — split into 3 equal parts
+                        third_w = bw // 3
+                        for si in range(3):
+                            sx = bx + si * third_w
+                            sw = third_w if si < 2 else (bw - 2 * third_w)
                             button_rects.append((sx, by, sw, bh))
-                    log.debug(f"Split merged {bw}px contour into {len(edges)-1} buttons at gaps {splits}")
-                elif bw > region_w * 0.55:
-                    # No clear gaps found but very wide — split into 3 equal parts
-                    third_w = bw // 3
-                    for si in range(3):
-                        sx = bx + si * third_w
-                        sw = third_w if si < 2 else (bw - 2 * third_w)
-                        button_rects.append((sx, by, sw, bh))
-                    log.debug(f"Force-split {bw}px contour into 3 equal buttons")
+                        log.debug(f"Force-split {bw}px contour into 3 equal buttons")
+                    else:
+                        button_rects.append((bx, by, bw, bh))
                 else:
                     button_rects.append((bx, by, bw, bh))
+
+            # Collect all button rects with absolute coords
+            abs_rects = []
+            for bx, by, bw, bh in button_rects:
+                abs_x = bx + x1
+                abs_y = by + y1
+                abs_rects.append((abs_x, abs_y, bw, bh))
+
+            # FAST PATH: if we have exactly 3 dark_red buttons, assign by
+            # position (GGPoker layout: fold=left, call=middle, raise=right).
+            # This avoids 3+ expensive pytesseract calls (~300ms each).
+            if hsv_def['label'] == 'dark_red' and len(abs_rects) >= 3:
+                abs_rects.sort(key=lambda r: r[0])  # Sort left to right
+                pos_types = ['fold', 'call', 'raise']
+                for idx, (abx, aby, abw, abh) in enumerate(abs_rects[-3:]):
+                    center = (abx + abw // 2, aby + abh // 2)
+                    pos_type = pos_types[idx]
+                    # Only OCR call/raise for amounts (fold doesn't need amount)
+                    amount, text = None, ""
+                    if pos_type in ('call', 'raise'):
+                        amount, text = _ocr_button_text(img, abx, aby, abw, abh)
+                    if pos_type not in buttons:
+                        buttons[pos_type] = {
+                            'center': center,
+                            'rect': (abx, aby, abw, abh),
+                            'amount': amount,
+                            'text': text,
+                            'confidence': 0.85,
+                            'color': 'positional',
+                        }
+                        rects[pos_type] = (abx, aby, abw, abh)
+                    log.debug(f"Button {pos_type} (positional): "
+                              f"({abx},{aby}) {abw}x{abh} amount={amount}")
             else:
-                button_rects.append((bx, by, bw, bh))
+                # Fallback: OCR each button individually
+                for abs_x, abs_y, bw, bh in abs_rects:
+                    center = (abs_x + bw // 2, abs_y + bh // 2)
+                    amount, text = _ocr_button_text(img, abs_x, abs_y, bw, bh)
+                    actual_type = _classify_button_text(text, btn_type)
 
-        for bx, by, bw, bh in button_rects:
-            # Absolute pixel coordinates
-            abs_x = bx + x1
-            abs_y = by + y1
-            center = (abs_x + bw // 2, abs_y + bh // 2)
+                    if actual_type not in buttons:
+                        buttons[actual_type] = {
+                            'center': center,
+                            'rect': (abs_x, abs_y, bw, bh),
+                            'amount': amount,
+                            'text': text,
+                            'confidence': 0.8 if text else 0.5,
+                            'color': hsv_def['label'],
+                        }
+                        rects[actual_type] = (abs_x, abs_y, bw, bh)
 
-            # OCR the button text to get amount and verify type
-            amount, text = _ocr_button_text(img, abs_x, abs_y, bw, bh)
-            actual_type = _classify_button_text(text, btn_type)
+                    log.debug(f"Button {actual_type} ({hsv_def['label']}): "
+                              f"({abs_x},{abs_y}) {bw}x{bh} text={text!r} amount={amount}")
 
-            if actual_type not in buttons:
-                buttons[actual_type] = {
-                    'center': center,
-                    'rect': (abs_x, abs_y, bw, bh),
-                    'amount': amount,
-                    'text': text,
-                    'confidence': 0.8 if text else 0.5,
-                    'color': hsv_def['label'],
-                }
-                rects[actual_type] = (abs_x, abs_y, bw, bh)
-
-            log.debug(f"Button {actual_type} ({hsv_def['label']}): "
-                      f"({abs_x},{abs_y}) {bw}x{bh} text={text!r} amount={amount}")
+        # Early exit: if we already have 3 action buttons, stop scanning
+        action_found = {b for b in buttons if b in {'fold', 'call', 'check', 'raise', 'bet', 'all_in'}}
+        if len(action_found) >= 3:
+            log.debug(f"Found {len(action_found)} action buttons, skipping remaining HSV scans")
+            break
 
     # Positional fallback: GGSystem buttons are always left=fold, middle=call/check, right=raise.
     # When OCR fails, multiple buttons get classified as 'fold' by color fallback.
@@ -759,6 +881,30 @@ def _detect_buttons(img: np.ndarray, W: int, H: int, deal_me_in_only: bool = Fal
                     rects[pos_type] = btn_rect
                     log.debug(f"Positional button {pos_type} at {center}")
 
+        elif len(all_dark_btns) == 2:
+            # GGSystem: call button is near-black (invisible to HSV).
+            # With only 2 dark_red buttons visible: left=fold, right=raise.
+            # Geometric call detection (below) fills in the middle.
+            left_btn = all_dark_btns[0]
+            right_btn = all_dark_btns[1]
+            for pos_type, btn_rect in [('fold', left_btn), ('raise', right_btn)]:
+                abx, aby, abw, abh = btn_rect
+                center = (abx + abw // 2, aby + abh // 2)
+                if pos_type not in buttons:
+                    amt, txt = None, ""
+                    if pos_type == 'raise':
+                        amt, txt = _ocr_button_text(img, abx, aby, abw, abh)
+                    buttons[pos_type] = {
+                        'center': center,
+                        'rect': btn_rect,
+                        'amount': amt,
+                        'text': txt,
+                        'confidence': 0.5,
+                        'color': 'dark_red_positional',
+                    }
+                    rects[pos_type] = btn_rect
+                    log.debug(f"Positional (2-btn) {pos_type} at {center}")
+
     # --- Geometric call button detection ---
     # GGSystem layout is ALWAYS: fold (left) | call (middle) | raise (right).
     # The call button is near-black (~RGB 20,16,16), invisible to all HSV ranges.
@@ -810,6 +956,11 @@ def _detect_buttons(img: np.ndarray, W: int, H: int, deal_me_in_only: bool = Fal
                 missing_call = False
                 log.info(f"GEOMETRIC call button at ({call_x},{call_y}) "
                          f"{call_w}x{call_h} amount={amount} text={text!r}")
+
+    # Skip expensive OCR fallback if we already have 3+ action buttons
+    action_found = {b for b in buttons if b in {'fold', 'call', 'check', 'raise', 'bet', 'all_in'}}
+    if len(action_found) >= 3:
+        return buttons, rects
 
     # Last resort: full-region OCR scan (only if geometric didn't find it)
     missing_raise = 'raise' not in buttons
@@ -1088,6 +1239,106 @@ def _prepare_for_ocr(gray: np.ndarray, thresh: int,
     return padded
 
 
+# ---------------------------------------------------------------------------
+#  Batch OCR: combine multiple regions into ONE pytesseract call
+# ---------------------------------------------------------------------------
+
+def _batch_ocr_amounts(img: np.ndarray, regions: Dict[str, Tuple[int, int, int, int]],
+                       ) -> Dict[str, Tuple[Optional[float], str]]:
+    """OCR multiple screen regions in a SINGLE pytesseract call.
+
+    Instead of spawning pytesseract N times (N*200ms), we stack all regions
+    into one tall image separated by black bars, run OCR once (~200ms total),
+    and split the results back by vertical position.
+
+    Args:
+        img: Full table image (RGB numpy array)
+        regions: Dict mapping label -> (x, y, w, h) in img coordinates
+
+    Returns:
+        Dict mapping label -> (parsed_amount, raw_text)
+    """
+    if not PYTESSERACT_AVAILABLE or not regions:
+        return {k: (None, "") for k in regions}
+
+    scale = 3
+    pad = 10
+    separator_h = 8 * scale  # Black bar between regions
+
+    # Prepare each region
+    prepared = []
+    labels_order = []
+    row_boundaries = []  # (y_start, y_end) for each region in final image
+    current_y = 0
+
+    for label, (x, y, w, h) in regions.items():
+        crop = img[y:y + h, x:x + w]
+        if crop.size == 0:
+            continue
+
+        gray = cv2.cvtColor(crop, cv2.COLOR_RGB2GRAY)
+
+        # Use blue channel for stack regions (cyan text), grayscale otherwise
+        if label.startswith('stack'):
+            blue_ch = crop[:, :, 2]
+            _, bw = cv2.threshold(blue_ch, 130, 255, cv2.THRESH_BINARY)
+        elif label == 'pot':
+            # Yellow pot text: average R+G channels
+            r_ch, g_ch = crop[:, :, 0], crop[:, :, 1]
+            yellow = ((r_ch.astype(int) + g_ch.astype(int)) // 2).astype(np.uint8)
+            _, bw = cv2.threshold(yellow, 140, 255, cv2.THRESH_BINARY)
+        else:
+            # Button text (white on dark)
+            _, bw = cv2.threshold(gray, 180, 255, cv2.THRESH_BINARY)
+
+        big = cv2.resize(bw, None, fx=scale, fy=scale,
+                         interpolation=cv2.INTER_CUBIC)
+        prepared.append(big)
+        labels_order.append(label)
+        row_boundaries.append((current_y + pad, current_y + pad + big.shape[0]))
+        current_y += big.shape[0] + separator_h
+
+    if not prepared:
+        return {k: (None, "") for k in regions}
+
+    # Build combined image: all regions stacked vertically with separators
+    max_width = max(p.shape[1] for p in prepared)
+    total_height = current_y + 2 * pad
+    combined = np.zeros((total_height, max_width + 2 * pad), dtype=np.uint8)
+
+    offset_y = pad
+    for p in prepared:
+        combined[offset_y:offset_y + p.shape[0], pad:pad + p.shape[1]] = p
+        offset_y += p.shape[0] + separator_h
+
+    # ONE pytesseract call for all regions
+    text = pytesseract.image_to_string(
+        Image.fromarray(combined), config='--psm 6 --oem 3'
+    ).strip()
+
+    # Split result lines and assign to regions
+    lines = [l.strip() for l in text.split('\n') if l.strip()]
+    results = {}
+    line_idx = 0
+    for label in labels_order:
+        if line_idx < len(lines):
+            raw = lines[line_idx]
+            amount = _parse_amount(raw)
+            results[label] = (amount, raw)
+            line_idx += 1
+        else:
+            results[label] = (None, "")
+
+    # Fill in any missing labels
+    for label in regions:
+        if label not in results:
+            results[label] = (None, "")
+
+    log.debug(f"BATCH OCR ({len(regions)} regions, 1 pytesseract call): "
+              f"{', '.join(f'{k}={v[0]}' for k, v in results.items())}")
+    return results
+
+
 def _ocr_button_text(img: np.ndarray, x: int, y: int, w: int, h: int,
                      reverse_thresholds: bool = False,
                      ) -> Tuple[Optional[float], str]:
@@ -1096,6 +1347,11 @@ def _ocr_button_text(img: np.ndarray, x: int, y: int, w: int, h: int,
     FAST version: tries only 2 thresholds + 1 CLAHE fallback (max 3 Tesseract
     calls instead of 8). Exits immediately when any text is found.
     """
+    # Check per-call cache to avoid redundant Tesseract on same region
+    cache_key = (x, y, w, h)
+    if cache_key in _OCR_CACHE:
+        return _OCR_CACHE[cache_key]
+
     if not PYTESSERACT_AVAILABLE:
         return None, ""
 
@@ -1107,25 +1363,23 @@ def _ocr_button_text(img: np.ndarray, x: int, y: int, w: int, h: int,
     scale = 3
     pad = 10
 
-    # Try just 2 thresholds: high (bright text) and low (dim text)
-    for thresh in (180, 110):
-        padded = _prepare_for_ocr(gray, thresh, scale, pad)
-        text = pytesseract.image_to_string(
-            Image.fromarray(padded), config='--psm 6 --oem 3'
-        ).strip()
+    # FAST: Try just 1 threshold first (bright text on dark button).
+    # Only fall back to more thresholds if first attempt fails.
+    padded = _prepare_for_ocr(gray, 180, scale, pad)
+    text = pytesseract.image_to_string(
+        Image.fromarray(padded), config='--psm 6 --oem 3'
+    ).strip()
 
-        if text:
-            lower = text.lower()
-            if any(kw in lower for kw in _BUTTON_KEYWORDS):
-                log.debug(f"Button OCR thresh={thresh}: {text!r}")
-                amount = _parse_amount(text)
-                return amount, text
-            # Got text but no keyword — still return it (amount might parse)
+    if text:
+        lower = text.lower()
+        if any(kw in lower for kw in _BUTTON_KEYWORDS):
+            log.debug(f"Button OCR thresh=180: {text!r}")
             amount = _parse_amount(text)
-            if amount is not None:
-                return amount, text
+            _OCR_CACHE[cache_key] = (amount, text)
+            return amount, text
+        log.debug(f"Button OCR: ignoring non-keyword text {text!r}")
 
-    # CLAHE fallback for dark call button (gray text ~147 on black ~20)
+    # Fallback: CLAHE for dark call button (gray text ~147 on black ~20)
     clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(4, 4))
     enhanced = clahe.apply(gray)
     padded = _prepare_for_ocr(enhanced, 120, scale, pad)
@@ -1134,9 +1388,13 @@ def _ocr_button_text(img: np.ndarray, x: int, y: int, w: int, h: int,
     ).strip()
 
     if text:
-        amount = _parse_amount(text)
-        return amount, text
+        lower = text.lower()
+        if any(kw in lower for kw in _BUTTON_KEYWORDS):
+            amount = _parse_amount(text)
+            _OCR_CACHE[cache_key] = (amount, text)
+            return amount, text
 
+    _OCR_CACHE[cache_key] = (None, "")
     return None, ""
 
 
@@ -1295,8 +1553,13 @@ def _parse_amount(text: str, max_expected: Optional[float] = None) -> Optional[f
 #  Player stack detection — OCR at each seat position
 # ---------------------------------------------------------------------------
 
-def _read_player_stacks(img: np.ndarray, W: int, H: int) -> List[PlayerInfo]:
-    """Read stack amounts from all 6 seat positions.
+def _read_player_stacks(img: np.ndarray, W: int, H: int,
+                        hero_only: bool = False) -> List[PlayerInfo]:
+    """Read stack amounts from seat positions.
+
+    Args:
+        hero_only: If True, only read hero stack (seat 0) for speed.
+                   Use when opponent stacks are cached and only hero matters.
 
     Returns a list of PlayerInfo for seats where a stack amount was found.
     Seat 0 is always hero (bottom center).
@@ -1304,8 +1567,10 @@ def _read_player_stacks(img: np.ndarray, W: int, H: int) -> List[PlayerInfo]:
     if not PYTESSERACT_AVAILABLE:
         return []
 
+    seats_to_read = [0] if hero_only else range(len(SEAT_REGIONS_6MAX))
     players = []
-    for seat_idx, (cx, cy, sw, sh) in enumerate(SEAT_REGIONS_6MAX):
+    for seat_idx in seats_to_read:
+        cx, cy, sw, sh = SEAT_REGIONS_6MAX[seat_idx]
         x1 = max(int((cx - sw / 2) * W), 0)
         x2 = min(int((cx + sw / 2) * W), W)
         y1 = max(int((cy - sh / 2) * H), 0)
@@ -1315,7 +1580,29 @@ def _read_player_stacks(img: np.ndarray, W: int, H: int) -> List[PlayerInfo]:
             continue
 
         stack = _ocr_stack_value(region)
-        if stack is not None and stack > 0:
+        # Sanity: reject stacks > 2000 BB (likely OCR picked up level badge
+        # concatenated with stack, e.g. "52101.0" = badge "52" + stack "101.0")
+        # Note: 500+ BB is normal for deep-stacked cash games.
+        if stack is not None and stack > 2000:
+            # Try to extract just the last plausible number
+            # e.g. 52101.0 → 101.0, 255100.0 → 100.0
+            s_str = f"{stack:.1f}"
+            for split_len in (3, 4, 5):  # try splitting off 3-5 digit suffix
+                if len(s_str) > split_len + 1:
+                    suffix = s_str[-split_len:]
+                    try:
+                        candidate = float(suffix)
+                        if 0.5 <= candidate <= 500:
+                            log.debug(f"Seat {seat_idx}: fixed garbled stack "
+                                      f"{stack} → {candidate}")
+                            stack = candidate
+                            break
+                    except ValueError:
+                        pass
+            else:
+                log.debug(f"Seat {seat_idx}: rejecting implausible stack {stack}")
+                stack = None
+        if stack is not None and 0 < stack <= 2000:
             players.append(PlayerInfo(
                 seat=seat_idx,
                 name="",
@@ -1957,11 +2244,65 @@ def _detect_board_colored(
             suit = verified_suit
 
         # Double-check 6↔A confusion: re-read with looser binarization
-        # The "6" glyph can lose its bottom loop on red/blue backgrounds
-        # when the binarization threshold (min_ch > 170) clips it, making
-        # it look like "A" to both template matcher and OCR.
         if rank == 'A':
             rank = _verify_not_six(img, bx, by, bw, bh, rank)
+
+        # ── Structural disambiguation for board cards ──────────────
+        # Board cards use the same _read_rank_at as hole cards, but the
+        # corner/center/alt voting above may pick a wrong rank.
+        # Apply the same structural tests used for hole cards:
+        # A↔3 (holes: A=1, 3=0), K↔9 (holes: K=0, 9=1),
+        # 8↔5 (holes: 8=2, 5=0), 10↔J/3/4 (components: 10=2, others=1)
+        if rank:
+            # Get a binarized glyph for structural analysis.
+            # CRITICAL: crop ONLY the rank number area (top 20% of card),
+            # NOT the suit symbol below it. Including the suit symbol
+            # creates a false second connected component that makes every
+            # single-char rank look like "10".
+            from sys_core.ocr.card_reader import (
+                _binarize_white_on_colored, _count_enclosed_loops,
+                _disambiguate_10_from_single, _strip_suit_symbol,
+                STYLE_COLORED,
+            )
+            # Corner crop: just the rank character (top-left, no suit symbol)
+            struct_x = bx + int(bw * 0.08)
+            struct_y = by + int(bh * 0.03)
+            struct_w = int(bw * 0.45)
+            struct_h = int(bh * 0.20)  # Only top 20% = rank number only
+            struct_crop = img[struct_y:struct_y+struct_h, struct_x:struct_x+struct_w]
+            if struct_crop.size > 0 and struct_crop.shape[0] >= 5:
+                bw_struct = _binarize_white_on_colored(struct_crop)
+                _, bw_struct = cv2.threshold(bw_struct, 127, 255, cv2.THRESH_BINARY)
+                # Strip suit symbol if any leaked into the crop
+                bw_struct = _strip_suit_symbol(bw_struct)
+                n_holes = _count_enclosed_loops(bw_struct)
+
+                # 3↔A: 3 has 0 holes, A has 1
+                # NOTE: 4 also has 1 hole (triangle) — do NOT use this
+                # to change 4→A or A→4. Only 3↔A is safe.
+                if rank == '3' and n_holes >= 1:
+                    log.info(f"BOARD A/3 FIX: rank={rank} but {n_holes} holes → A")
+                    rank = 'A'
+
+                # K↔9: K has 0 holes, 9 has 1
+                if rank == '9' and n_holes == 0:
+                    log.info(f"BOARD K/9 FIX: rank={rank} but 0 holes → K")
+                    rank = 'K'
+
+                # 8↔5: 8 has 2 holes, 5 has 0
+                if rank == '5' and n_holes >= 2:
+                    log.info(f"BOARD 8/5 FIX: rank={rank} but {n_holes} holes → 8")
+                    rank = '8'
+                elif rank == '8' and n_holes == 0:
+                    log.info(f"BOARD 8/5 FIX: rank={rank} but 0 holes → 5")
+                    rank = '5'
+
+                # 10↔J/3/4: 10 has 2 connected components (1 + 0)
+                # ONLY apply after suit symbol is stripped
+                if rank in ('J', '3', '4'):
+                    if _disambiguate_10_from_single(bw_struct):
+                        log.info(f"BOARD 10/SINGLE FIX: rank={rank} but 2 components → 10")
+                        rank = '10'
 
         if rank:
             if rank == '10':
@@ -2113,9 +2454,11 @@ def _parse_blinds(title: str) -> Tuple[float, float]:
         return float(match.group(1)), float(match.group(2))
 
     # Format: "$X / $Y" (Rush & Cash style)
+    # GGPoker displays all values in BB mode, so blinds are always 0.5/1.0 BB
+    # regardless of the dollar stake shown in the window title.
     match = re.search(r'\$(\d+(?:\.\d+)?)\s*/\s*\$(\d+(?:\.\d+)?)', title)
     if match:
-        return float(match.group(1)), float(match.group(2))
+        return 0.5, 1.0  # Always 0.5 BB / 1.0 BB in BB display mode
 
     return 0.0, 0.0
 

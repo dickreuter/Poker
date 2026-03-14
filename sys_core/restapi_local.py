@@ -1,28 +1,45 @@
 """Local Restapi used for React frontend"""
 import io
 
-import uvicorn
-from fastapi import FastAPI, Response
-from fastapi.middleware.cors import CORSMiddleware
+try:
+    import uvicorn
+    from fastapi import FastAPI, Response
+    from fastapi.middleware.cors import CORSMiddleware
+except ImportError:
+    uvicorn = None
+    FastAPI = None
+    Response = None
+    CORSMiddleware = None
 
 from sys_core.tools.helper import COMPUTER_NAME
 from sys_core.tools.screen_operations import take_screenshot
 
-app = FastAPI()
+if FastAPI is not None:
+    app = FastAPI()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://deepermind-pokerbot.com",
-    ],  # Allow this origin
-    allow_credentials=True,
-    allow_methods=["*"],  # Allow all methods
-    allow_headers=["*"],  # Allow all headers
-)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[
+            "http://localhost:5173",
+            "http://deepermind-pokerbot.com",
+        ],  # Allow this origin
+        allow_credentials=True,
+        allow_methods=["*"],  # Allow all methods
+        allow_headers=["*"],  # Allow all headers
+    )
+
+    @app.get("/get_computer_name")
+    async def get_computer_name():
+        return {"computer_name": COMPUTER_NAME}
+else:
+    app = None
 
 
 def local_restapi():
+    if app is None or uvicorn is None:
+        raise ImportError("uvicorn and fastapi are required for the REST API. "
+                          "Install with: pip install uvicorn fastapi")
+
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],  # You might want to be more specific in production.
@@ -39,8 +56,3 @@ def local_restapi():
         return Response(content=image_bytes_io.getvalue(), media_type="image/png")
 
     uvicorn.run(app, host="127.0.0.1", port=8005)
-
-
-@app.get("/get_computer_name")
-async def get_computer_name():
-    return {"computer_name": COMPUTER_NAME}

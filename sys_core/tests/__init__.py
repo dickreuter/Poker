@@ -9,7 +9,6 @@ import pandas as pd
 import requests
 from PIL import Image
 
-from sys_core import main
 from sys_core.tools.game_logger import GameLogger
 from sys_core.tools.helper import COMPUTER_NAME, get_config
 from sys_core.tools.mongo_manager import MongoManager
@@ -26,6 +25,9 @@ sys.path.insert(0, parentdir)
 
 
 def init_table(file, round_number=0, strategy='Default1', table_scraper_name='Official GGPoker 6player'):
+    # Lazy import to avoid pulling in uvicorn/fastapi at test collection time
+    from sys_core import main
+
     # LOG_FILENAME = 'testing.log'
     logger = logging.getLogger('tester')
     gui_signals = MagicMock()

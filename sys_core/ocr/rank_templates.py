@@ -221,7 +221,37 @@ class RankTemplateMatcher:
         if loaded:
             log.info(f"Loaded rank templates: {loaded}")
 
+        self._rebuild_hashes_from_templates()
         self._build_hash_tables()
+
+    def _rebuild_hashes_from_templates(self):
+        """Regenerate hash_store entries from existing template PNGs.
+
+        Ensures that all template PNGs have corresponding hash_store entries.
+        Fixes cases where hash_store has ZERO entries for ranks that have
+        template PNGs on disk (e.g. J, 4, T).
+        """
+        count = 0
+        for rank in RANKS:
+            safe = rank if rank != '10' else 'T'
+            for i in range(10):
+                path = self.template_dir / f'rank_{safe}_{i}.png'
+                if not path.exists():
+                    break
+                tmpl = cv2.imread(str(path), cv2.IMREAD_GRAYSCALE)
+                if tmpl is not None:
+                    normalized = _normalize_glyph(tmpl)
+                    md5 = hashlib.md5(normalized.tobytes()).hexdigest()
+                    if md5 not in self._hash_store:
+                        self._hash_store[md5] = rank
+                        count += 1
+        if count > 0:
+            try:
+                with open(self.hash_store_path, 'w') as f:
+                    json.dump(self._hash_store, f)
+                log.info(f"Rebuilt {count} hash entries from template PNGs")
+            except Exception as e:
+                log.warning(f"Failed to save hash_store after rebuild: {e}")
 
     def _build_hash_tables(self):
         """Build exact-hash and dHash lookup tables from templates + hash store."""
@@ -438,10 +468,11 @@ class RankTemplateMatcher:
                         if s > best_s:
                             best_s = s
                             best_r = r
-                    if best_r and best_s >= 0.55:
+                    if best_r and best_r != rank and best_s >= 0.55 and best_s > score + 0.20:
+                        # A DIFFERENT rank's template scores significantly better
+                        # than the hash's rank — likely a poisoned hash entry.
                         log.warning(f"MD5 POISONED: hash said {rank} (score={score:.3f})"
                                     f" -> corrected to {best_r} (score={best_s:.3f})")
-                        # Fix the poisoned entry in-place
                         self._hash_store[md5] = best_r
                         self._md5_to_rank[md5] = best_r
                         try:
@@ -450,10 +481,12 @@ class RankTemplateMatcher:
                         except Exception:
                             pass
                         return best_r
-                    log.warning(f"MD5 POISONED: hash said {rank} (score={score:.3f})"
-                                f" — no good template match, skipping")
-                    self._last_hash_collision = True
-                    # Fall through to dHash/template
+                    # Hash is a deterministic pixel-perfect match from a
+                    # previous confirmed OCR read — trust it over weak
+                    # template cross-validation.
+                    log.debug(f"Rank HASH-MD5: {rank} (tmpl score={score:.3f}, "
+                              f"best alt={best_r}:{best_s:.3f} — trusting hash)")
+                    return rank
             else:
                 log.debug(f"Rank HASH-MD5: {rank} (no consensus to verify)")
                 return rank
