@@ -2631,12 +2631,10 @@ class MultiTableRunner:
         # If it is, the click didn't register — retry once.
         # GGPoker button animations take ~0.3-0.5s to disappear, so wait longer
         # before checking. Previous 0.15s caused constant false "click failed" logs.
-        _time.sleep(0.50)
-        if self._verify_button_color(action.screen_x_pt, action.screen_y_pt):
-            log.debug(f"Post-click: button color still visible, retrying click")
-            self._reliable_click(action.screen_x_pt - 3, action.screen_y_pt - 1, action.action_type, session=session)
-            # Don't check again — trust the retry. Aggressive re-verification
-            # causes false "CLICK FAILED" spam and doesn't help.
+        # Post-click: just wait for the animation. Color-based verification
+        # was causing false "CLICK FAILED" because GGPoker button colors
+        # persist during animation. Trust the Quartz click events.
+        _time.sleep(0.30)
         
         # Handle confirmation dialog
         if action.action_type in ('raise', 'bet'):
