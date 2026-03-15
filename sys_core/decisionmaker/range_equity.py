@@ -58,6 +58,9 @@ CALL_RANGES = {
     'wide':    '22+, A2s+, K5s+, Q8s+, J8s+, T8s+, 97s+, 86s+, A2o+, K9o+, Q9o+',  # fish
 }
 
+# Dynamic calling ranges are now computed via build_dynamic_calling_range()
+# using eval7 equity vs raiser's opening range.  See below _hand_to_eval7_cards().
+
 # Postflop action ranges (narrowing)
 # These are MULTIPLIERS on the existing range (1.0 = keep, 0.0 = remove)
 # Applied to each hand based on its strength category
@@ -455,6 +458,7 @@ class RangeEquity:
         player_type: str = 'unknown',
         street: str = 'preflop',
         bet_size_pct: float = 0.0,
+        raiser_position: str = '',
     ) -> str:
         """Estimate villain's range based on their action and profile.
 
@@ -489,6 +493,11 @@ class RangeEquity:
                     return CALL_RANGES['wide']
                 elif ptype == 'nit':
                     return CALL_RANGES['tight']
+                # Dynamic calling range: eval7 equity vs raiser's opening range
+                if raiser_position:
+                    dyn = build_dynamic_calling_range(raiser_position.upper(), pos)
+                    if dyn:
+                        return dyn
                 return CALL_RANGES['medium']
 
             elif action == '4bet':
@@ -578,11 +587,18 @@ class RangeEquity:
         is_multiway = num_opponents >= 2 or hand_context.is_multiway
 
         # Start from the preflop range (villain's starting range)
+        # If villain called preflop, pass raiser_position for position-aware range
+        _v_pf_action = 'open' if hand_context.villain_has_initiative or hand_context.preflop_raiser_position else 'call'
+        _raiser_pos_for_call = ''
+        if _v_pf_action == 'call' and hand_context.hero_was_raiser:
+            # Hero raised, villain called → villain's calling range depends on hero's position
+            _raiser_pos_for_call = getattr(hand_context, '_hero_position', '') or ''
         base_range = self.estimate_villain_range(
             position=pf_raiser_pos,
-            action='open' if hand_context.preflop_raiser_position else 'call',
+            action=_v_pf_action,
             player_type=ptype,
             street='preflop',
+            raiser_position=_raiser_pos_for_call,
         )
 
         # --- Scenario-based narrowing ---
@@ -979,6 +995,250 @@ def _hand_to_eval7_cards(hand_key: str):
     return c1, c2
 
 
+# ── Dynamic calling range (eval7-driven) ──────────────────────────────────
+
+_calling_range_cache: dict = {}  # (raiser_pos, caller_pos) → range_str
+
+
+def build_dynamic_calling_range(raiser_position: str, caller_position: str) -> str:
+    """Compute villain's preflop calling range dynamically via eval7.
+
+    For each of 169 hands, compute equity vs raiser's opening range.
+    Hands with equity >= threshold are calling hands. Result cached.
+    """
+    if not HAS_EVAL7:
+        return CALL_RANGES['medium']
+
+    cache_key = (raiser_position, caller_position)
+    if cache_key in _calling_range_cache:
+        return _calling_range_cache[cache_key]
+
+    raiser_range_str = RFI_RANGES.get(raiser_position, RFI_RANGES['CO'])
+    try:
+        raiser_hr = eval7.HandRange(raiser_range_str)
+    except Exception:
+        return CALL_RANGES['medium']
+
+    # Threshold: equity needed to profitably call a ~3x open
+    # BB gets better price (closing action), SB/IP pay more
+    _POS_THRESHOLD = {'BB': 0.35, 'SB': 0.40, 'BTN': 0.37, 'CO': 0.38, 'MP': 0.40}
+    threshold = _POS_THRESHOLD.get(caller_position, 0.38)
+
+    calling_hands = []
+    for hand_key in _ALL_HANDS_169:
+        c1, c2 = _hand_to_eval7_cards(hand_key)
+        if c1 is None:
+            continue
+        try:
+            eq = float(eval7.py_hand_vs_range_monte_carlo([c1, c2], raiser_hr, [], 5000))
+            if eq >= threshold:
+                calling_hands.append(hand_key)
+        except Exception:
+            continue
+
+    range_str = ', '.join(calling_hands) if calling_hands else '22+, A2s+'
+    _calling_range_cache[cache_key] = range_str
+    log.info(f"DYNAMIC CALLING RANGE: {caller_position} vs {raiser_position} = "
+             f"{len(calling_hands)}/{len(_ALL_HANDS_169)} hands (threshold={threshold})")
+    return range_str
+
+
+def build_all_calling_ranges():
+    """Pre-warm calling range cache for common position pairs."""
+    if not HAS_EVAL7:
+        return
+    pairs = [
+        ('SB', 'BB'), ('BTN', 'BB'), ('CO', 'BB'), ('MP', 'BB'), ('UTG', 'BB'),
+        ('BTN', 'SB'), ('CO', 'SB'), ('MP', 'SB'), ('UTG', 'SB'),
+        ('CO', 'BTN'), ('MP', 'BTN'), ('UTG', 'BTN'),
+    ]
+    for raiser, caller in pairs:
+        build_dynamic_calling_range(raiser, caller)
+    log.info(f"CALLING RANGES: pre-warmed {len(pairs)} position pairs")
+
+
+# ── Villain bet frequency (eval7-driven) ──────────────────────────────────
+
+def compute_villain_bet_frequency(
+    board_cards: List[str],
+    villain_range_str: str,
+    hero_cards: List[str] = None,
+    board_wetness: float = 0.5,
+    is_villain_pfr: bool = True,
+) -> dict:
+    """Evaluate each villain combo on board, classify into bet/check.
+
+    Returns {'bet_freq': float, 'bet_range_str': str, 'check_range_str': str,
+             'n_bet': int, 'n_check': int, 'n_total': int}
+    """
+    if not HAS_EVAL7 or not board_cards or len(board_cards) < 3:
+        freq = 0.55 if is_villain_pfr else 0.35
+        return {'bet_freq': freq, 'bet_range_str': villain_range_str,
+                'check_range_str': villain_range_str, 'n_bet': 0, 'n_check': 0, 'n_total': 0}
+
+    board_e7 = _board_to_eval7(board_cards)
+    if len(board_e7) != len(board_cards):
+        return {'bet_freq': 0.50, 'bet_range_str': villain_range_str,
+                'check_range_str': villain_range_str, 'n_bet': 0, 'n_check': 0, 'n_total': 0}
+
+    dead = set(str(c) for c in board_e7)
+    if hero_cards:
+        for hc in hero_cards:
+            c = _convert_card(hc)
+            if c:
+                dead.add(str(c))
+
+    try:
+        vr = eval7.HandRange(villain_range_str)
+    except Exception:
+        return {'bet_freq': 0.50, 'bet_range_str': villain_range_str,
+                'check_range_str': villain_range_str, 'n_bet': 0, 'n_check': 0, 'n_total': 0}
+
+    # Evaluate each villain combo on the board
+    combo_strengths = []
+    for combo in vr:
+        cards = combo[0]  # list of eval7.Card
+        if any(str(c) in dead for c in cards):
+            continue
+        try:
+            hand_val = eval7.evaluate(list(cards) + board_e7)
+            combo_strengths.append((hand_val, combo))
+        except Exception:
+            continue
+
+    n_total = len(combo_strengths)
+    if n_total == 0:
+        return {'bet_freq': 0.50, 'bet_range_str': villain_range_str,
+                'check_range_str': villain_range_str, 'n_bet': 0, 'n_check': 0, 'n_total': 0}
+
+    # Sort by strength descending (higher eval7 value = stronger hand)
+    combo_strengths.sort(key=lambda x: x[0], reverse=True)
+
+    # Value/bluff split driven by board wetness
+    # Solver data: dry K72r ~65-75%, wet JT9 ~30-45%, paired A55 ~80-95%
+    # Base value% ranges from 0.20 (very wet) to 0.55 (very dry)
+    value_pct = 0.20 + 0.35 * (1.0 - board_wetness)
+    # GTO bluff ratio for ~55% pot bet: alpha = 0.55/1.55 ≈ 0.35
+    alpha = 0.35
+    bluff_pct = value_pct * alpha
+
+    # PFR credibility adjustment
+    if is_villain_pfr:
+        value_pct *= 1.20
+        bluff_pct *= 1.20
+    else:
+        value_pct *= 0.75
+        bluff_pct *= 0.75
+
+    bet_freq = min(value_pct + bluff_pct, 0.90)
+
+    # Split combos into bet/check
+    n_value = int(n_total * value_pct)
+    n_bluff = int(n_total * bluff_pct)
+
+    bet_combos = combo_strengths[:n_value]  # Top value hands
+    check_combos = combo_strengths[n_value:n_total - n_bluff]  # Middle = check
+    bluff_combos = combo_strengths[n_total - n_bluff:]  # Bottom = bluff-bet
+    bet_combos = bet_combos + bluff_combos
+
+    def _combos_to_range_str(combos):
+        if not combos:
+            return villain_range_str
+        parts = []
+        for _, combo in combos:
+            cards = combo[0]
+            parts.append(''.join(str(c) for c in cards))
+        return ', '.join(parts) if parts else villain_range_str
+
+    bet_range = _combos_to_range_str(bet_combos)
+    check_range = _combos_to_range_str(check_combos)
+    n_bet = len(bet_combos)
+    n_check = len(check_combos)
+
+    return {
+        'bet_freq': bet_freq,
+        'bet_range_str': bet_range,
+        'check_range_str': check_range,
+        'n_bet': n_bet,
+        'n_check': n_check,
+        'n_total': n_total,
+    }
+
+
+# ── Game tree check EV (IP/OOP-aware) ─────────────────────────────────────
+
+def compute_check_ev_game_tree(
+    hero_cards_e7: list,
+    board_e7: list,
+    villain_bet_range_str: str,
+    villain_check_range_str: str,
+    villain_bet_freq: float,
+    pot: float,
+    hero_is_ip: bool,
+    villain_bet_size_frac: float = 0.55,
+) -> dict:
+    """Compute EV of checking with proper game tree branching.
+
+    Returns {'ev': float, 'ev_vs_bet': float, 'ev_vs_check': float}
+    """
+    if not HAS_EVAL7 or len(hero_cards_e7) != 2 or len(board_e7) < 3 or pot <= 0:
+        return {'ev': 0.0, 'ev_vs_bet': 0.0, 'ev_vs_check': 0.0}
+
+    bet_size = villain_bet_size_frac * pot
+
+    # Break-even equity to call villain's bet
+    breakeven = bet_size / (pot + 2.0 * bet_size)
+
+    # Branch 1: Villain bets
+    try:
+        bet_hr = eval7.HandRange(villain_bet_range_str)
+        eq_vs_bet = float(eval7.py_hand_vs_range_monte_carlo(
+            hero_cards_e7, bet_hr, board_e7, 3000))
+    except Exception:
+        eq_vs_bet = 0.40
+
+    if eq_vs_bet >= breakeven:
+        # Call: EV = equity * (pot + 2*bet) - bet
+        ev_vs_bet = eq_vs_bet * (pot + 2.0 * bet_size) - bet_size
+    else:
+        # Fold: EV = 0
+        ev_vs_bet = 0.0
+
+    # Branch 2: Villain checks
+    try:
+        check_hr = eval7.HandRange(villain_check_range_str)
+        eq_vs_check = float(eval7.py_hand_vs_range_monte_carlo(
+            hero_cards_e7, check_hr, board_e7, 3000))
+    except Exception:
+        eq_vs_check = 0.50
+
+    if hero_is_ip:
+        # IP hero can bet when villain checks — option value
+        if eq_vs_check >= 0.55:
+            # Hero bets for value (~55% pot)
+            hero_bet = 0.55 * pot
+            # Estimate fold equity vs villain's checking range (weak/medium)
+            # Checking range is capped → folds ~35% to a bet
+            check_fold_eq = 0.35
+            ev_vs_check_val = (check_fold_eq * pot +
+                               (1.0 - check_fold_eq) * (eq_vs_check * (pot + 2.0 * hero_bet) - hero_bet))
+        else:
+            # Check back — free showdown
+            ev_vs_check_val = eq_vs_check * pot
+    else:
+        # OOP hero already checked, villain checks behind — free showdown
+        ev_vs_check_val = eq_vs_check * pot
+
+    # Weighted EV
+    ev_total = villain_bet_freq * ev_vs_bet + (1.0 - villain_bet_freq) * ev_vs_check_val
+
+    return {
+        'ev': ev_total,
+        'ev_vs_bet': ev_vs_bet,
+        'ev_vs_check': ev_vs_check_val,
+    }
+
+
 def build_preflop_equity_table(player_types: list = None, iterations: int = 5000):
     """Pre-compute equity for all 169 hands vs every range string that
     estimate_villain_range() can return preflop.
@@ -1031,6 +1291,9 @@ def build_preflop_equity_table(player_types: list = None, iterations: int = 5000
 
     _cache_built = True
     log.info(f"PREFLOP TABLE: built {count} entries for {len(unique_ranges)} unique ranges")
+
+    # Also pre-warm dynamic calling ranges
+    build_all_calling_ranges()
 
 
 def lookup_preflop_equity(hero_cards: List[str], villain_range: str) -> Optional[float]:

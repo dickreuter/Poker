@@ -2084,16 +2084,23 @@ class MultiTableRunner:
                 call_now = state.call_amount if state.call_amount else 0
                 target_str_check = str(mouse_target).split('.')[-1].lower() if hasattr(mouse_target, 'name') else str(mouse_target).lower()
 
-                if target_str_check == 'fold' and hero_stack_now <= 3.0 and pot_now > 0:
+                _eq_commit = getattr(t, 'equity', 0) or 0
+                if (target_str_check == 'fold' and hero_stack_now <= 3.0
+                        and pot_now > 0 and call_now > 0 and _eq_commit > 0.05):
                     log.warning(f"POT-COMMITTED OVERRIDE: Decision was Fold but hero has "
-                                f"only {hero_stack_now:.1f} BB with pot={pot_now:.1f} BB — "
-                                f"FORCING CALL (pot committed)")
+                                f"only {hero_stack_now:.1f} BB with pot={pot_now:.1f} BB "
+                                f"(eq={_eq_commit:.0%}) — FORCING CALL (pot committed)")
                     mouse_target = 'call'
 
                 # Also: never fold when call amount is <= 1 BB and pot is large
-                if target_str_check == 'fold' and call_now <= 1.0 and pot_now >= 4.0:
+                # BUT only if we have SOME equity. At 0% equity, pot odds don't matter.
+                _eq_for_override = getattr(t, 'equity', 0) or 0
+                _pot_odds_needed = call_now / max(pot_now + call_now, 0.01) if call_now > 0 else 1.0
+                if (target_str_check == 'fold' and call_now > 0 and call_now <= 1.0
+                        and pot_now >= 4.0 and _eq_for_override > _pot_odds_needed):
                     log.warning(f"POT-ODDS OVERRIDE: Decision was Fold but call={call_now:.1f} "
-                                f"into pot={pot_now:.1f} (getting {pot_now/max(call_now,0.1):.0f}:1) — "
+                                f"into pot={pot_now:.1f} (getting {pot_now/max(call_now,0.1):.0f}:1, "
+                                f"eq={_eq_for_override:.0%} > need {_pot_odds_needed:.0%}) — "
                                 f"FORCING CALL (great pot odds)")
                     mouse_target = 'call'
 
@@ -3251,6 +3258,19 @@ class MultiTableRunner:
             if street_name == 'flop' and ctx.preflop_pot_bb == 0:
                 ctx.preflop_pot_bb = pot_val
                 ctx.num_players_to_flop = max(n_opp + 1, ctx.num_players_to_flop)
+
+            # Determine if hero is in position (IP) postflop.
+            # Postflop order: SB(0) → BB(1) → UTG(2) → MP(3) → CO(4) → BTN(5)
+            # Hero is IP if they act LAST among remaining players.
+            if not is_preflop and not ctx.hero_is_ip:
+                _postflop_order = {'SB': 0, 'BB': 1, 'UTG': 2, 'MP': 3, 'CO': 4, 'BTN': 5}
+                hero_ord = _postflop_order.get(hero_pos, 2)
+                # If hero has highest postflop order among active players, hero is IP
+                # Simple heuristic: BTN is always IP, SB/BB are OOP vs BTN/CO
+                # In heads-up, the later position is IP
+                ctx.hero_is_ip = hero_ord >= 4  # BTN or CO → in position
+                if hero_pos == 'CO' and ctx.preflop_raiser_position == 'BTN':
+                    ctx.hero_is_ip = False  # CO is OOP vs BTN
 
             # --- Record villain action on current street (deduplicated) ---
             if session._hand_context_last_street != street_name:

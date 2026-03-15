@@ -17,7 +17,8 @@ from sys_core.decisionmaker.montecarlo_python import MonteCarlo, run_montecarlo_
 from sys_core.decisionmaker.range_equity import (
     compute_bet_size_bb, geometric_bet_fraction,
     preflop_raise_size_bb, lookup_preflop_equity,
-    blocker_adjustment,
+    blocker_adjustment, compute_range_fold_equity,
+    compute_villain_bet_frequency, compute_check_ev_game_tree,
 )
 from .outs_calculator import Outs_Calculator
 
@@ -1094,6 +1095,81 @@ class Decision(DecisionBase):
         spr = self.spr
         hero_pos = getattr(t, '_gto_position', 'CO')
 
+        # ── CFR SOLVER: short stacks + postflop ──────────────────────────
+        # Route to the unified solver for short stacks (push/fold Nash)
+        # and postflop decisions (CFR with mixed strategies).
+        # Falls through to the old EV system for deep preflop and as fallback.
+        eff_bb = my_stack / bb if bb > 0 else 100
+        try:
+            from sys_core.decisionmaker.solver import get_solver
+            _solver = get_solver()
+
+            # Determine game type
+            _game_type = 'cash'
+            game_type_attr = getattr(t, 'game_type', '')
+            _table_name = getattr(t, 'tableName', '') or ''
+            if ('spin' in str(game_type_attr).lower()
+                    or 'spin' in _table_name.lower()):
+                _game_type = 'spin'
+            elif 'tournament' in str(game_type_attr).lower():
+                _game_type = 'tournament'
+
+            # ICM payouts (if available)
+            _payouts = getattr(t, '_icm_payouts', None)
+            _all_stacks = getattr(t, '_all_stacks', None)
+
+            # Hand context for IP detection
+            hand_ctx = getattr(self, '_hand_context', None)
+            _hero_ip = hand_ctx.hero_is_ip if hand_ctx else (hero_pos in ('BTN', 'CO'))
+
+            # Use solver for preflop decisions:
+            # - Spin & Go: ALL preflop (stacks are always short/medium)
+            # - Cash/tournament: ≤20BB (push/fold territory)
+            _use_solver_preflop = (
+                (eff_bb <= 20) or
+                (_game_type == 'spin') or
+                (_game_type == 'tournament' and eff_bb <= 30) or
+                (call_amount > 0 and call_amount >= my_stack * 0.3)  # Facing big bet/shove
+            )
+            if _use_solver_preflop and street == 'preflop':
+                sr = _solver.decide(
+                    hero_cards=mycards, board=board, pot=pot, stack=my_stack,
+                    call_amount=call_amount, bb=bb, position=hero_pos,
+                    hero_is_ip=_hero_ip, game_type=_game_type,
+                    payouts=_payouts, all_stacks=_all_stacks,
+                )
+                if sr.solver_layer > 0:
+                    # Map solver action to DecisionTypes
+                    _action_map = {
+                        'allin': DecisionTypes.bet4,
+                        'raise': DecisionTypes.bet3,
+                        'call': DecisionTypes.call,
+                        'check': DecisionTypes.check,
+                        'fold': DecisionTypes.fold,
+                    }
+                    best_action = _action_map.get(sr.action, DecisionTypes.fold)
+                    if t.checkButton and best_action == DecisionTypes.fold:
+                        best_action = DecisionTypes.check
+
+                    log.info(f"SOLVER L{sr.solver_layer}: {sr.action} "
+                             f"freq={sr.frequency:.0%} ({sr.solve_time_ms:.0f}ms) "
+                             f"| {sr.reasoning}")
+
+                    self._ev_decision_action = best_action
+                    result = {
+                        'action': best_action,
+                        'ev_fold': 0.0, 'ev_call': 0.0, 'ev_raise': 0.0,
+                        'equity': equity, 'villain_range': '',
+                        'fold_equity': 0.0, 'spr': spr,
+                        'reasoning': f'SOLVER L{sr.solver_layer}: {sr.reasoning}',
+                        'solver_result': sr,
+                    }
+                    self._last_ev_result = result
+                    return result
+
+        except Exception as e:
+            log.debug(f"Solver routing failed, falling through to EV system: {e}")
+
         # ── Estimate villain range ─────────────────────────────────────────
         opp = self._get_opp()
         ptype = opp.get('type', 'unknown') if opp else 'unknown'
@@ -1146,10 +1222,17 @@ class Decision(DecisionBase):
                          f"multiway={hand_ctx.is_multiway}")
             else:
                 # Fallback: single-action estimation
+                # Pass raiser_position so calling ranges are position-aware
+                _raiser_pos = ''
+                if v_action == 'call' and hand_ctx and hand_ctx.hero_was_raiser:
+                    _raiser_pos = hero_pos
+                elif v_action != 'call' and hand_ctx:
+                    _raiser_pos = hand_ctx.preflop_raiser_position or ''
                 v_range = re.estimate_villain_range(
                     position=v_position, action=v_action,
                     player_type=ptype, street=street,
                     bet_size_pct=bet_size_pct,
+                    raiser_position=_raiser_pos,
                 )
         except Exception as e:
             log.debug(f"EV engine: range estimation failed: {e}")
@@ -1204,7 +1287,28 @@ class Decision(DecisionBase):
             log.debug(f"EV IMPLIED: +{implied_bonus:.2f} ({self.outs} outs)")
 
         # ── Fold equity estimation ────────────────────────────────────────
-        fold_equity = self._estimate_fold_equity(t, h)
+        # Primary: range-based fold equity (eval7 — computes from villain range × board)
+        # Only when hero is the aggressor (betting into a check), NOT when raising
+        # into villain's bet (villain already showed strength by betting).
+        # Fallback: heuristic-based
+        fold_equity = None
+        _hero_is_aggressor = t.checkButton or (call_amount == 0)
+        if (street != 'preflop' and len(board) >= 3 and mycards
+                and len(mycards) == 2 and _hero_is_aggressor):
+            try:
+                _bet_frac_for_fe = 0.67  # Default bet size for fold equity calc
+                fe_result = compute_range_fold_equity(
+                    mycards, board, v_range, bet_fraction=_bet_frac_for_fe,
+                )
+                if fe_result and 'fold_equity' in fe_result:
+                    fold_equity = fe_result['fold_equity']
+                    log.info(f"EV FOLD_EQ (range-based): {fold_equity:.0%} "
+                             f"({fe_result.get('folding_combos', 0)}/{fe_result.get('total_combos', 0)} combos fold)")
+            except Exception as e:
+                log.debug(f"Range fold equity failed, using heuristic: {e}")
+
+        if fold_equity is None:
+            fold_equity = self._estimate_fold_equity(t, h)
 
         # Refine with opponent cbet/fold-to-cbet stats if available
         if opp:
@@ -1228,12 +1332,46 @@ class Decision(DecisionBase):
             except Exception as e:
                 log.debug(f"Blocker adjustment failed: {e}")
 
+        # ── Multiway fold equity correction ──────────────────────────────
+        # With N opponents, ALL must fold. FE_total = FE_per_player^N.
+        n_opponents = max(n_opponents, 1)
+        if n_opponents >= 2:
+            fold_equity_hu = fold_equity  # Per-player FE
+            fold_equity = fold_equity_hu ** n_opponents
+            log.debug(f"EV FOLD_EQ multiway: {fold_equity_hu:.0%}^{n_opponents} = {fold_equity:.0%}")
+
+        # ── Bluff eligibility gate ───────────────────────────────────────
+        # Only blocks PURE bluffs (no equity, no draws). Semi-bluffs with
+        # draws pass through — they have genuine equity and should bet.
+        _can_bluff = True
+        if street != 'preflop' and equity < 0.12 and self.outs < 4:
+            # Pure bluff territory: <12% equity AND no draws
+            is_cbet = (getattr(self, '_hand_context', None) is not None
+                       and getattr(self._hand_context, 'hero_was_raiser', False)
+                       and street == 'flop')
+            # River with 0% equity: only bluff if FE covers the bet
+            if street == 'river' and equity < 0.05:
+                if fold_equity < 0.35:
+                    _can_bluff = False
+                    log.debug(f"BLUFF GATE: river eq={equity:.0%} FE={fold_equity:.0%} → no bluff")
+            # Multiway pure bluff: almost never profitable
+            elif n_opponents >= 2 and not is_cbet:
+                _can_bluff = False
+                log.debug(f"BLUFF GATE: multiway pure bluff eq={equity:.0%} outs={self.outs} → no bluff")
+
         # ── EV(raise) ─────────────────────────────────────────────────────
         # Determine raise size
         ev_raise = None
         raise_amount = 0.0
         bet_frac = 0.0
         can_raise = hasattr(t, 'raiseButton') and t.raiseButton or t.checkButton
+
+        # Block pure bluffs with trash — if bluff gate says no AND no draws, disable raise.
+        # Semi-bluffs with draws (outs >= 4) always allowed to bet.
+        has_draw_for_gate = hasattr(self, 'outs') and self.outs >= 4
+        if not _can_bluff and equity < 0.12 and not has_draw_for_gate:
+            can_raise = False
+            log.debug(f"BLUFF BLOCKED: eq={equity:.0%} outs={getattr(self,'outs',0)}, skipping raise")
 
         if can_raise:
             # Calculate optimal raise size
@@ -1270,22 +1408,36 @@ class Decision(DecisionBase):
 
             if raise_amount > 0:
                 # Equity when called: opponent folds weak hands, calling range
-                # is MUCH stronger than their overall range. When we bet A-high
-                # on K92, opponent calls with Kx+ and our equity drops heavily.
+                # is stronger. But strong hands retain most equity vs callers.
                 #
-                # Discount based on bet size (bigger bet = tighter calling range):
+                # Scale discount by hand strength: strong hands barely lose
+                # equity when called (trips vs pair = still 90%+), while
+                # marginal hands lose a lot (A-high vs Kx = drops from 50% to 30%).
                 if bet_frac <= 0.40:
-                    call_discount = 0.75  # Small bet: opponent calls fairly wide
+                    base_discount = 0.80
                 elif bet_frac <= 0.70:
-                    call_discount = 0.65  # Medium bet: moderate tightening
+                    base_discount = 0.72
                 else:
-                    call_discount = 0.55  # Large bet: only strong hands call
+                    base_discount = 0.62
+
+                # Strong hands: lighter discount (we're happy to get called)
+                # Draws: NO discount (equity comes from outs, not current strength)
+                # Weak hands: heavier discount (callers crush us)
+                has_draw = hasattr(self, 'outs') and self.outs >= 4
+                if equity >= 0.70:
+                    call_discount = max(base_discount, 0.88)  # Trips/overpairs retain equity
+                elif equity >= 0.50:
+                    call_discount = max(base_discount, 0.78)  # Strong top pair
+                elif has_draw:
+                    call_discount = max(base_discount, 0.90)  # Draws keep equity (outs don't change when called)
+                else:
+                    call_discount = base_discount  # Marginal hands
 
                 # Adjust for opponent type
                 if ptype == 'nit':
-                    call_discount *= 0.80  # Nits call even tighter
+                    call_discount *= 0.85
                 elif ptype in ('fish_passive', 'fish_aggro', 'maniac'):
-                    call_discount = min(call_discount * 1.15, 0.95)  # Fish call wider
+                    call_discount = min(call_discount * 1.10, 0.95)
 
                 eq_when_called = equity * call_discount
 
@@ -1567,6 +1719,11 @@ class Decision(DecisionBase):
 
         bb = t.bigBlind if t.bigBlind > 0 else 1.0
 
+        # Multiway fold equity correction — critical for accurate planning
+        n_opp = max(getattr(t, 'other_active_players', 1) or 1, 1)
+        if n_opp >= 2:
+            fold_equity = fold_equity ** n_opp
+
         # Bet sizing for simulation
         bet_frac = 0.55  # Default bet ~55% pot
         wetness = self._board_wetness(board)
@@ -1575,7 +1732,15 @@ class Decision(DecisionBase):
         elif wetness > 0.7:
             bet_frac = 0.75
 
-        # Range narrowing: villain calls our bet with tighter range
+        # Range narrowing: use eval7 fold equity to get calling range
+        fe_for_sim = compute_range_fold_equity(hero_cards, board, villain_range_str, bet_frac)
+        if fe_for_sim:
+            sim_fold_eq = fe_for_sim['fold_equity']
+            sim_eq_called = fe_for_sim['equity_when_called']
+        else:
+            sim_fold_eq = fold_equity
+            sim_eq_called = equity * 0.65
+
         re = get_range_equity()
         call_range_str = re.estimate_villain_range(
             position='CO', action='call',
@@ -1586,6 +1751,27 @@ class Decision(DecisionBase):
             call_range_hr = eval7.HandRange(call_range_str)
         except Exception:
             call_range_hr = villain_hr
+
+        # Pre-compute villain betting behavior on this board (once, not per runout)
+        hand_ctx = getattr(self, '_hand_context', None)
+        hero_ip = hand_ctx.hero_is_ip if hand_ctx else False
+        is_villain_pfr = (hand_ctx.preflop_raiser_position != ''
+                          if hand_ctx and hasattr(hand_ctx, 'preflop_raiser_position')
+                          else True)
+
+        vbf = compute_villain_bet_frequency(
+            board, villain_range_str, hero_cards, wetness, is_villain_pfr
+        )
+        villain_bet_freq = vbf['bet_freq']
+        villain_bet_range = vbf.get('bet_range_str', villain_range_str)
+        villain_check_range = vbf.get('check_range_str', villain_range_str)
+
+        # Pre-compute check EV for current board (game tree, replaces flat bonuses)
+        check_ev_result = compute_check_ev_game_tree(
+            hero_e7, board_e7,
+            villain_bet_range, villain_check_range,
+            villain_bet_freq, pot, hero_ip,
+        )
 
         # ── Monte Carlo simulation ───────────────────────────────────────
         ev_bet_total = 0.0
@@ -1691,24 +1877,23 @@ class Decision(DecisionBase):
                 ev_bet_this = ev_bet_fold + (1.0 - fold_equity) * (
                     ev_when_called_flop - bet_size)
 
-                # ── Plan B: CHECK now ──────────────────────────────────
+                # ── Plan B: CHECK now (game tree EV) ──────────────────
                 if is_flop:
-                    # Free card on turn, then decide on turn
                     if turn_eq >= 0.50:
-                        # Good turn: bet turn
+                        # Good turn: bet turn after checking flop
                         turn_bet_check = bet_frac * pot
                         turn_bet_check = min(turn_bet_check, stack)
                         turn_fe_check = fold_equity * 0.90
-
-                        ev_check_bet = turn_fe_check * pot + (1.0 - turn_fe_check) * (
+                        ev_turn_action = turn_fe_check * pot + (1.0 - turn_fe_check) * (
                             river_eq * (pot + turn_bet_check * 2) - turn_bet_check)
-                        ev_check_this = ev_check_bet
+                        # Weight by villain's response to our flop check
+                        ev_check_this = (villain_bet_freq * check_ev_result['ev_vs_bet'] +
+                                         (1.0 - villain_bet_freq) * ev_turn_action)
                     else:
-                        # Bad turn: check through to river
-                        ev_check_this = river_eq * pot
+                        ev_check_this = check_ev_result['ev']
                 else:
-                    # On turn: check = go to river for free
-                    ev_check_this = river_eq * pot
+                    ev_check_this = check_ev_result['ev']
+                # No flat IP/OOP bonuses — difference is captured in game tree
 
                 ev_bet_total += ev_bet_this
                 ev_check_total += ev_check_this
@@ -2341,18 +2526,21 @@ class Decision(DecisionBase):
         if t.checkButton:
             fold_eq += 0.06
 
-        # --- Position: in-position bluffs are more credible ---
-        pos = getattr(t, '_gto_position', getattr(t, 'position_utg_plus', 3))
-        if isinstance(pos, str):
-            pos_bonus = {'BTN': 0.06, 'CO': 0.04, 'MP': 0.0, 'SB': -0.03, 'BB': -0.02, 'UTG': -0.02}
-            fold_eq += pos_bonus.get(pos, 0.0)
-        elif isinstance(pos, (int, float)):
-            # position_utg_plus: 0=UTG, higher=later position
-            fold_eq += min(pos, 4) * 0.015
+        # --- Position: NO hardcoded bonuses ---
+        # Position now flows through the villain's RANGE width (via
+        # CALL_RANGES_BY_POSITION in range_equity.py).  A villain who called
+        # from BB vs SB has a ~50% range → more combos miss the board → higher
+        # fold equity.  This is computed dynamically by compute_range_fold_equity()
+        # which is called first in compute_ev_decision(); this heuristic is only
+        # the fallback path.
 
-        # --- Multiway: much harder to bluff multiple players ---
-        if not t.isHeadsUp:
-            fold_eq -= 0.15
+        # --- Multiway: MUCH harder to bluff multiple players ---
+        # With N opponents, ALL must fold. FE_total = FE_per_player^N.
+        # With 2 opponents and FE=35% each: 0.35^2 = 12%.
+        n_opp = max(getattr(t, 'other_active_players', 1) or 1, 1)
+        if n_opp >= 2:
+            # Apply geometric multiway discount
+            fold_eq = fold_eq ** n_opp
 
         # --- Continuation: we bet previous street (story is consistent) ---
         if h.round_number == 0 and h.previous_decision in (
@@ -3176,6 +3364,74 @@ class Decision(DecisionBase):
 
     def make_decision(self, t, h, p, l):
         self.preflop_sheet_name = ''
+
+        # ══════════════════════════════════════════════════════════════════
+        # DESPERATE SHOVE: ≤2BB shove ANY hand — runs before everything
+        # ══════════════════════════════════════════════════════════════════
+        if (t.gameStage == GameStages.PreFlop.value
+                and hasattr(self, 'hero_stack_bb') and self.hero_stack_bb <= 2):
+            log.info(f"DESPERATE SHOVE: {self.hero_stack_bb:.1f}BB — auto all-in with any hand")
+            self.decision = DecisionTypes.bet4
+            self.push_fold_shove = True
+            self.admin(t, p, h)
+            self.decision = self.decision.value
+            self._analyze_blockers(t)
+            self._compute_decision_ev(t, p, h)
+            return
+
+        # ══════════════════════════════════════════════════════════════════
+        # SOLVER FIRST: For Spin & Go and short stacks, the solver MUST
+        # run BEFORE any legacy logic (stack commit, narrow range, etc.)
+        # to prevent legacy code from overriding solver decisions.
+        # ══════════════════════════════════════════════════════════════════
+        _table_name_early = getattr(t, '_table_name', '')
+        _is_spin_early = ('spin' in _table_name_early.lower() or 'gold' in _table_name_early.lower())
+        _solver_threshold_early = 25 if _is_spin_early else 15
+
+        if (t.gameStage == GameStages.PreFlop.value
+                and t.mycards and len(t.mycards) == 2
+                and hasattr(self, 'hero_stack_bb') and self.hero_stack_bb <= _solver_threshold_early):
+            try:
+                from sys_core.decisionmaker.solver import get_solver
+                _solver = get_solver()
+                _bb = t.bigBlind if t.bigBlind > 0 else 1.0
+                _hero_pos = getattr(t, '_gto_position', 'CO')
+                _hand_ctx = getattr(self, '_hand_context', None)
+                _hero_ip = _hand_ctx.hero_is_ip if _hand_ctx else (_hero_pos in ('BTN', 'CO'))
+
+                sr = _solver.decide(
+                    hero_cards=t.mycards, board=[], pot=max(t.totalPotValue or 0, 1.5),
+                    stack=t.myFunds, call_amount=float(t.minCall or 0),
+                    bb=_bb, position=_hero_pos, hero_is_ip=_hero_ip,
+                    game_type='spin' if _is_spin_early else 'cash',
+                )
+                if sr.solver_layer > 0:
+                    _action_map_solver = {
+                        'allin': DecisionTypes.bet4,
+                        'raise': DecisionTypes.bet3,
+                        'call': DecisionTypes.call,
+                        'check': DecisionTypes.check,
+                        'fold': DecisionTypes.fold,
+                    }
+                    self.decision = _action_map_solver.get(sr.action, DecisionTypes.fold)
+                    if sr.action == 'allin':
+                        self.push_fold_shove = True
+                    # Convert fold→check when free
+                    if self.decision == DecisionTypes.fold and t.checkButton:
+                        self.decision = DecisionTypes.check
+                    log.info(f"SOLVER L{sr.solver_layer}: {sr.action} "
+                             f"freq={sr.frequency:.0%} ({sr.solve_time_ms:.0f}ms) "
+                             f"| {sr.reasoning}")
+                    self.admin(t, p, h)
+                    self.decision = self.decision.value
+                    self._analyze_blockers(t)
+                    self._compute_decision_ev(t, p, h)
+                    return
+            except Exception as e:
+                log.debug(f"Early solver failed: {e}")
+
+        # ── Legacy logic below (only reached if solver didn't handle it) ──
+
         if t.equity >= float(p.selected_strategy['alwaysCallEquity']):
             log.info("Equity is above the always call threshold")
             self.finalCallLimit = max(t.myFunds, t.totalPotValue)
@@ -3216,9 +3472,8 @@ class Decision(DecisionBase):
             self.push_fold_shove = True
             return
 
-        # Nash-equilibrium: at short stacks, poker is solved — shove or fold.
-        # Covers: open-shove, call-vs-shove, reshove vs opener, shove over
-        # limpers, and 4-bet shove (all with eval7 blocker math).
+        # (Solver already ran at top of make_decision — this is legacy fallback only)
+        # Legacy Nash push/fold fallback (if solver unavailable)
         if t.gameStage == GameStages.PreFlop.value and self.hero_stack_bb <= 15:
             _push_fold_done = False
             try:
