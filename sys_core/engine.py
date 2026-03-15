@@ -1194,10 +1194,12 @@ class MultiTableRunner:
     def _fast_deal_me_in_scan(self, sessions_to_check: list, full_screen=None):
         """Fast Deal Me In scan — one screenshot, check all tables at once.
 
-        Takes a single full-screen screenshot and crops each table's button
-        region to check for "Deal Me In" buttons using HSV + quick OCR.
-        This is MUCH faster than running full check_table_state per table
-        because it avoids per-table AppleScript focus + separate screenshots.
+        Takes a single full-screen screenshot and crops each table's bottom
+        region to check for "Deal Me In" / "I'm Back" buttons using pure HSV
+        color detection (no OCR).  ~3ms per table on first check, <1ms on
+        cache hit (pixel hash unchanged).
+
+        Detects both RED and GREEN Deal Me In buttons.
         """
         if not PYTHON_OCR_AVAILABLE or not sessions_to_check:
             return
@@ -1220,11 +1222,25 @@ class MultiTableRunner:
                 if W < 100 or H < 100:
                     continue
 
-                # Fast button detection (~3ms, no full OCR)
-                # Pass deal_me_in_only=True to search the larger 40% region safely
-                buttons, _ = _detect_buttons(img, W, H, deal_me_in_only=True)
-                if not buttons:
-                    continue
+                # Pixel-hash cache: skip HSV scan if bottom region unchanged
+                dmi_y1, dmi_y2 = int(H * 0.50), int(H * 0.98)
+                dmi_x1, dmi_x2 = int(W * 0.15), int(W * 0.85)
+                dmi_region = img[dmi_y1:dmi_y2, dmi_x1:dmi_x2]
+                dmi_hash = hash(dmi_region[::4, ::4].tobytes())  # Downsample 4x for speed
+                last_hash = getattr(session, '_dmi_scan_hash', None)
+                last_result = getattr(session, '_dmi_scan_result', None)
+                if last_hash is not None and last_hash == dmi_hash:
+                    # Unchanged frame — reuse previous result
+                    if last_result is None:
+                        continue
+                    buttons = last_result
+                else:
+                    # Pure color detection, no OCR (~3ms)
+                    buttons, _ = _detect_buttons(img, W, H, deal_me_in_only=True)
+                    session._dmi_scan_hash = dmi_hash
+                    session._dmi_scan_result = buttons if buttons else None
+                    if not buttons:
+                        continue
 
                 # Check if any detected button is "Deal Me In"
                 for btn_type, info in buttons.items():
@@ -1234,16 +1250,16 @@ class MultiTableRunner:
                         last_click = getattr(session, '_last_deal_me_in_click', datetime.datetime.min)
                         if (now - last_click).total_seconds() < 5.0:
                             continue
-                        
+
                         cx_px, cy_px = info['center']
-                        
+
                         # Correct coordinate conversion: (window points / image pixels)
                         # This works for both Retina (2x) and standard (1x) displays.
                         scale_x = w.width / W
                         scale_y = w.height / H
                         screen_x = w.x + int(cx_px * scale_x)
                         screen_y = w.y + int(cy_px * scale_y)
-                        
+
                         import pyautogui
                         if self._is_avatar_zone(screen_x, screen_y, session):
                             log.warning(f"AVATAR GUARD: FAST Deal Me In at ({screen_x}, {screen_y}) "
@@ -1252,11 +1268,14 @@ class MultiTableRunner:
                         pyautogui.click(screen_x, screen_y)
                         log.info(f"FAST Deal Me In: clicked on {w.name} "
                                  f"at ({screen_x}, {screen_y}) (ratio {scale_x:.2f})")
-                        
+
                         session._last_deal_me_in_click = now
                         session.last_action_time = now
                         session.state = TableState.WAITING
                         session.priority = 1
+                        # Clear hash so next scan re-checks after click
+                        session._dmi_scan_hash = None
+                        session._dmi_scan_result = None
                         break
             except Exception as e:
                 log.debug(f"Fast Deal Me In scan failed for {session.window.name}: {e}")

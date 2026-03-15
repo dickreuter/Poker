@@ -217,7 +217,9 @@ def read_table(
                   (btn_hsv[:,:,1] > 80) & (btn_hsv[:,:,2] > 140)
     yellow_pixels = int(np.sum(yellow_mask))
     total_btn_pixels = red_pixels + green_pixels + yellow_pixels
-    if total_btn_pixels < 500:
+    _has_action_pixels = total_btn_pixels >= 500
+
+    if not _has_action_pixels:
         # No action buttons in the narrow Y=82-98% region.
         # Do a quick secondary scan of the wider bottom half (Y=50-98%)
         # for Deal Me In / I'm Back buttons which can appear higher up.
@@ -245,24 +247,35 @@ def read_table(
                 game_type=_gt, is_tournament=(_gt == 'tournament'),
                 tournament_subtype=_tst,
             )
+        # Deal Me In pixels found but no action buttons — run Deal Me In detection
+        # (pure color, no OCR, ~3ms) and return early with just that button.
+        dmi_buttons, dmi_rects = _detect_deal_me_in_color_only(img, W, H)
+        if dmi_buttons:
+            buttons = dmi_buttons
+            button_rects = dmi_rects
+            # Skip to action assembly below (no card/board OCR needed for Deal Me In)
+        else:
+            buttons = {}
+            button_rects = {}
 
     # --- BUTTON CACHE: hash the button region to skip OCR on repeat frames ---
     # Buttons occupy Y=78-98%, X=2-98% (the _detect_buttons search region).
     # Hash a downsampled version for speed (~0.3ms vs 1200ms OCR).
-    _btn_cache_y1, _btn_cache_y2 = int(H * 0.78), int(H * 0.98)
-    _btn_cache_x1, _btn_cache_x2 = int(W * 0.40), int(W * 0.98)
-    _btn_cache_region = img[_btn_cache_y1:_btn_cache_y2, _btn_cache_x1:_btn_cache_x2]
-    _btn_cache_hash = hash(_btn_cache_region[::2, ::2].tobytes())
-    _cached_btn = _BUTTON_CACHE.get(window_id)
-    if _cached_btn and _cached_btn[0] == _btn_cache_hash:
-        buttons, button_rects = _cached_btn[1], _cached_btn[2]
-        log.debug(f"BUTTON CACHE HIT for window {window_id}")
-    else:
-        buttons, button_rects = _detect_buttons(img, W, H)
-        # Deep copy button dicts so cached values aren't mutated by later code
-        _BUTTON_CACHE[window_id] = (_btn_cache_hash,
-                                     copy.deepcopy(buttons),
-                                     copy.deepcopy(button_rects))
+    if _has_action_pixels:
+        _btn_cache_y1, _btn_cache_y2 = int(H * 0.78), int(H * 0.98)
+        _btn_cache_x1, _btn_cache_x2 = int(W * 0.40), int(W * 0.98)
+        _btn_cache_region = img[_btn_cache_y1:_btn_cache_y2, _btn_cache_x1:_btn_cache_x2]
+        _btn_cache_hash = hash(_btn_cache_region[::2, ::2].tobytes())
+        _cached_btn = _BUTTON_CACHE.get(window_id)
+        if _cached_btn and _cached_btn[0] == _btn_cache_hash:
+            buttons, button_rects = _cached_btn[1], _cached_btn[2]
+            log.debug(f"BUTTON CACHE HIT for window {window_id}")
+        else:
+            buttons, button_rects = _detect_buttons(img, W, H)
+            # Deep copy button dicts so cached values aren't mutated by later code
+            _BUTTON_CACHE[window_id] = (_btn_cache_hash,
+                                         copy.deepcopy(buttons),
+                                         copy.deepcopy(button_rects))
     t1 = time.time()
     available_actions = []
     scale_x = table_w_pt / W if W > 0 else 0.5
@@ -726,6 +739,12 @@ def read_table(
 def _detect_buttons(img: np.ndarray, W: int, H: int, deal_me_in_only: bool = False) -> Tuple[Dict, Dict]:
     """Detect action buttons by HSV color in the bottom region.
 
+    OPTIMIZED (Mar 15 2026):
+    - deal_me_in_only: Pure HSV color detection, NO OCR (~3ms).
+    - Action buttons: Positional assignment (fold=left, call=middle, raise=right).
+      OCR only on call+raise for amounts via _batch_ocr_amounts (~200ms total).
+      Fold never needs OCR.  Cache handles repeat frames (<1ms).
+
     Args:
         img: Table image
         W: Width
@@ -735,11 +754,13 @@ def _detect_buttons(img: np.ndarray, W: int, H: int, deal_me_in_only: bool = Fal
     Returns:
         (buttons_dict, rects_dict) where buttons_dict maps action type to info.
     """
-    # Action buttons are at Y=0.78-0.98, much narrower than BUTTON_Y_MIN (0.50).
-    # The wider 0.50 range was needed to catch Deal Me In in the center,
-    # but for action detection it captures too much non-button area (red UI elements).
-    y_min = 0.20 if deal_me_in_only else 0.78
-    y1 = int(H * y_min)
+    # ---- DEAL ME IN FAST PATH: pure color, no OCR ----
+    if deal_me_in_only:
+        return _detect_deal_me_in_color_only(img, W, H)
+
+    # ---- ACTION BUTTON DETECTION ----
+    # Action buttons are at Y=0.78-0.98
+    y1 = int(H * 0.78)
     y2 = int(H * BUTTON_Y_MAX)
     x1 = int(W * BUTTON_X_MIN)
     x2 = int(W * BUTTON_X_MAX)
@@ -748,11 +769,8 @@ def _detect_buttons(img: np.ndarray, W: int, H: int, deal_me_in_only: bool = Fal
     hsv = cv2.cvtColor(region, cv2.COLOR_RGB2HSV)
 
     min_area = int(W * H * MIN_BUTTON_AREA_FRAC)
-    if deal_me_in_only:
-        min_area = int(W * H * 0.003)  # Use more lenient area for Deal Me In scan
-
-    min_btn_w = W * 0.08   # Real buttons are ~200px on 1230px table = 16% (was 0.10)
-    min_btn_h = H * 0.05   # Real buttons are ~80px on 617px table = 13% (was 0.07)
+    min_btn_w = W * 0.08
+    min_btn_h = H * 0.05
 
     buttons = {}
     rects = {}
@@ -760,140 +778,119 @@ def _detect_buttons(img: np.ndarray, W: int, H: int, deal_me_in_only: bool = Fal
     small_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
     region_w = x2 - x1
 
-    # Use separate HSV dictionaries to prevent color overlap.
-    # IMPORTANT: When scanning for action buttons, do NOT include DEAL_ME_IN_HSV.
-    # Deal Me In is handled separately by _fast_deal_me_in_scan() in engine.py.
-    # Including it here causes red UI elements to trigger false deal_me_in detections
-    # which interfere with action button detection.
-    if deal_me_in_only:
-        search_dicts = [DEAL_ME_IN_HSV]
-    else:
-        search_dicts = [BUTTON_HSV]
+    # Scan all HSV button color ranges (dark_red, green, yellow)
+    for btn_type, hsv_def in BUTTON_HSV.items():
+        mask = cv2.inRange(hsv, hsv_def['lower'], hsv_def['upper'])
 
-    for s_dict in search_dicts:
-        for btn_type, hsv_def in s_dict.items():
-            mask = cv2.inRange(hsv, hsv_def['lower'], hsv_def['upper'])
+        if hsv_def['label'] == 'dark_red':
+            mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=2)
+            mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, small_kernel, iterations=1)
+        else:
+            mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=1)
+            mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel, iterations=1)
 
-            if hsv_def['label'] == 'dark_red':
-                # GGSystem buttons are very close. Use a stronger dilation to
-                # ensure the whole button is captured as one blob.
-                mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=2)
-                mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, small_kernel, iterations=1)
-            else:
-                mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=1)
-                mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel, iterations=1)
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL,
+                                       cv2.CHAIN_APPROX_SIMPLE)
 
-            contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL,
-                                           cv2.CHAIN_APPROX_SIMPLE)
+        # Split abnormally wide dark_red contours (merged buttons)
+        button_rects = []
+        for c in contours:
+            bx, by, bw, bh = cv2.boundingRect(c)
+            area = bw * bh
 
-            # Split abnormally wide dark_red contours (merged buttons)
-            button_rects = []
-            for c in contours:
-                bx, by, bw, bh = cv2.boundingRect(c)
-                area = bw * bh
+            this_min_area = min_area if hsv_def['label'] != 'dark_red' else int(W * H * 0.002)
 
-                # GGSystem buttons can be smaller than 0.5% in some themes/resolutions.
-                # Relax the area constraint for dark_red significantly (0.2%)
-                this_min_area = min_area if hsv_def['label'] != 'dark_red' else int(W * H * 0.002)
+            if area < this_min_area or bw < (min_btn_w * 0.7) or bh < (min_btn_h * 0.7):
+                continue
 
-                if area < this_min_area or bw < (min_btn_w * 0.7) or bh < (min_btn_h * 0.7):
-                    continue
+            if hsv_def['label'] == 'dark_red' and bw > region_w * 0.30:
+                sub_mask = mask[by:by + bh, bx:bx + bw]
+                col_sum = np.sum(sub_mask > 0, axis=0)
+                max_col = max(col_sum) if len(col_sum) > 0 else 1
 
-                # If a dark_red contour is wider than 30% of button region,
-                # it's likely multiple buttons merged together
-                if hsv_def['label'] == 'dark_red' and bw > region_w * 0.30:
-                    # Try to find gaps by analyzing column-wise mask profile
-                    sub_mask = mask[by:by + bh, bx:bx + bw]
-                    col_sum = np.sum(sub_mask > 0, axis=0)  # pixels per column
-                    max_col = max(col_sum) if len(col_sum) > 0 else 1
+                threshold = max_col * 0.3
+                in_gap = col_sum < threshold
+                splits = []
+                gap_start = None
+                for ci in range(len(in_gap)):
+                    if in_gap[ci] and gap_start is None:
+                        gap_start = ci
+                    elif not in_gap[ci] and gap_start is not None:
+                        gap_mid = (gap_start + ci) // 2
+                        splits.append(gap_mid)
+                        gap_start = None
 
-                    # Find valleys (columns with < 30% of max density)
-                    threshold = max_col * 0.3
-                    in_gap = col_sum < threshold
-                    splits = []
-                    gap_start = None
-                    for ci in range(len(in_gap)):
-                        if in_gap[ci] and gap_start is None:
-                            gap_start = ci
-                        elif not in_gap[ci] and gap_start is not None:
-                            gap_mid = (gap_start + ci) // 2
-                            splits.append(gap_mid)
-                            gap_start = None
-
-                    if len(splits) >= 2:
-                        # Split at the found gaps
-                        edges = [0] + splits[:3] + [bw]
-                        for si in range(len(edges) - 1):
-                            sx = bx + edges[si]
-                            sw = edges[si + 1] - edges[si]
-                            if sw > min_btn_w:
-                                button_rects.append((sx, by, sw, bh))
-                        log.debug(f"Split merged {bw}px contour into {len(edges)-1} buttons at gaps {splits}")
-                    elif bw > region_w * 0.55:
-                        # No clear gaps found but very wide — split into 3 equal parts
-                        third_w = bw // 3
-                        for si in range(3):
-                            sx = bx + si * third_w
-                            sw = third_w if si < 2 else (bw - 2 * third_w)
+                if len(splits) >= 2:
+                    edges = [0] + splits[:3] + [bw]
+                    for si in range(len(edges) - 1):
+                        sx = bx + edges[si]
+                        sw = edges[si + 1] - edges[si]
+                        if sw > min_btn_w:
                             button_rects.append((sx, by, sw, bh))
-                        log.debug(f"Force-split {bw}px contour into 3 equal buttons")
-                    else:
-                        button_rects.append((bx, by, bw, bh))
+                    log.debug(f"Split merged {bw}px contour into {len(edges)-1} buttons at gaps {splits}")
+                elif bw > region_w * 0.55:
+                    third_w = bw // 3
+                    for si in range(3):
+                        sx = bx + si * third_w
+                        sw = third_w if si < 2 else (bw - 2 * third_w)
+                        button_rects.append((sx, by, sw, bh))
+                    log.debug(f"Force-split {bw}px contour into 3 equal buttons")
                 else:
                     button_rects.append((bx, by, bw, bh))
-
-            # Collect all button rects with absolute coords
-            abs_rects = []
-            for bx, by, bw, bh in button_rects:
-                abs_x = bx + x1
-                abs_y = by + y1
-                abs_rects.append((abs_x, abs_y, bw, bh))
-
-            # FAST PATH: if we have exactly 3 dark_red buttons, assign by
-            # position (GGPoker layout: fold=left, call=middle, raise=right).
-            # This avoids 3+ expensive pytesseract calls (~300ms each).
-            if hsv_def['label'] == 'dark_red' and len(abs_rects) >= 3:
-                abs_rects.sort(key=lambda r: r[0])  # Sort left to right
-                pos_types = ['fold', 'call', 'raise']
-                for idx, (abx, aby, abw, abh) in enumerate(abs_rects[-3:]):
-                    center = (abx + abw // 2, aby + abh // 2)
-                    pos_type = pos_types[idx]
-                    # Only OCR call/raise for amounts (fold doesn't need amount)
-                    amount, text = None, ""
-                    if pos_type in ('call', 'raise'):
-                        amount, text = _ocr_button_text(img, abx, aby, abw, abh)
-                    if pos_type not in buttons:
-                        buttons[pos_type] = {
-                            'center': center,
-                            'rect': (abx, aby, abw, abh),
-                            'amount': amount,
-                            'text': text,
-                            'confidence': 0.85,
-                            'color': 'positional',
-                        }
-                        rects[pos_type] = (abx, aby, abw, abh)
-                    log.debug(f"Button {pos_type} (positional): "
-                              f"({abx},{aby}) {abw}x{abh} amount={amount}")
             else:
-                # Fallback: OCR each button individually
-                for abs_x, abs_y, bw, bh in abs_rects:
-                    center = (abs_x + bw // 2, abs_y + bh // 2)
-                    amount, text = _ocr_button_text(img, abs_x, abs_y, bw, bh)
-                    actual_type = _classify_button_text(text, btn_type)
+                button_rects.append((bx, by, bw, bh))
 
-                    if actual_type not in buttons:
-                        buttons[actual_type] = {
-                            'center': center,
-                            'rect': (abs_x, abs_y, bw, bh),
-                            'amount': amount,
-                            'text': text,
-                            'confidence': 0.8 if text else 0.5,
-                            'color': hsv_def['label'],
-                        }
-                        rects[actual_type] = (abs_x, abs_y, bw, bh)
+        # Collect with absolute coords
+        abs_rects = []
+        for bx, by, bw, bh in button_rects:
+            abs_rects.append((bx + x1, by + y1, bw, bh))
 
-                    log.debug(f"Button {actual_type} ({hsv_def['label']}): "
-                              f"({abs_x},{abs_y}) {bw}x{bh} text={text!r} amount={amount}")
+        # POSITIONAL ASSIGNMENT: GGPoker layout is always fold=left, call=middle, raise=right.
+        if hsv_def['label'] == 'dark_red' and len(abs_rects) >= 3:
+            abs_rects.sort(key=lambda r: r[0])
+            _assign_positional_buttons(img, abs_rects[-3:], buttons, rects)
+        elif hsv_def['label'] == 'dark_red' and len(abs_rects) == 2:
+            # 2 dark_red: left=fold, right=raise. Geometric call fills in the middle.
+            abs_rects.sort(key=lambda r: r[0])
+            left_btn = abs_rects[0]
+            right_btn = abs_rects[1]
+            for pos_type, btn_rect in [('fold', left_btn), ('raise', right_btn)]:
+                abx, aby, abw, abh = btn_rect
+                center = (abx + abw // 2, aby + abh // 2)
+                if pos_type not in buttons:
+                    buttons[pos_type] = {
+                        'center': center,
+                        'rect': btn_rect,
+                        'amount': None,
+                        'text': '',
+                        'confidence': 0.5,
+                        'color': 'dark_red_positional',
+                    }
+                    rects[pos_type] = btn_rect
+                    log.debug(f"Positional (2-btn) {pos_type} at {center}")
+        else:
+            # Non-dark_red buttons (green check, yellow) or single dark_red
+            for abs_x, abs_y, bw, bh in abs_rects:
+                center = (abs_x + bw // 2, abs_y + bh // 2)
+                # Green buttons are check/call, yellow are check
+                if hsv_def['label'] == 'green':
+                    actual_type = 'check'  # Default; OCR only if needed
+                elif hsv_def['label'] == 'yellow':
+                    actual_type = 'check'
+                else:
+                    actual_type = btn_type
+                if actual_type not in buttons:
+                    buttons[actual_type] = {
+                        'center': center,
+                        'rect': (abs_x, abs_y, bw, bh),
+                        'amount': None,
+                        'text': '',
+                        'confidence': 0.7,
+                        'color': hsv_def['label'],
+                    }
+                    rects[actual_type] = (abs_x, abs_y, bw, bh)
+                log.debug(f"Button {actual_type} ({hsv_def['label']}): "
+                          f"({abs_x},{abs_y}) {bw}x{bh}")
 
         # Early exit: if we already have 3 action buttons, stop scanning
         action_found = {b for b in buttons if b in {'fold', 'call', 'check', 'raise', 'bet', 'all_in'}}
@@ -901,186 +898,103 @@ def _detect_buttons(img: np.ndarray, W: int, H: int, deal_me_in_only: bool = Fal
             log.debug(f"Found {len(action_found)} action buttons, skipping remaining HSV scans")
             break
 
-    # Positional fallback: GGSystem buttons are always left=fold, middle=call/check, right=raise.
-    # When OCR fails, multiple buttons get classified as 'fold' by color fallback.
-    # If we found 'fold' but have unclassified dark_red buttons, assign by position.
+    # --- Positional fallback: rescan without morph close to separate merged buttons ---
     if ('fold' in buttons or 'check' in buttons) and len(buttons) < 3:
-        # Check if we have any 'raise' or 'call' buttons. If not, scan the right-side
-        # of the button region more aggressively with OCR.
-        if 'raise' not in buttons:
-            # GGSystem Raise is usually on the right side: x > 0.60W
-            rx1 = int(W * 0.60)
-            rx2 = int(W * 0.98)
-            ry1 = int(H * 0.82)
-            ry2 = int(H * 0.98)
-            amount, text = _ocr_button_text(img, rx1, ry1, rx2 - rx1, ry2 - ry1)
-            t_lower = text.lower()
-            # NOTE: Use word-boundary-aware checks. 'all' in 'call' was a false positive.
-            has_raise = 'rais' in t_lower or 'bet' in t_lower
-            has_allin = ('all' in t_lower and 'in' in t_lower and 'call' not in t_lower)
-            if has_raise or has_allin:
-                log.info(f"Aggressive OCR scan found MISSED raise button: {text!r}")
-                # Use a default center on the right side if we can't find exact rect
-                buttons['raise'] = {
-                    'center': (rx1 + (rx2 - rx1) // 2, ry1 + (ry2 - ry1) // 2),
-                    'rect': (rx1, ry1, rx2 - rx1, ry2 - ry1),
-                    'amount': amount,
-                    'text': text,
-                    'confidence': 0.6,
-                    'color': 'ocr_fallback',
-                }
-                rects['raise'] = (rx1, ry1, rx2 - rx1, ry2 - ry1)
-
-    if 'fold' in buttons and len(buttons) < 3:
-        # Collect all dark_red button candidates sorted left-to-right
-        # Use NO morphological close to avoid merging adjacent buttons
-        all_dark_btns = []
-        for btn_type_key, hsv_def in BUTTON_HSV.items():
-            if hsv_def['label'] != 'dark_red':
-                continue
-            mask2 = cv2.inRange(hsv, hsv_def['lower'], hsv_def['upper'])
-            mask2 = cv2.morphologyEx(mask2, cv2.MORPH_OPEN, small_kernel, iterations=1)
-            contours2, _ = cv2.findContours(mask2, cv2.RETR_EXTERNAL,
-                                            cv2.CHAIN_APPROX_SIMPLE)
-            for c in contours2:
-                bx2, by2, bw2, bh2 = cv2.boundingRect(c)
-                area2 = bw2 * bh2
-                if area2 < min_area or bw2 < min_btn_w or bh2 < min_btn_h:
-                    continue
-                # Split wide merged contours
-                if bw2 > region_w * 0.30:
-                    sub_mask2 = mask2[by2:by2 + bh2, bx2:bx2 + bw2]
-                    col_sum2 = np.sum(sub_mask2 > 0, axis=0)
-                    max_col2 = max(col_sum2) if len(col_sum2) > 0 else 1
-                    threshold2 = max_col2 * 0.3
-                    in_gap2 = col_sum2 < threshold2
-                    splits2 = []
-                    gap_start2 = None
-                    for ci2 in range(len(in_gap2)):
-                        if in_gap2[ci2] and gap_start2 is None:
-                            gap_start2 = ci2
-                        elif not in_gap2[ci2] and gap_start2 is not None:
-                            splits2.append((gap_start2 + ci2) // 2)
-                            gap_start2 = None
-                    if len(splits2) >= 2:
-                        edges2 = [0] + splits2[:3] + [bw2]
-                        for si2 in range(len(edges2) - 1):
-                            sx2 = bx2 + edges2[si2]
-                            sw2 = edges2[si2 + 1] - edges2[si2]
-                            if sw2 > min_btn_w:
-                                all_dark_btns.append((sx2 + x1, by2 + y1, sw2, bh2))
-                    elif bw2 > region_w * 0.55:
-                        third = bw2 // 3
-                        for si2 in range(3):
-                            sx2 = bx2 + si2 * third
-                            sw2 = third if si2 < 2 else (bw2 - 2 * third)
-                            all_dark_btns.append((sx2 + x1, by2 + y1, sw2, bh2))
-                    else:
-                        all_dark_btns.append((bx2 + x1, by2 + y1, bw2, bh2))
-                else:
-                    all_dark_btns.append((bx2 + x1, by2 + y1, bw2, bh2))
-
-        all_dark_btns.sort(key=lambda b: b[0])  # Sort left to right
-
+        all_dark_btns = _find_dark_red_buttons_no_merge(hsv, x1, y1, small_kernel,
+                                                         min_area, min_btn_w, min_btn_h,
+                                                         region_w, W, H)
         if len(all_dark_btns) >= 3:
-            # GGSystem layout: left=fold, middle=call/check, right=raise
-            # Assign by POSITION only — no OCR (saves ~24 Tesseract calls)
-            pos_types = ['fold', 'call', 'raise']
-            for idx, btn_rect in enumerate(all_dark_btns[-3:]):
-                abx, aby, abw, abh = btn_rect
-                center = (abx + abw // 2, aby + abh // 2)
-                pos_type = pos_types[idx]
-                if pos_type not in buttons:
-                    # Only OCR the call/raise buttons (need amounts), skip fold
-                    amt, txt = None, ""
-                    if pos_type in ('call', 'raise'):
-                        amt, txt = _ocr_button_text(img, abx, aby, abw, abh)
-                    buttons[pos_type] = {
-                        'center': center,
-                        'rect': btn_rect,
-                        'amount': amt,
-                        'text': txt,
-                        'confidence': 0.6,
-                        'color': 'dark_red_positional',
-                    }
-                    rects[pos_type] = btn_rect
-                    log.debug(f"Positional button {pos_type} at {center}")
-
+            _assign_positional_buttons(img, all_dark_btns[-3:], buttons, rects)
         elif len(all_dark_btns) == 2:
-            # GGSystem: call button is near-black (invisible to HSV).
-            # With only 2 dark_red buttons visible: left=fold, right=raise.
-            # Geometric call detection (below) fills in the middle.
             left_btn = all_dark_btns[0]
             right_btn = all_dark_btns[1]
             for pos_type, btn_rect in [('fold', left_btn), ('raise', right_btn)]:
                 abx, aby, abw, abh = btn_rect
                 center = (abx + abw // 2, aby + abh // 2)
                 if pos_type not in buttons:
-                    amt, txt = None, ""
-                    if pos_type == 'raise':
-                        amt, txt = _ocr_button_text(img, abx, aby, abw, abh)
                     buttons[pos_type] = {
                         'center': center,
                         'rect': btn_rect,
-                        'amount': amt,
-                        'text': txt,
+                        'amount': None,
+                        'text': '',
                         'confidence': 0.5,
                         'color': 'dark_red_positional',
                     }
                     rects[pos_type] = btn_rect
-                    log.debug(f"Positional (2-btn) {pos_type} at {center}")
 
     # --- Geometric call button detection ---
-    # GGSystem layout is ALWAYS: fold (left) | call (middle) | raise (right).
-    # The call button is near-black (~RGB 20,16,16), invisible to all HSV ranges.
-    # But we ALWAYS detect fold and raise (both caught by dark_red HSV).
-    # So compute call's exact position from fold+raise geometry: same Y, same H,
-    # X starts at fold's right edge, width = gap between fold and raise.
-    has_action = bool(buttons)
+    # Call button is near-black, invisible to HSV. Compute from fold+raise geometry.
     missing_call = 'call' not in buttons and 'check' not in buttons
 
-    if missing_call and 'fold' in buttons and 'raise' in buttons and PYTESSERACT_AVAILABLE:
-        fold_r = buttons['fold']['rect']  # (x, y, w, h)
+    if missing_call and 'fold' in buttons and 'raise' in buttons:
+        fold_r = buttons['fold']['rect']
         raise_r = buttons['raise']['rect']
 
-        # Call is between fold's right edge and raise's left edge
         call_x = fold_r[0] + fold_r[2]  # fold right edge
         call_right = raise_r[0]           # raise left edge
         call_w = call_right - call_x
-        # Use fold's Y and height (all buttons same row)
         call_y = fold_r[1]
         call_h = fold_r[3]
 
         if call_w > min_btn_w and call_h > 0:
-            # Trim a few pixels of padding between buttons
             trim = max(int(call_w * 0.05), 2)
             call_x += trim
             call_w -= trim * 2
 
             center = (call_x + call_w // 2, call_y + call_h // 2)
 
-            # OCR this exact region — robust pipeline
-            amount, text = _ocr_button_text(img, call_x, call_y, call_w, call_h)
-            actual_type = _classify_button_text(text, 'call')
-            if actual_type in ('call', 'check', 'all_in'):
-                # If amount still None, try digits-only robust OCR
-                if amount is None:
-                    btn_crop = img[call_y:call_y + call_h, call_x:call_x + call_w]
-                    if btn_crop.size > 0:
-                        amount = _ocr_amount_robust(btn_crop, 'call_geometric')
+            buttons['call'] = {
+                'center': center,
+                'rect': (call_x, call_y, call_w, call_h),
+                'amount': None,
+                'text': '',
+                'confidence': 0.9,
+                'color': 'geometric',
+            }
+            rects['call'] = (call_x, call_y, call_w, call_h)
+            missing_call = False
+            log.debug(f"GEOMETRIC call button at ({call_x},{call_y}) {call_w}x{call_h}")
 
-                buttons[actual_type] = {
-                    'center': center,
-                    'rect': (call_x, call_y, call_w, call_h),
-                    'amount': amount,
-                    'text': text,
-                    'confidence': 0.9,  # High confidence — geometric position
-                    'color': 'geometric',
-                }
-                rects[actual_type] = (call_x, call_y, call_w, call_h)
-                missing_call = False
-                log.info(f"GEOMETRIC call button at ({call_x},{call_y}) "
-                         f"{call_w}x{call_h} amount={amount} text={text!r}")
+    # --- BATCH OCR: read amounts for call + raise in ONE pytesseract call ---
+    # This replaces individual _ocr_button_text calls (~200ms each) with a single
+    # batched call (~200ms total for both).
+    ocr_regions = {}
+    for btn_name in ('call', 'raise'):
+        if btn_name in buttons and buttons[btn_name].get('amount') is None:
+            r = buttons[btn_name]['rect']
+            ocr_regions[btn_name] = r
+
+    if ocr_regions:
+        batch_results = _batch_ocr_amounts(img, ocr_regions)
+        for btn_name, (amount, text) in batch_results.items():
+            if btn_name in buttons:
+                # Classify text to verify/correct button type
+                if text:
+                    actual_type = _classify_button_text(text, btn_name)
+                    if actual_type != btn_name and actual_type not in buttons:
+                        # OCR says this is a different button type (e.g. 'check' not 'call')
+                        buttons[actual_type] = buttons.pop(btn_name)
+                        rects[actual_type] = rects.pop(btn_name, None)
+                        buttons[actual_type]['amount'] = amount
+                        buttons[actual_type]['text'] = text
+                        log.debug(f"OCR reclassified {btn_name} -> {actual_type}: {text!r}")
+                    else:
+                        buttons[btn_name]['amount'] = amount
+                        buttons[btn_name]['text'] = text
+                else:
+                    buttons[btn_name]['amount'] = amount
+                    buttons[btn_name]['text'] = text
+
+        # If batch OCR failed to get amount for call/raise, try robust fallback
+        for btn_name in ('call', 'raise'):
+            if btn_name in buttons and buttons[btn_name].get('amount') is None:
+                r = buttons[btn_name]['rect']
+                btn_crop = img[r[1]:r[1] + r[3], r[0]:r[0] + r[2]]
+                if btn_crop.size > 0:
+                    amt = _ocr_amount_robust(btn_crop, f'{btn_name}_robust')
+                    if amt is not None:
+                        buttons[btn_name]['amount'] = amt
+                        log.debug(f"Robust OCR {btn_name}: amount={amt}")
 
     # Skip expensive OCR fallback if we already have 3+ action buttons
     action_found = {b for b in buttons if b in {'fold', 'call', 'check', 'raise', 'bet', 'all_in'}}
@@ -1089,6 +1003,7 @@ def _detect_buttons(img: np.ndarray, W: int, H: int, deal_me_in_only: bool = Fal
 
     # Last resort: full-region OCR scan (only if geometric didn't find it)
     missing_raise = 'raise' not in buttons
+    has_action = bool(buttons)
     if has_action and (missing_call or missing_raise) and PYTESSERACT_AVAILABLE:
         ocr_btn = _find_buttons_by_ocr(img, W, H, x1, y1, x2, y2, buttons)
         if ocr_btn:
@@ -1097,6 +1012,148 @@ def _detect_buttons(img: np.ndarray, W: int, H: int, deal_me_in_only: bool = Fal
                 rects[k] = v['rect']
 
     return buttons, rects
+
+
+def _detect_deal_me_in_color_only(img: np.ndarray, W: int, H: int) -> Tuple[Dict, Dict]:
+    """Detect Deal Me In / I'm Back buttons by color ONLY — no OCR.
+
+    Searches Y=20-98% for red/salmon and green buttons large enough to be
+    Deal Me In.  Returns immediately on first match (~3ms total).
+    """
+    y1 = int(H * 0.20)
+    y2 = int(H * BUTTON_Y_MAX)
+    x1 = int(W * BUTTON_X_MIN)
+    x2 = int(W * BUTTON_X_MAX)
+    region = img[y1:y2, x1:x2]
+
+    hsv = cv2.cvtColor(region, cv2.COLOR_RGB2HSV)
+
+    min_area = int(W * H * 0.003)
+    min_btn_w = W * 0.08
+    min_btn_h = H * 0.04
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+
+    buttons = {}
+    rects_out = {}
+
+    for btn_type, hsv_def in DEAL_ME_IN_HSV.items():
+        mask = cv2.inRange(hsv, hsv_def['lower'], hsv_def['upper'])
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=1)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel, iterations=1)
+
+        contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL,
+                                       cv2.CHAIN_APPROX_SIMPLE)
+
+        for c in contours:
+            bx, by, bw, bh = cv2.boundingRect(c)
+            area = bw * bh
+            if area < min_area or bw < min_btn_w or bh < min_btn_h:
+                continue
+
+            abs_x = bx + x1
+            abs_y = by + y1
+            center = (abs_x + bw // 2, abs_y + bh // 2)
+
+            # Additional validation: Deal Me In buttons are in the center-bottom
+            # area of the table.  Reject if too far left/right (avatar decorations).
+            center_x_pct = (abs_x + bw // 2) / W
+            if center_x_pct < 0.15 or center_x_pct > 0.85:
+                continue
+
+            buttons['deal_me_in'] = {
+                'center': center,
+                'rect': (abs_x, abs_y, bw, bh),
+                'amount': None,
+                'text': '',
+                'confidence': 0.85,
+                'color': hsv_def['label'],
+            }
+            rects_out['deal_me_in'] = (abs_x, abs_y, bw, bh)
+            log.debug(f"Deal Me In ({hsv_def['label']}): ({abs_x},{abs_y}) {bw}x{bh}")
+            return buttons, rects_out  # First match is enough
+
+    return buttons, rects_out
+
+
+def _assign_positional_buttons(img: np.ndarray, sorted_rects: list,
+                                buttons: Dict, rects: Dict) -> None:
+    """Assign fold/call/raise by position (left/middle/right). No OCR for fold.
+
+    Amounts for call and raise are read later via _batch_ocr_amounts in the caller.
+    """
+    pos_types = ['fold', 'call', 'raise']
+    for idx, btn_rect in enumerate(sorted_rects):
+        abx, aby, abw, abh = btn_rect
+        center = (abx + abw // 2, aby + abh // 2)
+        pos_type = pos_types[idx]
+        if pos_type not in buttons:
+            buttons[pos_type] = {
+                'center': center,
+                'rect': (abx, aby, abw, abh),
+                'amount': None,
+                'text': '',
+                'confidence': 0.85,
+                'color': 'positional',
+            }
+            rects[pos_type] = (abx, aby, abw, abh)
+        log.debug(f"Button {pos_type} (positional): ({abx},{aby}) {abw}x{abh}")
+
+
+def _find_dark_red_buttons_no_merge(hsv: np.ndarray, x1: int, y1: int,
+                                     small_kernel, min_area: int,
+                                     min_btn_w: float, min_btn_h: float,
+                                     region_w: int, W: int, H: int) -> list:
+    """Re-scan dark_red buttons WITHOUT morph close to avoid merging adjacent buttons.
+
+    Returns list of (abs_x, abs_y, w, h) sorted left-to-right.
+    """
+    all_dark_btns = []
+    for btn_type_key, hsv_def in BUTTON_HSV.items():
+        if hsv_def['label'] != 'dark_red':
+            continue
+        mask2 = cv2.inRange(hsv, hsv_def['lower'], hsv_def['upper'])
+        mask2 = cv2.morphologyEx(mask2, cv2.MORPH_OPEN, small_kernel, iterations=1)
+        contours2, _ = cv2.findContours(mask2, cv2.RETR_EXTERNAL,
+                                        cv2.CHAIN_APPROX_SIMPLE)
+        for c in contours2:
+            bx2, by2, bw2, bh2 = cv2.boundingRect(c)
+            area2 = bw2 * bh2
+            if area2 < min_area or bw2 < min_btn_w or bh2 < min_btn_h:
+                continue
+            if bw2 > region_w * 0.30:
+                sub_mask2 = mask2[by2:by2 + bh2, bx2:bx2 + bw2]
+                col_sum2 = np.sum(sub_mask2 > 0, axis=0)
+                max_col2 = max(col_sum2) if len(col_sum2) > 0 else 1
+                threshold2 = max_col2 * 0.3
+                in_gap2 = col_sum2 < threshold2
+                splits2 = []
+                gap_start2 = None
+                for ci2 in range(len(in_gap2)):
+                    if in_gap2[ci2] and gap_start2 is None:
+                        gap_start2 = ci2
+                    elif not in_gap2[ci2] and gap_start2 is not None:
+                        splits2.append((gap_start2 + ci2) // 2)
+                        gap_start2 = None
+                if len(splits2) >= 2:
+                    edges2 = [0] + splits2[:3] + [bw2]
+                    for si2 in range(len(edges2) - 1):
+                        sx2 = bx2 + edges2[si2]
+                        sw2 = edges2[si2 + 1] - edges2[si2]
+                        if sw2 > min_btn_w:
+                            all_dark_btns.append((sx2 + x1, by2 + y1, sw2, bh2))
+                elif bw2 > region_w * 0.55:
+                    third = bw2 // 3
+                    for si2 in range(3):
+                        sx2 = bx2 + si2 * third
+                        sw2 = third if si2 < 2 else (bw2 - 2 * third)
+                        all_dark_btns.append((sx2 + x1, by2 + y1, sw2, bh2))
+                else:
+                    all_dark_btns.append((bx2 + x1, by2 + y1, bw2, bh2))
+            else:
+                all_dark_btns.append((bx2 + x1, by2 + y1, bw2, bh2))
+
+    all_dark_btns.sort(key=lambda b: b[0])
+    return all_dark_btns
 
 
 def _find_buttons_by_ocr(
