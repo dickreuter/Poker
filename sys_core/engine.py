@@ -1212,11 +1212,11 @@ class MultiTableRunner:
 
         for session in sessions_to_check:
             try:
-                # Skip Deal Me In scan if we recently acted (means we're in a hand)
-                # Only scan when table has been idle for 5+ seconds
+                # Skip Deal Me In scan if we JUST acted (still in same hand)
+                # But allow after 1.5s — between-hand gap in Spin & Go is ~2-3s
                 since_action = (datetime.datetime.utcnow() - session.last_action_time).total_seconds()
-                if since_action < 5.0:
-                    continue  # Recently acted — we're in a hand, not sitting out
+                if since_action < 1.5:
+                    continue  # Just acted — still in same hand
 
                 w = session.window
                 bounds = w.bounds_pixels
