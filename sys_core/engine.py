@@ -896,6 +896,7 @@ class MultiTableRunner:
                 if not state.board_cards or len(state.board_cards) == 0:
                     if state.my_cards and len(state.my_cards) == 2:
                         session._cached_cards = list(state.my_cards)
+                        session._play_again_clicked = False  # New hand started, allow Play Again next time
                     elif not state.is_my_turn:
                         # Not our turn + no board = between hands, clear cache
                         session._cached_cards = None
@@ -3413,9 +3414,8 @@ class MultiTableRunner:
         try:
             import pyautogui
 
-            # Cooldown: don't spam Play Again clicks. Wait 10s after last click.
-            last_play_again = getattr(session, '_last_play_again_time', 0)
-            if time.time() - last_play_again < 10.0:
+            # Only click Play Again ONCE per game end. Reset when new hand detected.
+            if getattr(session, '_play_again_clicked', False):
                 return False
 
             screenshot = self.get_table_screenshot(session.window)
@@ -3481,7 +3481,7 @@ class MultiTableRunner:
                 return True
 
             pyautogui.click(screen_x, screen_y)
-            session._last_play_again_time = time.time()
+            session._play_again_clicked = True  # Only click once per game end
             log.info(f"TOURNAMENT RE-REGISTER: Clicked 'Play Again' at "
                      f"({screen_x}, {screen_y}) for {session.window.name}")
             self.stats['hands_played'] += 0  # Don't count this as a hand
