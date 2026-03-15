@@ -462,9 +462,12 @@ def read_player_cards(
                     q_holes = _count_enclosed_loops(bw_q)
                     q_is_two_components = _disambiguate_10_from_single(bw_q)
                     if tmpl_rank == '8' and q_holes < 2:
-                        log.warning(f"QUARANTINE: template says {tmpl_rank} but "
-                                    f"only {q_holes} holes — rejecting template, trusting OCR")
-                        tmpl_rank = None  # Don't trust this template
+                        # 8 has 2 enclosed holes, 6 has 1, 0/9 has 1.
+                        # If only 1 hole and template says 8 → it's actually 6 or 9.
+                        # OCR result (rank) is more likely correct here.
+                        corrected = rank if rank in ('6', '9') else '6'
+                        log.info(f"QUARANTINE FIX: template=8 but {q_holes} holes → {corrected}")
+                        tmpl_rank = corrected
                     elif tmpl_rank == 'A' and q_holes == 0:
                         log.warning(f"QUARANTINE: template says {tmpl_rank} but "
                                     f"0 holes — rejecting template, trusting OCR")
