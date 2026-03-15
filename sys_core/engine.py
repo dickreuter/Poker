@@ -1610,6 +1610,18 @@ class MultiTableRunner:
         if not state.is_my_turn:
             return False
 
+        # CRITICAL: Reset hand context when cards change (new hand in Rush & Cash).
+        # Without this, context from the previous hand carries over and
+        # the EV engine thinks every hand faces triple-barrel aggression.
+        prev_cards = getattr(session, '_last_decision_cards', None)
+        curr_cards = tuple(state.my_cards) if state.my_cards else None
+        if curr_cards and curr_cards != prev_cards:
+            session._hand_context = None
+            session._hand_context_last_street = ""
+            log.debug(f"CONTEXT RESET: new cards {curr_cards} (was {prev_cards})")
+        if curr_cards:
+            session._last_decision_cards = curr_cards
+
         # Require at least 2 real poker actions before proceeding.
         # A single "fold" likely means buttons haven't rendered yet.
         poker_actions = {'fold', 'call', 'check', 'raise', 'bet', 'all_in'}
@@ -5213,11 +5225,14 @@ class MultiTableRunner:
                                 # Update window position (may have moved)
                                 self.sessions[window.window_id].window = window
 
-                    # Only re-tile when NEW windows appear (not periodically)
-                    # Periodic retiling disrupts play and moves windows mid-hand
-                    if new_windows_found:
+                    # Re-tile all tables when new ones appear or every 60s (Lockdown)
+                    now = time.time()
+                    if new_windows_found or (now - self._last_tile_time) > 60.0:
                         try:
                             self.tile_all_tables()
+                            self._last_tile_time = now
+                            if not new_windows_found:
+                                log.info("GRID LOCKDOWN: re-aligned windows to grid")
                         except Exception:
                             pass
                 except Exception as e:

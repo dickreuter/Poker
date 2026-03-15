@@ -1,0 +1,117 @@
+{
+  "ts": "2026-03-15T02:15:34.614861",
+  "window": "Rush & Cash - $0.02 / $0.05",
+  "hero_cards": [
+    "JS",
+    "8H"
+  ],
+  "board_cards": [
+    "8S",
+    "KH",
+    "TH",
+    "3S",
+    "6D"
+  ],
+  "cards_face_down": false,
+  "street": "River",
+  "position": "SB",
+  "dealer_seat": 5,
+  "opponents_active": 5,
+  "opponents_in_hand": 1,
+  "pot": 31.8,
+  "call_amount": 15.9,
+  "min_raise": 0,
+  "hero_stack": 83.6,
+  "hero_stack_estimated": false,
+  "small_blind": 0.5,
+  "big_blind": 1.0,
+  "players": [
+    {
+      "seat": 0,
+      "name": "",
+      "stack": 83.6,
+      "bet": 0,
+      "is_hero": true,
+      "is_active": true
+    },
+    {
+      "seat": 1,
+      "name": "",
+      "stack": 458.6,
+      "bet": 0,
+      "is_hero": false,
+      "is_active": true
+    },
+    {
+      "seat": 2,
+      "name": "",
+      "stack": 126.2,
+      "bet": 0,
+      "is_hero": false,
+      "is_active": true
+    },
+    {
+      "seat": 3,
+      "name": "",
+      "stack": 129.4,
+      "bet": 0,
+      "is_hero": false,
+      "is_active": true
+    },
+    {
+      "seat": 4,
+      "name": "",
+      "stack": 107.6,
+      "bet": 0,
+      "is_hero": false,
+      "is_active": true
+    },
+    {
+      "seat": 5,
+      "name": "",
+      "stack": 204.0,
+      "bet": 0,
+      "is_hero": false,
+      "is_active": true
+    }
+  ],
+  "buttons": [
+    {
+      "type": "fold",
+      "amount": 0,
+      "rel_x": 0.5494,
+      "rel_y": 0.8244,
+      "confidence": 0.85
+    },
+    {
+      "type": "call",
+      "amount": 0,
+      "rel_x": 0.6588,
+      "rel_y": 0.8244,
+      "confidence": 0.85
+    },
+    {
+      "type": "raise",
+      "amount": 0,
+      "rel_x": 0.7524,
+      "rel_y": 0.8244,
+      "confidence": 0.85
+    }
+  ],
+  "equity": 0.57,
+  "abs_equity": 0.57,
+  "decision": "Check",
+  "ev": 20.352,
+  "call_limit": 0,
+  "bet_limit": 0,
+  "outs": 0,
+  "blocker_score": 0.15,
+  "opp_likely": [
+    "overpair",
+    "big_ace"
+  ],
+  "opp_bluff_pct": 0.03,
+  "opp_type": "fish_passive",
+  "ocr_latency_ms": 1299.1,
+  "ocr_source": "python"
+}

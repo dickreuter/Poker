@@ -1,0 +1,112 @@
+{
+  "ts": "2026-03-15T02:24:19.168568",
+  "window": "Rush & Cash - $0.01 / $0.02",
+  "hero_cards": [
+    "AS",
+    "5D"
+  ],
+  "board_cards": [],
+  "cards_face_down": false,
+  "street": "PreFlop",
+  "position": "SB",
+  "dealer_seat": 5,
+  "opponents_active": 5,
+  "opponents_in_hand": -1,
+  "pot": 2.5,
+  "call_amount": 9.0,
+  "min_raise": 7.0,
+  "hero_stack": 99.5,
+  "hero_stack_estimated": false,
+  "small_blind": 0.5,
+  "big_blind": 1.0,
+  "players": [
+    {
+      "seat": 0,
+      "name": "",
+      "stack": 99.5,
+      "bet": 0,
+      "is_hero": true,
+      "is_active": true
+    },
+    {
+      "seat": 1,
+      "name": "",
+      "stack": 99.6,
+      "bet": 0,
+      "is_hero": false,
+      "is_active": true
+    },
+    {
+      "seat": 2,
+      "name": "",
+      "stack": 210.0,
+      "bet": 0,
+      "is_hero": false,
+      "is_active": true
+    },
+    {
+      "seat": 3,
+      "name": "",
+      "stack": 4.0,
+      "bet": 0,
+      "is_hero": false,
+      "is_active": true
+    },
+    {
+      "seat": 4,
+      "name": "",
+      "stack": 100.0,
+      "bet": 0,
+      "is_hero": false,
+      "is_active": true
+    },
+    {
+      "seat": 5,
+      "name": "",
+      "stack": 93.6,
+      "bet": 0,
+      "is_hero": false,
+      "is_active": true
+    }
+  ],
+  "buttons": [
+    {
+      "type": "fold",
+      "amount": 0,
+      "rel_x": 0.3218,
+      "rel_y": 0.8114,
+      "confidence": 0.5
+    },
+    {
+      "type": "raise",
+      "amount": 7.0,
+      "rel_x": 0.6688,
+      "rel_y": 0.8244,
+      "confidence": 0.5
+    },
+    {
+      "type": "call",
+      "amount": 9.0,
+      "rel_x": 0.4876,
+      "rel_y": 0.8114,
+      "confidence": 0.9
+    }
+  ],
+  "equity": 0.53,
+  "abs_equity": 0.53,
+  "decision": "Fold",
+  "ev": 0.0,
+  "call_limit": 0,
+  "bet_limit": 0,
+  "outs": 0,
+  "blocker_score": 0.15,
+  "opp_likely": [
+    "wide_range",
+    "any_pair",
+    "suited_cards"
+  ],
+  "opp_bluff_pct": 0.21,
+  "opp_type": "fish_passive",
+  "ocr_latency_ms": 1438.1,
+  "ocr_source": "python"
+}

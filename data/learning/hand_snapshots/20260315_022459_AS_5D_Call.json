@@ -1,0 +1,110 @@
+{
+  "ts": "2026-03-15T02:25:00.888382",
+  "window": "Rush & Cash - $0.01 / $0.02",
+  "hero_cards": [
+    "AS",
+    "5D"
+  ],
+  "board_cards": [
+    "QD",
+    "4D",
+    "6H",
+    "QH",
+    "4H"
+  ],
+  "cards_face_down": false,
+  "street": "River",
+  "position": "UTG",
+  "dealer_seat": 3,
+  "opponents_active": 5,
+  "opponents_in_hand": 1,
+  "pot": 6.5,
+  "call_amount": 0,
+  "min_raise": 0,
+  "hero_stack": 97.5,
+  "hero_stack_estimated": false,
+  "small_blind": 0.5,
+  "big_blind": 1.0,
+  "players": [
+    {
+      "seat": 0,
+      "name": "",
+      "stack": 97.5,
+      "bet": 0,
+      "is_hero": true,
+      "is_active": true
+    },
+    {
+      "seat": 1,
+      "name": "",
+      "stack": 99.6,
+      "bet": 0,
+      "is_hero": false,
+      "is_active": true
+    },
+    {
+      "seat": 2,
+      "name": "",
+      "stack": 210.0,
+      "bet": 0,
+      "is_hero": false,
+      "is_active": true
+    },
+    {
+      "seat": 3,
+      "name": "",
+      "stack": 4.0,
+      "bet": 0,
+      "is_hero": false,
+      "is_active": true
+    },
+    {
+      "seat": 4,
+      "name": "",
+      "stack": 100.0,
+      "bet": 0,
+      "is_hero": false,
+      "is_active": true
+    },
+    {
+      "seat": 5,
+      "name": "",
+      "stack": 93.6,
+      "bet": 0,
+      "is_hero": false,
+      "is_active": true
+    }
+  ],
+  "buttons": [
+    {
+      "type": "fold",
+      "amount": 0,
+      "rel_x": 0.3235,
+      "rel_y": 0.8122,
+      "confidence": 0.5
+    },
+    {
+      "type": "raise",
+      "amount": 0,
+      "rel_x": 0.6482,
+      "rel_y": 0.8398,
+      "confidence": 0.5
+    }
+  ],
+  "equity": 0.45,
+  "abs_equity": 0.45,
+  "decision": "Call",
+  "ev": 2.925,
+  "call_limit": 0,
+  "bet_limit": 0,
+  "outs": 0,
+  "blocker_score": 0.15,
+  "opp_likely": [
+    "monster",
+    "bluff"
+  ],
+  "opp_bluff_pct": 0.07,
+  "opp_type": "fish_passive",
+  "ocr_latency_ms": 2642.6,
+  "ocr_source": "python"
+}
