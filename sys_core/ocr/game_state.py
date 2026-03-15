@@ -547,7 +547,24 @@ class GameState:
         # --- Raiser/caller inference for opponent range estimation ---
         # first_raiser_utg: UTG position of the first raiser (0=UTG...5=BB)
         # Used by Monte Carlo to select opponent range tables
-        if t.other_player_has_initiative and not is_postflop:
+        #
+        # PREFER ground-truth OCR data from chip postings on the felt.
+        # Fall back to heuristic when OCR didn't detect a raiser.
+        _raiser_pos_to_utg = {
+            'UTG': 0, 'MP': 1, 'CO': 2, 'BTN': 3, 'SB': 4, 'BB': 5}
+        if (self.preflop_raiser_position
+                and self.preflop_raiser_position in _raiser_pos_to_utg
+                and not is_postflop):
+            # Ground-truth raiser detected from chip posting OCR
+            t.first_raiser_utg = float(
+                _raiser_pos_to_utg[self.preflop_raiser_position])
+            t.first_raiser = 1
+            t._raiser_already_set = True
+            t.first_caller_utg = _np.nan
+            log.info(f"Raiser from OCR: {self.preflop_raiser_position} "
+                     f"(seat {self.preflop_raiser_seat}) "
+                     f"-> first_raiser_utg={t.first_raiser_utg}")
+        elif t.other_player_has_initiative and not is_postflop:
             # Preflop raise detected — estimate raiser position from call size
             # and hero's position. The last aggressor (facing us) matters most.
             _call = call_val
