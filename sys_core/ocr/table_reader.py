@@ -134,7 +134,16 @@ DEAL_ME_IN_HSV = {
         'lower': np.array([0, 120, 150]),
         'upper': np.array([12, 255, 255]),
         'label': 'red',
-    }
+    },
+    'deal_me_in_green': {
+        # Bright green "Deal Me In" / "I'm Back" buttons (some table themes)
+        # Same green range as action buttons but only searched during deal_me_in_only scans,
+        # so it won't interfere with normal action button detection.
+        # OCR classification will confirm the text says "Deal" before acting.
+        'lower': np.array([35, 100, 140]),
+        'upper': np.array([85, 255, 255]),
+        'label': 'green',
+    },
 }
 
 # GGSystem's call button is near-black with faint gray text.
@@ -209,15 +218,30 @@ def read_table(
     yellow_pixels = int(np.sum(yellow_mask))
     total_btn_pixels = red_pixels + green_pixels + yellow_pixels
     if total_btn_pixels < 500:
-        # No buttons visible — return minimal state fast (skip all OCR)
-        return GameState(
-            my_cards=[], board_cards=[], available_actions=[],
-            pot=0.0, is_my_turn=False, players=[],
-            small_blind=sb, big_blind=bb,
-            dealer_seat=-1, hero_seat=0,
-            game_type=game_type, is_tournament=(game_type == 'tournament'),
-            tournament_subtype=tournament_subtype,
-        )
+        # No action buttons in the narrow Y=82-98% region.
+        # Do a quick secondary scan of the wider bottom half (Y=50-98%)
+        # for Deal Me In / I'm Back buttons which can appear higher up.
+        dmi_y1, dmi_y2 = int(H * 0.50), int(H * 0.98)
+        dmi_x1, dmi_x2 = int(W * 0.10), int(W * 0.90)
+        dmi_region = img[dmi_y1:dmi_y2, dmi_x1:dmi_x2]
+        dmi_hsv = cv2.cvtColor(dmi_region, cv2.COLOR_RGB2HSV)
+        # Green Deal Me In button: H=35-85, S>100, V>140
+        dmi_green = (dmi_hsv[:,:,0] >= 35) & (dmi_hsv[:,:,0] <= 85) & \
+                    (dmi_hsv[:,:,1] > 100) & (dmi_hsv[:,:,2] > 140)
+        # Red/salmon Deal Me In button: H<12, S>120, V>150
+        dmi_red = (dmi_hsv[:,:,0] < 12) & \
+                  (dmi_hsv[:,:,1] > 120) & (dmi_hsv[:,:,2] > 150)
+        dmi_pixels = int(np.sum(dmi_green)) + int(np.sum(dmi_red))
+        if dmi_pixels < 500:
+            # Truly no buttons anywhere — return minimal state fast (skip all OCR)
+            return GameState(
+                my_cards=[], board_cards=[], available_actions=[],
+                pot=0.0, is_my_turn=False, players=[],
+                small_blind=sb, big_blind=bb,
+                dealer_seat=-1, hero_seat=0,
+                game_type=game_type, is_tournament=(game_type == 'tournament'),
+                tournament_subtype=tournament_subtype,
+            )
 
     # --- BUTTON CACHE: hash the button region to skip OCR on repeat frames ---
     # Buttons occupy Y=78-98%, X=2-98% (the _detect_buttons search region).
@@ -1500,7 +1524,7 @@ def _classify_button_text(text: str, color_type: str) -> str:
     """Determine actual button type from OCR text, falling back to color."""
     t = text.lower()
     # Non-action buttons — must be checked FIRST
-    if 'deal' in t:
+    if 'deal' in t or 'back' in t:
         return 'deal_me_in'
     if 'new' in t and 'hand' in t:
         return 'new_hand'
@@ -1521,6 +1545,9 @@ def _classify_button_text(text: str, color_type: str) -> str:
     # Yellow buttons (Battle Royale theme) default to check
     if color_type == 'check_yellow':
         return 'check'
+    # Map deal_me_in_green -> deal_me_in for engine compatibility
+    if color_type == 'deal_me_in_green':
+        return 'deal_me_in'
     return color_type
 
 

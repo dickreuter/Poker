@@ -318,6 +318,7 @@ class TableSession:
     _mouse: Optional[MouseMoverTableBased] = None
     _cached_game_state: Optional[object] = None  # GameState from check, reused by process
     _last_acted_key: str = ""  # "cards|board_count" — prevents acting twice on same street
+    _last_acted_time: float = 0.0  # time.time() when last acted — dedup expires after 15s
 
     # Bayesian range tracking (beyond-GTO exploitative engine)
     _bayesian_villain_range: Optional[dict] = None
@@ -848,10 +849,13 @@ class MultiTableRunner:
 
             # Quartz may return slightly different dimensions than PIL.
             # Cache PIL's size once and resize Quartz to match exactly.
+            # IMPORTANT: Use NEAREST (not LANCZOS) to preserve sharp pixel edges.
+            # LANCZOS interpolation blurs card text and suit symbols, causing
+            # card detection failures (white-text HSV thresholds stop matching).
             if not hasattr(self, '_pil_screen_size'):
                 self._pil_screen_size = ImageGrab.grab().size
             if img.size != self._pil_screen_size:
-                img = img.resize(self._pil_screen_size, Image.LANCZOS)
+                img = img.resize(self._pil_screen_size, Image.NEAREST)
             return img
         except Exception:
             return ImageGrab.grab()
@@ -1631,9 +1635,14 @@ class MultiTableRunner:
         pot_key = round(state.pot, 1) if state.pot else 0
         actions_key = ','.join(sorted(a.action_type for a in state.available_actions))
         current_key = f"{cards_key}|{board_count}|{pot_key}|{actions_key}"
-        if current_key and current_key == session._last_acted_key:
-            log.debug(f"Dedup: already acted on {current_key}, skipping")
+        # Expire dedup after 15 seconds — same key can legitimately reappear
+        # in a new hand (same cards, same pot, same buttons).
+        dedup_age = time.time() - session._last_acted_time
+        if current_key and current_key == session._last_acted_key and dedup_age < 15.0:
+            log.debug(f"Dedup: already acted on {current_key} ({dedup_age:.1f}s ago), skipping")
             return False
+        if current_key and current_key == session._last_acted_key and dedup_age >= 15.0:
+            log.info(f"Dedup EXPIRED after {dedup_age:.1f}s — allowing action on {current_key}")
 
         # Create a FRESH TableScreenBased per call for thread safety.
         # When multiple tables run process_table_new_ocr concurrently via
@@ -2445,6 +2454,7 @@ class MultiTableRunner:
             pot_key = round(state.pot, 1) if state.pot else 0
             actions_key = ','.join(sorted(a.action_type for a in state.available_actions)) if state.available_actions else ''
             session._last_acted_key = f"{cards_key}|{board_count}|{pot_key}|{actions_key}"
+            session._last_acted_time = time.time()
             self.stats['hands_played'] += 1
             action_key = action.action_type
             if action_key in self.stats['decisions']:
@@ -2553,6 +2563,7 @@ class MultiTableRunner:
                 pot_key = round(state.pot, 1) if state.pot else 0
                 actions_key = ','.join(sorted(a.action_type for a in state.available_actions)) if state.available_actions else ''
                 session._last_acted_key = f"{cards_key}|{board_count}|{pot_key}|{actions_key}"
+                session._last_acted_time = time.time()
                 return True
 
             # --- FINE-TUNE INPUT POSITION ---
@@ -2719,6 +2730,7 @@ class MultiTableRunner:
         pot_key = round(state.pot, 1) if state.pot else 0
         actions_key = ','.join(sorted(a.action_type for a in state.available_actions)) if state.available_actions else ''
         session._last_acted_key = f"{cards_key}|{board_count}|{pot_key}|{actions_key}"
+        session._last_acted_time = time.time()
 
         self.stats['hands_played'] += 1
         action_key = action.action_type
