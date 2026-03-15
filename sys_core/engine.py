@@ -2577,8 +2577,10 @@ class MultiTableRunner:
             ref_y = bet_btn.screen_y_pt if bet_btn else action.screen_y_pt
 
             shortcut_used = False
-            # Only use shortcuts postflop — preflop needs precise GTO sizing
-            if not is_preflop:
+            # Use shortcuts for BOTH preflop and postflop.
+            # Speed is more important than exact sizing — the 4-second typing
+            # delay causes raises to fail (table state changes before confirm).
+            if True:  # was: if not is_preflop
                 shortcut_map = {
                     0.33: (-259, -58, 'shortcut_33%'),
                     0.50: (-217, -58, 'shortcut_50%'),
@@ -2588,8 +2590,8 @@ class MultiTableRunner:
                 # Check if target_amount is close to any pot-fraction shortcut
                 for frac, (dx, dy, label) in shortcut_map.items():
                     shortcut_amount = pot_bb * frac
-                    # Allow 15% tolerance for matching
-                    if shortcut_amount > 0 and abs(bb_amount - shortcut_amount) / max(shortcut_amount, 1) < 0.15:
+                    # Allow 30% tolerance — speed trumps exact sizing
+                    if shortcut_amount > 0 and abs(bb_amount - shortcut_amount) / max(shortcut_amount, 1) < 0.30:
                         self._reliable_click(ref_x + dx, ref_y + dy, label, session=session)
                         shortcut_used = True
                         log.info(f"Using {frac:.0%} POT shortcut (target={bb_amount:.1f}BB "

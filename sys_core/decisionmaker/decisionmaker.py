@@ -658,14 +658,24 @@ class Decision(DecisionBase):
                         # Board-aware filtering: evaluate each combo on the actual
                         # board, remove hands too weak to bet, compute equity vs
                         # the realistic betting range.
-                        range_eq, filter_info = re.equity_vs_board_aware_range(
+                        result = re.equity_vs_board_aware_range(
                             t.mycards, board, v_range,
                             street=street, action=v_action,
                             player_type=ptype,
                         )
-                        log.info(f"BOARD-AWARE RANGE: {filter_info}")
+                        if isinstance(result, tuple) and len(result) == 2:
+                            range_eq, filter_info = result
+                            log.info(f"BOARD-AWARE RANGE: {filter_info}")
+                        else:
+                            range_eq = float(result) if result is not None else None
                     else:
                         range_eq = re.equity_vs_range(t.mycards, board, v_range, iterations=10000)
+                    # Ensure range_eq is numeric
+                    if range_eq is not None and not isinstance(range_eq, (int, float)):
+                        try:
+                            range_eq = float(range_eq)
+                        except (ValueError, TypeError):
+                            range_eq = None
 
                 # Ensure range_eq is a valid float
                 if isinstance(range_eq, (int, float)) and 0 <= range_eq <= 1:
