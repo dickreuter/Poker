@@ -350,6 +350,22 @@ class SystemServiceTray:
 
         self.menu.addSeparator()
 
+        # --- Current hand (live) ---
+        self.live_header = self._add_info("Current Hand")
+        self.live_cards = self._add_info("  --")
+        self.live_position = self._add_info("  --")
+        self.live_action = self._add_info("  --")
+        self.live_raiser = self._add_info("  --")
+        self.live_equity = self._add_info("  --")
+        self.live_header.setVisible(False)
+        self.live_cards.setVisible(False)
+        self.live_position.setVisible(False)
+        self.live_action.setVisible(False)
+        self.live_raiser.setVisible(False)
+        self.live_equity.setVisible(False)
+
+        self.menu.addSeparator()
+
         # --- Session stats section ---
         self.stats_header = self._add_info("Session Stats")
         self.hands_pnl_action = self._add_info("  No session data")
@@ -501,10 +517,67 @@ class SystemServiceTray:
     def _reload_data(self):
         self._load_session_stats()
         self._load_recent_hands()
+        self._update_live_hand()
         self._update_stats_display()
         self._update_hands_display()
         self._update_game_info()
         self._update_tooltip()
+
+    def _update_live_hand(self):
+        """Show the most recent decision as the 'current hand' live display."""
+        groups = getattr(self, '_recent_hands_grouped', [])
+        if not groups or not self._is_running:
+            self.live_header.setVisible(False)
+            self.live_cards.setVisible(False)
+            self.live_position.setVisible(False)
+            self.live_action.setVisible(False)
+            self.live_raiser.setVisible(False)
+            self.live_equity.setVisible(False)
+            return
+
+        # Latest hand group (most recent)
+        latest = groups[-1]
+        last = latest[-1]  # Most recent entry in this hand
+
+        cards = last.get('cards', [])
+        board = last.get('board', [])
+        pos = last.get('pos', '??')
+        street = last.get('street', '??')
+        decision = last.get('decision', '??')
+        equity = last.get('equity', 0)
+        ev = last.get('ev', 0)
+        pot = last.get('pot', 0)
+        call_amt = last.get('call', 0)
+        raiser_pos = last.get('preflop_raiser_position', '')
+        n_players = last.get('num_players', 0)
+
+        self.live_header.setVisible(True)
+
+        # Cards + board
+        cards_str = ' '.join(cards[:2]) if cards else '??'
+        board_str = f" | {' '.join(board)}" if board else ''
+        self.live_cards.setText(f"  {cards_str}{board_str}  ({street})")
+        self.live_cards.setVisible(True)
+
+        # Position + players
+        self.live_position.setText(f"  Position: {pos}  |  {n_players} players")
+        self.live_position.setVisible(True)
+
+        # Decision + EV
+        ev_str = f"+{ev:.1f}" if ev > 0 else f"{ev:.1f}"
+        self.live_action.setText(f"  {decision}  |  EV: {ev_str} BB  |  Pot: {pot:.1f} BB")
+        self.live_action.setVisible(True)
+
+        # Raiser info
+        if raiser_pos:
+            self.live_raiser.setText(f"  Raiser: {raiser_pos}  |  Call: {call_amt:.1f} BB")
+            self.live_raiser.setVisible(True)
+        else:
+            self.live_raiser.setVisible(False)
+
+        # Equity
+        self.live_equity.setText(f"  Equity: {equity:.0%}")
+        self.live_equity.setVisible(True)
 
     def _load_session_stats(self):
         try:
