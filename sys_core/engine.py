@@ -2763,6 +2763,31 @@ class MultiTableRunner:
         
         log.info(f"EXECUTION: Clicked {action.action_type} for decision {decision_label}")
 
+        # ── CLEAN HAND SUMMARY (one line per action, easy to read) ──
+        try:
+            _cards = state.my_cards if state.my_cards else []
+            _board = state.board_cards if state.board_cards else []
+            _suit = {'S': '♠', 'H': '♥', 'D': '♦', 'C': '♣'}
+            _hand = ' '.join(f"{c[:-1]}{_suit.get(c[-1], c[-1])}" for c in _cards) if _cards else '??'
+            _brd = ' '.join(f"{c[:-1]}{_suit.get(c[-1], c[-1])}" for c in _board) if _board else ''
+            _eq = getattr(t, 'equity', 0) or 0
+            _pot = state.pot if state.pot else 0
+            _call = state.call_amount if state.call_amount else 0
+            _stack = state.hero_stack if state.hero_stack else 0
+            _pos = getattr(state, 'position', '?')
+            _stage = getattr(t, 'gameStage', '?')
+            _opp = getattr(t, 'other_active_players', '?')
+            _clicked = action.action_type.upper()
+            _intended = str(decision_label).split('.')[-1].upper() if decision_label else '?'
+            _mismatch = ' ⚠️MISMATCH' if _clicked.lower() != _intended.lower().replace('bet half pot','raise').replace('bet pot','raise').replace('allin','raise').replace('bet4','raise').replace('bet3','raise').replace('bet2','raise').replace('bet1','raise') else ''
+
+            log.info(f"📋 HAND: [{_hand}] {('on [' + _brd + ']') if _brd else 'preflop'} "
+                     f"| {_stage} {_pos} {_opp}opp "
+                     f"| eq={_eq:.0%} pot={_pot:.1f} call={_call:.1f} stack={_stack:.1f} "
+                     f"| DECIDED={_intended} → CLICKED={_clicked}{_mismatch}")
+        except Exception:
+            pass
+
         # --- Post-click verification (Phase 4A) ---
         # For ALL actions, check if the button is still visible after clicking.
         # If it is, the click didn't register — retry once.
