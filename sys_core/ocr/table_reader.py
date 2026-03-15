@@ -235,13 +235,15 @@ def read_table(
         if dmi_pixels < 500:
             # Truly no buttons anywhere — return minimal state fast (skip all OCR)
             _sb, _bb = _parse_blinds(window_name)
+            _gt = _detect_game_type(window_name)
+            _tst = _detect_tournament_subtype(window_name)
             return GameState(
                 my_cards=[], board_cards=[], available_actions=[],
                 pot=0.0, is_my_turn=False, players=[],
                 small_blind=_sb, big_blind=_bb,
                 dealer_seat=-1, hero_seat=0,
-                game_type=game_type, is_tournament=(game_type == 'tournament'),
-                tournament_subtype=tournament_subtype,
+                game_type=_gt, is_tournament=(_gt == 'tournament'),
+                tournament_subtype=_tst,
             )
 
     # --- BUTTON CACHE: hash the button region to skip OCR on repeat frames ---
