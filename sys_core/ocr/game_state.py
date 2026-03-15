@@ -8,7 +8,7 @@ The Rust binary outputs JSON matching this schema, and Python deserializes it.
 import logging
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Tuple
 
 log = logging.getLogger('game_state')
 
@@ -68,6 +68,7 @@ class HandContext:
     is_donk_bet: bool = False           # Non-raiser betting into raiser
     streets_of_aggression: int = 0      # How many streets villain has bet/raised
     is_multiway: bool = False           # 3+ players to flop
+    hero_is_ip: bool = False             # Hero is in position (acts last postflop)
 
     def record_action(self, street: str, actor: str, action: str,
                       amount: float = 0.0, pot_after: float = 0.0):
@@ -268,6 +269,11 @@ class GameState:
     street: Street = Street.UNKNOWN
     is_my_turn: bool = False
     position: str = "UNKNOWN"  # BTN, SB, BB, UTG, MP, CO
+
+    # Preflop action detection (from chip postings on felt)
+    preflop_raiser_seat: int = -1       # Physical seat of the raiser (-1 = no raise)
+    preflop_raiser_position: str = ""   # Position name of raiser (UTG/MP/CO/BTN/SB/BB)
+    chip_postings: List[Tuple[float, int]] = field(default_factory=list)  # [(amount_bb, seat)]
 
     # Opponent detection
     opponents_in_hand: int = -1  # -1 = unknown, 0+ = from card-back detection

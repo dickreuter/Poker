@@ -47,6 +47,10 @@ _OCR_CACHE: Dict[Tuple[int, int, int, int], Tuple[Optional[float], str]] = {}
 # Hash the button region pixels; if unchanged, reuse cached OCR results.
 # window_id -> (pixel_hash, buttons_dict, button_rects_dict)
 _BUTTON_CACHE: Dict[int, Tuple[int, Dict, Dict]] = {}
+# Position cache: blind text only visible preflop; cache for postflop streets.
+# window_id -> (hero_cards_key, sb_seat, bb_seat, position_str)
+# hero_cards_key ties the cache to the current hand (cards change → new hand).
+_POSITION_CACHE: Dict[int, Tuple[str, int, int, str]] = {}
 
 # ---------------------------------------------------------------------------
 #  Region definitions (percentage of table image)
@@ -92,6 +96,20 @@ SEAT_REGIONS_6MAX = [
     (0.500, 0.268, 0.16, 0.060),  # Seat 3: Top center
     (0.870, 0.370, 0.16, 0.060),  # Seat 4: Right-top (was x=0.888 y=0.378 h=0.040)
     (0.915, 0.765, 0.16, 0.060),  # Seat 5: Right-bottom
+]
+
+# 9-max layout for tournaments (GGMasters, WSOP, etc.)
+# Calibrated from $250 Mini Main Event screenshot (Mar 15 2026, 1706x1244).
+SEAT_REGIONS_9MAX = [
+    (0.500, 0.900, 0.14, 0.040),  # Seat 0: Hero (bottom center)
+    (0.180, 0.760, 0.16, 0.060),  # Seat 1: Left-bottom
+    (0.060, 0.480, 0.16, 0.060),  # Seat 2: Left-middle
+    (0.220, 0.260, 0.16, 0.060),  # Seat 3: Left-top
+    (0.500, 0.200, 0.16, 0.060),  # Seat 4: Top center
+    (0.780, 0.260, 0.16, 0.060),  # Seat 5: Right-top
+    (0.940, 0.480, 0.16, 0.060),  # Seat 6: Right-middle
+    (0.780, 0.760, 0.16, 0.060),  # Seat 7: Right-bottom
+    (0.500, 0.900, 0.14, 0.040),  # Seat 8: (alias for seat 0 in 8-max)
 ]
 
 # Dealer button detection area (within the felt, away from edges)
@@ -594,72 +612,140 @@ def read_table(
             if a.action_type == btn_type:
                 a.amount = amount
 
-    # 9. Dealer button and position
-    dealer_seat, _, _ = _detect_dealer_button(img, W, H)
+    # 9. Position detection
+    # PRIMARY: Blind chip colors (red=SB, green=BB) on the felt.
+    #   99% detection rate across Spin, Cash, Tournament screenshots.
+    #   Only visible preflop; postflop chips get collected into pot.
+    # CACHE: Position is cached per hand (keyed by hero cards). Postflop
+    #   reuses the preflop detection. New cards = new hand = re-detect.
     hero_seat = 0  # Always seat 0 (bottom center)
-    # Rush & Cash / Spin & Gold are ALWAYS 6-max tables — use 6 seats for
-    # position calculation even if stack OCR only detected 3-5 players.
-    # Using len(players) caused UTG to appear 27% of hands (should be 17%)
-    # because unreadable stacks reduced num_active to 4, compressing the
-    # position names array and mapping CO/MP → UTG.
-    # Determine number of seats from game type and detected players
-    # Spin & Go = 3 seats, cash/tournament = 6 (or detect from active players)
-    num_seats = 6
-    if game_type == 'spin':
+
+    # Table size: detect from player count if available, else game type
+    num_active_players = len([p for p in players if p.is_active]) if players else 0
+
+    if num_active_players >= 7:
+        num_seats = 9  # 7+ players visible → 9-max table
+    elif game_type == 'spin':
         num_seats = 3
-    elif len(players) > 0:
-        active = sum(1 for p in players if p.stack > 0)
-        if active <= 3:
-            num_seats = 3  # Heads-up or 3-handed (late tournament, Spin)
-        elif active <= 6:
+    elif game_type == 'tournament':
+        _wn = window_name.lower() if window_name else ''
+        if '6-max' in _wn or '6max' in _wn:
             num_seats = 6
         else:
-            num_seats = 9
-    # Adaptive position detection: use dealer button + occupied seats.
-    # Works for any number of players — no hardcoded seat counts.
-    # Finds which seats have players, maps dealer to nearest occupied seat,
-    # then computes hero's position relative to the dealer.
-    if dealer_seat >= 0:
-        # Build list of all occupied seats (hero + opponents with stacks)
-        occupied = [0]  # Hero always at seat 0
-        for i, p in enumerate(players):
-            seat_idx = i + 1
-            if p.stack > 0:
-                occupied.append(seat_idx)
-
-        # Cap to expected table size — OCR noise can detect stacks in empty seats
-        if num_seats <= 3 and len(occupied) > 3:
-            # Keep hero + 2 opponents nearest to dealer (most likely real players)
-            opp_with_dist = []
-            for s in occupied:
-                if s == 0:
-                    continue
-                d = min(abs(s - dealer_seat), 6 - abs(s - dealer_seat))
-                opp_with_dist.append((d, s))
-            opp_with_dist.sort()
-            occupied = [0] + [s for _, s in opp_with_dist[:num_seats - 1]]
-
-        occupied.sort()
-        n_players = len(occupied)
-
-        # Map dealer physical seat → nearest occupied seat
-        if dealer_seat in occupied:
-            dealer_relative = occupied.index(dealer_seat)
-        else:
-            best_dist = float('inf')
-            dealer_relative = 0
-            for idx, s in enumerate(occupied):
-                d = min(abs(s - dealer_seat), 6 - abs(s - dealer_seat))
-                if d < best_dist:
-                    best_dist = d
-                    dealer_relative = idx
-
-        hero_relative = occupied.index(0)
-        position = _hero_position(hero_relative, dealer_relative, n_players)
-        log.debug(f"POSITION: seats={occupied} dealer_phys={dealer_seat} "
-                  f"dealer_rel={dealer_relative} n={n_players} → {position}")
+            num_seats = 9  # Most GGPoker tournaments are 9-max by default
     else:
-        position = _hero_position(hero_seat, dealer_seat, num_seats)
+        num_seats = 6  # Cash games are always 6-max on GGPoker
+
+    # Override with visible player count if it's more informative
+    if num_active_players > 0 and num_active_players < num_seats:
+        # Players may have busted — use the table layout, not current count
+        pass
+
+    # For 3-max (Spin & Go): players sit at physical seats 0, 2, 4
+    _spin_seats = [0, 2, 4]
+
+    def _dealer_from_sb(sb_seat):
+        """Infer dealer seat from SB seat (dealer is one before SB clockwise)."""
+        if num_seats == 3:
+            sb_rel = _spin_seats.index(sb_seat) if sb_seat in _spin_seats else -1
+            if sb_rel < 0:
+                sb_rel = min(range(3), key=lambda i: abs(_spin_seats[i] - sb_seat))
+            return (sb_rel - 1) % 3  # Returns relative dealer index
+        else:
+            return (sb_seat - 1) % num_seats  # Returns physical dealer seat
+
+    def _position_from_dealer(dealer_idx):
+        """Compute hero position from dealer index."""
+        if num_seats == 3:
+            return _hero_position(0, dealer_idx, 3)  # Already relative
+        else:
+            return _hero_position(hero_seat, dealer_idx, num_seats)
+
+    position = 'UNKNOWN'
+
+    # Hand key for cache: hero cards uniquely identify the current hand.
+    # When cards change → new hand → must re-detect blinds.
+    _cards_key = '|'.join(sorted(my_cards)) if my_cards else ''
+    _cached = _POSITION_CACHE.get(window_id)
+
+    chip_postings = []  # [(amount_bb, seat_idx), ...]
+    is_postflop = street in (Street.FLOP, Street.TURN, Street.RIVER)
+
+    if _cached and _cached[0] == _cards_key and _cards_key:
+        # Same hand — reuse cached position
+        _, sb_seat, bb_seat, position, _cached_postings = _cached
+        log.debug(f"POSITION (cached): {position} (SB=seat{sb_seat} BB=seat{bb_seat})")
+        # Postflop: detect CURRENT street bets (not blinds) from chip icons
+        if is_postflop and is_my_turn:
+            _, _, chip_postings = _detect_blinds_from_chips(img, W, H, num_seats)
+            log.debug(f"POSTFLOP bets: {chip_postings}")
+        else:
+            chip_postings = _cached_postings
+    elif is_postflop:
+        # Postflop but no cache — use stale cache for position, detect bets
+        if _cached and _cached[0]:
+            _, sb_seat, bb_seat, position, _ = _cached
+            log.info(f"POSITION (stale cache): {position} — postflop, no exact match")
+        else:
+            sb_seat, bb_seat = -1, -1
+            log.warning(f"POSITION: postflop, no cache — UNKNOWN")
+        # Still detect current bets even without position
+        if is_my_turn:
+            _, _, chip_postings = _detect_blinds_from_chips(img, W, H, num_seats)
+    else:
+        # Preflop — detect blinds from chip icons + text on felt
+        sb_seat, bb_seat, chip_postings = _detect_blinds_from_chips(img, W, H, num_seats)
+        if sb_seat >= 0 and bb_seat >= 0:
+            dealer_idx = _dealer_from_sb(sb_seat)
+            position = _position_from_dealer(dealer_idx)
+            log.info(f"POSITION (chips): SB=seat{sb_seat} BB=seat{bb_seat} "
+                     f"→ dealer={dealer_idx} → {position} (game={game_type})"
+                     f" postings={chip_postings}")
+            # Cache for postflop streets of this hand
+            if _cards_key:
+                _POSITION_CACHE[window_id] = (
+                    _cards_key, sb_seat, bb_seat, position, chip_postings)
+        else:
+            # Chips not found — try stale cache
+            if _cached and _cached[0]:
+                _, sb_seat, bb_seat, position, chip_postings = _cached
+                log.info(f"POSITION (stale cache): {position} — chips not found, "
+                         f"reusing last known")
+            else:
+                log.warning(f"POSITION: No blind chips detected, no cache — UNKNOWN")
+
+    # 9b. Merge chip postings into player bets and identify raiser
+    dealer_seat = -1
+    preflop_raiser_seat = -1
+    preflop_raiser_position = ''
+
+    if sb_seat >= 0:
+        dealer_seat = _dealer_from_sb(sb_seat)
+
+    # Set current_bet on each player from chip postings
+    for amount, seat_idx in chip_postings:
+        for p in players:
+            if p.seat == seat_idx:
+                p.current_bet = amount
+                break
+
+    if not is_postflop and sb_seat >= 0:
+        # Preflop: raiser = any posting > 1.0 BB (excluding SB/BB)
+        raises = [(amt, seat) for amt, seat in chip_postings
+                  if amt > 1.05 and seat != sb_seat and seat != bb_seat]
+        if raises:
+            raises.sort(key=lambda x: -x[0])  # Largest raise first
+            raiser_amt, raiser_seat = raises[0]
+            preflop_raiser_seat = raiser_seat
+            preflop_raiser_position = _hero_position(
+                raiser_seat, dealer_seat, num_seats)
+            log.info(f"RAISER: seat{raiser_seat} ({raiser_amt}BB) "
+                     f"= {preflop_raiser_position}")
+    elif is_postflop and chip_postings:
+        # Postflop: log who bet on this street
+        for amt, seat in chip_postings:
+            pos = _hero_position(seat, dealer_seat, num_seats) if dealer_seat >= 0 else '?'
+            log.info(f"STREET BET: seat{seat} ({amt}BB) = {pos}")
 
     # 10. Count opponents actually in the hand (card back detection)
     #     Only run when it's our turn (postflop needs accurate count for Monte Carlo)
@@ -744,6 +830,9 @@ def read_table(
         street=street,
         is_my_turn=is_my_turn,
         position=position,
+        preflop_raiser_seat=preflop_raiser_seat,
+        preflop_raiser_position=preflop_raiser_position,
+        chip_postings=chip_postings,
         opponents_in_hand=opponents_in_hand,
         game_type=game_type,
         is_tournament=is_tournament,
@@ -2126,6 +2215,166 @@ def _detect_dealer_button(img: np.ndarray, W: int, H: int) -> Tuple[int, float, 
 
     log.debug(f"Dealer button at ({dx_pct:.2f}, {dy_pct:.2f}) -> seat {nearest}")
     return nearest, dx_pct, dy_pct
+
+
+def _detect_blinds_from_chips(img: np.ndarray, W: int, H: int,
+                              num_seats: int = 6
+                              ) -> Tuple[int, int, List[Tuple[float, int]]]:
+    """Detect bet postings on the felt by OCR-ing all "X BB" text.
+
+    Uses a SINGLE pytesseract image_to_data() call on the entire felt area
+    to find all "X BB" text with word-level bounding boxes.  This is:
+      - Universal: works regardless of chip color (gold, red, green, black)
+      - Fast: one OCR call (~300ms) instead of N per-chip calls
+      - Accurate: full image context gives pytesseract better results
+
+    Filters out false positives:
+      - Stack amounts (>50 BB) — too large to be a posting
+      - "Total Pot" text — in the exact center of the table
+      - Player names — don't match "X BB" regex pattern
+
+    Returns (sb_seat, bb_seat, all_postings) where all_postings is a list of
+    (amount_bb, seat_idx) for every detected posting (blinds + raises/bets).
+    Returns (-1, -1, []) if not detected.
+    """
+    if not PYTESSERACT_AVAILABLE:
+        return -1, -1, []
+
+    # Crop felt area — excludes title bar, button bar, edge chrome
+    y1, y2 = int(H * 0.28), int(H * 0.75)
+    x1, x2 = int(W * 0.08), int(W * 0.88)
+    felt = img[y1:y2, x1:x2]
+
+    # Preprocess: HSV saturation filter — white/gray text has LOW saturation
+    # and HIGH value, while the green/brown felt has HIGH saturation.
+    # This cleanly separates text from felt (9/9 detection, 0 false positives).
+    felt_hsv = cv2.cvtColor(felt, cv2.COLOR_RGB2HSV)
+    text_mask = cv2.inRange(felt_hsv, np.array([0, 0, 140]),
+                            np.array([180, 80, 255]))
+
+    # Single pytesseract call — word-level bounding boxes (no scaling needed)
+    data = pytesseract.image_to_data(
+        Image.fromarray(text_mask), output_type=pytesseract.Output.DICT,
+        config='--psm 11 --oem 3')
+
+    # Collect all detected words with positions
+    words = []
+    for i, txt in enumerate(data['text']):
+        txt = txt.strip()
+        if not txt:
+            continue
+        conf = int(data['conf'][i]) if str(data['conf'][i]) != '-1' else 0
+        if conf < 30:
+            continue
+        # Convert position back to original image coords (undo crop offset)
+        wx = data['left'][i] + x1
+        wy = data['top'][i] + y1
+        ww = data['width'][i]
+        wh = data['height'][i]
+        cx_pct = (wx + ww / 2) / W
+        cy_pct = (wy + wh / 2) / H
+        words.append((txt, cx_pct, cy_pct, conf))
+
+    # Find "X BB" patterns using two strategies:
+    # 1. Direct match: "0.5BB", "1BB", "2.5BB" as single token
+    # 2. Backward search: find "BB" token, look backward for preceding number
+    postings = []  # (amount, cx_pct, cy_pct)
+    bb_direct = re.compile(r'^(\d+\.?\d*)\s*B+$', re.IGNORECASE)
+    num_pattern = re.compile(r'^\d+\.?\d*$')
+    used_indices = set()
+
+    for wi, (txt, cx, cy, conf) in enumerate(words):
+        # Strategy 1: Direct match — "0.5BB", "1BB", "2.5BB", "3.5BB"
+        cleaned = txt.replace(' ', '')
+        m = bb_direct.match(cleaned)
+        if m:
+            amount = float(m.group(1))
+            if 0.25 <= amount <= 50:
+                if 0.35 < cy < 0.45 and 0.40 < cx < 0.60:
+                    continue  # Skip "Total Pot" area
+                postings.append((amount, cx, cy))
+                used_indices.add(wi)
+                continue
+
+        # Strategy 2: "BB" token — search backward for the number
+        if txt.upper() in ('BB', 'B8', '88', 'B&'):
+            for j in range(wi - 1, max(wi - 3, -1), -1):
+                if j in used_indices:
+                    continue
+                prev_txt, prev_cx, prev_cy, _ = words[j]
+                prev_clean = prev_txt.replace(',', '.').replace('O', '0')
+                if num_pattern.match(prev_clean) and abs(cy - prev_cy) < 0.03:
+                    try:
+                        amount = float(prev_clean)
+                        if 0.25 <= amount <= 50:
+                            mid_cx = (cx + prev_cx) / 2
+                            mid_cy = (cy + prev_cy) / 2
+                            if 0.35 < mid_cy < 0.45 and 0.40 < mid_cx < 0.60:
+                                continue
+                            postings.append((amount, mid_cx, mid_cy))
+                            used_indices.add(wi)
+                            used_indices.add(j)
+                            break
+                    except ValueError:
+                        pass
+
+    # Deduplicate (same posting detected twice)
+    unique = []
+    for amt, cx, cy in postings:
+        is_dup = False
+        for amt2, cx2, cy2 in unique:
+            if abs(cx - cx2) < 0.05 and abs(cy - cy2) < 0.05:
+                is_dup = True
+                break
+        if not is_dup:
+            unique.append((amt, cx, cy))
+
+    # Map each posting to the nearest seat
+    seat_layout = SEAT_REGIONS_9MAX[:num_seats] if num_seats > 6 else SEAT_REGIONS_6MAX
+    found = []  # (amount, seat_idx, cx_pct, cy_pct)
+    for amt, cx, cy in unique:
+        min_dist = float('inf')
+        nearest = -1
+        for i, (sx, sy, _, _) in enumerate(seat_layout):
+            dist = ((cx - sx) ** 2 + (cy - sy) ** 2) ** 0.5
+            if dist < min_dist:
+                min_dist = dist
+                nearest = i
+
+        if min_dist < 0.40:
+            log.debug(f"POSTING: {amt} BB at ({cx:.2f},{cy:.2f}) "
+                      f"-> seat {nearest} (dist={min_dist:.3f})")
+            found.append((amt, nearest, cx, cy))
+
+    if len(found) < 1:
+        log.debug(f"POSTINGS: {len(found)} found — need at least 1")
+        return -1, -1, []
+
+    all_postings = [(amt, seat) for amt, seat, _, _ in found]
+
+    # Sort by amount: smallest = SB, next = BB
+    found.sort(key=lambda x: x[0])
+
+    if len(found) >= 2:
+        sb_seat = found[0][1]
+        bb_seat = found[1][1]
+        if sb_seat != bb_seat:
+            log.debug(f"BLINDS: SB=seat{sb_seat} ({found[0][0]}BB) "
+                      f"BB=seat{bb_seat} ({found[1][0]}BB)")
+            return sb_seat, bb_seat, all_postings
+        # Same seat — take third posting or infer
+        if len(found) >= 3 and found[2][1] != sb_seat:
+            bb_seat = found[2][1]
+            return sb_seat, bb_seat, all_postings
+        bb_seat = (sb_seat + 1) % len(SEAT_REGIONS_6MAX)
+        return sb_seat, bb_seat, all_postings
+
+    # Only 1 posting found — infer missing blind
+    sb_seat = found[0][1]
+    bb_seat = (sb_seat + 1) % len(SEAT_REGIONS_6MAX)
+    log.debug(f"BLINDS: only 1 posting at seat{sb_seat} ({found[0][0]}BB), "
+              f"inferred BB=seat{bb_seat}")
+    return sb_seat, bb_seat, all_postings
 
 
 def _hero_position(hero_seat: int, dealer_seat: int, num_players: int) -> str:
