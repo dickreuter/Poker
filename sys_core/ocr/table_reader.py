@@ -10,6 +10,7 @@ Usage:
 The returned GameState contains everything needed to make a decision.
 """
 
+import copy
 import logging
 import re
 import time
@@ -42,6 +43,10 @@ _STACK_HASH_CACHE: Dict[int, int] = {}
 _POT_CACHE: Dict[int, Tuple[int, float]] = {}  # window_id -> (hash, pot_value)
 # Per-call OCR cache: cleared at start of each read_table() call
 _OCR_CACHE: Dict[Tuple[int, int, int, int], Tuple[Optional[float], str]] = {}
+# Button result cache — buttons don't change within a hand frame.
+# Hash the button region pixels; if unchanged, reuse cached OCR results.
+# window_id -> (pixel_hash, buttons_dict, button_rects_dict)
+_BUTTON_CACHE: Dict[int, Tuple[int, Dict, Dict]] = {}
 
 # ---------------------------------------------------------------------------
 #  Region definitions (percentage of table image)
@@ -194,7 +199,16 @@ def read_table(
     red_mask = ((btn_hsv[:,:,0] < 15) | (btn_hsv[:,:,0] > 170)) & \
                (btn_hsv[:,:,1] > 80) & (btn_hsv[:,:,2] > 60)
     red_pixels = int(np.sum(red_mask))
-    if red_pixels < 500:
+    # Green check buttons: H=35-85, S>100, V>140 (tournament/themed tables)
+    green_mask = (btn_hsv[:,:,0] >= 35) & (btn_hsv[:,:,0] <= 85) & \
+                 (btn_hsv[:,:,1] > 100) & (btn_hsv[:,:,2] > 140)
+    green_pixels = int(np.sum(green_mask))
+    # Yellow/gold buttons: H=18-35, S>80, V>140 (Battle Royale, themed tables)
+    yellow_mask = (btn_hsv[:,:,0] >= 18) & (btn_hsv[:,:,0] <= 35) & \
+                  (btn_hsv[:,:,1] > 80) & (btn_hsv[:,:,2] > 140)
+    yellow_pixels = int(np.sum(yellow_mask))
+    total_btn_pixels = red_pixels + green_pixels + yellow_pixels
+    if total_btn_pixels < 500:
         # No buttons visible — return minimal state fast (skip all OCR)
         return GameState(
             my_cards=[], board_cards=[], available_actions=[],
@@ -205,7 +219,23 @@ def read_table(
             tournament_subtype=tournament_subtype,
         )
 
-    buttons, button_rects = _detect_buttons(img, W, H)
+    # --- BUTTON CACHE: hash the button region to skip OCR on repeat frames ---
+    # Buttons occupy Y=78-98%, X=2-98% (the _detect_buttons search region).
+    # Hash a downsampled version for speed (~0.3ms vs 1200ms OCR).
+    _btn_cache_y1, _btn_cache_y2 = int(H * 0.78), int(H * 0.98)
+    _btn_cache_x1, _btn_cache_x2 = int(W * 0.40), int(W * 0.98)
+    _btn_cache_region = img[_btn_cache_y1:_btn_cache_y2, _btn_cache_x1:_btn_cache_x2]
+    _btn_cache_hash = hash(_btn_cache_region[::2, ::2].tobytes())
+    _cached_btn = _BUTTON_CACHE.get(window_id)
+    if _cached_btn and _cached_btn[0] == _btn_cache_hash:
+        buttons, button_rects = _cached_btn[1], _cached_btn[2]
+        log.debug(f"BUTTON CACHE HIT for window {window_id}")
+    else:
+        buttons, button_rects = _detect_buttons(img, W, H)
+        # Deep copy button dicts so cached values aren't mutated by later code
+        _BUTTON_CACHE[window_id] = (_btn_cache_hash,
+                                     copy.deepcopy(buttons),
+                                     copy.deepcopy(button_rects))
     t1 = time.time()
     available_actions = []
     scale_x = table_w_pt / W if W > 0 else 0.5
