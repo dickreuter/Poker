@@ -4,7 +4,9 @@ import json
 import signal
 import subprocess
 import datetime
-from PyQt6.QtWidgets import QApplication, QSystemTrayIcon, QMenu
+from PyQt6.QtWidgets import (QApplication, QSystemTrayIcon, QMenu, QWidget,
+                             QVBoxLayout, QHBoxLayout, QLabel, QFrame,
+                             QScrollArea, QSizePolicy)
 from PyQt6.QtGui import QIcon, QAction, QPixmap, QPainter, QColor, QPen, QPainterPath, QFont
 from PyQt6.QtCore import QTimer, Qt, QRectF
 
@@ -112,6 +114,182 @@ STOP_FILE = "/tmp/poker_bot_stop"
 STATS_PATH = None  # set in __init__
 HANDS_PATH = None
 
+# --- Card suit symbols and colors ---
+SUIT_SYMBOLS = {'H': '\u2665', 'D': '\u2666', 'C': '\u2663', 'S': '\u2660'}
+SUIT_COLORS = {'H': '#e74c3c', 'D': '#3498db', 'C': '#27ae60', 'S': '#2c3e50'}
+
+
+def _card_html(card_str: str) -> str:
+    """Convert 'AH' to colored HTML like '<b>A</b><span style="color:red">♥</span>'."""
+    if not card_str or len(card_str) < 2:
+        return card_str
+    rank = card_str[:-1]
+    suit = card_str[-1].upper()
+    sym = SUIT_SYMBOLS.get(suit, suit)
+    color = SUIT_COLORS.get(suit, '#000')
+    return f'<span style="color:{color}; font-size:16px;"><b>{rank}{sym}</b></span>'
+
+
+def _ev_html(ev: float) -> str:
+    if ev > 0:
+        return f'<span style="color:#27ae60;">+{ev:.1f} BB</span>'
+    elif ev < 0:
+        return f'<span style="color:#e74c3c;">{ev:.1f} BB</span>'
+    return f'<span style="color:#888;">0.0 BB</span>'
+
+
+class HandViewerWindow(QWidget):
+    """Popup window showing full hand details with street-by-street action."""
+
+    def __init__(self, hand_entries: list, parent=None):
+        """hand_entries: list of dicts from hand_history.jsonl for one hand."""
+        super().__init__(parent)
+        self.setWindowTitle("Hand Details")
+        self.setMinimumSize(420, 300)
+        self.setMaximumSize(600, 700)
+        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        self.setStyleSheet("""
+            QWidget { background: #1a1a2e; color: #e0e0e0; font-family: 'SF Mono', Menlo, monospace; }
+            QLabel { color: #e0e0e0; }
+            QFrame#streetFrame { background: #16213e; border-radius: 8px;
+                                 padding: 10px; margin: 4px 0; }
+            QFrame#headerFrame { background: #0f3460; border-radius: 8px;
+                                 padding: 12px; margin-bottom: 8px; }
+        """)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setSpacing(6)
+
+        if not hand_entries:
+            layout.addWidget(QLabel("No hand data"))
+            return
+
+        first = hand_entries[0]
+        cards = first.get('cards', [])
+        pos = first.get('pos', '??')
+
+        # --- Header: cards + position ---
+        header = QFrame()
+        header.setObjectName("headerFrame")
+        h_layout = QVBoxLayout(header)
+        h_layout.setContentsMargins(8, 8, 8, 8)
+
+        cards_html = ' '.join(_card_html(c) for c in cards)
+        title = QLabel(f'{cards_html}  <span style="color:#f39c12; font-size:14px;">{pos}</span>')
+        title.setTextFormat(Qt.TextFormat.RichText)
+        title.setStyleSheet("font-size: 18px;")
+        h_layout.addWidget(title)
+
+        # Summary line
+        total_ev = sum(e.get('ev', 0) for e in hand_entries)
+        streets_played = [e.get('street', '?') for e in hand_entries]
+        last_decision = hand_entries[-1].get('decision', '?')
+        summary = QLabel(
+            f'Result: {_ev_html(total_ev)}  |  '
+            f'Final: {last_decision}  |  '
+            f'Streets: {" → ".join(dict.fromkeys(streets_played))}')
+        summary.setTextFormat(Qt.TextFormat.RichText)
+        summary.setStyleSheet("font-size: 11px; color: #aaa;")
+        h_layout.addWidget(summary)
+
+        layout.addWidget(header)
+
+        # --- Scroll area for streets ---
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setStyleSheet("QScrollArea { border: none; }")
+        scroll_widget = QWidget()
+        scroll_layout = QVBoxLayout(scroll_widget)
+        scroll_layout.setContentsMargins(0, 0, 0, 0)
+        scroll_layout.setSpacing(6)
+
+        # Group entries by street
+        seen_streets = []
+        street_groups = {}
+        for e in hand_entries:
+            s = e.get('street', 'Unknown')
+            if s not in street_groups:
+                street_groups[s] = []
+                seen_streets.append(s)
+            street_groups[s].append(e)
+
+        for street_name in seen_streets:
+            entries = street_groups[street_name]
+            last = entries[-1]  # Use last entry per street (most complete)
+
+            frame = QFrame()
+            frame.setObjectName("streetFrame")
+            f_layout = QVBoxLayout(frame)
+            f_layout.setContentsMargins(10, 8, 10, 8)
+            f_layout.setSpacing(4)
+
+            # Street header with board
+            board = last.get('board', [])
+            board_html = ' '.join(_card_html(c) for c in board) if board else ''
+            street_label = QLabel(
+                f'<b style="color:#f39c12; font-size:13px;">{street_name}</b>'
+                f'  {board_html}')
+            street_label.setTextFormat(Qt.TextFormat.RichText)
+            f_layout.addWidget(street_label)
+
+            # Action details
+            decision = last.get('decision', '?')
+            pot = last.get('pot', 0)
+            call_amt = last.get('call', 0)
+            equity = last.get('equity', 0)
+            ev = last.get('ev', 0)
+            stack = last.get('hero_stack', 0)
+            spr = last.get('spr', 0)
+            pot_odds = last.get('pot_odds', 0)
+
+            # Decision line
+            dec_color = {'Fold': '#e74c3c', 'Call': '#3498db', 'Check': '#27ae60',
+                         'Raise': '#f39c12', 'Bet': '#f39c12', 'Allin': '#e74c3c'
+                         }.get(decision.split()[0] if decision else '', '#aaa')
+            dec_label = QLabel(
+                f'<span style="color:{dec_color}; font-size:14px;"><b>{decision}</b></span>')
+            dec_label.setTextFormat(Qt.TextFormat.RichText)
+            f_layout.addWidget(dec_label)
+
+            # Stats line
+            stats = QLabel(
+                f'Pot: {pot:.1f} BB  |  Call: {call_amt:.1f} BB  |  '
+                f'Stack: {stack:.0f} BB  |  SPR: {spr:.1f}')
+            stats.setStyleSheet("font-size: 11px; color: #888;")
+            f_layout.addWidget(stats)
+
+            # Equity + EV line
+            eq_label = QLabel(
+                f'Equity: {equity:.0%}  |  Pot odds: {pot_odds:.0%}  |  '
+                f'EV: {_ev_html(ev)}')
+            eq_label.setTextFormat(Qt.TextFormat.RichText)
+            eq_label.setStyleSheet("font-size: 11px;")
+            f_layout.addWidget(eq_label)
+
+            # Opponent info (if available)
+            opp_type = last.get('opp_type', '')
+            opp_likely = last.get('opp_likely', [])
+            raiser_pos = last.get('raiser_position', '')
+            if opp_type or opp_likely or raiser_pos:
+                parts = []
+                if raiser_pos:
+                    parts.append(f'Raiser: {raiser_pos}')
+                if opp_type:
+                    parts.append(f'Type: {opp_type}')
+                if opp_likely:
+                    parts.append(f'Range: {", ".join(opp_likely[:3])}')
+                opp_label = QLabel('  '.join(parts))
+                opp_label.setStyleSheet("font-size: 10px; color: #666;")
+                opp_label.setWordWrap(True)
+                f_layout.addWidget(opp_label)
+
+            scroll_layout.addWidget(frame)
+
+        scroll_layout.addStretch()
+        scroll.setWidget(scroll_widget)
+        layout.addWidget(scroll)
+
 
 class SystemServiceTray:
     def __init__(self):
@@ -136,6 +314,7 @@ class SystemServiceTray:
         self._stats = None
         self._stats_mtime = 0
         self._recent_hands = []
+        self._recent_hands_grouped = []
         self._hands_mtime = 0
 
         # Create tray
@@ -201,13 +380,16 @@ class SystemServiceTray:
 
         self.menu.addSeparator()
 
-        # --- Recent hands ---
-        self.hands_header = self._add_info("Recent Hands")
+        # --- Recent hands (clickable) ---
+        self.hands_header = self._add_info("Recent Hands (click to view)")
         self.hands_header.setVisible(False)
         self.hand_actions = []
-        for _ in range(5):
-            a = self._add_info("  --")
+        self._hand_windows = []  # Keep references to prevent GC
+        for i in range(5):
+            a = QAction("  --")
             a.setVisible(False)
+            a.triggered.connect(lambda checked, idx=i: self._open_hand_viewer(idx))
+            self.menu.addAction(a)
             self.hand_actions.append(a)
 
         self.menu.addSeparator()
@@ -342,30 +524,51 @@ class SystemServiceTray:
                 return
             self._hands_mtime = mtime
             with open(self.hands_path, 'rb') as f:
-                # Seek from end to get last ~4KB
+                # Seek from end to get last ~16KB for more hand context
                 try:
-                    f.seek(-4096, 2)
+                    f.seek(-16384, 2)
                 except OSError:
                     f.seek(0)
                 tail = f.read().decode('utf-8', errors='replace')
 
             lines = tail.strip().split('\n')
-            # First line may be partial if we seeked, skip it unless we read from start
-            if len(tail) >= 4096 and lines:
-                lines = lines[1:]
+            if len(tail) >= 16384 and lines:
+                lines = lines[1:]  # First line may be partial
 
-            hands = []
-            for line in lines[-5:]:
+            # Parse all recent entries
+            all_entries = []
+            for line in lines:
                 line = line.strip()
                 if not line:
                     continue
                 try:
-                    hands.append(json.loads(line))
+                    all_entries.append(json.loads(line))
                 except json.JSONDecodeError:
                     continue
-            self._recent_hands = hands
+
+            # Group by hand (same cards = same hand)
+            hands_grouped = {}  # cards_key -> [entries]
+            hands_order = []
+            for entry in all_entries:
+                cards = entry.get('cards', [])
+                key = '|'.join(sorted(cards)) if cards else ''
+                if not key:
+                    continue
+                if key not in hands_grouped:
+                    hands_grouped[key] = []
+                    hands_order.append(key)
+                hands_grouped[key].append(entry)
+
+            # Take last 5 unique hands
+            self._recent_hands_grouped = []
+            for key in hands_order[-5:]:
+                self._recent_hands_grouped.append(hands_grouped[key])
+
+            # Flat list for backward compatibility
+            self._recent_hands = [group[-1] for group in self._recent_hands_grouped]
         except (FileNotFoundError, OSError):
             self._recent_hands = []
+            self._recent_hands_grouped = []
 
     # --- Display updates ---
 
@@ -437,7 +640,8 @@ class SystemServiceTray:
             self.healing_action.setVisible(False)
 
     def _update_hands_display(self):
-        if not self._recent_hands:
+        groups = getattr(self, '_recent_hands_grouped', [])
+        if not groups:
             self.hands_header.setVisible(False)
             for a in self.hand_actions:
                 a.setVisible(False)
@@ -445,17 +649,41 @@ class SystemServiceTray:
 
         self.hands_header.setVisible(True)
         for i, a in enumerate(self.hand_actions):
-            if i < len(self._recent_hands):
-                h = self._recent_hands[-(i + 1)]  # most recent first
-                cards = _format_cards(h.get('cards', []))
-                pos = h.get('pos', '??')
-                dec = h.get('decision', '??')
-                ev = h.get('ev', 0.0)
-                ev_str = f"+{ev:.1f}" if ev > 0 else f"{ev:.1f}"
-                a.setText(f"  {cards}  {pos:<3}  {dec:<10}  {ev_str} BB")
+            if i < len(groups):
+                group = groups[-(i + 1)]  # most recent first
+                last = group[-1]
+                cards = _format_cards(last.get('cards', []))
+                pos = last.get('pos', '??')
+                streets = len(set(e.get('street', '') for e in group))
+                total_ev = sum(e.get('ev', 0) for e in group)
+                ev_str = f"+{total_ev:.1f}" if total_ev > 0 else f"{total_ev:.1f}"
+                dec = last.get('decision', '??')
+                # Show suit symbols
+                c1 = last.get('cards', ['??', '??'])
+                display = ' '.join(c1[:2])
+                a.setText(f"  {display:6s}  {pos:<3s}  {dec:<12s}  {ev_str} BB  ({streets} st)")
+                a.setEnabled(True)
                 a.setVisible(True)
             else:
                 a.setVisible(False)
+
+    def _open_hand_viewer(self, idx: int):
+        """Open a hand viewer popup for the clicked hand."""
+        groups = getattr(self, '_recent_hands_grouped', [])
+        if not groups:
+            return
+        # idx is from most recent first
+        actual_idx = len(groups) - 1 - idx
+        if actual_idx < 0 or actual_idx >= len(groups):
+            return
+        group = groups[actual_idx]
+        window = HandViewerWindow(group)
+        window.show()
+        window.raise_()
+        window.activateWindow()
+        self._hand_windows.append(window)
+        # Clean up closed windows
+        self._hand_windows = [w for w in self._hand_windows if w.isVisible()]
 
     def _set_strategy(self, strategy: str):
         """Switch between EV Engine and Deep CFR."""
