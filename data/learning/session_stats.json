@@ -1,17 +1,17 @@
 {
-  "session_start": "2026-03-15T01:12:26.344401",
-  "hands_played": 36,
+  "session_start": "2026-03-15T01:26:27.911492",
+  "hands_played": 50,
   "decisions": {
-    "fold": 14,
-    "call": 9,
-    "check": 0,
-    "raise": 13,
+    "fold": 22,
+    "call": 7,
+    "check": 15,
+    "raise": 6,
     "bet": 0
   },
   "detection_success": {
-    "buttons": 38,
-    "buttons_fail": 11,
-    "cards": 38,
+    "buttons": 92,
+    "buttons_fail": 19,
+    "cards": 81,
     "cards_fail": 0
   },
   "self_healing": {
@@ -25,20 +25,20 @@
     "retries": 0
   },
   "errors": [],
-  "pnl_bb": -12.599999999999998,
-  "ev_total": -10.96824894095158,
-  "hands_won": 11,
-  "hands_lost": 17,
-  "biggest_pot_won": 73.9,
-  "biggest_pot_lost": -77.4,
-  "session_end": "2026-03-15T01:23:27.250787",
-  "uptime_seconds": 660.906391,
-  "hands_per_minute": 3.2682389358223047,
-  "actions_per_minute": 2.905101276286493,
+  "pnl_bb": 0.0999999999999659,
+  "ev_total": 75.14428996980905,
+  "hands_won": 21,
+  "hands_lost": 26,
+  "biggest_pot_won": 266.9,
+  "biggest_pot_lost": -270.0,
+  "session_end": "2026-03-15T01:42:28.912466",
+  "uptime_seconds": 961.00098,
+  "hands_per_minute": 2.87200539587379,
+  "actions_per_minute": 3.558789294887087,
   "detection_rates": {
-    "button_success_rate": 0.7755102040816326,
+    "button_success_rate": 0.822429906542056,
     "card_success_rate": 1.0
   },
-  "bb_per_100": 3.6,
-  "session_hands": 25
+  "bb_per_100": 0.2,
+  "session_hands": 50
 }
