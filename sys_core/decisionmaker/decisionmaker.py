@@ -2313,6 +2313,17 @@ class Decision(DecisionBase):
         if not t.other_player_has_initiative:
             fold_eq += 0.08
 
+        # --- C-BET SPOT: Hero was preflop raiser betting flop → HIGH fold equity ---
+        # Being the preflop raiser means we have range advantage on most boards.
+        # Opponents expect us to c-bet and fold their weak hands.
+        # GTO c-bet fold equity is 40-55% on dry boards, 30-40% on wet boards.
+        ctx = getattr(self, '_hand_context', None)
+        if ctx and ctx.hero_was_raiser and t.gameStage == GameStages.Flop.value:
+            fold_eq += 0.15  # Big boost: c-bet credibility
+            if ctx.is_cbet_spot:
+                fold_eq += 0.05  # Extra: first bet on flop as raiser
+            log.debug(f"C-BET BOOST: hero was raiser, fold_eq +15-20%")
+
         # --- Opponent bet into us (raising into aggression) → MUCH less fold equity ---
         # When villain bets, they've shown strength. Raising has lower fold equity
         # than betting into a check. Larger bets = stronger range = less fold equity.
