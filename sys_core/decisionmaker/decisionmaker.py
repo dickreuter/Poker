@@ -3390,11 +3390,14 @@ class Decision(DecisionBase):
         # ══════════════════════════════════════════════════════════════════
         _table_name_early = getattr(t, '_table_name', '')
         _is_spin_early = ('spin' in _table_name_early.lower() or 'gold' in _table_name_early.lower())
-        _solver_threshold_early = 25 if _is_spin_early else 15
+
+        # Solver handles ALL preflop in Spin & Go (any stack depth).
+        # For cash/tournament, only ≤25BB (deeper stacks use legacy EV system).
+        _use_solver = _is_spin_early or (hasattr(self, 'hero_stack_bb') and self.hero_stack_bb <= 25)
 
         if (t.gameStage == GameStages.PreFlop.value
                 and t.mycards and len(t.mycards) == 2
-                and hasattr(self, 'hero_stack_bb') and self.hero_stack_bb <= _solver_threshold_early):
+                and _use_solver):
             try:
                 from sys_core.decisionmaker.solver import get_solver
                 _solver = get_solver()

@@ -116,8 +116,10 @@ class UnifiedSolver:
             result.solve_time_ms = (time.monotonic() - t_start) * 1000
             return result
 
-        # ── LAYER 2: Short-Stack Preflop (8-20BB, preflop) ───────────
-        if eff_stack_bb <= 20 and (not board or len(board) == 0):
+        # ── LAYER 2: Preflop (any stack depth) ─────────────────────────
+        # Uses push/fold for short stacks, equity-based for deeper stacks.
+        # No hardcoded ranges — just eval7 math.
+        if not board or len(board) == 0:
             result = self._solve_short_stack_preflop(
                 hand_key, hero_cards, eff_stack_bb, position,
                 call_amount, bb, villain_range_str, icm
@@ -197,83 +199,101 @@ class UnifiedSolver:
     def _solve_short_stack_preflop(self, hand_key, hero_cards, stack_bb,
                                    position, call_amount, bb,
                                    villain_range_str, icm) -> SolverResult:
-        """Layer 2: Short-stack preflop (8-20BB).
+        """Layer 2: Equity-based preflop decisions for any stack depth.
 
-        Uses push/fold for borderline spots, or simplified open/3bet logic.
+        No hardcoded ranges. Uses eval7 to compute equity vs villain range,
+        then compares to pot odds and position-based thresholds.
         """
         result = SolverResult()
 
-        # If facing a raise and stack is < 20BB, consider 3bet-shoving
+        # Compute equity vs villain range
+        eq = 0.5
+        if HAS_EVAL7:
+            try:
+                from sys_core.decisionmaker.range_equity import _convert_card
+                c1 = _convert_card(hero_cards[0])
+                c2 = _convert_card(hero_cards[1])
+                if c1 and c2:
+                    vr = eval7.HandRange(villain_range_str)
+                    eq = float(eval7.py_hand_vs_range_monte_carlo(
+                        [c1, c2], vr, [], 5000))
+            except Exception:
+                eq = 0.5
+
+        call_bb = call_amount / bb if bb > 0 else call_amount
+
         if call_amount > 0:
-            raise_bb = call_amount / bb
-            remaining_after_call = stack_bb - raise_bb
+            # ── FACING A RAISE ──────────────────────────────────────────
+            pot_bb = max(call_bb + 1.5, 1.5)  # Approximate pot
+            pot_odds = call_bb / (pot_bb + call_bb) if (pot_bb + call_bb) > 0 else 0.5
+            call_to_stack = call_bb / max(stack_bb, 1)
 
-            # If calling would commit >30% of stack, it's a shove-or-fold spot
-            if raise_bb / stack_bb > 0.30:
-                return self._solve_push_fold(hand_key, stack_bb, position,
-                                             call_amount, bb, icm)
-
-            # Otherwise: fold, call, or 3bet-shove
-            # Use equity to decide
-            if HAS_EVAL7:
-                try:
-                    from sys_core.decisionmaker.range_equity import (
-                        _convert_card, lookup_preflop_equity
-                    )
-                    eq = lookup_preflop_equity(hero_cards, villain_range_str)
-                    if eq is None:
-                        c1 = _convert_card(hero_cards[0])
-                        c2 = _convert_card(hero_cards[1])
-                        if c1 and c2:
-                            vr = eval7.HandRange(villain_range_str)
-                            eq = float(eval7.py_hand_vs_range_monte_carlo(
-                                [c1, c2], vr, [], 5000))
-                        else:
-                            eq = 0.5
-                except Exception:
-                    eq = 0.5
-
-                # Shove threshold based on stack depth and ICM
-                shove_threshold = 0.42 + (20 - stack_bb) * 0.005
-                shove_threshold /= icm  # Higher ICM pressure = need more equity
-
-                call_threshold = 0.35
-
-                if eq >= shove_threshold:
+            # Shove-or-fold: if calling commits >30% of stack
+            if call_to_stack > 0.30 and stack_bb <= 20:
+                if eq >= 0.40:
                     result.action = 'allin'
-                    result.strategy = {'allin': 0.8, 'call': 0.2, 'fold': 0.0}
-                    result.frequency = 0.8
-                elif eq >= call_threshold:
+                    result.frequency = 1.0
+                    result.reasoning = f'Preflop shove: {hand_key} eq={eq:.0%} call/stack={call_to_stack:.0%}'
+                elif eq >= pot_odds:
                     result.action = 'call'
-                    result.strategy = {'allin': 0.1, 'call': 0.7, 'fold': 0.2}
-                    result.frequency = 0.7
+                    result.frequency = 1.0
+                    result.reasoning = f'Preflop call: {hand_key} eq={eq:.0%} > pot_odds={pot_odds:.0%}'
                 else:
                     result.action = 'fold'
-                    result.strategy = {'allin': 0.0, 'call': 0.1, 'fold': 0.9}
-                    result.frequency = 0.9
+                    result.frequency = 1.0
+                    result.reasoning = f'Preflop fold: {hand_key} eq={eq:.0%} < pot_odds={pot_odds:.0%}'
 
-                result.reasoning = (f'Short-stack preflop: {hand_key} eq={eq:.0%} '
-                                    f'stack={stack_bb:.0f}BB')
+            # Normal facing raise: call if equity > pot odds, raise if strong
             else:
-                result.action = 'fold'
-                result.reasoning = 'No eval7'
-        else:
-            # First in: open-shove or fold at 8-12BB, open-raise at 12-20BB
-            if stack_bb <= 12:
-                return self._solve_push_fold(hand_key, stack_bb, position,
-                                             0, bb, icm)
-            else:
-                # 12-20BB: check equity to decide open-raise vs fold
-                # Use push/fold as a filter — if Nash says fold, we fold
-                pf_result = self._solve_push_fold(hand_key, stack_bb, position,
-                                                  0, bb, icm)
-                if pf_result.action == 'fold':
-                    result.action = 'fold'
-                    result.reasoning = f'Short-stack fold: {hand_key} {stack_bb:.0f}BB (below push threshold)'
+                if eq >= 0.55:
+                    # Strong hand: 3-bet or raise
+                    if stack_bb <= 25:
+                        result.action = 'allin'  # Short enough to shove
+                    else:
+                        result.action = 'raise'
+                        result.bet_size_frac = 3.0 * call_bb / max(pot_bb, 1)
+                    result.frequency = 1.0
+                    result.reasoning = f'Preflop raise: {hand_key} eq={eq:.0%} stack={stack_bb:.0f}BB'
+                elif eq >= max(pot_odds, 0.35):
+                    # Decent hand: call
+                    result.action = 'call'
+                    result.frequency = 1.0
+                    result.reasoning = f'Preflop call: {hand_key} eq={eq:.0%} > {max(pot_odds, 0.35):.0%}'
                 else:
+                    result.action = 'fold'
+                    result.frequency = 1.0
+                    result.reasoning = f'Preflop fold: {hand_key} eq={eq:.0%} stack={stack_bb:.0f}BB'
+
+        else:
+            # ── FIRST IN (no raise to face) ─────────────────────────────
+            # Open-raise threshold by position (wider in late, tighter early)
+            open_thresholds = {
+                'BTN': 0.33, 'SB': 0.36, 'CO': 0.37,
+                'MP': 0.40, 'UTG': 0.43, 'BB': 0.50,
+            }
+            threshold = open_thresholds.get(position.upper(), 0.38)
+
+            if stack_bb <= 12:
+                # Short stack: shove or fold
+                if eq >= threshold:
+                    result.action = 'allin'
+                    result.frequency = 1.0
+                    result.reasoning = f'Open shove: {hand_key} eq={eq:.0%} {stack_bb:.0f}BB {position}'
+                else:
+                    result.action = 'fold'
+                    result.frequency = 1.0
+                    result.reasoning = f'Fold: {hand_key} eq={eq:.0%} < {threshold:.0%} {position}'
+            else:
+                # Deeper: open-raise or fold
+                if eq >= threshold:
                     result.action = 'raise'
-                    result.bet_size_frac = 2.2 / (stack_bb * 0.5)  # ~2.2BB open
-                    result.reasoning = f'Short-stack open: {hand_key} {stack_bb:.0f}BB'
+                    result.bet_size_frac = 2.2  # ~2.2BB open
+                    result.frequency = 1.0
+                    result.reasoning = f'Open raise: {hand_key} eq={eq:.0%} {stack_bb:.0f}BB {position}'
+                else:
+                    result.action = 'fold'
+                    result.frequency = 1.0
+                    result.reasoning = f'Fold: {hand_key} eq={eq:.0%} < {threshold:.0%} {position}'
 
         return result
 
