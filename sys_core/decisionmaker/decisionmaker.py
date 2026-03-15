@@ -19,6 +19,7 @@ from sys_core.decisionmaker.range_equity import (
     preflop_raise_size_bb, lookup_preflop_equity,
     blocker_adjustment, compute_range_fold_equity,
     compute_villain_bet_frequency, compute_check_ev_game_tree,
+    narrow_range_through_streets, compute_optimal_bet_size,
 )
 from .outs_calculator import Outs_Calculator
 
@@ -111,6 +112,52 @@ GTO_OPEN = {
         'JTO',
         'T9S', 'T8S', 'T7S',
         'T9O',
+        '98S', '97S', '87S', '86S', '76S', '75S', '65S', '54S',
+    },
+}
+
+# 3-max open-raise ranges (Spin & Go) — much wider than 6-max
+GTO_OPEN_3MAX = {
+    'BTN': {  # ~65% of hands (open almost everything)
+        'AA', 'KK', 'QQ', 'JJ', 'TT', '99', '88', '77', '66', '55', '44', '33', '22',
+        'AKS', 'AQS', 'AJS', 'ATS', 'A9S', 'A8S', 'A7S', 'A6S', 'A5S', 'A4S', 'A3S', 'A2S',
+        'AKO', 'AQO', 'AJO', 'ATO', 'A9O', 'A8O', 'A7O', 'A6O', 'A5O', 'A4O', 'A3O', 'A2O',
+        'KQS', 'KJS', 'KTS', 'K9S', 'K8S', 'K7S', 'K6S', 'K5S', 'K4S', 'K3S', 'K2S',
+        'KQO', 'KJO', 'KTO', 'K9O', 'K8O', 'K7O',
+        'QJS', 'QTS', 'Q9S', 'Q8S', 'Q7S', 'Q6S', 'Q5S', 'Q4S',
+        'QJO', 'QTO', 'Q9O', 'Q8O',
+        'JTS', 'J9S', 'J8S', 'J7S', 'J6S',
+        'JTO', 'J9O', 'J8O',
+        'T9S', 'T8S', 'T7S', 'T6S',
+        'T9O', 'T8O',
+        '98S', '97S', '96S', '95S', '87S', '86S', '85S', '76S', '75S', '74S',
+        '65S', '64S', '54S', '53S', '43S',
+    },
+    'SB': {  # ~55% of hands (wide but OOP)
+        'AA', 'KK', 'QQ', 'JJ', 'TT', '99', '88', '77', '66', '55', '44', '33', '22',
+        'AKS', 'AQS', 'AJS', 'ATS', 'A9S', 'A8S', 'A7S', 'A6S', 'A5S', 'A4S', 'A3S', 'A2S',
+        'AKO', 'AQO', 'AJO', 'ATO', 'A9O', 'A8O', 'A7O', 'A6O', 'A5O', 'A4O', 'A3O', 'A2O',
+        'KQS', 'KJS', 'KTS', 'K9S', 'K8S', 'K7S', 'K6S', 'K5S', 'K4S',
+        'KQO', 'KJO', 'KTO', 'K9O',
+        'QJS', 'QTS', 'Q9S', 'Q8S', 'Q7S', 'Q6S',
+        'QJO', 'QTO', 'Q9O',
+        'JTS', 'J9S', 'J8S', 'J7S',
+        'JTO', 'J9O',
+        'T9S', 'T8S', 'T7S',
+        'T9O',
+        '98S', '97S', '96S', '87S', '86S', '76S', '75S', '65S', '64S', '54S', '53S', '43S',
+    },
+    'BB': {  # Defense range vs BTN open (~40%)
+        'AA', 'KK', 'QQ', 'JJ', 'TT', '99', '88', '77', '66', '55', '44', '33', '22',
+        'AKS', 'AQS', 'AJS', 'ATS', 'A9S', 'A8S', 'A7S', 'A6S', 'A5S', 'A4S', 'A3S', 'A2S',
+        'AKO', 'AQO', 'AJO', 'ATO', 'A9O', 'A8O', 'A7O', 'A5O',
+        'KQS', 'KJS', 'KTS', 'K9S', 'K8S', 'K7S', 'K6S', 'K5S',
+        'KQO', 'KJO', 'KTO',
+        'QJS', 'QTS', 'Q9S', 'Q8S', 'Q7S',
+        'QJO', 'QTO',
+        'JTS', 'J9S', 'J8S',
+        'JTO',
+        'T9S', 'T8S', 'T7S',
         '98S', '97S', '87S', '86S', '76S', '75S', '65S', '54S',
     },
 }
@@ -247,11 +294,13 @@ def _normalize_hand(crd1: str, crd2: str) -> str:
 def gto_preflop_decision(crd1: str, crd2: str, position: str,
                          has_raiser: bool, call_amount: float,
                          has_check: bool, hero_stack: float = 100.0,
-                         raiser_position: str = '') -> str:
+                         raiser_position: str = '',
+                         game_type: str = 'cash') -> str:
     """Return GTO preflop decision: 'raise', 'call', 'check', or 'fold'.
 
     Uses solver-derived ranges instead of raw equity thresholds.
     raiser_position: position of the raiser (UTG/MP/CO/BTN/SB/BB) for 3-bet range lookup.
+    game_type: 'spin' for 3-max (wider ranges), 'cash'/'tournament' for 6-max.
     """
     hand = _normalize_hand(crd1, crd2)
     if not hand:
@@ -259,8 +308,12 @@ def gto_preflop_decision(crd1: str, crd2: str, position: str,
         return 'fold'
     pos = position.upper() if position else 'UNKNOWN'
 
+    # Select range tables based on game type
+    _open_ranges = GTO_OPEN_3MAX if game_type == 'spin' else GTO_OPEN
+
     log.info(f"GTO ANALYSIS: hand={hand} pos={pos} raiser={has_raiser} "
-             f"call={call_amount:.1f} stack={hero_stack:.1f} rpos={raiser_position}")
+             f"call={call_amount:.1f} stack={hero_stack:.1f} rpos={raiser_position} "
+             f"game={game_type}")
 
     # ─── PREMIUM SHIELD ──────────────────────────────────────────────────────
     # Guaranteed never to fold these hands preflop to a single raise.
@@ -269,7 +322,7 @@ def gto_preflop_decision(crd1: str, crd2: str, position: str,
 
     # BB with check option (unraised pot / limped pot)
     if has_check and pos == 'BB':
-        bb_raise_range = GTO_OPEN.get('BTN', set())
+        bb_raise_range = _open_ranges.get('BTN', _open_ranges.get('CO', set()))
         if hand in bb_raise_range:
             log.debug("BB unraised: raising wide for isolation")
             return 'raise'
@@ -403,7 +456,7 @@ def gto_preflop_decision(crd1: str, crd2: str, position: str,
                 return 'call'
         
         # Other positions (IP/SB)
-        open_range = GTO_OPEN.get(pos, GTO_OPEN.get('CO', set()))
+        open_range = _open_ranges.get(pos, _open_ranges.get('CO', set()))
         if hand in open_range:
             # GTO: Call vs raise if in open range and not massive commitment
             if call_to_stack > 0.45:
@@ -416,7 +469,7 @@ def gto_preflop_decision(crd1: str, crd2: str, position: str,
         return 'fold'
 
     # First in (no raiser) — open raise
-    open_range = GTO_OPEN.get(pos, GTO_OPEN.get('CO', set()))
+    open_range = _open_ranges.get(pos, _open_ranges.get('CO', set()))
     if hand in open_range:
         log.debug(f"Open-raising {hand} from {pos}")
         return 'raise'
@@ -641,19 +694,19 @@ class Decision(DecisionBase):
             log.info("Minimum equity is reduced because of outs by percent: %s", int(
                 self.out_adjustment * 100))
 
-        # Positional Adjustment: only penalize when we don't know who is behind us.
-        # If we are in BB, we close the action (penalty = 0).
+        # Positional Adjustment: penalize early positions (more players behind).
+        # UTG = worst (5 players behind), BTN = best (0 behind), BB = closes action.
         pos_penalty_factor = float(p.selected_strategy['pre_flop_equity_reduction_by_position'])
         hero_pos = getattr(t, '_gto_position', 'CO')
-        
-        if hero_pos == 'BB':
-            self.preflop_adjustment = 0.0
-        elif hero_pos == 'SB':
-            self.preflop_adjustment = -pos_penalty_factor * 0.5 # Half penalty for SB
-        else:
-            self.preflop_adjustment = -pos_penalty_factor * t.position_utg_plus
-            
-        log.info(f"Preflop adjustment (Pos={hero_pos}, UTG+{t.position_utg_plus}): {self.preflop_adjustment}")
+
+        # Players behind: UTG=5, MP=4, CO=3, BTN=0, SB=1, BB=0
+        _players_behind = {
+            'UTG': 5, 'MP': 4, 'CO': 3, 'BTN': 0, 'SB': 1, 'BB': 0, 'UNKNOWN': 3,
+        }
+        behind = _players_behind.get(hero_pos, 3)
+        self.preflop_adjustment = -pos_penalty_factor * (behind / 5.0)
+
+        log.info(f"Preflop adjustment (Pos={hero_pos}, behind={behind}): {self.preflop_adjustment:.3f}")
 
         # Raiser Adjustment: if someone raised, we need more equity, UNLESS we are in BB
         if not np.isnan(t.first_raiser_utg):
@@ -744,13 +797,17 @@ class Decision(DecisionBase):
             _raiser_pos = _utg_to_pos_map.get(int(_raiser_utg), 'BTN') if not _m.isnan(_raiser_utg) else ''
             _hero_stk = max(getattr(t, 'myFunds', 100), 1.0)
 
+            _game_type = 'spin' if any(kw in getattr(t, '_table_name', '').lower()
+                                      for kw in ('spin', 'gold')) else 'cash'
             gto_action = gto_preflop_decision(
                 crd1, crd2, position, has_raiser, float(call_amt), has_check,
-                hero_stack=_hero_stk, raiser_position=_raiser_pos)
+                hero_stack=_hero_stk, raiser_position=_raiser_pos,
+                game_type=_game_type)
 
             hand_str = _normalize_hand(crd1, crd2)
             log.info(f'GTO PREFLOP: {hand_str} pos={position} → {gto_action} '
-                     f'(raiser={_raiser_pos}, call={call_amt}, equity={t.equity:.3f})')
+                     f'(raiser={_raiser_pos}, call={call_amt}, equity={t.equity:.3f}, '
+                     f'game={_game_type})')
 
             if gto_action == 'raise':
                 # Use superb preflop sizing
@@ -971,9 +1028,12 @@ class Decision(DecisionBase):
                 _raiser_pos = _utg_to_pos_map.get(int(_raiser_utg), 'BTN') if not _m.isnan(_raiser_utg) else ''
 
                 _hero_stk = max(getattr(t, 'myFunds', 100), 1.0)
+                _game_type2 = 'spin' if any(kw in getattr(t, '_table_name', '').lower()
+                                            for kw in ('spin', 'gold')) else 'cash'
                 gto_action = gto_preflop_decision(
                     crd1, crd2, position, has_raiser, float(call_amt), has_check,
-                    hero_stack=_hero_stk, raiser_position=_raiser_pos)
+                    hero_stack=_hero_stk, raiser_position=_raiser_pos,
+                    game_type=_game_type2)
 
                 hand_str = _normalize_hand(crd1, crd2)
                 log.info(f'Hand {crd1}/{crd2} ({hand_str}) not in sheet, '
@@ -1205,25 +1265,72 @@ class Decision(DecisionBase):
         # Use context-aware range estimation when hand context is available
         hand_ctx = getattr(self, '_hand_context', None)
 
+        # ── Limp pot detection ────────────────────────────────────────
+        # A limped pot has no preflop raiser — villain's range is MUCH wider,
+        # fold equity is lower (limpers are sticky), implied odds are higher.
+        is_limped_pot = False
+        if hand_ctx is not None:
+            pf_raiser = hand_ctx.preflop_raiser_position or ''
+            # No raiser detected AND pot is small (≤ 4 BB suggests limps only)
+            if not pf_raiser and pot <= 4.0 * bb:
+                is_limped_pot = True
+            # Or villain explicitly limped (called without raising)
+            v_pf = hand_ctx.villain_actions.get('preflop', [])
+            if v_pf and all(a in ('call', 'check') for a in v_pf) and not pf_raiser:
+                is_limped_pot = True
+        elif street != 'preflop' and pot <= 4.0 * bb:
+            is_limped_pot = True
+
+        if is_limped_pot:
+            log.info(f"LIMP POT detected: pot={pot:.1f} bb={bb:.1f}")
+
         try:
             from sys_core.decisionmaker.range_equity import get_range_equity
             re = get_range_equity()
 
             if hand_ctx is not None and street != 'preflop':
-                # Context-aware: uses full action history across streets
-                v_range = re.estimate_villain_range_with_context(
-                    hand_context=hand_ctx,
-                    street=street,
-                    current_action=v_action,
-                    bet_size_pct=bet_size_pct,
-                    player_type=ptype,
-                    num_opponents=n_opponents,
-                )
-                log.info(f"EV RANGE (context-aware): street={street} "
-                         f"pattern='{hand_ctx.villain_pattern}' "
-                         f"aggro={hand_ctx.streets_of_aggression} "
-                         f"cbet={hand_ctx.is_cbet_spot} "
-                         f"multiway={hand_ctx.is_multiway}")
+                # ── Dynamic range narrowing through streets ───────────
+                # First try the combo-level Bayesian narrowing.  If it
+                # succeeds it gives a much more precise range than the
+                # scenario-based estimate_villain_range_with_context().
+                v_range = None
+                try:
+                    v_range_narrowed = narrow_range_through_streets(
+                        mycards, board, hand_ctx,
+                        player_type=ptype,
+                    )
+                    if v_range_narrowed and len(v_range_narrowed) > 3:
+                        v_range = v_range_narrowed
+                        log.info(f"EV RANGE (narrowed-streets): street={street} "
+                                 f"pattern='{hand_ctx.villain_pattern}' "
+                                 f"range='{v_range[:80]}'")
+                except Exception as e:
+                    log.debug(f"Street narrowing failed, falling through: {e}")
+
+                if v_range is None:
+                    # Fallback: context-aware scenario matching
+                    v_range = re.estimate_villain_range_with_context(
+                        hand_context=hand_ctx,
+                        street=street,
+                        current_action=v_action,
+                        bet_size_pct=bet_size_pct,
+                        player_type=ptype,
+                        num_opponents=n_opponents,
+                    )
+                    log.info(f"EV RANGE (context-aware): street={street} "
+                             f"pattern='{hand_ctx.villain_pattern}' "
+                             f"aggro={hand_ctx.streets_of_aggression} "
+                             f"cbet={hand_ctx.is_cbet_spot} "
+                             f"multiway={hand_ctx.is_multiway}")
+
+                # Limp pot override: widen range significantly
+                if is_limped_pot:
+                    v_range = re.estimate_villain_range(
+                        position='BB', action=v_action,
+                        player_type='fish_passive', street=street,
+                        bet_size_pct=bet_size_pct,
+                    )
+                    log.info(f"LIMP POT: widened villain range to fish_passive/BB")
             else:
                 # Fallback: single-action estimation
                 # Pass raiser_position so calling ranges are position-aware
@@ -1336,6 +1443,18 @@ class Decision(DecisionBase):
             except Exception as e:
                 log.debug(f"Blocker adjustment failed: {e}")
 
+        # ── Limped pot fold equity discount ────────────────────────────
+        # Limpers are sticky (wider range = more hands that connect).
+        # Reduce fold equity by ~30% and boost implied odds.
+        if is_limped_pot:
+            fold_equity *= 0.70
+            log.debug(f"LIMP POT: fold_equity reduced 30% → {fold_equity:.0%}")
+            # Boost implied odds for draws in limped pots
+            if street in ('flop', 'turn') and self.outs >= 4:
+                limp_implied = 0.3 * call_amount * (self.outs / 46.0)
+                ev_call += limp_implied
+                log.debug(f"LIMP POT: implied odds +{limp_implied:.2f}")
+
         # ── Multiway fold equity correction ──────────────────────────────
         # With N opponents, ALL must fold. FE_total = FE_per_player^N.
         n_opponents = max(n_opponents, 1)
@@ -1378,34 +1497,51 @@ class Decision(DecisionBase):
             log.debug(f"BLUFF BLOCKED: eq={equity:.0%} outs={getattr(self,'outs',0)}, skipping raise")
 
         if can_raise:
-            # Calculate optimal raise size
+            # ── Board-aware optimal bet sizing ───────────────────────
+            # Uses board texture, SPR, street, equity, and villain range
+            # strength to compute sizing (replaces hardcoded percentages).
+            _hero_ip = hand_ctx.hero_is_ip if hand_ctx else (hero_pos in ('BTN', 'CO'))
+            # Estimate villain range strength: how much of their range
+            # is strong on this board (0=weak, 1=strong).
+            # Proxy: if villain has bet multiple streets, their range
+            # is stronger.  If they checked, weaker.
+            _v_strength = 0.50
+            if hand_ctx:
+                n_aggro = hand_ctx.streets_of_aggression
+                if n_aggro >= 2:
+                    _v_strength = 0.70
+                elif n_aggro == 1:
+                    _v_strength = 0.55
+                elif v_action == 'check':
+                    _v_strength = 0.35
+            if is_limped_pot:
+                _v_strength = max(_v_strength - 0.15, 0.15)
+
+            bet_frac = compute_optimal_bet_size(
+                board_cards=board,
+                street=street,
+                pot=pot,
+                stack=my_stack,
+                hero_equity=equity,
+                villain_range_strength=_v_strength,
+                hero_is_ip=_hero_ip,
+            )
+
+            # Geometric fallback for medium SPR
             streets_map = {'flop': 3, 'turn': 2, 'river': 1, 'preflop': 0}
             streets_left = streets_map.get(street, 1)
-
             if streets_left > 0:
                 geo = geometric_bet_fraction(pot / bb, my_stack / bb, streets_left)
             else:
                 geo = 0.66
 
-            # Board wetness affects sizing
-            wetness = self._board_wetness(board)
-            if street == 'flop':
-                if wetness < 0.3:
-                    bet_frac = 0.33
-                elif wetness > 0.7:
-                    bet_frac = 0.75
-                else:
-                    bet_frac = 0.50
-            elif street == 'turn':
-                bet_frac = min(geo, 0.80)
-            else:
-                bet_frac = 0.75  # River: polarized
+            # If bet_frac is 0 (check recommended), keep it but still compute EV
+            # for the raise path so we can compare.
+            if bet_frac <= 0.0 and equity >= 0.30:
+                bet_frac = 0.33  # Minimum probe bet
 
-            # SPR-based commitment: low SPR = shove
-            if spr < 1.5:
-                bet_frac = 1.0  # Shove
-            elif spr < 3.0:
-                bet_frac = max(bet_frac, geo)
+            log.debug(f"BET SIZING: texture-based={bet_frac:.2f} geo={geo:.2f} "
+                      f"v_strength={_v_strength:.2f}")
 
             raise_amount = bet_frac * pot
             raise_amount = min(raise_amount, my_stack)  # Can't bet more than stack
@@ -1516,6 +1652,55 @@ class Decision(DecisionBase):
                 best_action = DecisionTypes.bet2  # Small-medium
             else:
                 best_action = DecisionTypes.bet1  # Min bet
+
+        # ── Mixed strategy selection ───────────────────────────────────
+        # When EV(raise) and EV(call) are close (within 15% of pot),
+        # use a deterministic hash to mix actions.  Same hand + board +
+        # street always produces the same action (reproducible).
+        if (ev_raise is not None and ev_call is not None
+                and street != 'preflop' and pot > 0):
+            ev_diff = abs(ev_raise - ev_call)
+            mix_threshold = 0.15 * pot
+
+            if ev_diff < mix_threshold and ev_diff > 0:
+                import hashlib
+                # Build deterministic hash from hand identity
+                _cards_str = ''.join(sorted(mycards)) if mycards else ''
+                _board_str = ''.join(sorted(board)) if board else ''
+                _mix_key = f"{_cards_str}{_board_str}{street}".encode()
+                _hand_hash = int(hashlib.md5(_mix_key).hexdigest(), 16)
+                _mix_pct = _hand_hash % 100
+
+                if ev_raise > ev_call:
+                    # Raise is slightly better → raise 60%, call 40%
+                    if _mix_pct >= 60:
+                        best_action = DecisionTypes.call
+                        best_ev = ev_call
+                        reasoning_parts.append(f"MIXED: raise>call by {ev_diff:.2f} "
+                                               f"(<{mix_threshold:.2f}) → call {_mix_pct}%")
+                    else:
+                        reasoning_parts.append(f"MIXED: raise>call by {ev_diff:.2f} "
+                                               f"(<{mix_threshold:.2f}) → raise {_mix_pct}%")
+                elif ev_call > ev_raise:
+                    # Call is slightly better → call 60%, raise 40%
+                    if _mix_pct >= 60:
+                        # Keep best_action as raise (already set above if
+                        # ev_raise > best_ev, but it might be call now)
+                        if ev_raise > ev_fold:
+                            if raise_amount >= my_stack * 0.85:
+                                best_action = DecisionTypes.bet4
+                            elif bet_frac >= 0.60:
+                                best_action = DecisionTypes.bet3
+                            elif bet_frac >= 0.30:
+                                best_action = DecisionTypes.bet2
+                            else:
+                                best_action = DecisionTypes.bet1
+                            best_ev = ev_raise
+                        reasoning_parts.append(f"MIXED: call>raise by {ev_diff:.2f} "
+                                               f"(<{mix_threshold:.2f}) → raise {_mix_pct}%")
+                    else:
+                        reasoning_parts.append(f"MIXED: call>raise by {ev_diff:.2f} "
+                                               f"(<{mix_threshold:.2f}) → call {_mix_pct}%")
 
         # SPR commitment: override fold with call if committed
         if best_action == DecisionTypes.fold and spr_committed:
@@ -3391,9 +3576,9 @@ class Decision(DecisionBase):
         _table_name_early = getattr(t, '_table_name', '')
         _is_spin_early = ('spin' in _table_name_early.lower() or 'gold' in _table_name_early.lower())
 
-        # Solver handles ALL preflop in Spin & Go (any stack depth).
-        # For cash/tournament, only ≤25BB (deeper stacks use legacy EV system).
-        _use_solver = _is_spin_early or (hasattr(self, 'hero_stack_bb') and self.hero_stack_bb <= 25)
+        # Solver handles preflop for ALL game types when available.
+        # Short stacks (≤25BB) benefit most from Nash push/fold tables.
+        _use_solver = True  # Always try solver; it fails gracefully if not built
 
         if (t.gameStage == GameStages.PreFlop.value
                 and t.mycards and len(t.mycards) == 2

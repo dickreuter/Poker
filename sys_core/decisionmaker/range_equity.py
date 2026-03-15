@@ -3686,6 +3686,382 @@ def log_hand_analysis(
         log.debug(f"Hand history log failed: {e}")
 
 
+# ── Dynamic range narrowing through streets ─────────────────────────────
+#
+# Narrows villain's range by replaying their actions on each street,
+# removing combos inconsistent with their observed line.  Uses eval7
+# to rank each combo by equity on the actual board.
+#
+# Performance: ~5-15ms for typical ranges (fast enough for real-time).
+
+def narrow_range_through_streets(
+    hero_cards: List[str],
+    board_cards: List[str],
+    hand_context,  # HandContext from game_state.py
+    player_type: str = 'unknown',
+) -> str:
+    """Narrow villain range by replaying their actions on every street.
+
+    Starting from the preflop range (RFI_RANGES[raiser_position] or calling
+    range), evaluate each combo on the actual board and remove hands
+    inconsistent with observed actions (bet/check/raise/call).
+
+    Args:
+        hero_cards: ['AH', 'KS']
+        board_cards: community cards (3-5)
+        hand_context: HandContext with full action history
+        player_type: villain type string
+
+    Returns:
+        eval7-compatible range string representing the narrowed range.
+    """
+    if not HAS_EVAL7 or not hand_context:
+        return RFI_RANGES.get('CO', '22+, A2s+, KTo+, QJo')
+
+    # ── Determine starting range from preflop action ──────────────
+    pf_raiser_pos = (hand_context.preflop_raiser_position or 'CO').upper()
+
+    # Was villain the raiser or a caller?
+    v_pf_actions = hand_context.villain_actions.get('preflop', [])
+    if any(a in ('raise', '3bet', '4bet') for a in v_pf_actions):
+        # Villain raised preflop → use their RFI range
+        start_range_str = RFI_RANGES.get(pf_raiser_pos, RFI_RANGES['CO'])
+    elif any(a == 'call' for a in v_pf_actions):
+        # Villain called preflop → calling range (position-aware)
+        ptype = player_type if player_type in PLAYER_TYPE_RANGES else 'unknown'
+        if ptype in ('fish_passive', 'fish_aggro', 'maniac'):
+            start_range_str = CALL_RANGES['wide']
+        elif ptype == 'nit':
+            start_range_str = CALL_RANGES['tight']
+        else:
+            start_range_str = CALL_RANGES['medium']
+    else:
+        # No preflop info → use position RFI as default
+        start_range_str = RFI_RANGES.get(pf_raiser_pos, RFI_RANGES['CO'])
+
+    # Parse range into combos
+    try:
+        hr = eval7.HandRange(start_range_str)
+    except Exception:
+        return start_range_str
+
+    hero_e7 = [_convert_card(c) for c in hero_cards if c]
+    board_e7 = _board_to_eval7(board_cards)
+    dead_strs = set(str(c) for c in hero_e7 if c) | set(str(c) for c in board_e7 if c)
+
+    # Build combo list with weights
+    combos = []
+    for cards, _w in hr.hands:
+        c0, c1 = str(cards[0]), str(cards[1])
+        if c0 in dead_strs or c1 in dead_strs:
+            continue
+        combos.append([c0, c1, 1.0])
+
+    if not combos:
+        return start_range_str
+
+    # ── Process each street of villain actions ─────────────────────
+    street_order = ['flop', 'turn', 'river']
+    board_by_street = {
+        'flop': board_cards[:3] if len(board_cards) >= 3 else board_cards,
+        'turn': board_cards[:4] if len(board_cards) >= 4 else board_cards,
+        'river': board_cards[:5] if len(board_cards) >= 5 else board_cards,
+    }
+
+    ptype_mods = {
+        'nit': {'bet_remove': 0.50, 'check_remove': 0.15, 'raise_keep': 0.10, 'call_low': 0.25, 'call_high': 0.80},
+        'tag': {'bet_remove': 0.40, 'check_remove': 0.20, 'raise_keep': 0.15, 'call_low': 0.20, 'call_high': 0.85},
+        'lag': {'bet_remove': 0.30, 'check_remove': 0.25, 'raise_keep': 0.20, 'call_low': 0.15, 'call_high': 0.90},
+        'fish_passive': {'bet_remove': 0.25, 'check_remove': 0.10, 'raise_keep': 0.10, 'call_low': 0.10, 'call_high': 0.95},
+        'fish_aggro': {'bet_remove': 0.20, 'check_remove': 0.15, 'raise_keep': 0.25, 'call_low': 0.10, 'call_high': 0.95},
+        'maniac': {'bet_remove': 0.15, 'check_remove': 0.20, 'raise_keep': 0.30, 'call_low': 0.10, 'call_high': 0.95},
+        'unknown': {'bet_remove': 0.40, 'check_remove': 0.20, 'raise_keep': 0.15, 'call_low': 0.20, 'call_high': 0.85},
+    }
+    mods = ptype_mods.get(player_type if player_type in ptype_mods else 'unknown',
+                          ptype_mods['unknown'])
+
+    for street in street_order:
+        v_actions = hand_context.villain_actions.get(street, [])
+        if not v_actions:
+            continue
+
+        street_board = board_by_street.get(street, [])
+        if not street_board or len(street_board) < 3:
+            continue
+
+        street_board_e7 = _board_to_eval7(street_board)
+        if not street_board_e7:
+            continue
+
+        # Evaluate each combo's equity on this street's board
+        combo_equities = []
+        for i, (c0, c1, w) in enumerate(combos):
+            if w < 0.01:
+                combo_equities.append((i, 0.0))
+                continue
+            try:
+                hand = [eval7.Card(c0), eval7.Card(c1)] + list(street_board_e7)
+                score = eval7.evaluate(hand) if len(hand) >= 5 else 0
+                combo_equities.append((i, score))
+            except Exception:
+                combo_equities.append((i, 0))
+
+        # Sort by score (descending) to find percentiles
+        sorted_indices = sorted(combo_equities, key=lambda x: x[1], reverse=True)
+        n_active = sum(1 for _, _, w in combos if w >= 0.01)
+        if n_active == 0:
+            break
+
+        # Map index to rank percentile (0.0 = strongest, 1.0 = weakest)
+        rank_pct = {}
+        for rank_pos, (idx, _score) in enumerate(sorted_indices):
+            if combos[idx][2] >= 0.01:
+                rank_pct[idx] = rank_pos / max(n_active - 1, 1)
+
+        # Apply narrowing based on observed action
+        for action in v_actions:
+            action_lower = action.lower()
+
+            if action_lower in ('bet', '3bet', '4bet'):
+                # Villain bet: remove bottom X% of range (weak hands fold)
+                remove_bottom = mods['bet_remove']
+                for idx in rank_pct:
+                    if rank_pct[idx] > (1.0 - remove_bottom):
+                        combos[idx][2] *= 0.15  # Mostly remove
+
+            elif action_lower == 'check':
+                # Villain checked: remove top X% (strong hands would bet)
+                remove_top = mods['check_remove']
+                for idx in rank_pct:
+                    if rank_pct[idx] < remove_top:
+                        combos[idx][2] *= 0.30  # Reduce but don't eliminate (trapping)
+
+            elif action_lower == 'raise':
+                # Villain raised: keep only top X%
+                keep_top = mods['raise_keep']
+                for idx in rank_pct:
+                    if rank_pct[idx] > keep_top:
+                        combos[idx][2] *= 0.10  # Heavy removal
+
+            elif action_lower == 'call':
+                # Villain called: keep middle range (strong hands raise, weak fold)
+                low = mods['call_low']
+                high = mods['call_high']
+                for idx in rank_pct:
+                    pct = rank_pct[idx]
+                    if pct < low:
+                        combos[idx][2] *= 0.35  # Top hands would raise
+                    elif pct > high:
+                        combos[idx][2] *= 0.20  # Bottom hands would fold
+
+        # Normalize weights
+        max_w = max((w for _, _, w in combos), default=1.0)
+        if max_w > 0:
+            for i in range(len(combos)):
+                combos[i][2] = combos[i][2] / max_w
+
+    # ── Convert surviving combos back to range string ──────────────
+    # Group by hand type (pair/suited/offsuit) and reconstruct
+    surviving = [(c0, c1, w) for c0, c1, w in combos if w >= 0.15]
+
+    if not surviving:
+        return start_range_str  # Don't return empty range
+
+    # Build hand notation set from surviving combos
+    hand_set = set()
+    rank_order = 'AKQJT98765432'
+    for c0, c1, _w in surviving:
+        r0, s0 = c0[0].upper(), c0[1].lower()
+        r1, s1 = c1[0].upper(), c1[1].lower()
+        # Normalize order (higher rank first)
+        if rank_order.index(r0) > rank_order.index(r1):
+            r0, r1 = r1, r0
+            s0, s1 = s1, s0
+        if r0 == r1:
+            hand_set.add(r0 + r1)  # Pair
+        elif s0 == s1:
+            hand_set.add(r0 + r1 + 's')
+        else:
+            hand_set.add(r0 + r1 + 'o')
+
+    if not hand_set:
+        return start_range_str
+
+    # Convert to eval7 range string
+    range_parts = sorted(hand_set, key=lambda h: (
+        -rank_order.index(h[0]) if h[0] in rank_order else 0,
+        -rank_order.index(h[1]) if len(h) > 1 and h[1] in rank_order else 0,
+    ))
+    result_str = ', '.join(range_parts)
+
+    log.info(f"NARROW_STREETS: {len(surviving)}/{len(combos)} combos survive "
+             f"→ {len(hand_set)} hands | type={player_type}")
+
+    return result_str
+
+
+# ── Board-aware bet sizing ───────────────────────────────────────────────
+#
+# Computes optimal bet size based on board texture, range advantage,
+# SPR, street, and villain range strength.  Uses simple rule-based
+# lookup — NOT a solver.
+#
+# Performance: <1ms (pure computation, no eval7 calls).
+
+# Board texture classification
+_BOARD_TEXTURE_DRY = 'dry'
+_BOARD_TEXTURE_MEDIUM = 'medium'
+_BOARD_TEXTURE_WET = 'wet'
+_BOARD_TEXTURE_MONOTONE = 'monotone'
+_BOARD_TEXTURE_PAIRED = 'paired'
+
+
+def _classify_board_texture(board_cards: List[str]) -> str:
+    """Classify board texture into dry/medium/wet/monotone/paired."""
+    if not board_cards or len(board_cards) < 3:
+        return _BOARD_TEXTURE_MEDIUM
+
+    from collections import Counter
+
+    rank_map = {r: i for i, r in enumerate('23456789TJQKA')}
+    ranks, suits = [], []
+    for card in board_cards[:3]:  # Use flop only for texture
+        if card and len(card) >= 2:
+            r = card[0].upper()
+            if r == '1' and len(card) >= 3:
+                r = 'T'
+                suits.append(card[2].upper())
+            else:
+                suits.append(card[-1].upper())
+            ranks.append(rank_map.get(r, 0))
+
+    if len(ranks) < 3:
+        return _BOARD_TEXTURE_MEDIUM
+
+    suit_counts = Counter(suits)
+    top_suit = suit_counts.most_common(1)[0][1]
+
+    # Check for monotone (3 of same suit)
+    if top_suit >= 3:
+        return _BOARD_TEXTURE_MONOTONE
+
+    # Check for paired board
+    if len(set(ranks)) < len(ranks):
+        return _BOARD_TEXTURE_PAIRED
+
+    # Straight connectivity
+    sorted_ranks = sorted(set(ranks))
+    max_gap = max(sorted_ranks[i+1] - sorted_ranks[i]
+                  for i in range(len(sorted_ranks)-1))
+    spread = sorted_ranks[-1] - sorted_ranks[0]
+
+    # Flush draw potential (2 of same suit)
+    has_flush_draw = top_suit >= 2
+
+    if has_flush_draw and spread <= 4:
+        return _BOARD_TEXTURE_WET  # Flush draw + connected
+    elif has_flush_draw or spread <= 3:
+        return _BOARD_TEXTURE_MEDIUM
+    elif spread >= 7 and max_gap >= 4:
+        return _BOARD_TEXTURE_DRY  # Rainbow, disconnected
+    else:
+        return _BOARD_TEXTURE_MEDIUM
+
+
+def compute_optimal_bet_size(
+    board_cards: List[str],
+    street: str,
+    pot: float,
+    stack: float,
+    hero_equity: float = 0.50,
+    villain_range_strength: float = 0.50,
+    hero_is_ip: bool = True,
+) -> float:
+    """Compute optimal bet size as fraction of pot.
+
+    Args:
+        board_cards: community cards
+        street: 'flop', 'turn', 'river'
+        pot: current pot size
+        stack: hero's remaining stack
+        hero_equity: hero's equity vs villain range (0-1)
+        villain_range_strength: how strong villain's range is (0=weak, 1=strong)
+        hero_is_ip: whether hero is in position
+
+    Returns:
+        Bet size as fraction of pot (0.0 = check, 0.25-1.0+ = bet sizing)
+    """
+    spr = stack / pot if pot > 0 else 10.0
+    texture = _classify_board_texture(board_cards)
+
+    # ── SPR-based overrides ────────────────────────────────────────
+    if spr < 1.5:
+        # Very low SPR: shove or check (no in-between)
+        if hero_equity >= 0.35:
+            return 1.0  # Shove
+        return 0.0  # Check (give up)
+
+    if spr < 3.0:
+        # Low SPR: geometric sizing to get stacks in
+        streets_left = {'flop': 3, 'turn': 2, 'river': 1}.get(street, 1)
+        if streets_left > 0 and hero_equity >= 0.30:
+            # Geometric: bet size per street to get all-in by river
+            geo = (stack / pot) ** (1.0 / streets_left) - 1.0
+            return max(0.33, min(1.0, geo))
+        return 0.0
+
+    # ── Board texture based sizing ─────────────────────────────────
+    # Base sizing by texture
+    texture_sizing = {
+        _BOARD_TEXTURE_DRY:      {'flop': 0.25, 'turn': 0.50, 'river': 0.66},
+        _BOARD_TEXTURE_MEDIUM:   {'flop': 0.50, 'turn': 0.66, 'river': 0.75},
+        _BOARD_TEXTURE_WET:      {'flop': 0.66, 'turn': 0.75, 'river': 0.80},
+        _BOARD_TEXTURE_MONOTONE: {'flop': 0.75, 'turn': 0.75, 'river': 0.80},
+        _BOARD_TEXTURE_PAIRED:   {'flop': 0.25, 'turn': 0.50, 'river': 0.66},
+    }
+
+    base_frac = texture_sizing.get(texture, texture_sizing[_BOARD_TEXTURE_MEDIUM]).get(
+        street, 0.50)
+
+    # ── Range advantage adjustment ─────────────────────────────────
+    # Strong villain range → check more (smaller bets)
+    # Weak villain range → bet more (larger bets)
+    if villain_range_strength > 0.65:
+        base_frac *= 0.75  # Villain strong → smaller bets or check
+    elif villain_range_strength < 0.35:
+        base_frac *= 1.15  # Villain weak → larger bets
+
+    # ── Hero equity adjustment ─────────────────────────────────────
+    # Very strong hands: can use smaller bets (extract value from wider range)
+    # Medium hands: prefer larger bets (protection + fold equity)
+    # Draws: prefer larger bets (maximize fold equity for semi-bluff)
+    if hero_equity >= 0.75:
+        # Nutted: use smaller sizing to get called wider
+        if street == 'river':
+            base_frac = max(base_frac, 0.75)  # River value: go big
+        else:
+            base_frac *= 0.85  # Streets remaining: don't scare away
+    elif hero_equity < 0.30:
+        # Semi-bluff or bluff: bigger is better for fold equity
+        base_frac = max(base_frac, 0.66)
+
+    # ── Position adjustment ────────────────────────────────────────
+    if not hero_is_ip:
+        # OOP: slightly larger to deny positional advantage
+        base_frac *= 1.10
+
+    # ── Street-specific polarization ───────────────────────────────
+    if street == 'river':
+        # River: polarize (big value bets or give up)
+        if hero_equity >= 0.55:
+            base_frac = max(base_frac, 0.75)
+        elif hero_equity < 0.20:
+            base_frac = max(base_frac, 0.75)  # Bluff big
+
+    # Clamp to reasonable range
+    return max(0.0, min(1.5, base_frac))
+
+
 # ── Singleton for easy import ──────────────────────────────────────────────
 
 _instance = None
