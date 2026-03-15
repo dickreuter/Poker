@@ -820,45 +820,12 @@ class MultiTableRunner:
 
     def grab_full_screen(self):
         """Grab one full-screen screenshot (shared across all tables).
-        Uses Quartz CGWindowListCreateImage (28ms) with resize to match
-        PIL ImageGrab dimensions (needed for coordinate compatibility).
-        Falls back to PIL ImageGrab (335ms) on failure.
+        Uses PIL ImageGrab — exact Retina 2x pixels, no coordinate drift.
+        Quartz is faster but returns 3474x2318 vs PIL's 3420x2224, causing
+        25pt vertical drift on button clicks. Not worth the speed gain.
+        Real speed comes from pre-check (8ms), button cache, stack cache.
         """
-        try:
-            from Quartz import (CGWindowListCreateImage, CGRectNull,
-                                kCGWindowListOptionOnScreenOnly, kCGNullWindowID,
-                                kCGWindowImageDefault, CGImageGetWidth, CGImageGetHeight,
-                                CGImageGetDataProvider, CGDataProviderCopyData,
-                                CGImageGetBytesPerRow)
-            from PIL import Image
-
-            cg_img = CGWindowListCreateImage(
-                CGRectNull, kCGWindowListOptionOnScreenOnly,
-                kCGNullWindowID, kCGWindowImageDefault)
-            if cg_img is None:
-                return ImageGrab.grab()
-
-            w = CGImageGetWidth(cg_img)
-            h = CGImageGetHeight(cg_img)
-            provider = CGImageGetDataProvider(cg_img)
-            data = CGDataProviderCopyData(provider)
-            bpr = CGImageGetBytesPerRow(cg_img)
-
-            img = Image.frombuffer('RGBA', (w, h), data, 'raw', 'BGRA', bpr, 1)
-            img = img.convert('RGB')
-
-            # Quartz may return slightly different dimensions than PIL.
-            # Cache PIL's size once and resize Quartz to match exactly.
-            # IMPORTANT: Use NEAREST (not LANCZOS) to preserve sharp pixel edges.
-            # LANCZOS interpolation blurs card text and suit symbols, causing
-            # card detection failures (white-text HSV thresholds stop matching).
-            if not hasattr(self, '_pil_screen_size'):
-                self._pil_screen_size = ImageGrab.grab().size
-            if img.size != self._pil_screen_size:
-                img = img.resize(self._pil_screen_size, Image.NEAREST)
-            return img
-        except Exception:
-            return ImageGrab.grab()
+        return ImageGrab.grab()
 
     def get_table_screenshot(self, window: TableWindow, full_screen=None):
         """Crop a table from a full-screen screenshot.
