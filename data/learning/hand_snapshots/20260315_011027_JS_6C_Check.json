@@ -1,31 +1,47 @@
 {
-  "ts": "2026-03-14T18:13:18.569025",
-  "window": "Rush & Cash - $0.01 / $0.02",
+  "ts": "2026-03-15T01:10:28.501144",
+  "window": "Spin & Gold $0.25 - Blinds 10 | 20",
   "hero_cards": [
-    "JD",
-    "JH"
+    "JS",
+    "6C"
   ],
   "board_cards": [],
   "cards_face_down": false,
   "street": "PreFlop",
   "position": "SB",
-  "dealer_seat": 5,
-  "opponents_active": 0,
+  "dealer_seat": 2,
+  "opponents_active": 2,
   "opponents_in_hand": -1,
-  "pot": 1.5,
+  "pot": 2.0,
   "call_amount": 1.0,
-  "min_raise": 4.0,
-  "hero_stack": 34.5,
+  "min_raise": 2.0,
+  "hero_stack": 14.0,
   "hero_stack_estimated": false,
-  "small_blind": 0.5,
-  "big_blind": 1.0,
+  "small_blind": 10.0,
+  "big_blind": 20.0,
   "players": [
     {
       "seat": 0,
       "name": "",
-      "stack": 34.5,
+      "stack": 14.0,
       "bet": 0,
       "is_hero": true,
+      "is_active": true
+    },
+    {
+      "seat": 3,
+      "name": "",
+      "stack": 4.0,
+      "bet": 0,
+      "is_hero": false,
+      "is_active": true
+    },
+    {
+      "seat": 5,
+      "name": "",
+      "stack": 3.0,
+      "bet": 0,
+      "is_hero": false,
       "is_active": true
     }
   ],
@@ -39,30 +55,29 @@
     },
     {
       "type": "call",
-      "amount": 1.0,
+      "amount": 0,
       "rel_x": 0.7994,
       "rel_y": 0.9325,
       "confidence": 0.85
     },
     {
       "type": "raise",
-      "amount": 4.0,
+      "amount": 2.0,
       "rel_x": 0.9229,
       "rel_y": 0.9325,
       "confidence": 0.85
     }
   ],
-  "equity": 0.69,
-  "abs_equity": 0.69,
-  "decision": "Bet half pot",
-  "ev": 1.362,
-  "call_limit": 51.78,
-  "bet_limit": 3.0,
+  "equity": 0.33,
+  "abs_equity": 0.33,
+  "decision": "Check",
+  "ev": 0.32,
+  "call_limit": 0,
+  "bet_limit": 0,
   "outs": 0,
   "blocker_score": 0.0,
   "opp_likely": [],
-  "opp_bluff_pct": 0.18,
-  "opp_type": "fish_passive",
-  "ocr_latency_ms": 497.5,
+  "opp_bluff_pct": 0.3,
+  "ocr_latency_ms": 662.6,
   "ocr_source": "python"
 }
