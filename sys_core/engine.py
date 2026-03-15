@@ -2180,11 +2180,21 @@ class MultiTableRunner:
             return state.get_action_by_type('fold')
 
         # 2. Call/Check logic
-        if target_str in ('call', 'call2', 'call deception', 'check', 'check deception'):
-            # Prioritize matching button, then fallback to anything that doesn't cost more
-            return (state.get_action_by_type('check') or 
-                    state.get_action_by_type('call') or 
-                    state.get_action_by_type('fold')) # Final safety fallback
+        if target_str in ('call', 'call2', 'call deception'):
+            # Decision is CALL — find call button, NOT fold
+            btn = (state.get_action_by_type('call') or
+                   state.get_action_by_type('check'))
+            if btn:
+                return btn
+            # No call or check found — do NOT fallback to fold.
+            # Return None so the engine retries or times out, rather than
+            # folding a hand we wanted to call.
+            log.warning(f"MAP: Decision was Call but no call/check button found")
+            return None
+
+        if target_str in ('check', 'check deception'):
+            return (state.get_action_by_type('check') or
+                    state.get_action_by_type('call'))
 
         # 3. Raise/Bet logic (PRIORITIZE AGGRESSION)
         if any(kw in target_str for kw in ('raise', 'bet', '3bet', '4bet', 'allin', 'bluff')):
