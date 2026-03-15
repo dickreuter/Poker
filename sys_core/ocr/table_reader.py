@@ -429,23 +429,19 @@ def read_table(
     # 7. Street from board cards
     street = _street_from_board(board_cards)
 
-    # 8. Player stacks — hero-only on subsequent reads, full read on first sight
+    # 8. Player stacks — reuse cache aggressively, only full-read once per hand.
+    # Stack OCR is the #1 bottleneck (~2300ms). Stacks barely change within a hand.
     hero_stack_is_estimated = False
     if is_my_turn:
-        if window_id in _STACK_HASH_CACHE and _STACK_HASH_CACHE[window_id] == stack_hash_key \
-                and window_id in _STACK_CACHE:
-            players = _STACK_CACHE[window_id]
-            hero_stack_is_estimated = any(p.is_hero and p.stack == 100.0 for p in players)
-            log.debug(f"STACK HASH HIT: reusing {len(players)} stacks")
-        elif window_id in _STACK_CACHE:
-            # Hash changed — read hero only, reuse cached opponents
+        if window_id in _STACK_CACHE and len(_STACK_CACHE[window_id]) > 0:
+            # Have cached stacks — reuse them (read hero only for updates)
             hero_players, hero_stack_is_estimated = _read_player_stacks(img, W, H, hero_only=True)
             cached_opps = [p for p in _STACK_CACHE[window_id] if not p.is_hero]
             players = hero_players + cached_opps
             _STACK_CACHE[window_id] = players
-            _STACK_HASH_CACHE[window_id] = stack_hash_key
+            log.debug(f"STACK FAST: hero-only read, {len(cached_opps)} opponents cached")
         else:
-            # First read — read all stacks
+            # First read for this window — read all stacks
             players, hero_stack_is_estimated = _read_player_stacks(img, W, H)
             _STACK_CACHE[window_id] = players
             _STACK_HASH_CACHE[window_id] = stack_hash_key

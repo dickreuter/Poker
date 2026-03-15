@@ -1,0 +1,69 @@
+{
+  "ts": "2026-03-15T00:05:00.027725",
+  "window": "Mini Saver $5 [Hyper] : Buy-in $5 - Blinds 400 | 800 - Table 69/!)@(#*$&%^|5708615477",
+  "hero_cards": [
+    "AD",
+    "AH"
+  ],
+  "board_cards": [],
+  "cards_face_down": false,
+  "street": "PreFlop",
+  "position": "SB",
+  "dealer_seat": 5,
+  "opponents_active": 1,
+  "opponents_in_hand": -1,
+  "pot": 2.4,
+  "call_amount": 0.5,
+  "min_raise": 0,
+  "hero_stack": 7.0,
+  "hero_stack_estimated": false,
+  "small_blind": 400.0,
+  "big_blind": 800.0,
+  "players": [
+    {
+      "seat": 0,
+      "name": "",
+      "stack": 7.0,
+      "bet": 0,
+      "is_hero": true,
+      "is_active": true
+    },
+    {
+      "seat": 3,
+      "name": "",
+      "stack": 7.0,
+      "bet": 0,
+      "is_hero": false,
+      "is_active": true
+    }
+  ],
+  "buttons": [
+    {
+      "type": "fold",
+      "amount": 0.5,
+      "rel_x": 0.5,
+      "rel_y": 0.8683,
+      "confidence": 0.8
+    },
+    {
+      "type": "call",
+      "amount": 0.5,
+      "rel_x": 0.7976,
+      "rel_y": 0.8862,
+      "confidence": 0.7
+    }
+  ],
+  "equity": 0.8445,
+  "abs_equity": 0.85,
+  "decision": "Allin",
+  "ev": 2.742,
+  "call_limit": 7.0,
+  "bet_limit": 0,
+  "outs": 0,
+  "blocker_score": 0.15,
+  "opp_likely": [],
+  "opp_bluff_pct": 0.18,
+  "opp_type": "fish_passive",
+  "ocr_latency_ms": 2277.4,
+  "ocr_source": "python"
+}
