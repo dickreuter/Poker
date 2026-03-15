@@ -158,8 +158,8 @@ GTO_BB_DEFEND = {
 GTO_4BET = {
     'value': {'AA', 'KK', 'QQ', 'AKS'},          # Always 4-bet
     'mixed_value': {'JJ'},                          # 4-bet ~60% (rest call)
-    'bluff': {'A5S'},                               # 4-bet ~70% (rest fold)
-    'call_4bet': {'JJ', 'TT', 'AKO', 'AQS'},      # Call the 3-bet (too strong to fold)
+    'bluff': {'A5S', 'A4S'},                       # 4-bet ~70% (rest fold)
+    'call_4bet': {'JJ', 'TT', '99', 'AKO', 'AQS', 'AQO', 'AJS', 'AJO', 'KQS'},  # Call 3-bet
 }
 
 # Facing a 4-bet (what to do with our 3-bet range)
@@ -281,7 +281,11 @@ def gto_preflop_decision(crd1: str, crd2: str, position: str,
         # Detect facing a 3-bet: call_amount > 5BB typically means 3-bet
         # (standard open is 2.5BB, 3-bet is ~7-10BB)
         call_to_stack = call_amount / max(hero_stack, 1.0)
-        is_facing_3bet = call_amount > 5.0
+        # 3-bet detection: standard open is 2-3BB, 3-bet is ~7-12BB.
+        # Use 7BB or 20% of stack as threshold (whichever is smaller).
+        # In Spin & Go with 15BB stacks, a 5BB raise might just be a big open.
+        _3bet_threshold = min(7.0, hero_stack * 0.20)
+        is_facing_3bet = call_amount > _3bet_threshold
 
         if is_facing_3bet:
             # Facing a 3-bet: use 4-bet ranges
