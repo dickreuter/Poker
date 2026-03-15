@@ -1725,9 +1725,9 @@ class MultiTableRunner:
                 session._no_cards_retries = 0
 
             partial = state.my_cards if state.my_cards else []
-            log.warning(f"Incomplete card detection: {partial} — retrying up to 5 times")
+            log.warning(f"Incomplete card detection: {partial} — retrying up to 3 times")
 
-            retry_delays = [0.15, 0.30, 0.45, 0.60, 0.80]
+            retry_delays = [0.10, 0.15, 0.25]  # 0.5s total (was 2.3s)
             for attempt, delay in enumerate(retry_delays):
                 session._no_cards_retries += 1
                 _time.sleep(delay)
@@ -3455,6 +3455,13 @@ class MultiTableRunner:
             if last_cards:
                 record['cards'] = last_cards
 
+            # Preflop action context (from last known state)
+            if state:
+                record['preflop_raiser_seat'] = getattr(state, 'preflop_raiser_seat', -1)
+                record['preflop_raiser_position'] = getattr(state, 'preflop_raiser_position', '')
+                record['chip_postings'] = getattr(state, 'chip_postings', [])
+                record['num_players'] = len(getattr(state, 'players', []) or [])
+
             path = os.path.join('data', 'learning', 'hand_history.jsonl')
             with open(path, 'a') as f:
                 f.write(_json.dumps(record) + '\n')
@@ -3813,6 +3820,10 @@ class MultiTableRunner:
                         'our_cards': session._cached_cards,
                         'opp_cards': opp_hand,
                         'board': getattr(session, '_cached_board', []),
+                        'preflop_raiser_seat': getattr(state, 'preflop_raiser_seat', -1),
+                        'preflop_raiser_position': getattr(state, 'preflop_raiser_position', ''),
+                        'chip_postings': getattr(state, 'chip_postings', []),
+                        'num_players': len(getattr(state, 'players', []) or []),
                     }
 
                     # Score our range prediction if we had one
@@ -4317,6 +4328,11 @@ class MultiTableRunner:
             'hero_stack_estimated': estimated,
             'small_blind': sb,
             'big_blind': bb,
+            # Preflop action context
+            'preflop_raiser_seat': getattr(state, 'preflop_raiser_seat', -1),
+            'preflop_raiser_position': getattr(state, 'preflop_raiser_position', ''),
+            'chip_postings': getattr(state, 'chip_postings', []),
+            'num_players': len(getattr(state, 'players', []) or []),
             # All players
             'players': [],
             # Buttons detected
@@ -4398,6 +4414,10 @@ class MultiTableRunner:
             'hero_stack': round(hero_stack, 2),
             'spr': round(spr, 1),
             'is_hu': getattr(state, 'is_heads_up', None),
+            'preflop_raiser_seat': getattr(state, 'preflop_raiser_seat', -1),
+            'preflop_raiser_position': getattr(state, 'preflop_raiser_position', ''),
+            'chip_postings': getattr(state, 'chip_postings', []),
+            'num_players': len(getattr(state, 'players', []) or []),
         }
 
         # Add decision context if available
