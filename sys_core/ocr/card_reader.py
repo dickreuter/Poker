@@ -326,6 +326,35 @@ def read_player_cards(
     deck_style = positions.get('_deck_style', STYLE_WHITE)
     log.debug(f"Deck style: {deck_style}")
 
+    # ── FAST PATH: Batch both card ranks in ONE pytesseract call ──────
+    # Instead of calling pytesseract 2-4 times (200ms each = 800ms+),
+    # read both ranks in a single call (~200ms total) when hash cache misses.
+    _batch_ranks = [None, None]  # Will be populated if batch OCR succeeds
+    _batch_attempted = False
+    if PYTESSERACT_AVAILABLE:
+        # Check which sides need OCR (not in hash cache)
+        needs_ocr = []
+        for i, side in enumerate(['left', 'right']):
+            body_key = f'{side}_body'
+            if body_key in positions:
+                bx, by, bw, bh = positions[body_key]
+                body_crop = img_np[by:by+bh, bx:bx+bw]
+            else:
+                rx, ry, rw, rh = positions[f'{side}_rank']
+                body_crop = img_np[ry:ry+rh, rx:rx+rw]
+            hash_card = _pixel_hash_cache.lookup_fuzzy(body_crop)
+            if not hash_card:
+                needs_ocr.append(i)
+
+        if len(needs_ocr) == 2:
+            # Both cards need OCR — batch saves ~200ms vs 2 individual calls
+            _batch_attempted = True
+            batch_result = _batch_read_ranks(img_np, positions, deck_style)
+            if batch_result:
+                for i, rank in enumerate(batch_result):
+                    if rank:
+                        _batch_ranks[i] = rank
+
     cards = []
     for side in ['left', 'right']:
         rank_box = positions[f'{side}_rank']
@@ -399,7 +428,22 @@ def read_player_cards(
             # Else: hash was evicted, fall through to OCR
 
         # ── Strategy 2: Dynamic OCR ─────────────────────────────────────────
-        rank = _read_rank_at(img_np, rank_box, deck_style)
+        # Use batch result if available (saves ~400ms per card).
+        # Batch psm 6 is reliable for unambiguous ranks (A,K,Q,J,T/10)
+        # but confuses 9→2, 5→2 etc. Only trust batch for safe ranks;
+        # fall back to individual psm 10+7 OCR for confusable ranks.
+        _BATCH_SAFE_RANKS = {'A', 'K', 'Q', 'J', '10', 'T'}
+        side_idx = 0 if side == 'left' else 1
+        rank = None
+        if _batch_attempted and _batch_ranks[side_idx]:
+            batch_rank = _batch_ranks[side_idx]
+            if batch_rank in _BATCH_SAFE_RANKS:
+                rank = batch_rank
+                log.debug(f"Using BATCH rank for {side}: {rank} (safe rank)")
+            else:
+                log.debug(f"BATCH skip {side}: {batch_rank} is confusable — using individual OCR")
+        if not rank:
+            rank = _read_rank_at(img_np, rank_box, deck_style)
 
         # For colored cards: if top-left corner rank fails, try center rank
         if not rank and deck_style == STYLE_COLORED:
@@ -443,6 +487,16 @@ def read_player_cards(
             # QUARANTINE: Require template agreement before caching ANY rank.
             # Without this, OCR errors get permanently cached and self-reinforce.
             # e.g. "10" misread as "J" → cached → every future 10 returns "J" forever
+            #
+            # SPEED OPTIMIZATION: If hash cache has a fuzzy neighbor that agrees
+            # with the OCR result, skip the expensive quarantine pytesseract calls.
+            neighbor_card = _pixel_hash_cache.lookup_fuzzy(body_crop)
+            if neighbor_card and neighbor_card == card:
+                # Hash neighbor agrees with OCR — high confidence, skip quarantine
+                _pixel_hash_cache.record_with_neighbors(body_crop, card, confidence=0.9)
+                log.debug(f"QUARANTINE SKIP: hash neighbor {neighbor_card} agrees with OCR {card}")
+                continue
+
             from sys_core.ocr.rank_templates import get_rank_matcher
             matcher = get_rank_matcher()
             rank_box_q = positions[f'{side}_rank']
@@ -462,12 +516,12 @@ def read_player_cards(
                     q_holes = _count_enclosed_loops(bw_q)
                     q_is_two_components = _disambiguate_10_from_single(bw_q)
                     if tmpl_rank == '8' and q_holes < 2:
-                        # 8 has 2 enclosed holes, 6 has 1, 0/9 has 1.
-                        # If only 1 hole and template says 8 → it's actually 6 or 9.
-                        # OCR result (rank) is more likely correct here.
-                        corrected = rank if rank in ('6', '9') else '6'
-                        log.info(f"QUARANTINE FIX: template=8 but {q_holes} holes → {corrected}")
-                        tmpl_rank = corrected
+                        # 8 has 2 enclosed holes; this glyph has fewer.
+                        # Template's "8" match is wrong. Trust OCR instead —
+                        # it correctly distinguishes 2, 5, 6, 9 which all
+                        # confuse the template matcher.
+                        log.info(f"QUARANTINE FIX: template=8 but {q_holes} holes → trusting OCR={rank}")
+                        tmpl_rank = None  # Reject template, keep OCR result
                     elif tmpl_rank == 'A' and q_holes == 0:
                         log.warning(f"QUARANTINE: template says {tmpl_rank} but "
                                     f"0 holes — rejecting template, trusting OCR")
@@ -2179,6 +2233,137 @@ def _detect_right_card_edge(
 
 
 # ---------------------------------------------------------------------------
+#  Batch rank OCR — read both card ranks in ONE pytesseract call
+# ---------------------------------------------------------------------------
+
+def _batch_read_ranks(
+    img_np: np.ndarray,
+    positions: Dict,
+    deck_style: str = STYLE_WHITE,
+) -> Optional[List[Optional[str]]]:
+    """Read both card ranks in a single pytesseract call (~200ms vs ~800ms).
+
+    Stacks left and right rank crops vertically with a separator,
+    runs ONE OCR call with --psm 6 (block of text), splits by newline.
+
+    Returns [left_rank, right_rank] or None if batch OCR is unreliable.
+    """
+    if not PYTESSERACT_AVAILABLE:
+        return None
+
+    import time as _t
+    t0 = _t.monotonic()
+
+    scale = 5
+    pad = 15
+    separator_h = 30  # Black bar between crops (after scaling)
+
+    crops_bw = []
+    for side in ['left', 'right']:
+        rank_key = f'{side}_rank'
+        if rank_key not in positions:
+            return None
+        x, y, w, h = positions[rank_key]
+        x, y = max(0, x), max(0, y)
+        max_y = min(y + h, img_np.shape[0])
+        max_x = min(x + w, img_np.shape[1])
+        crop = img_np[y:max_y, x:max_x]
+        if crop.size == 0 or crop.shape[0] < 3 or crop.shape[1] < 3:
+            return None
+
+        if deck_style == STYLE_COLORED:
+            bw = _binarize_white_on_colored(crop)
+            bw = _strip_suit_symbol(bw)
+        else:
+            bw = _binarize_colored_on_white(crop)
+        _, bw = cv2.threshold(bw, 127, 255, cv2.THRESH_BINARY)
+
+        # Morph for larger crops only
+        if w >= 70 and h >= 50:
+            k = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
+            bw = cv2.morphologyEx(bw, cv2.MORPH_OPEN, k)
+            bw = cv2.morphologyEx(bw, cv2.MORPH_CLOSE, k)
+            _, bw = cv2.threshold(bw, 127, 255, cv2.THRESH_BINARY)
+
+        big = cv2.resize(bw, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
+        _, big = cv2.threshold(big, 127, 255, cv2.THRESH_BINARY)
+        crops_bw.append(big)
+
+    if len(crops_bw) != 2:
+        return None
+
+    # Stack vertically with separator
+    max_w = max(c.shape[1] for c in crops_bw)
+    total_h = sum(c.shape[0] for c in crops_bw) + separator_h + 2 * pad
+    combined = np.full((total_h, max_w + 2 * pad), 255, dtype=np.uint8)
+
+    y_off = pad
+    for i, c in enumerate(crops_bw):
+        combined[y_off:y_off + c.shape[0], pad:pad + c.shape[1]] = c
+        y_off += c.shape[0]
+        if i == 0:
+            # Black separator between the two ranks
+            combined[y_off:y_off + separator_h, :] = 0
+            y_off += separator_h
+
+    whitelist = ('-c tessedit_char_whitelist=AKQJ1098765432'
+                 ' -c load_system_dawg=0 -c load_freq_dawg=0')
+    pil_img = Image.fromarray(combined)
+    text = pytesseract.image_to_string(
+        pil_img, config=f'--psm 6 --oem 3 {whitelist}'
+    ).strip()
+
+    lines = [l.strip() for l in text.split('\n') if l.strip()]
+    elapsed = (_t.monotonic() - t0) * 1000
+    log.debug(f"BATCH OCR ({elapsed:.0f}ms): raw={text!r} → lines={lines}")
+
+    if len(lines) < 2:
+        log.debug(f"BATCH OCR: expected 2 lines, got {len(lines)} — falling back")
+        return None
+
+    results = []
+    for line in lines[:2]:
+        rank = _parse_rank(line)
+        results.append(rank)
+
+    # Validate with structural checks (holes, components) per crop
+    for i, (rank, bw_crop) in enumerate(zip(results, crops_bw)):
+        if not rank:
+            continue
+        # Structural validation on the pre-scaled crop
+        side = 'left' if i == 0 else 'right'
+        rx, ry, rw, rh = positions[f'{side}_rank']
+        rx, ry = max(0, rx), max(0, ry)
+        orig_crop = img_np[ry:min(ry+rh, img_np.shape[0]), rx:min(rx+rw, img_np.shape[1])]
+        if orig_crop.size > 0:
+            if deck_style == STYLE_COLORED:
+                bw_val = _binarize_white_on_colored(orig_crop)
+                bw_val = _strip_suit_symbol(bw_val)
+            else:
+                bw_val = _binarize_colored_on_white(orig_crop)
+            _, bw_val = cv2.threshold(bw_val, 127, 255, cv2.THRESH_BINARY)
+            n_holes = _count_enclosed_loops(bw_val)
+            is_two = _disambiguate_10_from_single(bw_val)
+
+            # Reject structural mismatches
+            if rank == '8' and n_holes < 2:
+                log.debug(f"BATCH REJECT {side}: 8 but {n_holes} holes")
+                results[i] = None
+            elif rank == 'A' and n_holes == 0:
+                log.debug(f"BATCH REJECT {side}: A but 0 holes")
+                results[i] = None
+            elif rank == '10' and not is_two:
+                log.debug(f"BATCH REJECT {side}: 10 but 1 component")
+                results[i] = None
+            elif rank != '10' and is_two:
+                log.debug(f"BATCH OVERRIDE {side}: {rank} but 2 components → 10")
+                results[i] = '10'
+
+    log.debug(f"BATCH OCR results: {results} ({elapsed:.0f}ms)")
+    return results
+
+
+# ---------------------------------------------------------------------------
 #  Rank OCR — handles both colored-text-on-white and white-text-on-colored
 # ---------------------------------------------------------------------------
 
@@ -2381,6 +2566,24 @@ def _read_rank_at(img_np: np.ndarray, box: Tuple[int, int, int, int],
             log.info(f"A/3 DISAMBIGUATION: both PSMs say 3 but glyph has {n_holes} holes → using A")
             _auto_capture_template(matcher, 'A', bw_pre_morph)
             return 'A'
+
+    # ── A/6 structural disambiguation ──────────────────────────────
+    # OCR misreads the stylized "6" glyph as "A" because the angular
+    # top stroke resembles A's apex.  Hole detection fails at small sizes
+    # (the 6's loop often isn't fully closed in binary).  Instead, use
+    # INK DISTRIBUTION: "6" has >60% of ink in the bottom half (the loop),
+    # while "A" has >50% in the top half (the triangle).
+    if (rank == 'A' or rank7 == 'A') and not (rank == '10' or rank7 == '10'):
+        fg = 255 - bw if np.mean(bw) > 127 else bw.copy()
+        h_glyph = fg.shape[0]
+        top_ink = int(np.sum(fg[:h_glyph // 2, :] > 0))
+        bot_ink = int(np.sum(fg[h_glyph // 2:, :] > 0))
+        bot_ratio = bot_ink / max(top_ink, 1)
+        if bot_ratio > 1.3:
+            log.info(f"A/6 DISAMBIGUATION: OCR says A but bot/top ink ratio "
+                     f"= {bot_ratio:.2f} (>1.3) → using 6")
+            _auto_capture_template(matcher, '6', bw_pre_morph)
+            return '6'
 
     # ── K/9 structural disambiguation ──────────────────────────────
     # OCR misreads "K" as "9" because K's diagonal lines resemble 9's loop.
@@ -2669,6 +2872,10 @@ def _count_enclosed_loops(bw: np.ndarray) -> int:
     fg = bw.copy()
     if np.mean(fg) > 127:
         fg = 255 - fg  # Invert if background is white
+    # Morph CLOSE to fill small gaps in loops (e.g. "9" with a broken loop
+    # from binarization artifacts). Without this, "9" can show 0 holes.
+    k = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    fg = cv2.morphologyEx(fg, cv2.MORPH_CLOSE, k)
     contours, hierarchy = cv2.findContours(fg, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
     if hierarchy is None:
         return 0
