@@ -1,0 +1,72 @@
+{
+  "ts": "2026-03-15T01:56:10.301873",
+  "window": "Spin & Gold $0.25 - Blinds 10 | 20",
+  "hero_cards": [
+    "6C",
+    "4H"
+  ],
+  "board_cards": [
+    "5H",
+    "8D",
+    "3H",
+    "AS"
+  ],
+  "cards_face_down": true,
+  "street": "Turn",
+  "position": "SB",
+  "dealer_seat": 2,
+  "opponents_active": 0,
+  "opponents_in_hand": 3,
+  "pot": 18.0,
+  "call_amount": 0,
+  "min_raise": 0,
+  "hero_stack": 9.0,
+  "hero_stack_estimated": false,
+  "small_blind": 10.0,
+  "big_blind": 20.0,
+  "players": [
+    {
+      "seat": 0,
+      "name": "",
+      "stack": 9.0,
+      "bet": 0,
+      "is_hero": true,
+      "is_active": true
+    }
+  ],
+  "buttons": [
+    {
+      "type": "fold",
+      "amount": 0,
+      "rel_x": 0.5006,
+      "rel_y": 0.8618,
+      "confidence": 0.5
+    },
+    {
+      "type": "raise",
+      "amount": 0,
+      "rel_x": 0.9047,
+      "rel_y": 0.9472,
+      "confidence": 0.5
+    },
+    {
+      "type": "deal_me_in",
+      "amount": 0,
+      "rel_x": 0.6871,
+      "rel_y": 0.8618,
+      "confidence": 0.9
+    }
+  ],
+  "equity": 0.22,
+  "abs_equity": 0.22,
+  "decision": "Call",
+  "ev": 3.96,
+  "call_limit": 0,
+  "bet_limit": 0,
+  "outs": 8,
+  "blocker_score": 0.0,
+  "opp_likely": [],
+  "opp_bluff_pct": 0.15,
+  "ocr_latency_ms": 3273.6,
+  "ocr_source": "python"
+}

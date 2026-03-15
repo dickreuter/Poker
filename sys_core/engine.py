@@ -1212,6 +1212,12 @@ class MultiTableRunner:
 
         for session in sessions_to_check:
             try:
+                # Skip Deal Me In scan if we recently acted (means we're in a hand)
+                # Only scan when table has been idle for 5+ seconds
+                since_action = (datetime.datetime.utcnow() - session.last_action_time).total_seconds()
+                if since_action < 5.0:
+                    continue  # Recently acted — we're in a hand, not sitting out
+
                 w = session.window
                 bounds = w.bounds_pixels
                 table_img = full_screen.crop(bounds)

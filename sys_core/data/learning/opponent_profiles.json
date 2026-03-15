@@ -263,9 +263,9 @@
   "_shown_hands": []
  },
  "pool_spin": {
-  "hands_seen": 0,
-  "vpip_count": 5,
-  "pfr_count": 5,
+  "hands_seen": 5,
+  "vpip_count": 46,
+  "pfr_count": 46,
   "postflop_bets": 0,
   "postflop_calls": 0,
   "postflop_checks": 0,
@@ -276,14 +276,24 @@
   "fold_to_cbet_count": 0,
   "three_bet_opportunities": 0,
   "three_bet_count": 0,
-  "went_to_showdown": 16,
-  "won_at_showdown": 10,
-  "last_seen": 1773519614.94644,
+  "went_to_showdown": 175,
+  "won_at_showdown": 105,
+  "last_seen": 1773540396.593996,
   "_pos_stats": {
    "BTN": {
-    "hands": 5,
-    "vpip": 5,
-    "pfr": 5
+    "hands": 27,
+    "vpip": 27,
+    "pfr": 27
+   },
+   "UTG": {
+    "hands": 12,
+    "vpip": 12,
+    "pfr": 12
+   },
+   "BB": {
+    "hands": 7,
+    "vpip": 7,
+    "pfr": 7
    }
   },
   "_recent_vpip": [
@@ -291,9 +301,29 @@
    true,
    true,
    true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
    true
   ],
   "_recent_pfr": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
    true,
    true,
    true,

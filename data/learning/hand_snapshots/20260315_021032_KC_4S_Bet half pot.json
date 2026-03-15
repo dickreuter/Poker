@@ -1,0 +1,76 @@
+{
+  "ts": "2026-03-15T02:10:33.880014",
+  "window": "Spin & Gold $0.25 - Blinds 30 | 60",
+  "hero_cards": [
+    "KC",
+    "4S"
+  ],
+  "board_cards": [
+    "2C",
+    "KD",
+    "QH",
+    "TH"
+  ],
+  "cards_face_down": false,
+  "street": "Turn",
+  "position": "BTN",
+  "dealer_seat": 0,
+  "opponents_active": 1,
+  "opponents_in_hand": 3,
+  "pot": 5.0,
+  "call_amount": 2.5,
+  "min_raise": 0,
+  "hero_stack": 7.0,
+  "hero_stack_estimated": false,
+  "small_blind": 30.0,
+  "big_blind": 60.0,
+  "players": [
+    {
+      "seat": 0,
+      "name": "",
+      "stack": 7.0,
+      "bet": 0,
+      "is_hero": true,
+      "is_active": true
+    },
+    {
+      "seat": 4,
+      "name": "",
+      "stack": 0.4,
+      "bet": 0,
+      "is_hero": false,
+      "is_active": true
+    }
+  ],
+  "buttons": [
+    {
+      "type": "fold",
+      "amount": 0,
+      "rel_x": 0.6712,
+      "rel_y": 0.9317,
+      "confidence": 0.5
+    },
+    {
+      "type": "call",
+      "amount": 0,
+      "rel_x": 0.7994,
+      "rel_y": 0.9317,
+      "confidence": 0.5
+    }
+  ],
+  "equity": 0.57,
+  "abs_equity": 0.57,
+  "decision": "Bet half pot",
+  "ev": 3.763,
+  "call_limit": 7.0,
+  "bet_limit": 5.0,
+  "outs": 0,
+  "blocker_score": 0.45,
+  "opp_likely": [
+    "overpair",
+    "big_ace"
+  ],
+  "opp_bluff_pct": 0.05,
+  "ocr_latency_ms": 2983.6,
+  "ocr_source": "python"
+}

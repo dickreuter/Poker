@@ -1,0 +1,63 @@
+{
+  "ts": "2026-03-15T01:51:30.315806",
+  "window": "Spin & Gold $0.25 - Blinds 10 | 20",
+  "hero_cards": [
+    "7S",
+    "7H"
+  ],
+  "board_cards": [
+    "7D",
+    "2D"
+  ],
+  "cards_face_down": false,
+  "street": "Flop",
+  "position": "BB",
+  "dealer_seat": 4,
+  "opponents_active": 0,
+  "opponents_in_hand": 2,
+  "pot": 5.3,
+  "call_amount": 0,
+  "min_raise": 5.0,
+  "hero_stack": 7.8,
+  "hero_stack_estimated": false,
+  "small_blind": 10.0,
+  "big_blind": 20.0,
+  "players": [
+    {
+      "seat": 0,
+      "name": "",
+      "stack": 7.8,
+      "bet": 0,
+      "is_hero": true,
+      "is_active": true
+    }
+  ],
+  "buttons": [
+    {
+      "type": "fold",
+      "amount": 0,
+      "rel_x": 0.5953,
+      "rel_y": 0.8244,
+      "confidence": 0.7
+    },
+    {
+      "type": "raise",
+      "amount": 5.0,
+      "rel_x": 0.5106,
+      "rel_y": 0.8545,
+      "confidence": 0.7
+    }
+  ],
+  "equity": 0.98,
+  "abs_equity": 0.98,
+  "decision": "Bet half pot",
+  "ev": 7.113,
+  "call_limit": 7.8,
+  "bet_limit": 5.3,
+  "outs": 0,
+  "blocker_score": 0.35,
+  "opp_likely": [],
+  "opp_bluff_pct": 0.15,
+  "ocr_latency_ms": 3900.7,
+  "ocr_source": "python"
+}
