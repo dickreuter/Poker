@@ -273,8 +273,8 @@ class UnifiedSolver:
             }
             threshold = open_thresholds.get(position.upper(), 0.38)
 
-            if stack_bb <= 12:
-                # Short stack: shove or fold
+            if stack_bb <= 18:
+                # Short-medium stack: shove or fold (standard for Spin & Go)
                 if eq >= threshold:
                     result.action = 'allin'
                     result.frequency = 1.0
