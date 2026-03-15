@@ -222,7 +222,11 @@ class UnifiedSolver:
 
         call_bb = call_amount / bb if bb > 0 else call_amount
 
-        if call_amount > 0:
+        # Distinguish "first in" (just paying the BB) from "facing a raise"
+        # call_amount <= 1.0 BB means it's just the blind, not a raise
+        is_facing_raise = call_bb > 1.05
+
+        if is_facing_raise:
             # ── FACING A RAISE ──────────────────────────────────────────
             pot_bb = max(call_bb + 1.5, 1.5)  # Approximate pot
             pot_odds = call_bb / (pot_bb + call_bb) if (pot_bb + call_bb) > 0 else 0.5

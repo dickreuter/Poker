@@ -667,12 +667,14 @@ class Decision(DecisionBase):
                     else:
                         range_eq = re.equity_vs_range(t.mycards, board, v_range, iterations=10000)
 
-                log.info(f"RANGE EQUITY: {range_eq:.1%} vs {ptype} {v_position} {v_action} "
-                         f"(old Monte Carlo: {t.equity:.1%}, range: {v_range[:60]})")
-
-                # Use range equity (accurate vs estimated villain range)
-                t.equity = range_eq
-                t.range_equity = range_eq
+                # Ensure range_eq is a valid float
+                if isinstance(range_eq, (int, float)) and 0 <= range_eq <= 1:
+                    log.info(f"RANGE EQUITY: {range_eq:.1%} vs {ptype} {v_position} "
+                             f"{v_action} (old MC: {t.equity:.1%}, range: {v_range[:60]})")
+                    t.equity = range_eq
+                    t.range_equity = range_eq
+                else:
+                    log.warning(f"RANGE EQUITY: invalid result {range_eq!r}, keeping MC equity")
         except Exception as e:
             log.debug(f"Range equity failed (using Monte Carlo): {e}")
 
