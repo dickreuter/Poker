@@ -820,20 +820,53 @@ class MultiTableRunner:
 
     def grab_full_screen(self):
         """Grab one full-screen screenshot (shared across all tables).
-        Uses PIL ImageGrab — exact Retina 2x pixels, no coordinate drift.
-        Quartz is faster but returns 3474x2318 vs PIL's 3420x2224, causing
-        25pt vertical drift on button clicks. Not worth the speed gain.
-        Real speed comes from pre-check (8ms), button cache, stack cache.
+        Uses PIL ImageGrab for full screen — needed when no tables known yet.
         """
         return ImageGrab.grab()
 
-    def get_table_screenshot(self, window: TableWindow, full_screen=None):
-        """Crop a table from a full-screen screenshot.
-
-        If full_screen is provided, reuses it (fast — no new capture).
-        Otherwise captures a fresh full screen (~80ms).
-        Does NOT focus/raise the window.
+    def grab_table_region(self, window: TableWindow):
+        """Grab JUST this table's region using Quartz (14ms vs 335ms PIL).
+        Returns exact 1700x1230 Retina pixels — no resize, no coordinate drift.
+        Falls back to PIL full-screen crop on failure.
         """
+        try:
+            from Quartz import (CGWindowListCreateImage, CGRectMake,
+                                kCGWindowListOptionOnScreenOnly, kCGNullWindowID,
+                                kCGWindowImageDefault, CGImageGetWidth, CGImageGetHeight,
+                                CGImageGetDataProvider, CGDataProviderCopyData,
+                                CGImageGetBytesPerRow)
+            from PIL import Image
+
+            # Capture just this window's region (points, not pixels)
+            rect = CGRectMake(window.x, window.y, window.width, window.height)
+            cg_img = CGWindowListCreateImage(
+                rect, kCGWindowListOptionOnScreenOnly,
+                kCGNullWindowID, kCGWindowImageDefault)
+            if cg_img is None:
+                return None
+
+            w = CGImageGetWidth(cg_img)
+            h = CGImageGetHeight(cg_img)
+            provider = CGImageGetDataProvider(cg_img)
+            data = CGDataProviderCopyData(provider)
+            bpr = CGImageGetBytesPerRow(cg_img)
+
+            img = Image.frombuffer('RGBA', (w, h), data, 'raw', 'BGRA', bpr, 1)
+            return img.convert('RGB')
+        except Exception:
+            return None
+
+    def get_table_screenshot(self, window: TableWindow, full_screen=None):
+        """Get a screenshot of just this table.
+
+        Fast path: Quartz region capture (14ms) — exact pixels, no resize.
+        Slow path: PIL full-screen crop (335ms) — fallback.
+        """
+        # Try fast Quartz per-table capture first
+        fast = self.grab_table_region(window)
+        if fast is not None:
+            return fast
+        # Fallback to PIL full-screen + crop
         if full_screen is None:
             full_screen = self.grab_full_screen()
         bounds = window.bounds_pixels
@@ -3386,8 +3419,8 @@ class MultiTableRunner:
             img_np = np.array(screenshot)
             H_img, W_img = img_np.shape[:2]
 
-            # Only scan the bottom 20% where buttons appear
-            bottom_region = img_np[int(H_img * 0.80):, :]
+            # Scan bottom 50% — the result popup can be in the center of the table
+            bottom_region = img_np[int(H_img * 0.50):, :]
             if bottom_region.size == 0:
                 return False
 
@@ -3406,10 +3439,25 @@ class MultiTableRunner:
                 if t_lower in ('play', 'again'):
                     # Found one of the words — use it as click target
                     px = data['left'][i] + data['width'][i] // 2
-                    py = int(H_img * 0.80) + data['top'][i] + data['height'][i] // 2
+                    py = int(H_img * 0.50) + data['top'][i] + data['height'][i] // 2
                     if t_lower == 'play' or not play_found:
                         play_x, play_y = px, py
                         play_found = True
+
+            if not play_found:
+                # Fallback: find green button by color (Play Again is green)
+                hsv = cv2.cvtColor(bottom_region, cv2.COLOR_RGB2HSV)
+                green = (hsv[:,:,0] >= 35) & (hsv[:,:,0] <= 85) & \
+                        (hsv[:,:,1] > 100) & (hsv[:,:,2] > 140)
+                green_px = int(np.sum(green))
+                if green_px > 1000:
+                    # Found green button — click its center
+                    coords = np.argwhere(green)
+                    cy, cx = coords.mean(axis=0)
+                    play_x = int(cx)
+                    play_y = int(H_img * 0.50) + int(cy)
+                    play_found = True
+                    log.info(f"Play Again found by COLOR ({green_px} green pixels)")
 
             if not play_found:
                 return False
