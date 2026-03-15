@@ -3412,6 +3412,12 @@ class MultiTableRunner:
         """
         try:
             import pyautogui
+
+            # Cooldown: don't spam Play Again clicks. Wait 10s after last click.
+            last_play_again = getattr(session, '_last_play_again_time', 0)
+            if time.time() - last_play_again < 10.0:
+                return False
+
             screenshot = self.get_table_screenshot(session.window)
             if screenshot is None:
                 return False
@@ -3446,11 +3452,13 @@ class MultiTableRunner:
 
             if not play_found:
                 # Fallback: find green button by color (Play Again is green)
+                # Must be a button-shaped blob (not just green felt)
                 hsv = cv2.cvtColor(bottom_region, cv2.COLOR_RGB2HSV)
                 green = (hsv[:,:,0] >= 35) & (hsv[:,:,0] <= 85) & \
                         (hsv[:,:,1] > 100) & (hsv[:,:,2] > 140)
                 green_px = int(np.sum(green))
-                if green_px > 1000:
+                # Require substantial green pixels AND check it's a rectangle
+                if green_px > 3000:
                     # Found green button — click its center
                     coords = np.argwhere(green)
                     cy, cx = coords.mean(axis=0)
@@ -3473,6 +3481,7 @@ class MultiTableRunner:
                 return True
 
             pyautogui.click(screen_x, screen_y)
+            session._last_play_again_time = time.time()
             log.info(f"TOURNAMENT RE-REGISTER: Clicked 'Play Again' at "
                      f"({screen_x}, {screen_y}) for {session.window.name}")
             self.stats['hands_played'] += 0  # Don't count this as a hand
