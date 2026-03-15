@@ -615,7 +615,40 @@ def read_table(
             num_seats = 6
         else:
             num_seats = 9
-    position = _hero_position(hero_seat, dealer_seat, num_seats)
+    # Convert physical 6-max seat index to relative seat index for position calc.
+    # In a 3-player game, physical seats might be 0,2,4 but position calc needs 0,1,2.
+    # We find which occupied seats exist and map dealer to the relative index.
+    if num_seats < 6 and dealer_seat >= 0:
+        # Build ordered list of occupied seats (hero=0 + opponents with stacks)
+        occupied = [0]  # Hero is always seat 0
+        for i, p in enumerate(players):
+            seat_idx = i + 1  # Players list is seats 1-5
+            if p.stack > 0:
+                occupied.append(seat_idx)
+        occupied.sort()
+
+        # If dealer_seat not in occupied (shouldn't happen but safety),
+        # find nearest occupied seat
+        if dealer_seat in occupied:
+            dealer_relative = occupied.index(dealer_seat)
+            hero_relative = occupied.index(0)
+        else:
+            # Map to nearest occupied seat
+            best_dist = float('inf')
+            dealer_relative = 0
+            for idx, s in enumerate(occupied):
+                d = min(abs(s - dealer_seat), 6 - abs(s - dealer_seat))
+                if d < best_dist:
+                    best_dist = d
+                    dealer_relative = idx
+            hero_relative = occupied.index(0)
+
+        position = _hero_position(hero_relative, dealer_relative, len(occupied))
+        log.debug(f"POSITION: occupied={occupied} dealer_phys={dealer_seat} "
+                  f"dealer_rel={dealer_relative} hero_rel={hero_relative} "
+                  f"n={len(occupied)} → {position}")
+    else:
+        position = _hero_position(hero_seat, dealer_seat, num_seats)
 
     # 10. Count opponents actually in the hand (card back detection)
     #     Only run when it's our turn (postflop needs accurate count for Monte Carlo)
