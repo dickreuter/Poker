@@ -1123,16 +1123,36 @@ def _detect_buttons(img: np.ndarray, W: int, H: int, deal_me_in_only: bool = Fal
                     buttons[btn_name]['amount'] = amount
                     buttons[btn_name]['text'] = text
 
-        # If batch OCR failed to get amount for call/raise, try robust fallback
+        # If batch OCR failed to get amount for call/raise, try:
+        # 1. Saturation-filter OCR at 4x scale (best for white text on colored buttons)
+        # 2. Robust multi-threshold fallback
         for btn_name in ('call', 'raise'):
             if btn_name in buttons and buttons[btn_name].get('amount') is None:
                 r = buttons[btn_name]['rect']
                 btn_crop = img[r[1]:r[1] + r[3], r[0]:r[0] + r[2]]
-                if btn_crop.size > 0:
-                    amt = _ocr_amount_robust(btn_crop, f'{btn_name}_robust')
-                    if amt is not None:
-                        buttons[btn_name]['amount'] = amt
-                        log.debug(f"Robust OCR {btn_name}: amount={amt}")
+                if btn_crop.size == 0:
+                    continue
+
+                # Try saturation filter at 4x (catches "1.5" that threshold misses)
+                if PYTESSERACT_AVAILABLE:
+                    big_crop = cv2.resize(btn_crop, None, fx=4, fy=4,
+                                          interpolation=cv2.INTER_CUBIC)
+                    hsv_btn = cv2.cvtColor(big_crop, cv2.COLOR_RGB2HSV)
+                    sat_mask = cv2.inRange(hsv_btn, np.array([0, 0, 180]),
+                                           np.array([180, 60, 255]))
+                    sat_text = pytesseract.image_to_string(
+                        Image.fromarray(sat_mask), config='--psm 6 --oem 3'
+                    ).strip()
+                    sat_amt = _parse_amount(sat_text)
+                    if sat_amt is not None and 0.1 <= sat_amt <= 500:
+                        buttons[btn_name]['amount'] = sat_amt
+                        log.debug(f"SatFilter OCR {btn_name}: '{sat_text}' → {sat_amt}")
+                        continue
+
+                amt = _ocr_amount_robust(btn_crop, f'{btn_name}_robust')
+                if amt is not None:
+                    buttons[btn_name]['amount'] = amt
+                    log.debug(f"Robust OCR {btn_name}: amount={amt}")
 
     # Skip expensive OCR fallback if we already have 3+ action buttons
     action_found = {b for b in buttons if b in {'fold', 'call', 'check', 'raise', 'bet', 'all_in'}}
