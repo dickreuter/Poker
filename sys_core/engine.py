@@ -5213,14 +5213,11 @@ class MultiTableRunner:
                                 # Update window position (may have moved)
                                 self.sessions[window.window_id].window = window
 
-                    # Re-tile all tables when new ones appear or every 60s (Lockdown)
-                    now = time.time()
-                    if new_windows_found or (now - self._last_tile_time) > 60.0:
+                    # Only re-tile when NEW windows appear (not periodically)
+                    # Periodic retiling disrupts play and moves windows mid-hand
+                    if new_windows_found:
                         try:
                             self.tile_all_tables()
-                            self._last_tile_time = now
-                            if not new_windows_found:
-                                log.info("GRID LOCKDOWN: re-aligned windows to grid")
                         except Exception:
                             pass
                 except Exception as e:
