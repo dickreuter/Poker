@@ -182,7 +182,29 @@ def read_table(
         img = img[:, :, :3]
 
     # 1. Buttons FIRST (fast: ~3ms HSV detection)
+    # FAST PRE-CHECK: before expensive button OCR, do a quick HSV scan
+    # to see if any button-colored pixels exist in the button region.
+    # If no colored buttons visible → not our turn → skip ALL OCR.
     t0 = time.time()
+    btn_y1, btn_y2 = int(H * 0.82), int(H * 0.98)
+    btn_x1, btn_x2 = int(W * 0.40), int(W * 0.98)
+    btn_region = img[btn_y1:btn_y2, btn_x1:btn_x2]
+    btn_hsv = cv2.cvtColor(btn_region, cv2.COLOR_RGB2HSV)
+    # Dark red buttons: H<15 or H>170, S>80, V>60
+    red_mask = ((btn_hsv[:,:,0] < 15) | (btn_hsv[:,:,0] > 170)) & \
+               (btn_hsv[:,:,1] > 80) & (btn_hsv[:,:,2] > 60)
+    red_pixels = int(np.sum(red_mask))
+    if red_pixels < 500:
+        # No buttons visible — return minimal state fast (skip all OCR)
+        return GameState(
+            my_cards=[], board_cards=[], available_actions=[],
+            pot=0.0, is_my_turn=False, players=[],
+            small_blind=sb, big_blind=bb,
+            dealer_seat=-1, hero_seat=0,
+            game_type=game_type, is_tournament=(game_type == 'tournament'),
+            tournament_subtype=tournament_subtype,
+        )
+
     buttons, button_rects = _detect_buttons(img, W, H)
     t1 = time.time()
     available_actions = []
