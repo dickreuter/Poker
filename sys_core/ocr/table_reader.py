@@ -682,8 +682,11 @@ def read_table(
         else:
             chip_postings = _cached_postings
     elif is_postflop:
-        # Postflop but no cache — use stale cache for position, detect bets
-        if _cached and _cached[0]:
+        # Postflop but no cache match for this hand.
+        # Rush & Cash: stale cache is WRONG (new table every hand) — skip it.
+        # Tournaments/Spin: stale cache is valid (same table, positions persist).
+        _is_rush = 'rush' in (window_name or '').lower()
+        if _cached and _cached[0] and not _is_rush:
             _, sb_seat, bb_seat, position, _ = _cached
             log.info(f"POSITION (stale cache): {position} — postflop, no exact match")
         else:
@@ -706,8 +709,10 @@ def read_table(
                 _POSITION_CACHE[window_id] = (
                     _cards_key, sb_seat, bb_seat, position, chip_postings)
         else:
-            # Chips not found — try stale cache
-            if _cached and _cached[0]:
+            # Chips not found — try stale cache (but NOT for Rush & Cash
+            # where positions change every hand)
+            _is_rush = 'rush' in (window_name or '').lower()
+            if _cached and _cached[0] and not _is_rush:
                 _, sb_seat, bb_seat, position, chip_postings = _cached
                 log.info(f"POSITION (stale cache): {position} — chips not found, "
                          f"reusing last known")
