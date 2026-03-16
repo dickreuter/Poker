@@ -61,7 +61,7 @@ _POSITION_CACHE: Dict[int, Tuple[str, int, int, str]] = {}
 # "Deal Me In", "Are you sure?", and the bet slider area.
 BUTTON_Y_MIN = 0.50
 BUTTON_Y_MAX = 0.98
-BUTTON_X_MIN = 0.02 # Wider search to catch edge buttons
+BUTTON_X_MIN = 0.30 # Action buttons start around x=0.35 on tournament tables, x=0.50 on Rush & Cash
 BUTTON_X_MAX = 0.98
 
 # Pot display region (top-center)
@@ -1093,24 +1093,97 @@ def _detect_buttons(img: np.ndarray, W: int, H: int, deal_me_in_only: bool = Fal
             missing_call = False
             log.debug(f"GEOMETRIC call button at ({call_x},{call_y}) {call_w}x{call_h}")
 
-    # --- BATCH OCR: read amounts for call + raise in ONE pytesseract call ---
-    # This replaces individual _ocr_button_text calls (~200ms each) with a single
-    # batched call (~200ms total for both).
+    # --- OCR text-position detection (image_to_data) ---
+    # Run OCR when any button was found via low-confidence methods (positional,
+    # geometric), or when we're missing call/check/raise. OCR finds ALL buttons
+    # by reading their text — the near-black Call is invisible to HSV but has
+    # white "Call 1.5 BB" text that OCR reads perfectly.
+    _has_low_conf = any(v.get('color') in ('positional', 'geometric', 'dark_red_positional')
+                        for v in buttons.values())
+    _need_ocr_text = missing_call or _has_low_conf
+    if PYTESSERACT_AVAILABLE and buttons and _need_ocr_text:
+        ocr_text_buttons = _ocr_button_text_positions(img, x1, y1, x2, y2, W, H)
+        if ocr_text_buttons:
+            for btn_type, btn_info in ocr_text_buttons.items():
+                if btn_type in buttons:
+                    # OCR found same button as HSV — update with OCR's center
+                    # (more accurate since it's the actual text position)
+                    old_center = buttons[btn_type]['center']
+                    new_center = btn_info['center']
+                    buttons[btn_type]['center'] = new_center
+                    buttons[btn_type]['rect'] = btn_info['rect']
+                    buttons[btn_type]['amount'] = btn_info.get('amount') or buttons[btn_type].get('amount')
+                    buttons[btn_type]['text'] = btn_info.get('text', '')
+                    buttons[btn_type]['confidence'] = 0.95
+                    buttons[btn_type]['color'] = 'ocr_text'
+                    rects[btn_type] = btn_info['rect']
+                    log.debug(f"OCR refined {btn_type}: {old_center} -> {new_center}")
+                else:
+                    # OCR found a button HSV missed (e.g. near-black Call)
+                    buttons[btn_type] = btn_info
+                    rects[btn_type] = btn_info['rect']
+                    log.info(f"OCR found missing {btn_type} at {btn_info['center']}")
+
+            # Remove positional/geometric buttons that OCR didn't confirm.
+            # Two cases:
+            # 1. OCR found 2+ buttons → it scanned successfully, remove unconfirmed positional buttons
+            # 2. OCR found 1 button → check for overlap: if a positional button is at the same
+            #    position as an OCR button, they're the same physical button (remove duplicate)
+            if len(ocr_text_buttons) >= 2:
+                phantom_btns = []
+                for btn_type, btn_info in buttons.items():
+                    if btn_info.get('color') in ('positional', 'geometric', 'dark_red_positional'):
+                        if btn_type not in ocr_text_buttons:
+                            phantom_btns.append(btn_type)
+                for pb in phantom_btns:
+                    log.info(f"Removing phantom {pb} button (OCR didn't confirm it)")
+                    del buttons[pb]
+                    rects.pop(pb, None)
+            # Note: when OCR finds only 1 button, we DON'T remove positional
+            # buttons — OCR may have missed some due to low confidence.
+            # The positional assignments provide reasonable fallback positions.
+
+    # GGPoker NEVER shows both call AND check simultaneously.
+    # If both exist, the OCR-confirmed one is correct; remove the positional one.
+    if 'call' in buttons and 'check' in buttons:
+        call_conf = buttons['call'].get('confidence', 0)
+        check_conf = buttons['check'].get('confidence', 0)
+        call_is_ocr = buttons['call'].get('color') == 'ocr_text'
+        check_is_ocr = buttons['check'].get('color') == 'ocr_text'
+        if check_is_ocr and not call_is_ocr:
+            log.info(f"Removing positional 'call' — OCR confirmed 'check' instead")
+            del buttons['call']
+            rects.pop('call', None)
+        elif call_is_ocr and not check_is_ocr:
+            log.info(f"Removing positional 'check' — OCR confirmed 'call' instead")
+            del buttons['check']
+            rects.pop('check', None)
+        elif call_conf > check_conf:
+            log.info(f"Removing 'check' (conf={check_conf:.2f}) — 'call' has higher conf ({call_conf:.2f})")
+            del buttons['check']
+            rects.pop('check', None)
+        else:
+            log.info(f"Removing 'call' (conf={call_conf:.2f}) — 'check' has higher conf ({check_conf:.2f})")
+            del buttons['call']
+            rects.pop('call', None)
+
+    # --- BATCH OCR: read amounts for call + raise if still missing ---
+    # Skip batch OCR if OCR text detection already ran (it already parsed amounts)
     ocr_regions = {}
     for btn_name in ('call', 'raise'):
         if btn_name in buttons and buttons[btn_name].get('amount') is None:
-            r = buttons[btn_name]['rect']
-            ocr_regions[btn_name] = r
+            # Only do batch OCR if this button was NOT found by OCR text detection
+            if buttons[btn_name].get('color') != 'ocr_text':
+                r = buttons[btn_name]['rect']
+                ocr_regions[btn_name] = r
 
     if ocr_regions:
         batch_results = _batch_ocr_amounts(img, ocr_regions)
         for btn_name, (amount, text) in batch_results.items():
             if btn_name in buttons:
-                # Classify text to verify/correct button type
                 if text:
                     actual_type = _classify_button_text(text, btn_name)
                     if actual_type != btn_name and actual_type not in buttons:
-                        # OCR says this is a different button type (e.g. 'check' not 'call')
                         buttons[actual_type] = buttons.pop(btn_name)
                         rects[actual_type] = rects.pop(btn_name, None)
                         buttons[actual_type]['amount'] = amount
@@ -1123,53 +1196,225 @@ def _detect_buttons(img: np.ndarray, W: int, H: int, deal_me_in_only: bool = Fal
                     buttons[btn_name]['amount'] = amount
                     buttons[btn_name]['text'] = text
 
-        # If batch OCR failed to get amount for call/raise, try:
-        # 1. Saturation-filter OCR at 4x scale (best for white text on colored buttons)
-        # 2. Robust multi-threshold fallback
-        for btn_name in ('call', 'raise'):
-            if btn_name in buttons and buttons[btn_name].get('amount') is None:
-                r = buttons[btn_name]['rect']
-                btn_crop = img[r[1]:r[1] + r[3], r[0]:r[0] + r[2]]
-                if btn_crop.size == 0:
-                    continue
-
-                # Try saturation filter at 4x (catches "1.5" that threshold misses)
-                if PYTESSERACT_AVAILABLE:
-                    big_crop = cv2.resize(btn_crop, None, fx=4, fy=4,
-                                          interpolation=cv2.INTER_CUBIC)
-                    hsv_btn = cv2.cvtColor(big_crop, cv2.COLOR_RGB2HSV)
-                    sat_mask = cv2.inRange(hsv_btn, np.array([0, 0, 180]),
-                                           np.array([180, 60, 255]))
-                    sat_text = pytesseract.image_to_string(
-                        Image.fromarray(sat_mask), config='--psm 6 --oem 3'
-                    ).strip()
-                    sat_amt = _parse_amount(sat_text)
-                    if sat_amt is not None and 0.1 <= sat_amt <= 500:
-                        buttons[btn_name]['amount'] = sat_amt
-                        log.debug(f"SatFilter OCR {btn_name}: '{sat_text}' → {sat_amt}")
-                        continue
-
-                amt = _ocr_amount_robust(btn_crop, f'{btn_name}_robust')
-                if amt is not None:
-                    buttons[btn_name]['amount'] = amt
-                    log.debug(f"Robust OCR {btn_name}: amount={amt}")
-
-    # Skip expensive OCR fallback if we already have 3+ action buttons
-    action_found = {b for b in buttons if b in {'fold', 'call', 'check', 'raise', 'bet', 'all_in'}}
-    if len(action_found) >= 3:
-        return buttons, rects
-
-    # Last resort: full-region OCR scan (only if geometric didn't find it)
-    missing_raise = 'raise' not in buttons
-    has_action = bool(buttons)
-    if has_action and (missing_call or missing_raise) and PYTESSERACT_AVAILABLE:
-        ocr_btn = _find_buttons_by_ocr(img, W, H, x1, y1, x2, y2, buttons)
-        if ocr_btn:
-            buttons.update(ocr_btn)
-            for k, v in ocr_btn.items():
-                rects[k] = v['rect']
-
     return buttons, rects
+
+
+def _ocr_button_text_positions(
+    img: np.ndarray, rx1: int, ry1: int, rx2: int, ry2: int,
+    W: int, H: int,
+) -> Dict:
+    """Find button text positions using pytesseract image_to_data().
+
+    Runs ONE OCR pass on the button region to find text like
+    "Fold", "Call 1.5 BB", "Check", "Raise to 3 BB", "Bet 2 BB".
+    Returns dict mapping button type -> {center, rect, amount, text, confidence, color}.
+
+    The button region text is white on colored/dark backgrounds. We use
+    grayscale threshold to isolate the text, then image_to_data to get
+    word bounding boxes. Each word is checked against button keywords.
+
+    This is the PRIMARY button detection method — it works regardless of
+    button background color, including the near-black Call button that
+    HSV completely misses.
+
+    ~200ms per call (one pytesseract invocation).
+    """
+    region = img[ry1:ry2, rx1:rx2]
+    if region.size == 0:
+        return {}
+
+    rh, rw = region.shape[:2]
+    if rw < 50 or rh < 20:
+        return {}
+
+    # Preprocess: grayscale -> threshold -> scale up for OCR accuracy
+    gray = cv2.cvtColor(region, cv2.COLOR_RGB2GRAY)
+    # White text on dark/colored buttons: threshold at 140 catches most text
+    _, bw = cv2.threshold(gray, 140, 255, cv2.THRESH_BINARY)
+    # Also try inverted for dark text on light buttons
+    _, bw_inv = cv2.threshold(gray, 140, 255, cv2.THRESH_BINARY_INV)
+
+    scale = 3
+    big = cv2.resize(bw, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
+
+    try:
+        data = pytesseract.image_to_data(
+            Image.fromarray(big), config='--psm 6 --oem 3',
+            output_type=pytesseract.Output.DICT,
+        )
+    except Exception as e:
+        log.debug(f"OCR text detection failed: {e}")
+        return {}
+
+    # Keywords to match — include partial reads (OCR often clips first/last char)
+    # Sorted longest-first to prefer full matches over partial
+    BUTTON_KEYWORDS = [
+        ('check', 'check'),
+        ('chec', 'check'),
+        ('heck', 'check'),   # "Check" with C clipped
+        ('fold', 'fold'),
+        ('fol', 'fold'),
+        ('call', 'call'),
+        ('cal', 'call'),
+        ('all', 'call'),     # "Call" misread as "mall", "1all", etc.
+        ('raise', 'raise'),
+        ('rais', 'raise'),
+        ('aise', 'raise'),   # "Raise" with R clipped
+        ('bet', 'raise'),
+    ]
+
+    found = {}
+    n_words = len(data['text'])
+    region_h = ry2 - ry1
+
+    for i in range(n_words):
+        word = data['text'][i].strip()
+        if not word or len(word) < 3:
+            continue
+        conf = int(data['conf'][i]) if data['conf'][i] != '-1' else 0
+        # Accept very low confidence for button text — OCR on colored/dark
+        # backgrounds often gives conf=0 for correct reads (e.g. "heck" for Check).
+        # We filter false positives by keyword matching + position (bottom of region).
+        word_y = data['top'][i] // scale
+        word_in_bottom_half = word_y > region_h * 0.35
+
+        word_lower = word.lower()
+        matched_type = None
+
+        for kw, btn_type in BUTTON_KEYWORDS:
+            if kw in word_lower:
+                # For low-confidence matches, require position in bottom half
+                # to filter out player names, chat text, etc.
+                if conf < 30 and not word_in_bottom_half:
+                    continue
+                matched_type = btn_type
+                break
+
+        if not matched_type:
+            continue
+
+        # Already found this button type with higher confidence? Skip.
+        if matched_type in found and found[matched_type]['confidence'] >= max(conf, 1) / 100.0:
+            continue
+
+        # Convert from scaled coords back to region coords, then to image coords
+        wx = data['left'][i] // scale
+        wy = data['top'][i] // scale
+        ww = data['width'][i] // scale
+        wh = data['height'][i] // scale
+
+        # The text is inside a button. Estimate button bounds:
+        # GGPoker buttons are ~200px wide, ~70px tall on a 1700px table.
+        # The text is centered in the button. Expand outward from text.
+        est_btn_w = max(ww * 2, int(W * 0.10))
+        est_btn_h = max(wh * 2, int(H * 0.05))
+        btn_x = max(wx + ww // 2 - est_btn_w // 2 + rx1, rx1)
+        btn_y = max(wy + wh // 2 - est_btn_h // 2 + ry1, ry1)
+
+        # Center of the text itself (most accurate click target)
+        text_center_x = wx + ww // 2 + rx1
+        text_center_y = wy + wh // 2 + ry1
+
+        # Parse amount from nearby words on the same line
+        amount = None
+        line_num = data['line_num'][i] if 'line_num' in data else -1
+        line_text_parts = [word]
+        for j in range(max(0, i - 2), min(n_words, i + 5)):
+            if j == i:
+                continue
+            if 'line_num' in data and data['line_num'][j] == line_num:
+                jword = data['text'][j].strip()
+                if jword:
+                    line_text_parts.append(jword)
+        line_text = ' '.join(line_text_parts)
+        amount = _parse_amount(line_text)
+
+        found[matched_type] = {
+            'center': (text_center_x, text_center_y),
+            'rect': (btn_x, btn_y, est_btn_w, est_btn_h),
+            'amount': amount,
+            'text': line_text,
+            'confidence': conf / 100.0,
+            'color': 'ocr_text',
+        }
+        log.debug(f"OCR text found {matched_type} at ({text_center_x},{text_center_y}) "
+                  f"conf={conf} text={line_text!r}")
+
+    # If we didn't find anything with the standard threshold, try with CLAHE
+    if not found:
+        clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(4, 4))
+        enhanced = clahe.apply(gray)
+        _, bw2 = cv2.threshold(enhanced, 120, 255, cv2.THRESH_BINARY)
+        big2 = cv2.resize(bw2, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
+
+        try:
+            data2 = pytesseract.image_to_data(
+                Image.fromarray(big2), config='--psm 6 --oem 3',
+                output_type=pytesseract.Output.DICT,
+            )
+        except Exception:
+            return {}
+
+        n_words2 = len(data2['text'])
+        for i in range(n_words2):
+            word = data2['text'][i].strip()
+            if not word or len(word) < 3:
+                continue
+            conf = int(data2['conf'][i]) if data2['conf'][i] != '-1' else 0
+
+            word_lower = word.lower()
+            word_y2 = data2['top'][i] // scale
+            word_in_bottom2 = word_y2 > region_h * 0.35
+            matched_type = None
+            for kw, btn_type in BUTTON_KEYWORDS:
+                if kw in word_lower:
+                    if conf < 30 and not word_in_bottom2:
+                        continue
+                    matched_type = btn_type
+                    break
+
+            if not matched_type or matched_type in found:
+                continue
+
+            wx = data2['left'][i] // scale
+            wy = data2['top'][i] // scale
+            ww = data2['width'][i] // scale
+            wh = data2['height'][i] // scale
+
+            est_btn_w = max(ww * 2, int(W * 0.10))
+            est_btn_h = max(wh * 2, int(H * 0.05))
+            btn_x = max(wx + ww // 2 - est_btn_w // 2 + rx1, rx1)
+            btn_y = max(wy + wh // 2 - est_btn_h // 2 + ry1, ry1)
+
+            text_center_x = wx + ww // 2 + rx1
+            text_center_y = wy + wh // 2 + ry1
+
+            line_num = data2['line_num'][i] if 'line_num' in data2 else -1
+            line_text_parts = [word]
+            for j in range(max(0, i - 2), min(n_words2, i + 5)):
+                if j == i:
+                    continue
+                if 'line_num' in data2 and data2['line_num'][j] == line_num:
+                    jword = data2['text'][j].strip()
+                    if jword:
+                        line_text_parts.append(jword)
+            line_text = ' '.join(line_text_parts)
+            amount = _parse_amount(line_text)
+
+            found[matched_type] = {
+                'center': (text_center_x, text_center_y),
+                'rect': (btn_x, btn_y, est_btn_w, est_btn_h),
+                'amount': amount,
+                'text': line_text,
+                'confidence': conf / 100.0,
+                'color': 'ocr_text',
+            }
+            log.debug(f"OCR CLAHE found {matched_type} at ({text_center_x},{text_center_y})")
+
+    if found:
+        log.info(f"OCR text detection found: {list(found.keys())}")
+
+    return found
 
 
 def _detect_deal_me_in_color_only(img: np.ndarray, W: int, H: int) -> Tuple[Dict, Dict]:
@@ -1239,8 +1484,20 @@ def _assign_positional_buttons(img: np.ndarray, sorted_rects: list,
 
     Amounts for call and raise are read later via _batch_ocr_amounts in the caller.
     """
+    H, W = img.shape[:2]
+    min_w = int(W * 0.08)   # Minimum button width
+    min_h = int(H * 0.03)   # Minimum button height
+
+    # Filter out rectangles too small or too high to be action buttons.
+    # Real action buttons are at Y > 85% of table height.
+    # Smaller/higher rectangles are sliders, icons, or UI noise.
+    valid_rects = [(x, y, w, h) for x, y, w, h in sorted_rects
+                   if w >= min_w and h >= min_h]
+
     pos_types = ['fold', 'call', 'raise']
-    for idx, btn_rect in enumerate(sorted_rects):
+    for idx, btn_rect in enumerate(valid_rects):
+        if idx >= len(pos_types):
+            break
         abx, aby, abw, abh = btn_rect
         center = (abx + abw // 2, aby + abh // 2)
         pos_type = pos_types[idx]
@@ -3302,10 +3559,13 @@ def _parse_blinds(title: str) -> Tuple[float, float]:
         "Spin & Gold $0.25 - Blinds 15 | 30"
         "Rush & Cash - $0.05 / $0.10"
     """
-    # Format: "Blinds X | Y"
+    # Format: "Blinds X | Y" (tournament/Spin & Gold chip blinds)
+    # GGPoker displays all values in BB mode on screen, so stack=21 BB
+    # means 21 big blinds regardless of the chip blind value.
+    # Always return 0.5/1.0 BB since the display is normalized.
     match = re.search(r'Blinds\s+(\d+(?:\.\d+)?)\s*\|\s*(\d+(?:\.\d+)?)', title)
     if match:
-        return float(match.group(1)), float(match.group(2))
+        return 0.5, 1.0  # BB display mode — always 0.5/1.0 in BB units
 
     # Format: "$X / $Y" (Rush & Cash style)
     # GGPoker displays all values in BB mode, so blinds are always 0.5/1.0 BB

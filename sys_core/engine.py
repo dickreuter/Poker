@@ -965,19 +965,22 @@ class MultiTableRunner:
                     # (all dark-red buttons merge). Retry once before giving up.
                     if len(real_actions) < 2:
                         has_cards = state.my_cards and len(state.my_cards) == 2
-                        fold_retry = getattr(session, '_fold_only_retries', 0)
-                        if has_cards and 'fold' in real_actions and fold_retry < 2:
-                            session._fold_only_retries = fold_retry + 1
-                            log.info(f"Table {session.window.name}: Only fold detected but "
-                                     f"cards={state.my_cards} visible, retry #{fold_retry+1}")
+                        retry_count = getattr(session, '_fold_only_retries', 0) + 1
+                        session._fold_only_retries = retry_count
+                        if retry_count <= 1:
+                            # Wait one cycle for UI to fully render all buttons.
+                            # OCR text detection should find call/check/raise on next read.
+                            log.info(f"Table {session.window.name}: fold-only, "
+                                     f"retry {retry_count}/1 (waiting for full button set)")
                             session.state = TableState.WAITING
-                            session.priority = 8  # High priority retry
+                            session.priority = 8  # High but not top
                             return session.state
-                        log.debug(f"Table {session.window.name}: Only {real_actions} detected, "
-                                  f"waiting for full button set")
+                        # After 1 retry, act immediately to avoid auto-call timeout
                         session._fold_only_retries = 0
-                        session.state = TableState.WAITING
-                        session.priority = 2  # Slightly higher than normal waiting
+                        session.state = TableState.NEED_ACTION
+                        session.priority = 10
+                        log.info(f"Table {session.window.name}: NEED_ACTION "
+                                 f"(fold-only after retry, acting) cards={state.my_cards}")
                         return session.state
                     session._fold_only_retries = 0  # Reset on success
 
@@ -1085,13 +1088,8 @@ class MultiTableRunner:
                     # Retry logic when only fold detected but cards visible
                     if poker_btns == {'fold'} and state.my_cards and len(state.my_cards) >= 1:
                         retry_count = getattr(session, '_fold_only_retries', 0) + 1
-                        session._fold_only_retries = retry_count
-                        if retry_count <= 2:
-                            log.info(f"Table {session.window.name}: Only fold detected but "
-                                     f"cards={state.my_cards} visible, retry #{retry_count}")
-                            session.state = TableState.WAITING
-                            session.priority = 5
-                            return session.state
+                        # Don't retry — act immediately to avoid auto-call timeout
+                        session._fold_only_retries = 0
 
                     session._fold_only_retries = 0
                     session.state = TableState.NEED_ACTION
@@ -1610,27 +1608,46 @@ class MultiTableRunner:
         if not state.is_my_turn:
             return False
 
-        # CRITICAL: Reset hand context when cards change (new hand in Rush & Cash).
-        # Without this, context from the previous hand carries over and
-        # the EV engine thinks every hand faces triple-barrel aggression.
-        prev_cards = getattr(session, '_last_decision_cards', None)
-        curr_cards = tuple(state.my_cards) if state.my_cards else None
-        if curr_cards and curr_cards != prev_cards:
-            session._hand_context = None
-            session._hand_context_last_street = ""
-            log.debug(f"CONTEXT RESET: new cards {curr_cards} (was {prev_cards})")
-        if curr_cards:
-            session._last_decision_cards = curr_cards
+        # CARD LOCK DISABLED (Mar 16, 2026).
+        # The card lock was meant to prevent OCR flicker (9H→AC mid-hand).
+        # But it causes FAR WORSE damage: it locks WRONG cards from previous hands
+        # (e.g. KC,6D when real cards are 8D,2D) because:
+        #   1. OCR reads different wrong cards each time (KC→AC→2S→8D)
+        #   2. Lock requires 2 identical reads to unlock — never happens
+        #   3. Bot plays entire hand with phantom cards → wrong equity → calls all-ins with trash
+        # Using the CURRENT OCR read (even if sometimes wrong) is better than
+        # using LOCKED wrong cards from a previous hand.
+        if state.my_cards:
+            session._locked_cards = tuple(state.my_cards)
+            log.debug(f"Cards this read: {state.my_cards}")
 
-        # Require at least 2 real poker actions before proceeding.
-        # A single "fold" likely means buttons haven't rendered yet.
+        # Check how many real poker actions we have.
+        # If only fold is visible, it's better to fold than time out (auto-call/sit out).
         poker_actions = {'fold', 'call', 'check', 'raise', 'bet', 'all_in'}
         real_actions = [a for a in state.available_actions if a.action_type in poker_actions]
-        if len(real_actions) < 2:
-            log.debug(f"Only {[a.action_type for a in real_actions]} detected in process, "
-                      f"waiting for full button set")
+        if len(real_actions) < 1:
+            log.debug(f"No poker actions detected in process, skipping")
             self.stats['detection_success']['buttons_fail'] += 1
             return False
+        if len(real_actions) < 2:
+            # Only fold visible — CLICK FOLD IMMEDIATELY.
+            # DO NOT run the decision engine — it might recommend CALL,
+            # and with no call button available, NO CLICK happens,
+            # causing GGPoker to auto-call on timer expiry.
+            # Folding is ALWAYS better than auto-calling with trash.
+            fold_action = None
+            for a in real_actions:
+                if a.action_type == 'fold':
+                    fold_action = a
+                    break
+            if fold_action:
+                log.warning(f"FOLD-ONLY SAFETY: Only {[a.action_type for a in real_actions]} "
+                            f"detected — clicking fold immediately to avoid auto-call timeout")
+                self._reliable_click(fold_action.screen_x_pt, fold_action.screen_y_pt)
+                return True
+            else:
+                log.warning(f"Only {[a.action_type for a in real_actions]} detected, no fold — skipping")
+                return False
 
         # Track successful button detection
         self.stats['detection_success']['buttons'] += 1
@@ -1659,7 +1676,7 @@ class MultiTableRunner:
                         return True
                     # Don't just skip — fold to avoid timing out
                     if 'fold' in available_types:
-                        fold_action = next(a for a in (retry_state or state).available_actions if a.action_type == 'fold')
+                        fold_action = self._get_fold_action(retry_state or state)
                         log.warning(f"Very low confidence {retry_conf} — folding to avoid timeout")
                         self._click_action(fold_action, session, retry_state or state, "low_conf_fold")
                         return True
@@ -1788,7 +1805,7 @@ class MultiTableRunner:
 
             # Explicit fold (better than timeout which wastes time bank)
             if 'fold' in available_action_types:
-                fold_action = next(a for a in state.available_actions if a.action_type == 'fold')
+                fold_action = self._get_fold_action(state)
                 log.warning(f"Cards unreadable — folding explicitly for {session.window.name} (better than timeout)")
                 self._click_action(fold_action, session, state, "fold_no_cards")
                 session._no_cards_count = 0
@@ -2132,6 +2149,15 @@ class MultiTableRunner:
                     self._click_action(action, session, state, mouse_target, high_pressure=is_high_pressure())
                     return True
                 else:
+                    # No button found for this decision — EMERGENCY FOLD.
+                    # Doing nothing causes GGPoker to auto-call on timer expiry.
+                    emergency_fold = self._get_fold_action(state)
+                    if emergency_fold:
+                        log.warning(f"EMERGENCY FOLD: No button for '{mouse_target}' — "
+                                    f"folding to prevent auto-call timeout")
+                        self._click_action(emergency_fold, session, state, 'fold',
+                                           high_pressure=True)
+                        return True
                     log.warning(f"No action button found for '{mouse_target}', recapturing...")
                     return False
 
@@ -2149,7 +2175,7 @@ class MultiTableRunner:
                         self._click_action(check_action, session, state, "fallback_check")
                         return True
                     elif 'fold' in available_types:
-                        fold_action = next(a for a in state.available_actions if a.action_type == 'fold')
+                        fold_action = self._get_fold_action(state)
                         log.warning("FALLBACK: Decision crashed, folding")
                         self._click_action(fold_action, session, state, "fallback_fold")
                         return True
@@ -2161,6 +2187,22 @@ class MultiTableRunner:
         # It is safer to wait than to check/fold blindly.
         log.warning(f"Aborting decision for {session.window.name}: No valid hand identified after all retries.")
         return False
+
+    def _get_fold_action(self, state):
+        """Get the fold button — ALWAYS the leftmost action button in GGPoker."""
+        from sys_core.ocr.game_state import AvailableAction
+        poker_btns = [a for a in state.available_actions
+                      if a.action_type in ('fold', 'call', 'check', 'raise', 'bet', 'all_in')]
+        if poker_btns:
+            leftmost = min(poker_btns, key=lambda a: a.screen_x_pt)
+            return AvailableAction(
+                action_type='fold', amount=0,
+                screen_x_pt=leftmost.screen_x_pt,
+                screen_y_pt=leftmost.screen_y_pt,
+                rel_x=leftmost.rel_x, rel_y=leftmost.rel_y,
+                confidence=leftmost.confidence,
+            )
+        return state.get_action_by_type('fold')
 
     def _map_decision_to_action(self, state, mouse_target):
         """Map DecisionMaker decision string or enum to an AvailableAction."""
@@ -2177,6 +2219,26 @@ class MultiTableRunner:
             if check_btn and state.has_check_button:
                 log.info("MAP: Decision was Fold but Check is available - checking instead.")
                 return check_btn
+            # FOLD IS ALWAYS THE LEFTMOST BUTTON in GGPoker.
+            from sys_core.ocr.game_state import AvailableAction
+            # Don't trust the label from positional detection — it may be wrong.
+            # Instead, find the leftmost action button and use that for fold.
+            poker_btns = [a for a in state.available_actions
+                          if a.action_type in ('fold', 'call', 'check', 'raise', 'bet', 'all_in')]
+            if poker_btns:
+                leftmost = min(poker_btns, key=lambda a: a.screen_x_pt)
+                log.info(f"MAP: Fold → using LEFTMOST button at ({leftmost.screen_x_pt},{leftmost.screen_y_pt}) "
+                         f"(type={leftmost.action_type})")
+                # Override the action type to fold (we're using position, not label)
+                return AvailableAction(
+                    action_type='fold',
+                    amount=0,
+                    screen_x_pt=leftmost.screen_x_pt,
+                    screen_y_pt=leftmost.screen_y_pt,
+                    rel_x=leftmost.rel_x,
+                    rel_y=leftmost.rel_y,
+                    confidence=leftmost.confidence,
+                )
             return state.get_action_by_type('fold')
 
         # 2. Call/Check logic
@@ -2186,28 +2248,47 @@ class MultiTableRunner:
                    state.get_action_by_type('check'))
             if btn:
                 return btn
-            # No call or check found — do NOT fallback to fold.
-            # Return None so the engine retries or times out, rather than
-            # folding a hand we wanted to call.
-            log.warning(f"MAP: Decision was Call but no call/check button found")
+            # No call or check button found — FALLBACK TO FOLD.
+            # Returning None causes NO CLICK, which means GGPoker auto-calls
+            # on timer expiry — the WORST outcome (calling with trash).
+            # Folding is ALWAYS safer than auto-calling by timeout.
+            fold_btn = self._get_fold_action(state)
+            if fold_btn:
+                log.warning(f"MAP: Decision was Call but no call/check button — FOLDING to avoid auto-call")
+                return fold_btn
+            log.warning(f"MAP: Decision was Call, no call/check/fold button found")
             return None
 
         if target_str in ('check', 'check deception'):
-            return (state.get_action_by_type('check') or
-                    state.get_action_by_type('call'))
+            check_btn = state.get_action_by_type('check')
+            if check_btn:
+                return check_btn
+            # No check button — decision engine thought we could check for free
+            # but we actually face a bet. Do NOT fall back to call (costs money).
+            # Return fold instead — the EV engine computed EV(check)=free, not
+            # EV(call)=paying. Calling here would be a massive leak.
+            log.warning("MAP: Decision was CHECK but no check button found — "
+                        "falling back to FOLD (not call). EV was computed as free check.")
+            return state.get_action_by_type('fold')
 
-        # 3. Raise/Bet logic (PRIORITIZE AGGRESSION)
+        # 3. Raise/Bet logic — RAISE IS ALWAYS THE RIGHTMOST BUTTON
         if any(kw in target_str for kw in ('raise', 'bet', '3bet', '4bet', 'allin', 'bluff')):
-            # Prioritize raise/bet buttons strictly
-            btn = (state.get_action_by_type('raise') or
-                   state.get_action_by_type('bet') or
-                   state.get_action_by_type('all_in'))
-            
-            if btn:
-                log.debug(f"MAP: {mouse_target} -> {btn.action_type}")
-                return btn
-            
-            # NO FALLBACK TO CALL/CHECK. If we want to raise, we wait for the raise button.
+            from sys_core.ocr.game_state import AvailableAction
+            poker_btns = [a for a in state.available_actions
+                          if a.action_type in ('fold', 'call', 'check', 'raise', 'bet', 'all_in')]
+            if poker_btns:
+                rightmost = max(poker_btns, key=lambda a: a.screen_x_pt)
+                log.info(f"MAP: Raise → using RIGHTMOST button at ({rightmost.screen_x_pt},{rightmost.screen_y_pt}) "
+                         f"(type={rightmost.action_type})")
+                return AvailableAction(
+                    action_type='raise',
+                    amount=rightmost.amount,
+                    screen_x_pt=rightmost.screen_x_pt,
+                    screen_y_pt=rightmost.screen_y_pt,
+                    rel_x=rightmost.rel_x,
+                    rel_y=rightmost.rel_y,
+                    confidence=rightmost.confidence,
+                )
             return None
 
         # 4. Lobby/Special buttons
@@ -2581,11 +2662,14 @@ class MultiTableRunner:
             # Speed is more important than exact sizing — the 4-second typing
             # delay causes raises to fail (table state changes before confirm).
             if True:  # was: if not is_preflop
+                # Offsets from the Raise/Bet button center to each shortcut.
+                # Measured from live screenshots (Mar 15 2026).
+                # Buttons are ~36pt apart horizontally, ~45pt above the action buttons.
                 shortcut_map = {
-                    0.33: (-259, -58, 'shortcut_33%'),
-                    0.50: (-217, -58, 'shortcut_50%'),
-                    0.75: (-175, -58, 'shortcut_75%'),
-                    1.00: (-136, -58, 'shortcut_100%'),
+                    0.33: (-192, -45, 'shortcut_33%'),
+                    0.50: (-156, -45, 'shortcut_50%'),
+                    0.75: (-120, -45, 'shortcut_75%'),
+                    1.00: (-85, -45, 'shortcut_100%'),
                 }
                 # Check if target_amount is close to any pot-fraction shortcut
                 for frac, (dx, dy, label) in shortcut_map.items():
@@ -2605,15 +2689,26 @@ class MultiTableRunner:
                           f"75%={pot_bb*0.75:.1f} 100%={pot_bb:.1f})")
 
             if shortcut_used:
-                _time.sleep(0.2)
-                # Click the raise/bet button to confirm the shortcut amount
-                self._reliable_click(action.screen_x_pt, action.screen_y_pt, 'confirm_raise_shortcut', session=session)
-                log.info(f"EXECUTION: Clicked {action.action_type} via shortcut for decision {decision_label}")
-                # Post-click verification (wait for GGPoker animation)
-                _time.sleep(0.40)
-                if self._verify_button_color(action.screen_x_pt, action.screen_y_pt):
-                    log.warning(f"Click may not have registered — {action.action_type} button still visible. Retrying.")
-                    self._reliable_click(action.screen_x_pt - 3, action.screen_y_pt - 1, action.action_type, session=session)
+                _time.sleep(0.20)
+                # The raise/bet button position is KNOWN from the state.
+                # In GGPoker, it's always the RIGHTMOST button in the action row.
+                # Use the rightmost action button's position — this is always raise/bet.
+                all_actions = [a for a in state.available_actions
+                               if a.action_type in ('fold', 'call', 'check', 'raise', 'bet', 'all_in')]
+                if all_actions:
+                    # Rightmost button = highest screen_x_pt = raise/bet
+                    rightmost = max(all_actions, key=lambda a: a.screen_x_pt)
+                    confirm_x = rightmost.screen_x_pt
+                    confirm_y = rightmost.screen_y_pt
+                else:
+                    confirm_x = action.screen_x_pt
+                    confirm_y = action.screen_y_pt
+
+                log.info(f"SHORTCUT CONFIRM: clicking raise/bet at ({confirm_x},{confirm_y})")
+                self._reliable_click(confirm_x, confirm_y, 'confirm_raise_shortcut', session=session)
+                log.info(f"EXECUTION: Clicked {action.action_type} via shortcut for decision "
+                         f"{decision_label} at ({confirm_x},{confirm_y})")
+                # Skip slow post-click verification — speed is critical
                 session.last_action_time = datetime.datetime.utcnow()
                 cards_key = ','.join(sorted(state.my_cards)) if state.my_cards else ''
                 board_count = len(state.board_cards) if state.board_cards else 0
@@ -2623,7 +2718,44 @@ class MultiTableRunner:
                 session._last_acted_time = time.time()
                 return True
 
-            # --- FINE-TUNE INPUT POSITION ---
+            # --- SKIP TYPING: Just click the raise button directly ---
+            # The typing path (below) takes 4+ seconds and frequently fails
+            # because the table state changes. A min-raise is MUCH better than
+            # a broken typing attempt that messes up the UI.
+            # For all-in, use the All-in shortcut button instead of typing.
+            _hero_stk = state.hero_stack if state.hero_stack else 0
+            if decision_label == 'Allin' or (target_amount and _hero_stk > 0
+                                              and target_amount >= _hero_stk * 0.85):
+                # Try 100% pot shortcut or just click raise (which defaults to all-in
+                # when stack < 2x raise)
+                log.info(f"ALL-IN: Clicking raise button directly (stack={_hero_stk:.1f}BB)")
+                self._reliable_click(action.screen_x_pt, action.screen_y_pt,
+                                     'allin_raise', session=session)
+                _time.sleep(0.05)
+                self._reliable_click(action.screen_x_pt + 2, action.screen_y_pt + 1,
+                                     'allin_raise_confirm', session=session)
+                log.info(f"EXECUTION: Clicked {action.action_type} (all-in) for decision {decision_label}")
+                _time.sleep(0.30)
+                self._handle_bet_confirmation(session)
+                return True
+            else:
+                # Not all-in, no shortcut match — just click raise for default amount.
+                # A min-raise or default raise is better than a broken 4-second typing attempt.
+                log.info(f"NO SHORTCUT MATCH: Clicking raise button directly "
+                         f"(target={bb_amount:.1f}BB, will get default raise amount)")
+                self._reliable_click(action.screen_x_pt, action.screen_y_pt,
+                                     'default_raise', session=session)
+                _time.sleep(0.05)
+                self._reliable_click(action.screen_x_pt + 2, action.screen_y_pt + 1,
+                                     'default_raise_confirm', session=session)
+                log.info(f"EXECUTION: Clicked {action.action_type} (default) for decision {decision_label}")
+                _time.sleep(0.30)
+                if self._verify_button_color(action.screen_x_pt, action.screen_y_pt):
+                    self._reliable_click(action.screen_x_pt - 3, action.screen_y_pt - 1,
+                                         action.action_type, session=session)
+                return True
+
+            # --- FINE-TUNE INPUT POSITION (DEAD CODE — kept for reference) ---
             # Scan a 40x40 region around (input_x, input_y) for the white/light-gray
             # background of the input box to ensure we click inside it.
             try:
@@ -2763,7 +2895,13 @@ class MultiTableRunner:
             _time.sleep(0.05)
             self._reliable_click(action.screen_x_pt + 2, action.screen_y_pt + 1, action.action_type, session=session)
         
-        log.info(f"EXECUTION: Clicked {action.action_type} for decision {decision_label}")
+        log.info(f"EXECUTION: Clicked {action.action_type} for decision {decision_label} "
+                 f"at ({action.screen_x_pt},{action.screen_y_pt})")
+
+        # Post-click verification DISABLED for speed.
+        # The bot needs to act within 2 seconds. Verification added 350ms+ per click.
+        # The leftmost=fold, rightmost=raise logic handles button targeting.
+        # (post-click verification removed for speed)
 
         # ── CLEAN HAND SUMMARY (one line per action, easy to read) ──
         try:
@@ -4149,6 +4287,10 @@ class MultiTableRunner:
         screenshot = self.get_table_screenshot(session.window)
         img = np.array(screenshot).copy()
         h_img, w_img = img.shape[:2]
+
+        # Save CLEAN screenshot (no overlay) for simulator ground truth
+        clean_path = os.path.join(snap_dir, base_name + '_clean.png')
+        Image.fromarray(img).save(clean_path, optimize=True)
 
         font = cv2.FONT_HERSHEY_SIMPLEX
         white = (255, 255, 255)

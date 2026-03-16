@@ -1,6 +1,903 @@
 # GGSystem Utility - Current Status & Instructions
 
 ---
+## 🚨🚨🚨 MANDATORY RULES — READ BEFORE DOING ANYTHING 🚨🚨🚨
+
+### THE USER SEES THE ACTUAL GAME — YOU DON'T:
+- When the user says "it folded" or "it called", BELIEVE THEM. They are watching the live table.
+- The logs LIE. The log says "clicked raise" but the click lands on fold. The log says "check" but it pays for a call. Do NOT argue with what the user sees.
+- If the user says the bot did X but the log says Y, the log is WRONG. Find out WHY — wrong coordinates, wrong button mapping, crashed fallback, etc.
+- Stop reading logs as truth. Start investigating WHY the log doesn't match reality.
+- When the user says "the tray app gets cards right" — BELIEVE THEM. On Mar 15 2026, the user said this repeatedly. Claude spent HOURS "fixing" suit detection that was already correct. The ground truth Claude wrote was WRONG, not the detector. The user was right the entire time.
+- NEVER assume you know better than the user about what's on their screen.
+
+### ASK THE USER QUESTIONS — DON'T GUESS:
+- If you're not sure what the problem is, ASK. Don't assume.
+- If you're about to change code and you're not 100% sure it's right, ASK first.
+- If the user reports a bug, ask for details: what hand, what position, what did the bot do vs what should it have done?
+- If you need a screenshot to verify something, ask for one.
+- If you're choosing between two approaches, explain both and ask which one.
+- NEVER silently make changes and restart — explain what you're doing and get confirmation.
+- The user knows poker better than you. Ask about strategy when unsure.
+
+### NEVER DO THESE THINGS:
+1. **NEVER start the bot** without the user explicitly saying "start it"
+2. **NEVER restart the tray app** without the user explicitly asking
+3. **NEVER restart anything** unless told to — the user is playing LIVE with real money
+4. **NEVER make code changes and immediately restart** — verify OFFLINE first
+5. **NEVER go in circles** — if something isn't working after 2 attempts, STOP and explain the problem to the user instead of trying again
+6. **NEVER trust the logs blindly** — the logs say "clicked raise" but the actual click may land on a completely different button. Always verify click coordinates against screenshots
+7. **NEVER add code that references variables not yet defined** — this causes crashes that fallback to FOLD, losing real money
+8. **NEVER implement card locking** — locking cards between reads caused the bot to play entire hands with WRONG cards from previous hands (K6o instead of 82o), calling all-ins with trash. Use the CURRENT OCR read every time. If OCR is unreliable, fix the OCR — don't paper over it with locks.
+9. **NEVER return None from action mapping without trying fold** — returning None means no click, which means GGPoker auto-calls on timer expiry. Always fallback to fold.
+
+### BEFORE ANY CODE CHANGE:
+1. Read the actual code first
+2. Understand the FULL execution path (decision → mapping → click coordinates → actual button)
+3. Test offline with `python3 -c "from sys_core.engine import main"`
+4. Run `python3 -m pytest sys_core/tests/unit/test_strategy_correctness.py -x -q`
+5. **Do NOT start the bot** — tell the user what you changed and let THEM decide when to start
+
+### BEFORE ANY BOT START:
+1. Confirm ALL changes are saved and tested
+2. Confirm hash caches are clean if card detection was changed
+3. Tell the user exactly what was changed
+4. **Restart the macOS tray app** so the user can start/stop from the menu bar:
+   ```bash
+   pkill -f "sys_tray.py" 2>/dev/null; sleep 1; nohup python3 sys_tray.py > /dev/null 2>&1 &
+   ```
+5. **Do NOT start the bot yourself** — the user starts it from the tray app menu bar (♠ icon → Start Bot)
+
+### ALWAYS REBUILD THE TRAY APP:
+- After ANY code change, restart the tray app so it picks up the new code
+- The user controls the bot from the macOS menu bar (♠ icon)
+- Start Bot / Stop Bot buttons in the tray menu launch `run_sys.sh`
+- The tray app also shows live hand data, session stats, recent hands
+- **Never start the engine directly** (`python -m sys_core.engine`) — always let the user start it from the tray app
+- **KILL ALL tray instances before starting a new one** — use `pkill -9 -f sys_tray` (SIGKILL) not `pkill -f` (SIGTERM, may not die):
+  ```bash
+  pkill -9 -f "sys_tray.py" 2>/dev/null
+  sleep 2
+  # VERIFY no orphans remain:
+  pgrep -f "sys_tray.py" && echo "ERROR: old tray still alive!" || echo "Clean"
+  nohup python3 sys_tray.py > /dev/null 2>&1 &
+  ```
+- If you see 2 spade icons in the menu bar, you left an orphan. Kill all and restart.
+
+### KNOWN CRITICAL BUGS (Mar 15, 2026):
+1. **Shortcut button offsets** — Were wrong (-259/-217/-175/-136), clicking fold/check instead of raise. Fixed to (-192/-156/-120/-85). VERIFY these on every table size.
+2. **Suit detection (diamonds vs clubs)** — Blue/diamond HSV range was too narrow (H=102-125), missing cards with hue 90-101. Fixed to H=90-130, clubs tightened to H=35-85.
+3. **Card hash cache poisoning** — Old wrong reads get cached and persist. Clear `sys_core/ocr/card_hash_cache.json` after ANY card detection fix.
+4. **`has_check_button` treats `amount=None` as check** — When OCR fails to read call amount, bot thinks it can check for free, then clicks CALL (paying money). Fixed: only `amount=0` counts as check, not `None`.
+5. **Check→Call fallback in `_map_decision_to_action`** — When decision is "check" but no check button exists (villain bet), it used to click CALL. Fixed: falls back to FOLD instead.
+6. **Opponent profiles corrupt quickly** — vpip_count exceeds hands_seen. Tracking logic has a bug. Reset profiles if stats look impossible.
+
+### THIS IS A LIVE MONEY SYSTEM — TREAT IT LIKE PRODUCTION:
+- Every bug costs REAL MONEY. A card misread = calling 50BB with nothing.
+- A crashed raise = folding a winning hand. These are not theoretical.
+- The user has been working on this for WEEKS. Do not undo working code.
+- If you are not 100% sure a change is correct, DO NOT MAKE IT.
+- If you break something, OWN IT and fix it properly — don't patch on top of patches.
+- Test with screenshots, not assumptions. Read the actual pixels.
+
+### PREVIOUS SESSION FAILURES (Mar 15, 2026) — DO NOT REPEAT:
+- Changed shortcut offsets without measuring from actual screenshots first
+- Referenced undefined variable `hero_stack` → crash → bot folded every raise
+- Kept restarting the bot after every 1-line change without proper testing
+- Went through 5+ restart cycles, each one introducing a new bug
+- Trusted log output ("clicked raise") without verifying the click actually hit the right button
+- Made fold equity / bluff threshold changes based on theory, not verified against live play
+
+### THE CARD DETECTION IS THE #1 PROBLEM:
+- The strategy engine makes CORRECT decisions given its inputs
+- But the card reader misreads suits (diamonds→clubs) and ranks (3→6, A→4)
+- This means the bot plays with WRONG cards — everything downstream is garbage
+- The tray app shows cards from the same source (hand_history.jsonl)
+- Fix card detection FIRST before touching strategy
+
+---
+## 🖥️ SCREEN COORDINATE SYSTEM — UNDERSTAND THIS OR BREAK EVERYTHING
+
+### Retina Display (2x scaling)
+This is a macOS Retina display. There are TWO coordinate systems:
+
+- **PIXELS** = what screenshots and image processing see. Full screen = 3420×2224 px.
+- **POINTS** = what macOS uses for mouse clicks and window positions. Full screen = 1710×1112 pt.
+- **CONVERSION: points = pixels ÷ 2. Always.**
+
+### How Button Positions Flow Through the Code
+```
+1. table_reader.py detects buttons in the TABLE IMAGE (pixels)
+   → Button raise at pixel (1472, 1088) in image of size 1700×1230
+
+2. table_reader.py converts to SCREEN POINTS:
+   screen_x = table_x_pt + (pixel_x × table_w_pt / image_width)
+   screen_y = table_y_pt + (pixel_y × table_h_pt / image_height)
+   → If table at (0,0) size 850×615 pt: screen_x = 0 + 1472×(850/1700) = 736
+
+3. AvailableAction stores screen_x_pt, screen_y_pt (POINTS)
+   → action.screen_x_pt = 736, action.screen_y_pt = 544
+
+4. engine.py clicks at (screen_x_pt, screen_y_pt) — these are POINTS
+   → _reliable_click(736, 544) → Quartz mouse click at that point
+```
+
+### GGPoker Button Layout (Rush & Cash, 6-max)
+```
+Table image (~1700×1230 pixels):
+
+┌──────────────────────────────────────────────────────────┐
+│                      TABLE                                │
+│                                                          │
+│              [Board cards: center, y≈400-500]            │
+│                                                          │
+│          [Hero cards: center-bottom, y≈850-950]          │
+│                                                          │
+│     [33%] [50%] [75%] [100%]  [slider───] [gear]        │  ← y≈980 px
+│     [  FOLD  ] [CHECK/CALL] [RAISE/BET]                  │  ← y≈1020-1140 px
+└──────────────────────────────────────────────────────────┘
+
+Button positions (image pixels, typical):
+  2-button layout (fold + raise):
+    Fold:  center≈(700, 1050)   ~400px wide
+    Raise: center≈(1150, 1050)  ~400px wide
+
+  3-button layout (fold + check/call + raise/bet):
+    Fold:  center≈(1040, 1090)  ~200px wide
+    Call:  center≈(1260, 1090)  ~200px wide
+    Raise: center≈(1470, 1090)  ~200px wide
+
+  RAISE/BET IS ALWAYS THE RIGHTMOST BUTTON.
+```
+
+### Shortcut Buttons (33%, 50%, 75%, 100%)
+These are small text buttons ABOVE the main action buttons:
+```
+  Image positions (approximate pixels):
+    33%:   x≈1070, y≈980
+    50%:   x≈1140, y≈980
+    75%:   x≈1210, y≈980
+    100%:  x≈1280, y≈980
+    Slider: x≈1300-1500, y≈980
+
+  In POINTS (÷2): 33%≈(535,490), 50%≈(570,490), 75%≈(605,490), 100%≈(640,490)
+
+  These are at fixed offsets from the RAISE/BET button:
+    From 3-button raise at (735,545) pt:
+      33%: (-200, -55)    50%: (-165, -55)
+      75%: (-130, -55)    100%: (-95, -55)
+
+  CURRENT CODE OFFSETS (engine.py):
+    33%: (-192, -45)    50%: (-156, -45)
+    75%: (-120, -45)    100%: (-85, -45)
+
+  ⚠️ These offsets are APPROXIMATE. They vary slightly with table position
+  and button layout. The shortcut buttons are NOT tracked by table_reader.
+```
+
+### The Click Execution Flow for Raises
+```
+Decision: "Bet half pot" (bet3)
+    ↓
+_map_decision_to_action → finds raise/bet button from state
+    ↓
+_click_action_inner:
+    1. Compute target BB amount
+    2. TRY SHORTCUT: if target ≈ 33/50/75/100% of pot:
+       a. Click shortcut button (offset from raise button)
+       b. Click RAISE button to confirm (RIGHTMOST action button)
+       c. Done
+    3. IF NO SHORTCUT MATCH:
+       a. Click raise button directly (default/min raise amount)
+       b. Done
+    4. TYPING PATH IS DISABLED (was too slow, broke the UI)
+```
+
+### CRITICAL: Button Position Rules
+1. **Raise/Bet is ALWAYS the rightmost button** — use `max(actions, key=x)` to find it
+2. **Button positions change between 2-button and 3-button layouts** — the raise button moves ~300px left when there are only 2 buttons
+3. **After clicking a shortcut, button positions are the SAME** — the shortcuts only change the amount in the input field, they don't move the action buttons
+4. **The `action` object from state has the correct screen_x_pt/screen_y_pt** — use these directly, don't compute offsets from scratch
+5. **Never hardcode absolute screen coordinates** — always use detected positions from the table reader
+
+### Card Detection Pipeline
+```
+table_reader.py → card_reader.py:
+
+1. Find hero cards by white rank text (bottom center of table)
+2. Detect suit from card background color (HSV):
+   - Spades:   Black (V<70, S<80)
+   - Hearts:   Red   (H<12 or H>168, S>80)
+   - Diamonds: Blue  (H=90-130, S>60)     ← EXTENDED Mar 15
+   - Clubs:    Green (H=35-85, S>80)       ← TIGHTENED Mar 15
+3. Detect rank via template matching (threshold 0.45) + OCR fallback
+4. Hash cache stores successful reads for speed
+
+KNOWN FAILURE MODES:
+- Diamond/Club confusion: hue values 85-102 are ambiguous (teal)
+- 3/6 rank confusion: similar glyph shape
+- 9/A rank confusion: template matching fails, OCR guesses wrong
+- Board cards: hash cache can store wrong mappings → poison future reads
+- ALWAYS clear card_hash_cache.json after any card detection fix
+```
+
+### Button Detection Bugs Fixed (Mar 15 2026)
+```
+BUG 1: Emoji icons detected as buttons
+  - GGPoker has emoji/sticker icons (boxing glove, egg, cigarette) at
+    bottom-CENTER of table (x=25-40%)
+  - Action buttons (fold/call/raise) are at bottom-RIGHT (x=50-98%)
+  - Bot detected red boxing glove as "fold" button and clicked it
+  - FIX: BUTTON_X_MIN changed from 0.02 to 0.45 — only search right half
+
+BUG 2: 2-button positional detector runs on 3-button layouts
+  - When 3 buttons exist (fold/check/raise), detector sometimes merges them
+    into 2 contours, assigns fold=left raise=right, misses check
+  - The "fold" position then points to check, and "raise" points to fold
+  - FIX: OCR verification reads text on each detected button to confirm label
+  - FIX: Post-click verification re-detects if click missed
+
+BUG 3: Shortcut confirm clicks stale coordinates
+  - After clicking 33/50/75/100% shortcut, the raise button position from
+    the original state detection is used for confirm click
+  - But buttons may have shifted between detection and click
+  - FIX: Use rightmost button from current state (raise is always rightmost)
+  - FIX: Post-shortcut verification re-detects and retries if buttons still visible
+
+BUG 4: Verify retry used same wrong position
+  - When post-click verify detected buttons still visible, it retried
+    at the SAME wrong coordinates
+  - FIX: Retry now re-detects from FRESH screenshot and uses new position
+  - For fold: uses leftmost button (always fold in GGPoker)
+
+BUG 5: Button OCR verification returned garbage
+  - Saturation filter (S<80) was too strict for GGPoker button text
+  - OCR returned empty strings or gibberish ('si', '—_', '')
+  - FIX: Changed to grayscale threshold (>140) + inverted fallback
+```
+
+### Post-Click Truth Verification (Added Mar 15 2026)
+```
+After EVERY click, the bot now:
+1. Waits 350ms for UI to update
+2. Takes fresh screenshot
+3. Re-detects buttons
+4. Compares pre-click vs post-click button state:
+   - Buttons GONE → click worked ✓
+   - SAME buttons visible → click MISSED → retry with FRESH position
+   - DIFFERENT buttons → wrong button clicked → log warning
+
+This gives REAL data in logs instead of lies.
+Log entries to watch:
+  "VERIFY: Buttons gone — click registered OK"     → success
+  "VERIFY FAIL: Same buttons still visible"         → missed, retrying
+  "VERIFY: Buttons changed [...] → [...]"           → clicked wrong button
+```
+
+### Card Locking (Added Mar 15 2026)
+```
+Once hero cards are read, they are LOCKED for the entire hand.
+OCR flicker (re-reading cards as different values) is REJECTED.
+Cards only unlock when a new hand starts:
+  - Board goes from having cards → empty (Rush & Cash new deal)
+  - No previous cards existed
+
+This prevents the 9H→AC misread bug where the bot called all-in
+with 94o because it thought it had A4 after an OCR flicker.
+```
+
+### STATUS: FOLD CLICK IS STILL BROKEN (Mar 15 2026 21:55)
+```
+THE BOT CANNOT RELIABLY CLICK THE FOLD BUTTON.
+
+Every single bad play tonight traces back to this:
+  - Bot decides fold → clicks wrong position → calls instead → loses money
+  - 8♠6♣ called all-in vs A♣7♣ (161 BB lost, drawing dead)
+  - 5♥3♣ called from UTG, then bluffed 3 streets
+  - 9♦2♠ called from UTG, played flop with trash
+  - 4♥2♣ called, bet flop with nothing (read as A♥2♣)
+  - 7♦3♠ fold clicked call button
+
+The button position detection is FUNDAMENTALLY BROKEN:
+  - HSV color detection finds colored rectangles but can't tell fold from call
+  - Positional assignment (left=fold, right=raise) DOES NOT WORK because:
+    a) Emoji icons at bottom-center get detected as buttons
+    b) 2-button and 3-button layouts have different positions
+    c) Merged contours split equally → wrong centers
+    d) Geometric call button is computed, not detected
+  - OCR verification of button labels returns garbage ('si', '—_', '')
+
+APPROACHES TRIED AND FAILED:
+  1. HSV positional detection → buttons misidentified
+  2. OCR text verification on each button → text unreadable
+  3. Leftmost=fold, rightmost=raise → positions still wrong
+  4. Post-click verification → too slow (1-4s per verify)
+  5. Shortcut button offsets → hit wrong buttons
+
+WHAT NEEDS TO HAPPEN (NOT YET DONE):
+  - The ENTIRE button detection needs to be rebuilt
+  - Use pytesseract image_to_data on the full button region
+  - Find the EXACT pixel position of text "Fold", "Call", "Check", "Raise"
+  - Click at those text positions — no guessing, no offsets, no positional assignment
+  - This is the ONLY approach that will work reliably
+
+The strategy engine, EV calculations, equity, and card detection are all
+secondary problems. NONE of them matter if the bot can't click fold.
+```
+
+---
+## 🧪 OFFLINE TESTING — TEST BEFORE GOING LIVE
+
+### WHY: The bot MUST be tested offline before live play. Every live bug costs real money.
+
+### What We Already Have
+```
+data/learning/hand_snapshots/     — 500+ PNG screenshots with paired JSON metadata
+  Each JSON has: hero_cards, board_cards, pot, call_amount, buttons (with positions),
+  decision, equity, position, num_players, hero_stack
+
+sys_core/tests/unit/test_full_decision_pipeline.py    — 12 decision scenarios (passing)
+sys_core/tests/unit/test_card_detection_regression.py  — 78 card detection images
+sys_core/tests/unit/test_screenshot_replay.py          — skeleton (needs cases)
+sys_core/tests/unit/test_ggpoker_replay.py             — skeleton (needs cases)
+sys_core/tests/screenshots/ggpoker/ground_truth.json   — 1 entry (needs more)
+```
+
+### Phase 1: Screenshot Replay Tests (HIGHEST PRIORITY)
+```
+Use existing 500 hand snapshots as test cases:
+
+for each hand_snapshot (JSON + PNG):
+    1. Load PNG through read_table() → get detected GameState
+    2. Assert detected cards == JSON hero_cards
+    3. Assert detected board == JSON board_cards
+    4. Assert detected pot ≈ JSON pot (±1 BB tolerance)
+    5. Assert button types match JSON buttons
+    6. Run decision engine on detected state
+    7. Assert decision is reasonable for the hand
+    8. Compute click coordinates for the decision
+    9. Verify click coordinate lands ON the correct button (color check)
+    10. If fold: verify click_x is in LEFT 1/3 of button row
+        If raise: verify click_x is in RIGHT 1/3 of button row
+
+This catches:
+  - Card misreads (4→A, 3→6, 9→A)
+  - Button position errors (fold clicking call)
+  - Pot/call OCR failures
+  - Bad decisions on known hands
+```
+
+### Phase 2: Click Target Overlay (Visual Verification)
+```python
+# Generate annotated screenshots showing WHERE the bot would click
+from PIL import Image, ImageDraw
+for snapshot in hand_snapshots:
+    img = Image.open(snapshot.png)
+    draw = ImageDraw.Draw(img)
+    # Draw crosshair at computed click position
+    click_x, click_y = compute_click_position(snapshot)
+    draw.ellipse([click_x-15, click_y-15, click_x+15, click_y+15],
+                 outline='red', width=4)
+    draw.text((click_x+20, click_y), snapshot.decision, fill='red')
+    img.save(f'/tmp/click_verify/{snapshot.name}.png')
+
+# Then visually scan the gallery — any crosshair NOT on a button = bug
+```
+
+### Phase 3: Regression Test Cases
+```
+Every bug found live gets a permanent test case:
+  - Save screenshot + JSON with clear name:
+    regression_fold_misclick_20260315.png
+    regression_card_4_read_as_A_20260315.png
+    regression_emoji_detected_as_button_20260315.png
+  - Add assertion that the specific bug is fixed
+  - Run on every code change
+
+Bug-driven test cases from Mar 15 2026:
+  1. Fold click at (273,541) hits call button → verify click lands on fold
+  2. 4♥ read as A♥ → verify card_reader returns '4H' not 'AH'
+  3. 9♥ read as A♣ (OCR flicker) → verify card locking prevents change
+  4. Emoji icons detected as buttons → verify no buttons detected at x<45%
+  5. Shortcut confirm at (576,622) misses raise → verify confirm hits rightmost button
+  6. 3♣ read as 6♣ → verify card_reader returns '3C' not '6C'
+  7. Diamond suit read as club → verify HSV range catches blue at H=90-102
+```
+
+### Phase 4: End-to-End Simulation (No Live Table Needed)
+```
+# Run full pipeline on saved screenshots:
+pytest sys_core/tests/unit/test_e2e_hand_snapshots.py -v
+
+# This test:
+# 1. Loads each PNG through read_table() (full OCR pipeline)
+# 2. Feeds result into decisionmaker (full EV calculation)
+# 3. Maps decision to click coordinates
+# 4. Verifies click coordinate is inside the correct button region
+# 5. Compares card detection to ground truth
+# 6. Logs pass/fail for each snapshot
+
+# If ALL 500 snapshots pass → bot is ready for live play
+# If ANY fail → fix detection before going live
+```
+
+### How Professional Bots Test (OpenHoldem)
+```
+OpenHoldem uses "OHReplay" — captures screenshot+metadata during live play,
+replays them offline through the full scraper+logic pipeline.
+Their approach: BMP + HTML pairs, displayed in a fake window.
+
+Our equivalent: PNG + JSON pairs in data/learning/hand_snapshots/
+We don't need a fake window because read_table() accepts PIL Image directly.
+```
+
+### THE REAL SIMULATOR: `sys_core/tests/simulator.py`
+```bash
+# Run on last 50 snapshots:
+python3 -m sys_core.tests.simulator --last 50
+
+# Run on ALL snapshots:
+python3 -m sys_core.tests.simulator --all
+
+# Run on one specific snapshot:
+python3 -m sys_core.tests.simulator --snapshot data/learning/hand_snapshots/XXXXX.json
+```
+It runs read_table() on every saved PNG, compares to the JSON ground truth,
+and reports accuracy. Fix detection until all thresholds > 95%.
+
+### THE REAL SIMULATION (ACTUALLY WORKS)
+```python
+# This script runs the FULL pipeline on saved screenshots.
+# No fake data, no mocks — real images through real read_table().
+# Run this BEFORE going live. If cards accuracy < 90%, DO NOT PLAY.
+
+from PIL import Image
+from sys_core.ocr.table_reader import read_table
+import json, glob, logging
+logging.disable(logging.CRITICAL)
+
+for json_path in glob.glob('data/learning/hand_snapshots/*.json'):
+    truth = json.load(open(json_path))
+    img = Image.open(json_path.replace('.json', '.png'))
+    state = read_table(img, window_name='Rush', window_id=99999,
+                       table_x_pt=0, table_y_pt=43,
+                       table_w_pt=850, table_h_pt=615)
+
+    # Compare: truth['hero_cards'] vs state.my_cards
+    # Compare: truth['board_cards'] vs state.board_cards
+    # Compare: truth['buttons'] vs state.available_actions
+    # Compare: truth['pot'] vs state.pot
+```
+
+### ACTUAL ACCURACY (Mar 15 2026):
+```
+⚠️ WARNING: The JSON ground truth in hand_snapshots/ is CORRUPTED.
+The hero_cards in the JSONs were written by the SAME broken detection engine
+during live play. So comparing detector output against JSON is meaningless.
+
+Example: JSON says hero_cards=['JH','6D'] but screenshot shows 9D 5C.
+         Detector reads 9H 5D → simulator says "MISS" but ranks are correct!
+
+REAL accuracy (from 5 manually verified screenshots):
+  Ranks:  10/10 (100%) — all ranks detected correctly
+  Suits:   6/10 (60%)  — diamond/club confusion is the main issue
+  Combined: 3/5 (60%)
+
+The RANK detection works. The SUIT detection has a specific bug:
+  - GGPoker diamonds are gray-brown (R≈G≈B≈80-100), NOT blue
+  - GGPoker clubs are deep teal (R=16, G=68, B=128)
+  - Both have similar HSV hue (H≈100-110)
+  - They differ by SATURATION and RGB channel ratios
+  - Current HSV-only approach cannot distinguish them
+
+TO FIX SUITS: Need RGB channel analysis or a different body sampling region.
+Hours of attempts on Mar 15 failed — the body box samples the rank glyph
+area (dark red) instead of the card background. Original code was reverted.
+
+VERIFIED GROUND TRUTH: sys_core/tests/verified_ground_truth.json (8 hands, manual)
+FULL SIMULATOR: python3 -m sys_core.tests.full_simulator
+
+BASELINE ON ANNOTATED SCREENSHOTS (overlay corruption, NOT reliable):
+  hero_cards: 62%, hero_stack: 37%, call: 62% — ALL corrupted by debug overlays
+
+REAL ACCURACY ON CLEAN SCREENSHOTS (44 clean PNGs, Mar 15 2026):
+  Cards detected:  91% (40/44)
+  Buttons found:  100% (44/44)
+  Pot > 0:         98% (43/44)
+  Stack > 0:      100% (44/44)
+
+  Ranks: ~100% correct (verified on 5 hands)
+  Suits: ~60% correct (diamond/club confusion remains)
+
+KEY FINDING: Detection WORKS on clean screenshots. The 33-41% accuracy
+numbers from earlier were caused by debug overlays on saved PNGs, NOT
+by detection bugs. The _clean.png saves (added this session) fix this.
+
+LATEST ACCURACY ON CLEAN SCREENSHOTS (15 unique hands, Mar 16 2026):
+  Cards detected: 93% (14/15)
+  Buttons found:  100%
+  Pot > 0:        100%
+  Stack > 0:      100%
+
+BUG FIXED: Card lock kept previous hand's cards into new tournament hands.
+  Root cause: new-hand detection only checked board cards→empty (Rush & Cash).
+  In tournaments, board is always empty at preflop.
+  Fix: if detector reads DIFFERENT cards on 2 consecutive reads, it's a new hand.
+
+BUG FIXED: BUTTON_X_MIN=0.45 excluded tournament buttons (at x=0.35-0.40).
+  Changed to 0.30. Emoji icons are filtered by SIZE (min_btn_w), not position.
+
+BUG FIXED: Tournament BB parsing — "Blinds 20 | 40" returned 40 as BB,
+  but GGPoker displays everything in BB units. Now returns 0.5/1.0 always.
+  This also fixed hero_stack (was 10x off because normalization used wrong BB).
+
+BUG FIXED: Card lock didn't detect new hands in tournaments.
+  Added 2-consecutive-reads detection: if detector reads different cards
+  twice in a row, it's a genuine new hand (not OCR flicker).
+
+BUG FIXED: All fold paths now use _get_fold_action() (leftmost button).
+  Previously low_conf_fold, fold_no_cards, fallback_fold used direct
+  lookup which returned wrong positions.
+
+SIMULATOR SCORE (10 verified hands, Mar 16 2026):
+  pot:          100% ✓
+  big_blind:    100% ✓
+  call_amount:   90%
+  board:         90%
+  hero_cards:    80% (suit detection: club→diamond)
+  hero_stack:    80% (decimal OCR: 9.3→93)
+  num_opponents: 80%
+  buttons:       70% (phantom button detection)
+
+FINAL SIMULATOR SCORE (10 verified hands, Mar 16 2026 02:30):
+  ✓ hero_cards:    100% (suit detection was CORRECT — ground truth was wrong)
+  ✓ board:         100%
+  ✓ pot:           100%
+  ✓ big_blind:     100%
+  ✓ num_opponents: 100%
+    hero_stack:     90% (1 error: 9.3→93 decimal OCR)
+    call_amount:    90% (1 edge case)
+    buttons:        80% (2 phantom raise from UI elements)
+
+CRITICAL LESSON: The "suit detection bug" was actually CORRECT ground truth errors.
+  I thought clubs were green and diamonds were blue, but on GGPoker:
+    - Clubs ARE blue/teal (H≈106) — NOT green
+    - Diamonds ARE blue/teal (H≈106) too at the body box
+  The detector was RIGHT all along. I was writing wrong ground truth by
+  confusing the suit colors. Verified by looking at suit SYMBOLS (♣ vs ♦).
+
+CRITICAL FINDING — CLUB VS DIAMOND SUIT DETECTION:
+  Clubs and diamonds are IDENTICAL at the body box sampling area:
+    Club (7C) body:    R_median=16, B_median=145, ratio=9.1
+    Diamond (AD) body: R_median=16, B_median=140, ratio=8.8
+
+  Both H≈106, both S>200, both vivid blue at the rank glyph level.
+  The ONLY place they differ is the actual card background BELOW the text:
+    Club background:    R=16, G=68, B=128 (vivid blue)
+    Diamond background: R=91, G=80, B=79  (gray/brown)
+
+  But the body box at 20% card height samples the rank glyph, NOT the background.
+  Moving the body box lower (55%+) hits card edge/table boundary and is unreliable.
+
+  ATTEMPTED AND FAILED:
+    - Expanding body box (3x height): picks up non-card pixels
+    - Median-based classification: same hue for both suits
+    - RGB channel ratio (B/R): identical at body box position
+    - Sampling left edge of card: picks up adjacent card
+    - Lower body box (55% down): hits card edge, inconsistent
+
+  APPROACHES NOT YET TRIED:
+    - OCR the suit SYMBOL (♣ vs ♦) below the rank text
+    - Use the small suit icon position (known offset from rank)
+    - Use a CNN/ML classifier trained on card crops
+    - Sample a single pixel at a known card background position
+      (requires precise card boundary detection)
+
+SPIN & GO TESTED (Mar 16 2026 02:50):
+  Detection: Cards ✓, Board ✓, Pot ✓, Stack ✓, BB ✓, Buttons ✓
+  Solver: Correct decisions (J6s BTN shove ✓, 72o BB check ✓)
+  PROBLEM: Bot is TOO SLOW. Detection + decision + click takes longer
+  than the GGPoker action timer. When timer expires, GGPoker AUTO-CALLS.
+  This is why the bot "calls" with 73o and Q2o — it never decided to call,
+  it just didn't fold fast enough.
+
+  SPEED BOTTLENECKS:
+    - Table read: 1-4 seconds (OCR with pytesseract)
+    - Button verification OCR: adds 200-400ms per button
+    - Post-click verification: adds 350ms + potential re-read
+    - Total: 3-8 seconds per action vs 10-15 second timer
+    - With retries on missed clicks: easily exceeds timer
+
+  TO FIX: Remove or speed up verification steps. The bot needs to act
+  within 2-3 seconds, not 5-8. Card caching helps but button OCR verify
+  is the main slowdown.
+
+NOT YET TESTED — NEED SCREENSHOTS:
+  - Spin & Go (3-max) table layout, button positions, position detection
+  - Rush & Cash (6-max) with the current fixes applied
+  - Any table where hero is SB or BB (position detection)
+  - Bet slider interaction (typing amounts, shortcut buttons)
+  - "Deal Me In" / "I'm Back" button after sitting out
+  To test: start a game, collect _clean.png screenshots, run simulator.
+
+REMAINING TO FIX FOR 100% (3 edge cases):
+  1. Phantom raise button (80%) — UI elements (slider, presets) detected as buttons
+     in unusual states (all-in, sitting out). Y-position filtering tried but broke
+     real buttons. Need a different approach (maybe button text OCR validation).
+  2. Stack decimal OCR (90%) — "9.3" read as "93" on 1 screenshot. Small text issue.
+  3. Call amount edge (90%) — 1 Rush & Cash screenshot reads 3.2 when should be 0.
+
+These are edge cases that don't affect most hands. The core detection (cards, board,
+pot, BB) is at 100%. For live play, the leftmost=fold and rightmost=raise fixes
+mitigate the phantom button issue — clicks go to the right physical position
+even if an extra button is detected.
+
+CFR SOLVER NOW WIRED FOR POSTFLOP (Mar 16 2026):
+  Previously: preflop used solver (GTO), postflop used EV engine (heuristic)
+  The EV engine checked too much with strong hands (KQs on QJ4 = check).
+  Now: postflop routes through CFR solver (Layer 3, 500 iterations) FIRST.
+  Falls through to EV engine if CFR fails.
+
+  CFR solver postflop results (verified):
+    KQs on QJ4 → bet (was checking) ✓
+    88 on 962  → bet (was checking) ✓
+    72o on AKQ → check (correct) ✓
+
+  The solver produces GTO-balanced strategies including:
+    - Value betting with strong made hands
+    - Checking with weak hands
+    - Mixed strategies (33% small / 33% medium / 33% large bets)
+
+  COMPREHENSIVE TEST (30 hands, all correct):
+    Preflop opens: AKo UTG=raise, JTs BTN=raise, 72o UTG=fold ✓
+    Facing raises: AA=3bet, KQs=call, T5o=fold ✓
+    Short stack: A2o BTN 10BB=shove, 66 UTG 8BB=Nash shove ✓
+    Facing shoves: AKo=call, JJ=call, 76s=fold, Q3o=fold ✓
+    Postflop value: AK on AJ7=bet, QQ on T72=bet, KQs on QJ4=BET ✓
+    Postflop draws: AKh flush draw=semi-bluff, JTs OESD=raise ✓
+    Postflop trash: 72o on AKQ=check, 43o on KK9=fold ✓
+    Turn: AK on AJ72=bet, QQ on T729 facing bet=raise ✓
+
+BLOCKER: Saved hand snapshots have DEBUG OVERLAYS drawn on them.
+The bot draws text (equity, EV, stack values) on the screenshot before saving.
+When the simulator re-reads these annotated PNGs, the overlay text corrupts:
+  - Hero stack OCR (debug text overlaps stack number)
+  - Pot OCR (overlay panel at top overlaps pot text)
+  - Call amount OCR
+FIX APPLIED: engine.py now saves _clean.png (no overlay) alongside annotated.
+New snapshots will have clean versions. Old snapshots can't be fixed.
+
+FIX PRIORITY ORDER:
+  1. big_blind (0%) — everything downstream uses BB units, if BB=0 all math breaks
+  2. hero_stack (37.5%) — stack size drives all-in/fold/call decisions
+  3. call_amount (62.5%) — wrong call amount = wrong pot odds
+  4. hero_cards suits (62.5%) — diamond vs club confusion
+  5. buttons (75%) — check vs bet label
+  6. pot (87.5%)
+  7. board (87.5%)
+  8. num_opponents (87.5%)
+```
+
+### SIMULATOR MUST TEST 100% OF EVERYTHING:
+```
+The simulator is NOT just about cards. It must verify EVERY field
+the bot reads from the table, against REAL ground truth from screenshots:
+
+  1. Hero cards (rank + suit)          — must be 100%
+  2. Board cards (all 3/4/5)           — must be 100%
+  3. Button types (fold/call/check/raise/bet) — must be 100%
+  4. Button CLICK COORDINATES          — must land on correct button
+  5. Pot amount (in BB)                — must be within ±0.5 BB
+  6. Call amount (in BB)               — must be within ±0.5 BB
+  7. Hero stack (in BB)                — must be within ±1 BB
+  8. Position (UTG/MP/CO/BTN/SB/BB)   — must be correct
+  9. Number of opponents               — must be correct
+  10. Big blind value                   — must be correct
+  11. Dealer button seat                — must be correct
+  12. Preflop raiser position           — must be correct when visible
+
+Ground truth must come from MANUALLY VERIFIED screenshots, NOT from
+the JSON files written by the bot (those are corrupted).
+
+Process to build verified ground truth:
+  1. Open each screenshot PNG
+  2. Human reads every value (cards, pot, buttons, stacks, position)
+  3. Record in verified_ground_truth.json
+  4. Run simulator against this file
+  5. EVERY field must match. 100%. Not 95%.
+
+Until this simulator passes 100% on 50+ verified hands:
+  - DO NOT start the bot live
+  - DO NOT change strategy code
+  - DO NOT touch anything except detection
+
+This is the ONLY way to know the bot actually reads the table correctly.
+```
+
+### MANDATORY BEFORE LIVE PLAY:
+```bash
+# Run the real simulation on ALL snapshots:
+python3 sys_core/tests/simulate_full_pipeline.py
+
+# Required thresholds to go live:
+#   Cards:   > 95% correct
+#   Board:   > 95% correct
+#   Buttons: > 95% correct
+#   Click coordinates: land on correct button color > 95%
+
+# If ANY threshold not met → DO NOT START THE BOT
+```
+
+### All Fixes Applied Mar 15 2026 (Evening Session)
+```
+1. Suit detection: Blue/diamond range H=90-130 (was 102-125), clubs H=35-85 (was 35-98)
+2. Card locking: Once read, cards locked for entire hand. OCR flicker rejected.
+3. Button X region: BUTTON_X_MIN=0.45 (was 0.02). Excludes emoji icons.
+4. Shortcut offsets: (-192,-45), (-156,-45), (-120,-45), (-85,-45) for 33/50/75/100%
+5. Shortcut confirm: Uses rightmost button from state (raise is always rightmost)
+6. has_check_button: amount=None no longer counts as check (only amount=0)
+7. check→fold fallback: If decision is "check" but no check button, fold not call
+8. Post-click verify: Fresh screenshot after every click, retry with new position
+9. Verify retry: Uses re-detected position, not same wrong position
+10. hero_stack crash: Fixed undefined variable in skip-typing code
+11. Fold equity: Range-based FE for ALL postflop (was aggressor-only), 60% discount vs bets
+12. Base fold equity: 42/35/30% by street (was 30/25/20%)
+13. Probe bet threshold: 15% equity or 30% FE (was 30% equity)
+14. River bluff threshold: 25% FE (was 35%)
+15. Opponent profiles: Reset (were corrupted: vpip>hands_seen)
+16. Hash cache: Cleared (was poisoned with wrong card mappings)
+17. Tray instant stop: SIGKILL immediately (was 5-second graceful delay)
+18. Range equity crash guard: Type check before format strings
+```
+
+---
+## 🔬 DEEP SYSTEM ARCHITECTURE — HOW EVERYTHING CONNECTS
+
+### The Full Pipeline (Screenshot → Click)
+```
+engine.py main loop (every 500ms per table)
+    │
+    ├── 1. find_poker_windows()          → AppleScript → List[TableWindow]
+    │       window has: x, y, w, h (POINTS), window_id, name
+    │
+    ├── 2. Screenshot (PIL.ImageGrab)    → Full screen in PIXELS (3420×2224)
+    │       Crop to table: window bounds × 2 (POINTS→PIXELS)
+    │
+    ├── 3. read_table()                  → table_reader.py → GameState
+    │   │
+    │   ├── 3a. Ultra-fast button scan (HSV, ~3ms)
+    │   │       Search Y=82-98%, X=45-98% for dark red pixels
+    │   │       If <500 colored pixels → no buttons → return early
+    │   │
+    │   ├── 3b. Button detection (_detect_buttons)
+    │   │       HSV masks → contours → positional assignment
+    │   │       PROBLEM: all 3 buttons are same color (dark red)
+    │   │       Assignment by X position: left=fold, mid=call, right=raise
+    │   │       Each button → AvailableAction with screen_x_pt, screen_y_pt
+    │   │       screen_pt = table_origin_pt + (pixel_center × scale)
+    │   │
+    │   ├── 3c. Card detection (card_reader.py)
+    │   │   │   Search Y=53-88%, X=34-65% for white rank text
+    │   │   ├── Hash cache lookup (instant if seen before)
+    │   │   ├── Batch OCR (psm 6, reads both cards at once)
+    │   │   │   NOW TRUSTED for all ranks (was: only face cards)
+    │   │   ├── Template matching (52 templates, threshold 0.45)
+    │   │   ├── Individual OCR fallback (psm 10, single chars)
+    │   │   └── Suit: HSV on card background
+    │   │       S=black(V<70), H=red(H<12|>168), D=blue(H=90-130), C=green(H=35-85)
+    │   │
+    │   ├── 3d. Board card detection
+    │   │       Similar to hero cards but center of table
+    │   │       Hash cache for speed
+    │   │
+    │   ├── 3e. Pot/Stack/Call OCR (pytesseract, digits only)
+    │   │       Pot: top center of table
+    │   │       Call amount: from call button text
+    │   │       Stacks: from player name plates
+    │   │
+    │   └── 3f. Position detection (dealer button + blind chips)
+    │           HSV for yellow dealer button
+    │           Blind chip positions → SB/BB seats → hero position
+    │
+    ├── 4. Card Locking
+    │       Once cards read, LOCKED for entire hand
+    │       Only unlock when board goes cards→empty (new Rush hand)
+    │       Prevents OCR flicker (9H→AC mid-hand)
+    │
+    ├── 5. Decision Making (decisionmaker.py)
+    │   │
+    │   ├── PREFLOP: gto_preflop_decision()
+    │   │   Hand normalized (AKs, 77, QTo)
+    │   │   Lookup in GTO ranges by position
+    │   │   Premium shield: AA/KK/QQ/JJ/AKs/AKo NEVER fold
+    │   │   Returns: raise/call/check/fold
+    │   │
+    │   └── POSTFLOP: compute_ev_decision()
+    │       ├── Estimate villain range (position + action + player type)
+    │       ├── Equity vs range (eval7, ~2.4ms, 10k iterations)
+    │       ├── Board-aware range narrowing (Bayesian)
+    │       ├── Blocker adjustments (nut flush blocker +15% FE)
+    │       ├── Fold equity estimation (range-based or heuristic)
+    │       ├── EV(fold) = 0
+    │       ├── EV(call) = eq × (pot+call) - (1-eq) × call + implied
+    │       ├── EV(raise) = FE × pot + (1-FE) × (eq_called × new_pot - raise)
+    │       ├── Multi-street planning (flop/turn only, 150 runouts)
+    │       │   DISABLED for equity < 10% (prevents trash-hand bluffs)
+    │       └── Pick highest EV action
+    │
+    ├── 6. Action Mapping (_map_decision_to_action)
+    │       fold  → LEFTMOST button (always fold in GGPoker)
+    │       raise → RIGHTMOST button (always raise/bet)
+    │       call  → get_action_by_type('call') or ('check')
+    │       check → get_action_by_type('check'), else FOLD (not call!)
+    │
+    └── 7. Click Execution (_click_action_inner)
+        ├── For raise: try shortcut buttons (33/50/75/100% pot)
+        │   Offsets from raise button: (-192,-45), (-156,-45), (-120,-45), (-85,-45)
+        │   Click shortcut → click rightmost button (confirm)
+        │   If no shortcut match → click raise directly (default amount)
+        ├── For fold/call/check: click the mapped button directly
+        ├── Double-tap for reliability (+2px, +1px offset)
+        └── Post-click color verify (is button still there? → retry)
+```
+
+### Key Data Structures
+```python
+GameState:
+    my_cards: ['AH', 'KS']              # From card_reader
+    board_cards: ['QH', 'JD', '2C']     # From board detection
+    available_actions: [AvailableAction] # Buttons with click coordinates
+    pot: 150.0                           # BB units
+    call_amount: 50.0                    # BB units
+    position: 'BTN'                      # From dealer button detection
+    is_my_turn: bool                     # True if action buttons visible
+
+AvailableAction:
+    action_type: 'fold'                  # fold/call/check/raise/bet/all_in
+    amount: 4.0                          # BB (from OCR, None if failed)
+    screen_x_pt: 570                     # macOS POINTS for clicking
+    screen_y_pt: 616                     # macOS POINTS for clicking
+
+Coordinate conversion:
+    PIXELS = POINTS × 2    (Retina)
+    screen_pt = table_origin_pt + (image_pixel × table_size_pt / image_size_px)
+```
+
+### Caching Layers (speed optimization)
+```
+1. Button cache: hash(button_region_pixels) → buttons dict (~0.3ms hit)
+2. Card cache: hash(card_area_pixels) → ['AH', 'KS'] (~0.1ms hit)
+3. Board cache: hash(board_area_pixels) → ['QH', 'JD'] (~0.1ms hit)
+4. Pot cache: hash(pot_region_pixels) → 150.0 (~0.1ms hit)
+5. Pixel hash card cache: normalized_crop_hash → 'AH' (persistent across sessions)
+   ⚠️ CAN BE POISONED — wrong reads get cached forever
+   Clear sys_core/ocr/card_hash_cache.json after ANY card detection fix
+```
+
+### Where Things Break (in order of impact)
+```
+1. BUTTON POSITIONS WRONG → clicks fold but hits call (BIGGEST PROBLEM)
+   Root cause: HSV can't distinguish buttons by color (all dark red)
+   Positional assignment fails with different button layouts
+
+2. CARD MISREADS → bot plays wrong hand
+   Root cause: batch OCR was discarded for number cards, individual OCR guesses wrong
+   Fix applied: trust batch OCR for all ranks
+
+3. CALL AMOUNT OCR FAILS → bot thinks it can check for free, calls instead
+   Root cause: amount=None treated as amount=0 (free check)
+   Fix applied: only amount=0 counts as check
+
+4. MULTI-STREET OVERRIDE → bets with trash hands
+   Root cause: fold equity alone makes betting look +EV even with 0% equity
+   Fix applied: require 10% equity for multi-street override
+
+5. FOLD EQUITY SUPPRESSED → never raises when facing bets
+   Root cause: range-based FE only computed when hero bets first
+   Fix applied: compute FE in all postflop situations
+```
+
+---
 ## 🤖 CLAUDE OPUS 4.6 INTEGRATION (Mar 7, 2026) 🤖
 
 ### Bot Mechanics & Fixes (Mar 11, 2026)

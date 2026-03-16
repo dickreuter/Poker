@@ -1,6 +1,111 @@
 # GGSystem Utility - Current Status & Instructions
 
 ---
+## 🚨🚨🚨 NEVER IMPLEMENT CARD LOCKING 🚨🚨🚨
+
+**Card locking is PERMANENTLY BANNED from this codebase.**
+
+On Mar 16 2026, a "card lock" system was implemented that locked hero cards
+once read and rejected new OCR reads as "flicker". This caused the bot to:
+- Play entire hands with WRONG cards from previous hands (e.g. K6o when real cards were 82o)
+- Call all-ins with trash because equity was calculated on phantom cards
+- Lose multiple buy-ins in a single session
+
+**Why it fails**: OCR reads different wrong cards each time (KC→AC→2S→8D).
+The lock requires 2 identical reads to unlock — this NEVER happens when OCR
+is unreliable. Result: bot is permanently stuck on wrong cards.
+
+**The correct approach**: Use the CURRENT OCR read every time. Even if OCR
+is sometimes wrong, using today's read is infinitely better than using
+locked wrong cards from 3 hands ago.
+
+**DO NOT**:
+- Add card locking/persistence between reads
+- Add "flicker rejection" that keeps old cards
+- Add "2 consecutive reads to unlock" logic
+- Cache hero cards across detection cycles
+- Override current card reads with previous reads
+
+**If OCR is unreliable, fix the OCR — don't paper over it with locks.**
+
+---
+## EMERGENCY FOLD SAFETY (Mar 16, 2026)
+
+When the bot can't find a button for its decision (e.g. decision=CALL but
+no call button detected), it MUST click fold. Doing nothing causes GGPoker
+to auto-call on timer expiry — the worst possible outcome.
+
+**Three safety layers**:
+1. **Fold-only detection**: When only fold button visible, click fold immediately
+   (don't run decision engine — it might say CALL with no call button available)
+2. **Call→Fold fallback**: When decision=CALL but no call button, click fold
+3. **Emergency fold**: When ANY decision has no matching button, click fold
+
+**NEVER return None from _map_decision_to_action without trying fold first.**
+**NEVER let process_table_new_ocr exit without clicking SOMETHING when buttons exist.**
+
+---
+## BUTTON DETECTION (Mar 16, 2026) — OCR Text-First Detection
+
+### Problem Solved
+GGPoker's Call button is near-black — invisible to HSV color detection.
+When only Fold was detected, the bot either folded everything or retried
+until GGPoker auto-called with trash. **Every missed Call button = lost money.**
+
+### Fix: OCR `image_to_data()` as PRIMARY button finder
+After HSV confirms buttons exist (~3ms), run pytesseract `image_to_data()`
+on the button region to find ALL button text positions in one pass (~200ms).
+Buttons literally say "Fold", "Call 1.5 BB", "Check", "Raise to 3 BB" —
+OCR reads the text regardless of background color.
+
+### Detection Pipeline (new)
+```
+1. HSV ultra-fast scan (~3ms) → "Are there button-colored pixels?" → yes/no
+2. HSV contour detection → finds dark_red, green, yellow buttons
+3. Positional assignment → left=fold, mid=call, right=raise (low confidence)
+4. *** NEW: OCR text detection (~200ms) ***
+   - Runs when ANY button has positional/geometric assignment
+   - image_to_data() finds "Fold", "Call", "Check", "Raise", "Bet" text
+   - OCR positions OVERRIDE positional guesses (conf 0.95)
+   - Phantom buttons removed (positional buttons OCR didn't confirm)
+   - Call/Check dedup (GGPoker never shows both simultaneously)
+5. Batch OCR for amounts (only for non-OCR-text buttons)
+```
+
+### Results (104 clean screenshots)
+```
+Before: Call detected ~0% (invisible to HSV), fold-only → auto-call timeout
+After:  Clean button layouts: 98% (102/104)
+
+Layout distribution:
+  fold + call:                37 (36%) — all-in decisions, no raise
+  fold + call + raise:        29 (28%) — standard 3-button
+  fold + check + raise:       19 (18%) — when hero can check
+  fold + check:               17 (16%) — 2-button check/fold only
+  edge cases:                  2 (2%)  — 1 fold+raise, 1 no buttons
+
+Timing: avg 255ms per frame (HSV + OCR text combined)
+```
+
+### Fold-Only Retry (engine.py)
+When only fold is detected (UI hasn't fully rendered):
+- Retry 1 cycle (~500ms) for all buttons to appear
+- After retry, act immediately to avoid GGPoker auto-call timeout
+- With OCR, fold-only is now very rare (1/104 screenshots)
+
+### Keywords Matched
+OCR handles partial reads from clipped/misread characters:
+- "heck" → Check, "mall" → Call, "fol" → Fold, "aise" → Raise
+- Low-conf matches only accepted in bottom half of button region
+  (filters out player names, chat text)
+
+### Files Changed
+| File | Change |
+|------|--------|
+| `sys_core/ocr/table_reader.py` | New `_ocr_button_text_positions()`, integrated into `_detect_buttons()`, phantom removal, call/check dedup |
+| `sys_core/engine.py` | Fold-only gets 1 retry before acting |
+
+---
 ## STRATEGY ENGINE (Mar 14, 2026) — EV-Based Decisions
 
 ### Architecture
