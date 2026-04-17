@@ -723,8 +723,20 @@ def read_table(
             _, sb_seat, bb_seat, position, _ = _cached
             log.info(f"POSITION (stale cache): {position} — postflop, no exact match")
         else:
-            sb_seat, bb_seat = -1, -1
-            log.warning(f"POSITION: postflop, no cache — UNKNOWN")
+            # Last resort: detect the yellow dealer button on the felt.
+            # Blind chips are gone postflop but the dealer button stays.
+            # SB = dealer+1, BB = dealer+2 — gives us a valid position
+            # without needing the preflop chip postings.
+            dealer_seat_d, _dx, _dy = _detect_dealer_button(img, W, H)
+            if dealer_seat_d >= 0:
+                sb_seat = (dealer_seat_d + 1) % num_seats
+                bb_seat = (dealer_seat_d + 2) % num_seats
+                position = _position_from_dealer(dealer_seat_d)
+                log.info(f"POSITION (dealer button): D=seat{dealer_seat_d} "
+                         f"→ {position} (postflop, no preflop chips)")
+            else:
+                sb_seat, bb_seat = -1, -1
+                log.warning(f"POSITION: postflop, no cache, no dealer button — UNKNOWN")
         # Still detect current bets even without position
         if is_my_turn:
             _, _, chip_postings = _detect_blinds_from_chips(img, W, H, num_seats)
