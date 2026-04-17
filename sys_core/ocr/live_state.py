@@ -71,11 +71,23 @@ def _serialise(state, hand_context, window_name: str) -> dict:
         for p in (state.players or [])
     ]
 
+    # Sanity warnings — flag suspicious OCR reads so the tray can surface
+    # them visually. Each is (severity, field, message).
+    try:
+        from sys_core.ocr.sanity import check_state
+        warnings = [
+            {'severity': sev, 'field': field, 'msg': msg}
+            for sev, field, msg in check_state(state)
+        ]
+    except Exception:
+        warnings = []
+
     return {
         'window': window_name,
         'updated': datetime.datetime.utcnow().isoformat(timespec='seconds'),
         'is_my_turn': bool(getattr(state, 'is_my_turn', False)),
         'street': street,
+        'warnings': warnings,
         'position': getattr(state, 'position', 'UNKNOWN'),
         'cards': cards,
         'board': board,

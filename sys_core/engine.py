@@ -1333,6 +1333,19 @@ class MultiTableRunner:
                     publish_state(w.name, state, getattr(session, '_hand_context', None))
                 except Exception:
                     pass
+
+                # Log sanity warnings at WARNING so they're easy to grep in
+                # the live log. HIGH severity means strategy is about to act
+                # on garbage state — extremely valuable signal for debugging.
+                try:
+                    from sys_core.ocr.sanity import check_state
+                    for sev, field, msg in check_state(state):
+                        if sev == 'high':
+                            log.warning(f"OCR_SANITY [{w.name[:20]}] HIGH {field}: {msg}")
+                        elif sev == 'medium':
+                            log.info(f"OCR_SANITY [{w.name[:20]}] med  {field}: {msg}")
+                except Exception:
+                    pass
                 
                 # --- NEW: AUTO-ACTION (Pre-betting) Detection ---
                 # Scan for 'Fold to any bet' and 'Check/Fold' checkboxes.

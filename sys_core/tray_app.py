@@ -163,7 +163,12 @@ class PokerBotApp(rumps.App):
 
     @staticmethod
     def _format_table_line(t: dict) -> str:
-        """Build a one-line summary of a table state for the menu."""
+        """Build a one-line summary of a table state for the menu.
+
+        Surfaces sanity warnings prominently — a HIGH-severity warning
+        means strategy will misread this state, so the line gets a
+        ⚠️ prefix that's impossible to miss in the menu.
+        """
         win = (t.get('window') or 'table')[:20]
         cards = ' '.join(t.get('cards') or []) or '··'
         board = ' '.join(t.get('board') or []) or '·'
@@ -173,12 +178,26 @@ class PokerBotApp(rumps.App):
         seq = t.get('action_sequence') or ''
         turn = '▶' if t.get('is_my_turn') else ' '
         bet_pot = '3B' if t.get('is_3bet_pot') else '4B' if t.get('is_4bet_pot') else ''
-        # Format: ▶ table | cards | board | pos | pot | call | sequence
-        line = f"{turn} {win} | {cards} / {board} | {pos} | pot {pot:g} call {call:g}"
+        warnings = t.get('warnings') or []
+        high_count = sum(1 for w in warnings if w.get('severity') == 'high')
+        med_count = sum(1 for w in warnings if w.get('severity') == 'medium')
+        # Lead with sanity status — visible at a glance whether OCR is trustworthy
+        if high_count:
+            prefix = f"🛑 {turn}"
+        elif med_count:
+            prefix = f"⚠ {turn}"
+        else:
+            prefix = f"✓ {turn}"
+        line = f"{prefix} {win} | {cards} / {board} | {pos} | pot {pot:g} call {call:g}"
         if bet_pot:
             line += f" | {bet_pot}"
+        if high_count or med_count:
+            counts = []
+            if high_count: counts.append(f"{high_count} HIGH")
+            if med_count: counts.append(f"{med_count} med")
+            line += f" | {', '.join(counts)} warn"
         if seq:
-            line += f" | {seq[:80]}"
+            line += f" | {seq[:60]}"
         return line
 
     # ---------------------------------------------------------------- test OCR
