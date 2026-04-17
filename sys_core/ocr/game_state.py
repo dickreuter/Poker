@@ -67,6 +67,14 @@ class HandContext:
     # (street, seat, action, amount, is_hero).
     full_action_sequence: list = field(default_factory=list)
 
+    # Multi-raiser preflop detection — derived from full_action_sequence.
+    # 3-bet pots have ~5x narrower villain ranges than single-raise pots
+    # (e.g. JJ+/AK vs 22+/A2s+/K9s+) so this single bool meaningfully
+    # changes equity calculations downstream.
+    is_3bet_pot: bool = False
+    is_4bet_pot: bool = False
+    num_preflop_raisers: int = 0
+
     # --- Derived context (updated after each street) ---
     hero_has_initiative: bool = False   # Is hero the last aggressor?
     villain_has_initiative: bool = False  # Is villain the last aggressor?
@@ -267,6 +275,9 @@ class GameState:
     players: List[PlayerInfo] = field(default_factory=list)
     hero_seat: int = -1
     dealer_seat: int = -1
+    num_seats: int = 6  # 3 / 6 / 9 — table size, used for position math
+    sb_seat: int = -1   # small blind seat (preflop only; -1 if unknown)
+    bb_seat: int = -1   # big blind seat (preflop only; -1 if unknown)
 
     # Actions
     available_actions: List[AvailableAction] = field(default_factory=list)

@@ -2971,7 +2971,12 @@ class MultiTableRunner:
         action_seq = ''
         if _ctx is not None and getattr(_ctx, 'full_action_sequence', None):
             def _fmt(a):
-                tag = 'H' if a.is_hero else f's{a.seat}'
+                if a.is_hero:
+                    tag = 'HERO'
+                elif a.position:
+                    tag = a.position
+                else:
+                    tag = f's{a.seat}'
                 amt = f"{a.amount:g}" if a.amount else ''
                 return f"{tag}-{a.action}{amt}"
             action_seq = ' '.join(_fmt(a) for a in _ctx.full_action_sequence)
@@ -3431,6 +3436,16 @@ class MultiTableRunner:
                     (cards_key and cards_key != session._action_tracker_cards_key)):
                 session._action_tracker = ActionTracker(hero_seat=0)
                 session._action_tracker_cards_key = cards_key
+                # Prime with blinds so the SB/BB postings don't get logged
+                # as voluntary bets/raises. After priming, the next actor
+                # matching BB amount is a limp (call), and exceeding BB
+                # is a raise — exactly poker rules.
+                _sb = getattr(state, 'sb_seat', -1)
+                _bb = getattr(state, 'bb_seat', -1)
+                _sb_amt = (state.small_blind / state.big_blind) if state.big_blind else 0.5
+                _bb_amt = 1.0  # Bot normalises everything to BB units
+                if _sb >= 0 or _bb >= 0:
+                    session._action_tracker.prime_blinds(_sb, _sb_amt, _bb, _bb_amt)
 
             # Build inputs from current state.
             chip_postings_now = [
@@ -3439,8 +3454,23 @@ class MultiTableRunner:
             ]
             active_seats_now = {p.seat for p in state.players if p.is_active}
             street_lower = state.street.value.lower() if hasattr(state.street, 'value') else 'preflop'
+
+            # Build seat→position map so emitted events read like
+            # "UTG raise" instead of "seat 2 raise". Only meaningful when
+            # we know the dealer; otherwise pass empty and tracker falls
+            # back to seat indices.
+            seat_positions = {}
+            _dealer = getattr(state, 'dealer_seat', -1)
+            _nseats = getattr(state, 'num_seats', 6) or 6
+            if _dealer >= 0:
+                from sys_core.ocr.table_reader import _hero_position
+                for s in range(_nseats):
+                    seat_positions[s] = _hero_position(s, _dealer, _nseats)
+
             new_actions = session._action_tracker.update(
-                chip_postings_now, active_seats_now, street_lower)
+                chip_postings_now, active_seats_now, street_lower,
+                seat_positions=seat_positions,
+            )
 
             # Expose tracker via state and ctx for downstream consumers.
             # Done as a SEPARATE field — not via ctx.record_action — to

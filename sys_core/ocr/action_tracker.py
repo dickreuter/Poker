@@ -39,10 +39,12 @@ class TrackedAction:
     action: str          # 'bet' | 'raise' | 'call' | 'fold' | 'check'
     amount: float        # bet amount in BB (0 for fold/check)
     is_hero: bool = False  # True if this was the hero's action
+    position: str = ''   # 'BTN'|'SB'|'BB'|'UTG'|'UTG+1'|'MP'|'HJ'|'CO' if known
 
     def __repr__(self):
         h = '★' if self.is_hero else ' '
-        return f"<{self.street[:2]}{h} seat{self.seat} {self.action} {self.amount}BB>"
+        who = self.position if self.position else f"seat{self.seat}"
+        return f"<{self.street[:2]}{h} {who} {self.action} {self.amount}BB>"
 
 
 class ActionTracker:
@@ -68,11 +70,32 @@ class ActionTracker:
         """Public API: caller signals a new hand started."""
         self._reset_full()
 
+    def prime_blinds(self, sb_seat: int, sb_amount: float,
+                     bb_seat: int, bb_amount: float) -> None:
+        """Mark the SB/BB postings as initial state, not voluntary actions.
+
+        Without this, the very first frame's chip postings (which contain
+        the mandatory blinds) get classified as bet/raise, polluting the
+        action sequence with non-events. Engine should call this once
+        when a new hand starts and SB/BB seats are detected.
+
+        After priming, the next actor matching BB amount is a limp/call,
+        and the next actor exceeding BB is a raise — exactly what poker
+        rules say.
+        """
+        if sb_seat >= 0 and sb_amount > 0:
+            self._last_postings[sb_seat] = sb_amount
+        if bb_seat >= 0 and bb_amount > 0:
+            self._last_postings[bb_seat] = bb_amount
+            if bb_amount > self._street_max:
+                self._street_max = bb_amount
+
     def update(
         self,
         chip_postings: List[Tuple[float, int]],
         active_seats: Set[int],
         street: str,
+        seat_positions: Optional[Dict[int, str]] = None,
     ) -> List[TrackedAction]:
         """Diff against last frame and append any newly observed actions.
 
@@ -84,9 +107,13 @@ class ActionTracker:
                 For preflop where card-back detection is lossy, pass the
                 set of seats whose stacks were OCR'd.
             street: 'preflop' | 'flop' | 'turn' | 'river'.
+            seat_positions: optional {seat_idx: 'BTN'|'SB'|'BB'|...} so
+                emitted events carry readable position names ('UTG raise')
+                instead of bare seat indices.
 
         Returns: the list of NEW actions detected this frame (may be empty).
         """
+        seat_positions = seat_positions or {}
         new_events: List[TrackedAction] = []
 
         # Street transition: chips collected into pot, baseline resets.
@@ -115,6 +142,7 @@ class ActionTracker:
             ev = TrackedAction(
                 street=street, seat=seat, action=action, amount=amt,
                 is_hero=(seat == self.hero_seat),
+                position=seat_positions.get(seat, ''),
             )
             new_events.append(ev)
             self.actions.append(ev)
@@ -134,6 +162,7 @@ class ActionTracker:
                 ev = TrackedAction(
                     street=street, seat=seat, action='fold', amount=0.0,
                     is_hero=False,
+                    position=seat_positions.get(seat, ''),
                 )
                 new_events.append(ev)
                 self.actions.append(ev)
@@ -143,7 +172,7 @@ class ActionTracker:
         return new_events
 
     def summary(self) -> str:
-        """Compact one-liner for logging — full hand sequence."""
+        """Compact one-liner for logging — full hand sequence with positions."""
         if not self.actions:
             return "(no actions)"
         parts = []
@@ -152,7 +181,12 @@ class ActionTracker:
             if a.street != prev_street:
                 parts.append(f"[{a.street}]")
                 prev_street = a.street
-            tag = 'HERO' if a.is_hero else f's{a.seat}'
+            if a.is_hero:
+                tag = 'HERO'
+            elif a.position:
+                tag = a.position
+            else:
+                tag = f's{a.seat}'
             if a.action in ('fold', 'check'):
                 parts.append(f"{tag}-{a.action}")
             else:

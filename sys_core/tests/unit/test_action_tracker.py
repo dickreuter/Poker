@@ -94,3 +94,48 @@ def test_hero_action_tagged():
     assert t.actions[0].is_hero is True
     t.update([(3.0, 0), (9.0, 2)], {0, 1, 2}, 'preflop')
     assert t.actions[1].is_hero is False
+
+
+def test_prime_blinds_excludes_blind_postings_from_actions():
+    """SB/BB mandatory posts should NOT appear as bet/raise events."""
+    t = ActionTracker(hero_seat=0)
+    t.prime_blinds(sb_seat=5, sb_amount=0.5, bb_seat=3, bb_amount=1.0)
+    # First frame contains the blinds + one open-raise. Blinds should be
+    # baseline; only the raise becomes an event.
+    t.update(
+        [(0.5, 5), (1.0, 3), (3.0, 2)],  # SB post, BB post, UTG raise to 3
+        {0, 1, 2, 3, 4, 5}, 'preflop',
+        seat_positions={0: 'BB', 1: 'SB', 2: 'UTG', 3: 'BB', 4: 'CO', 5: 'SB'},
+    )
+    actions = [(e.seat, e.action, e.amount) for e in t.actions]
+    assert actions == [(2, 'raise', 3.0)], (
+        f"Expected only the UTG raise; got {actions}"
+    )
+
+
+def test_prime_blinds_then_limp_classified_as_call_not_bet():
+    """A player matching exactly the BB amount preflop is a limp = call."""
+    t = ActionTracker(hero_seat=0)
+    t.prime_blinds(sb_seat=5, sb_amount=0.5, bb_seat=3, bb_amount=1.0)
+    t.update(
+        [(0.5, 5), (1.0, 3), (1.0, 2)],  # UTG limps for 1 BB
+        {0, 1, 2, 3, 4, 5}, 'preflop',
+    )
+    actions = [(e.seat, e.action, e.amount) for e in t.actions]
+    assert actions == [(2, 'call', 1.0)], (
+        f"Expected UTG limp = call, got {actions}"
+    )
+
+
+def test_position_labels_in_summary():
+    """Events should carry position names when seat_positions provided."""
+    t = ActionTracker(hero_seat=0)
+    # 6-max layout: hero=BB at seat 0, dealer at seat 5, so:
+    #   seat 0 = BB, seat 5 = BTN, seat 4 = CO, seat 3 = MP, seat 2 = UTG, seat 1 = SB
+    positions = {0: 'BB', 1: 'SB', 2: 'UTG', 3: 'MP', 4: 'CO', 5: 'BTN'}
+    t.update([(3.0, 2)], {0, 1, 2, 3, 4, 5}, 'preflop', seat_positions=positions)
+    t.update([(3.0, 2), (9.0, 4)], {0, 1, 2, 3, 4, 5}, 'preflop', seat_positions=positions)
+    summary = t.summary()
+    assert 'UTG-bet3' in summary, f"expected UTG label: {summary}"
+    assert 'CO-raise9' in summary, f"expected CO label: {summary}"
+    assert 's2' not in summary and 's4' not in summary, f"raw seat labels leaked: {summary}"
