@@ -2963,14 +2963,40 @@ class MultiTableRunner:
         if action_key in self.stats['decisions']:
             self.stats['decisions'][action_key] += 1
 
+        # Rich diagnostic log — captures everything needed to reconstruct
+        # WHY the bot took this action. When a hand goes wrong, replaying
+        # this entry should answer: did it see the right state? did it
+        # have the action sequence? did the strategy give the right call?
+        _ctx = getattr(session, '_hand_context', None)
+        action_seq = ''
+        if _ctx is not None and getattr(_ctx, 'full_action_sequence', None):
+            def _fmt(a):
+                tag = 'H' if a.is_hero else f's{a.seat}'
+                amt = f"{a.amount:g}" if a.amount else ''
+                return f"{tag}-{a.action}{amt}"
+            action_seq = ' '.join(_fmt(a) for a in _ctx.full_action_sequence)
+        hero_player = next((p for p in state.players if p.is_hero), None)
         log_action('new_ocr_action', success=True, details={
+            # Decision
             'decision': decision_label,
             'action': action.action_type,
+            'raise_target': target_amount,
+            # State
             'cards': state.my_cards,
             'board': state.board_cards,
+            'street': state.street.value if hasattr(state.street, 'value') else str(state.street),
+            'position': state.position,
             'pot': state.pot,
-            'raise_target': target_amount,
+            'call_amount': state.call_amount,
+            'hero_stack': hero_player.stack if hero_player else None,
+            'opponents_in_hand': state.opponents_in_hand,
+            # Action context
+            'preflop_raiser_position': _ctx.preflop_raiser_position if _ctx else None,
+            'action_sequence': action_seq,
+            'buttons_visible': [a.action_type for a in state.available_actions],
+            # Performance
             'latency_ms': state.ocr_latency_ms,
+            'window': session.window.name[:60] if session.window and session.window.name else '',
         })
 
         # --- Autonomous feedback loop ---
