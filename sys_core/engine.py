@@ -327,6 +327,9 @@ class TableSession:
     # Hand context — full action tracking across streets within one hand
     _hand_context: Optional[object] = None  # HandContext, created per hand
     _hand_context_last_street: str = ""  # Prevents re-recording same street
+    # Per-frame action sequence (replaces street-transition recording for villains)
+    _action_tracker: Optional[object] = None  # ActionTracker, created per hand
+    _action_tracker_cards_key: str = ""  # Hero cards key — change = new hand → reset
 
 
 class MultiTableRunner:
@@ -904,6 +907,9 @@ class MultiTableRunner:
                         # Reset hand context for new hand
                         session._hand_context = None
                         session._hand_context_last_street = ""
+                        # Reset action tracker (per-frame action sequence) for new hand
+                        session._action_tracker = None
+                        session._action_tracker_cards_key = ""
 
                 # Handle "Add Chips" rebuy dialog — check BEFORE Deal Me In
                 # because both may be visible simultaneously after busting.
@@ -3229,6 +3235,9 @@ class MultiTableRunner:
             # Reset hand context for new hand
             session._hand_context = None
             session._hand_context_last_street = ""
+            # Reset action tracker (per-frame action sequence) for new hand
+            session._action_tracker = None
+            session._action_tracker_cards_key = ""
 
         if prev_state is None:
             return
@@ -3383,6 +3392,39 @@ class MultiTableRunner:
                 session._hand_context_last_street = ""
 
             ctx = session._hand_context
+
+            # --- Per-frame action sequence tracking ---
+            # ActionTracker watches chip postings + active seats and emits
+            # bet/raise/call/fold events as they happen. Reset when hero
+            # cards change (new hand). Each new event is forwarded into the
+            # HandContext so downstream range estimation sees the FULL
+            # action sequence, not just one event per street transition.
+            from sys_core.ocr.action_tracker import ActionTracker
+            cards_key = '|'.join(sorted(state.my_cards)) if state.my_cards else ''
+            if (session._action_tracker is None or
+                    (cards_key and cards_key != session._action_tracker_cards_key)):
+                session._action_tracker = ActionTracker(hero_seat=0)
+                session._action_tracker_cards_key = cards_key
+
+            # Build inputs from current state.
+            chip_postings_now = [
+                (p.current_bet, p.seat) for p in state.players
+                if p.current_bet and p.current_bet > 0
+            ]
+            active_seats_now = {p.seat for p in state.players if p.is_active}
+            street_lower = state.street.value.lower() if hasattr(state.street, 'value') else 'preflop'
+            new_actions = session._action_tracker.update(
+                chip_postings_now, active_seats_now, street_lower)
+
+            # Expose tracker via state and ctx for downstream consumers.
+            # Done as a SEPARATE field — not via ctx.record_action — to
+            # avoid duplicating with the existing per-street recording that
+            # already populates ctx.action_history. Strategy can opt in by
+            # reading ctx.full_action_sequence; older code paths see no
+            # change in behaviour.
+            ctx.full_action_sequence = list(session._action_tracker.actions)
+            for ev in new_actions:
+                log.info(f"ACTION_SEQ {session.window.name[:20]}: {ev}")
 
             # --- Populate preflop context ---
             _raiser_utg = getattr(t, 'first_raiser_utg', float('nan'))

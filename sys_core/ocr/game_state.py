@@ -61,6 +61,12 @@ class HandContext:
     # --- Full action sequence ---
     action_history: List[HandAction] = field(default_factory=list)
 
+    # Per-frame action sequence from ActionTracker (richer than action_history,
+    # which only captures street-transition events). Populated by the engine
+    # when ActionTracker is enabled. Format: list of TrackedAction objects
+    # (street, seat, action, amount, is_hero).
+    full_action_sequence: list = field(default_factory=list)
+
     # --- Derived context (updated after each street) ---
     hero_has_initiative: bool = False   # Is hero the last aggressor?
     villain_has_initiative: bool = False  # Is villain the last aggressor?
