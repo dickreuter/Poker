@@ -31,6 +31,39 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Set, Tuple
 
 
+def position_label_unique(seat: int, dealer_seat: int, num_seats: int) -> str:
+    """Return a unique poker position name for any seat.
+
+    Unlike the existing _hero_position helper (which collapses UTG/MP
+    duplicates in 9-max so strategy lookup tables stay compatible),
+    this returns conventional names where every seat is distinct:
+
+        2-max: 'SB', 'BB'
+        3-max: 'BTN', 'SB', 'BB'
+        6-max: 'BTN', 'SB', 'BB', 'UTG', 'MP', 'CO'
+        9-max: 'BTN', 'SB', 'BB', 'UTG', 'UTG+1', 'MP', 'LJ', 'HJ', 'CO'
+
+    Used for display / action-sequence labelling. Strategy-side range
+    lookups must still go through _hero_position which returns the
+    canonical names the tables are keyed by.
+    """
+    if dealer_seat < 0 or num_seats < 2:
+        return f"s{seat}"
+    dist = (seat - dealer_seat) % num_seats
+    layouts = {
+        2: ['SB', 'BB'],
+        3: ['BTN', 'SB', 'BB'],
+        4: ['BTN', 'SB', 'BB', 'UTG'],
+        5: ['BTN', 'SB', 'BB', 'UTG', 'CO'],
+        6: ['BTN', 'SB', 'BB', 'UTG', 'MP', 'CO'],
+        7: ['BTN', 'SB', 'BB', 'UTG', 'MP', 'HJ', 'CO'],
+        8: ['BTN', 'SB', 'BB', 'UTG', 'UTG+1', 'MP', 'HJ', 'CO'],
+        9: ['BTN', 'SB', 'BB', 'UTG', 'UTG+1', 'MP', 'LJ', 'HJ', 'CO'],
+    }
+    names = layouts.get(num_seats, layouts[6])
+    return names[dist] if dist < len(names) else f"s{seat}"
+
+
 @dataclass
 class TrackedAction:
     """A single observed poker action during a hand."""

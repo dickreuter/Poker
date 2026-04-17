@@ -601,6 +601,39 @@ class RangeEquity:
             raiser_position=_raiser_pos_for_call,
         )
 
+        # 3-bet / 4-bet pot override — populated by ActionTracker upstream
+        # when more than one preflop raiser was observed. Multi-raiser pots
+        # have dramatically narrower villain ranges than single-raise pots,
+        # so we replace the wide opening range with a tight 3bet/4bet range.
+        # This is the single biggest range-estimation correction the
+        # full_action_sequence enables.
+        if getattr(hand_context, 'is_4bet_pot', False):
+            # 4-bet ranges are essentially nutted: KK+ and AKs as a bluff/value blend
+            base_range = 'QQ+, AKs, AKo'
+        elif getattr(hand_context, 'is_3bet_pot', False):
+            # 3-bet ranges (typical 6-max ~3.5% of hands)
+            base_range = 'TT+, AJs+, KQs, AQo+'
+
+        # --- 3-bet / 4-bet pot override ---
+        # When more than one preflop raiser was detected, villain's range
+        # is dramatically narrower than the standard scenarios assume
+        # (which were calibrated for single-raise pots). Return the tight
+        # 3-bet/4-bet range BEFORE c-bet/probe scenarios but AFTER the
+        # check-raise scenario, which still produces an even tighter
+        # nutted range when applicable.
+        if (getattr(hand_context, 'is_4bet_pot', False) and
+                current_action in ('bet', 'call')):
+            return 'KK+, AKs'  # 4-bet ranges are essentially nutted
+        if (getattr(hand_context, 'is_3bet_pot', False) and
+                current_action in ('bet', 'call')):
+            # 3-bet pot c-bet: villain's range is the 3-bet range
+            # narrowed slightly by board interaction. Tighter than open-cbet.
+            if street == 'flop':
+                return 'TT+, AJs+, KQs, AQo+'
+            if street == 'turn':
+                return 'JJ+, AQs+, AKo'
+            return 'QQ+, AKs'
+
         # --- Scenario-based narrowing ---
         # Scenarios are checked in priority order. More specific matches first.
 

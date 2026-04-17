@@ -1,7 +1,30 @@
 """ActionTracker scenarios that mirror real preflop / postflop sequences."""
 import pytest
 
-from sys_core.ocr.action_tracker import ActionTracker
+from sys_core.ocr.action_tracker import ActionTracker, position_label_unique
+
+
+def test_position_label_unique_6max():
+    """Standard 6-max layout: BTN=dealer, then SB/BB/UTG/MP/CO clockwise."""
+    # dealer at seat 0
+    labels = [position_label_unique(s, 0, 6) for s in range(6)]
+    assert labels == ['BTN', 'SB', 'BB', 'UTG', 'MP', 'CO']
+
+
+def test_position_label_unique_9max_distinct():
+    """All 9 seats must have distinct labels — UTG+1, LJ, HJ etc."""
+    labels = [position_label_unique(s, 0, 9) for s in range(9)]
+    assert labels == ['BTN', 'SB', 'BB', 'UTG', 'UTG+1', 'MP', 'LJ', 'HJ', 'CO']
+    assert len(set(labels)) == 9, "9-max labels must be unique"
+
+
+def test_position_label_unique_heads_up():
+    labels = [position_label_unique(s, 0, 2) for s in range(2)]
+    assert labels == ['SB', 'BB']
+
+
+def test_position_label_unique_unknown_dealer():
+    assert position_label_unique(3, -1, 6) == 's3'
 
 
 def _run(frames):

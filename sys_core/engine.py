@@ -3463,9 +3463,9 @@ class MultiTableRunner:
             _dealer = getattr(state, 'dealer_seat', -1)
             _nseats = getattr(state, 'num_seats', 6) or 6
             if _dealer >= 0:
-                from sys_core.ocr.table_reader import _hero_position
+                from sys_core.ocr.action_tracker import position_label_unique
                 for s in range(_nseats):
-                    seat_positions[s] = _hero_position(s, _dealer, _nseats)
+                    seat_positions[s] = position_label_unique(s, _dealer, _nseats)
 
             new_actions = session._action_tracker.update(
                 chip_postings_now, active_seats_now, street_lower,
@@ -3479,8 +3479,26 @@ class MultiTableRunner:
             # reading ctx.full_action_sequence; older code paths see no
             # change in behaviour.
             ctx.full_action_sequence = list(session._action_tracker.actions)
+
+            # Derive multi-raiser facts from the full preflop sequence.
+            # is_3bet_pot is the single highest-impact signal: villain
+            # 3-bet ranges are ~5x narrower than open-raise ranges (e.g.
+            # JJ+/AKs+ vs 22+/A2s+/K9s+). The strategy reads these on
+            # ctx; bots that don't care still see no change.
+            preflop_raisers = {
+                a.seat for a in ctx.full_action_sequence
+                if a.street == 'preflop' and a.action in ('bet', 'raise')
+            }
+            ctx.num_preflop_raisers = len(preflop_raisers)
+            ctx.is_3bet_pot = ctx.num_preflop_raisers >= 2
+            ctx.is_4bet_pot = ctx.num_preflop_raisers >= 3
+
             for ev in new_actions:
                 log.info(f"ACTION_SEQ {session.window.name[:20]}: {ev}")
+            if new_actions and (ctx.is_3bet_pot or ctx.is_4bet_pot):
+                tag = '4-BET' if ctx.is_4bet_pot else '3-BET'
+                log.info(f"ACTION_SEQ {session.window.name[:20]}: {tag} POT "
+                         f"({ctx.num_preflop_raisers} raisers)")
 
             # --- Populate preflop context ---
             _raiser_utg = getattr(t, 'first_raiser_utg', float('nan'))
