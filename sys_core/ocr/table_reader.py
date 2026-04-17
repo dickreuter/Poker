@@ -1353,17 +1353,36 @@ def _ocr_button_text_positions(
         text_center_x = wx + ww // 2 + rx1
         text_center_y = wy + wh // 2 + ry1
 
-        # Parse amount from nearby words on the same line
+        # Parse amount from nearby words.
+        # GGPoker stacks button text vertically:
+        #     Call          Raise to       Fold
+        #     3 BB          7 BB
+        # The label and amount end up on DIFFERENT line_num values from
+        # tesseract's perspective. Same-line scan alone misses the amount.
+        # Strategy: collect words from same line PLUS any words below this
+        # one whose X bounds overlap our keyword's X bounds (i.e. they're
+        # part of the same vertical button column).
         amount = None
         line_num = data['line_num'][i] if 'line_num' in data else -1
+        word_x1, word_x2 = data['left'][i], data['left'][i] + data['width'][i]
+        word_bottom = data['top'][i] + data['height'][i]
         line_text_parts = [word]
-        for j in range(max(0, i - 2), min(n_words, i + 5)):
+        for j in range(n_words):
             if j == i:
                 continue
-            if 'line_num' in data and data['line_num'][j] == line_num:
-                jword = data['text'][j].strip()
-                if jword:
-                    line_text_parts.append(jword)
+            jword = data['text'][j].strip()
+            if not jword:
+                continue
+            jx1 = data['left'][j]
+            jx2 = jx1 + data['width'][j]
+            jy = data['top'][j]
+            same_line = ('line_num' in data and data['line_num'][j] == line_num)
+            # X overlap: any horizontal intersection
+            x_overlap = jx1 < word_x2 and jx2 > word_x1
+            # Vertical proximity: within ~2× our text height, below the keyword
+            y_close = 0 <= (jy - word_bottom) <= 3 * data['height'][i]
+            if same_line or (x_overlap and y_close):
+                line_text_parts.append(jword)
         line_text = ' '.join(line_text_parts)
         amount = _parse_amount(line_text)
 
