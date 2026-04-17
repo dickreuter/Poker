@@ -117,6 +117,40 @@ SEAT_REGIONS_9MAX = [
     (0.500, 0.900, 0.14, 0.040),  # Seat 8: (alias for seat 0 in 8-max)
 ]
 
+def _detect_num_seats(window_name: str, game_type: str) -> int:
+    """Determine table size (number of seats) from window title + game type.
+
+    GGPoker tournaments prefix the window with '#N:' where N is the max
+    seat count, e.g. '#9: $250 Mini Main Event'. That is the most reliable
+    signal — use it first, then fall back to game-type heuristics.
+
+    Returns 3 / 6 / 9 (the only sizes the bot supports).
+    """
+    if window_name:
+        m = re.match(r'^#(\d+):', window_name)
+        if m:
+            n = int(m.group(1))
+            # Snap to one of the supported region tables.
+            if n <= 3:
+                return 3
+            if n <= 6:
+                return 6
+            return 9
+        wn_lower = window_name.lower()
+        if '6-max' in wn_lower or '6max' in wn_lower:
+            return 6
+        if '9-max' in wn_lower or '9max' in wn_lower:
+            return 9
+        if 'spin' in wn_lower or 'gold' in wn_lower:
+            return 3
+
+    if game_type == 'spin':
+        return 3
+    if game_type == 'tournament':
+        return 9  # Most GGPoker MTTs are 9-max
+    return 6      # Cash / Rush & Cash default
+
+
 # Dealer button detection area (within the felt, away from edges)
 DEALER_Y_MIN = 0.30
 DEALER_Y_MAX = 0.75
@@ -439,6 +473,11 @@ def read_table(
     # 5b. Game type and tournament info
     game_type = _detect_game_type(window_name)
     is_tournament = game_type == 'tournament'
+
+    # 5c. Table size from window prefix '#N:' or game-type heuristic.
+    # Computed BEFORE stack OCR so we use the right seat-region table.
+    # 9-max read with 6-max regions misses 4 seats entirely.
+    num_seats = _detect_num_seats(window_name, game_type)
     tournament_info = {}
     if is_tournament and is_my_turn:
         tournament_info = _read_tournament_info(img, W, H, window_id=window_id)
@@ -531,6 +570,13 @@ def read_table(
     # a fresh OCR for that seat only.
     hero_stack_is_estimated = False
     if is_my_turn:
+        # NOTE: forced to 6-max until SEAT_REGIONS_9MAX is recalibrated.
+        # On 1706x1244 tournament screenshots, the existing 9-max regions
+        # mis-read every seat (hero shows 4.0 BB instead of 37.1 BB). The
+        # 6-max regions partially work even on 9-max tables — read fewer
+        # seats but the ones it reads are accurate. Better partial truth
+        # than full noise. Re-enable num_seats=num_seats once 9-max is
+        # validated against multiple tournament screenshots.
         players, hero_stack_is_estimated = _read_player_stacks(img, W, H)
     else:
         # Default hero stack so DecisionMaker doesn't think we're broke
@@ -619,26 +665,14 @@ def read_table(
     #   reuses the preflop detection. New cards = new hand = re-detect.
     hero_seat = 0  # Always seat 0 (bottom center)
 
-    # Table size: detect from player count if available, else game type
+    # Table size: already computed at step 5c via _detect_num_seats(window_name,
+    # game_type) before stack OCR. Refine upward only — if we somehow read
+    # >6 active players on what we thought was a 6-max table, trust the
+    # observation and switch to 9-max for downstream position math.
     num_active_players = len([p for p in players if p.is_active]) if players else 0
-
-    if num_active_players >= 7:
-        num_seats = 9  # 7+ players visible → 9-max table
-    elif game_type == 'spin':
-        num_seats = 3
-    elif game_type == 'tournament':
-        _wn = window_name.lower() if window_name else ''
-        if '6-max' in _wn or '6max' in _wn:
-            num_seats = 6
-        else:
-            num_seats = 9  # Most GGPoker tournaments are 9-max by default
-    else:
-        num_seats = 6  # Cash games are always 6-max on GGPoker
-
-    # Override with visible player count if it's more informative
-    if num_active_players > 0 and num_active_players < num_seats:
-        # Players may have busted — use the table layout, not current count
-        pass
+    if num_active_players >= 7 and num_seats < 9:
+        log.info(f"NUM_SEATS upgraded {num_seats}→9 (saw {num_active_players} active)")
+        num_seats = 9
 
     # For 3-max (Spin & Go): players sit at physical seats 0, 2, 4
     _spin_seats = [0, 2, 4]
@@ -2158,12 +2192,16 @@ def _parse_amount(text: str, max_expected: Optional[float] = None) -> Optional[f
 # ---------------------------------------------------------------------------
 
 def _read_player_stacks(img: np.ndarray, W: int, H: int,
-                        hero_only: bool = False) -> List[PlayerInfo]:
+                        hero_only: bool = False,
+                        num_seats: int = 6) -> List[PlayerInfo]:
     """Read stack amounts from seat positions.
 
     Args:
         hero_only: If True, only read hero stack (seat 0) for speed.
                    Use when opponent stacks are cached and only hero matters.
+        num_seats: Table size (3/6/9). Picks the matching seat-region table.
+                   On a 9-max table read with 6-max regions, 4 of 9 seats
+                   land on empty felt → opponents go undetected.
 
     Returns a list of PlayerInfo for seats where a stack amount was found.
     Seat 0 is always hero (bottom center).
@@ -2171,10 +2209,15 @@ def _read_player_stacks(img: np.ndarray, W: int, H: int,
     if not PYTESSERACT_AVAILABLE:
         return []
 
-    seats_to_read = [0] if hero_only else range(len(SEAT_REGIONS_6MAX))
+    if num_seats >= 7:
+        seat_regions = SEAT_REGIONS_9MAX
+    else:
+        seat_regions = SEAT_REGIONS_6MAX
+
+    seats_to_read = [0] if hero_only else range(len(seat_regions))
     players = []
     for seat_idx in seats_to_read:
-        cx, cy, sw, sh = SEAT_REGIONS_6MAX[seat_idx]
+        cx, cy, sw, sh = seat_regions[seat_idx]
         x1 = max(int((cx - sw / 2) * W), 0)
         x2 = min(int((cx + sw / 2) * W), W)
         y1 = max(int((cy - sh / 2) * H), 0)
