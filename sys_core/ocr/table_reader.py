@@ -22,6 +22,11 @@ from PIL import Image
 
 from sys_core.ocr.card_reader import read_player_cards, _pixel_hash_cache
 from sys_core.ocr.game_state import AvailableAction, GameState, PlayerInfo, ReadConfidence, Street
+from sys_core.ocr.number_cache import stack_cache as _stack_cache, pot_cache as _pot_cache
+
+# Sentinel to cache negative results (None / 0) under the same hash table —
+# distinguishes "we OCR'd this and got nothing" from "never seen these pixels".
+_NUMBER_CACHE_NEGATIVE = "__none__"
 
 try:
     import pytesseract
@@ -2302,6 +2307,26 @@ def _strip_ui_borders(bw: np.ndarray) -> np.ndarray:
 
 
 def _ocr_stack_value(region: np.ndarray) -> Optional[float]:
+    """Cached entry point: pixel-hash → cached float, or run OCR pipeline.
+
+    Cache key is the ROI pixel content. If the seat hasn't changed since
+    last frame, we return instantly without touching tesseract. Stale reads
+    are impossible — any pixel change invalidates the hash automatically.
+    """
+    cached = _stack_cache.get(region)
+    if cached is not None:
+        # Cached value is (float | None). Wrap None as a sentinel so we can
+        # distinguish "cached: not a number" from "cache miss".
+        if cached == _NUMBER_CACHE_NEGATIVE:
+            return None
+        return cached
+
+    result = _ocr_stack_value_impl(region)
+    _stack_cache.put(region, result if result is not None else _NUMBER_CACHE_NEGATIVE)
+    return result
+
+
+def _ocr_stack_value_impl(region: np.ndarray) -> Optional[float]:
     """OCR a stack value from a small region. Returns the numeric value or None.
 
     GGSystem stacks are typically cyan text (RGB≈119,204,255) on dark bg.
@@ -2697,14 +2722,10 @@ def _hero_position(hero_seat: int, dealer_seat: int, num_players: int) -> str:
 # ---------------------------------------------------------------------------
 
 def _read_pot(img: np.ndarray, W: int, H: int) -> float:
-    """Read pot amount from the top-center of the table.
+    """Cached entry point: pixel-hash the pot region, return cached value
+    or run the full OCR pipeline on miss.
 
-    GGSystem pot text is yellow/white on green felt ("Total Pot : $X.XX").
-    Uses multiple preprocessing pipelines to ensure reliable reads:
-      1. Fixed thresholds on grayscale (fast path)
-      2. Yellow channel isolation (R+G high, B low — targets yellow text)
-      3. CLAHE contrast enhancement
-      4. Adaptive thresholding
+    Pot rarely changes within a betting round — most reads hit cache.
     """
     if not PYTESSERACT_AVAILABLE:
         return 0.0
@@ -2715,6 +2736,20 @@ def _read_pot(img: np.ndarray, W: int, H: int) -> float:
     x2 = int(W * POT_X_MAX)
     region = img[y1:y2, x1:x2]
 
+    if region.size == 0:
+        return 0.0
+
+    cached = _pot_cache.get(region)
+    if cached is not None:
+        return 0.0 if cached == _NUMBER_CACHE_NEGATIVE else cached
+
+    result = _read_pot_impl(region)
+    _pot_cache.put(region, result if result > 0 else _NUMBER_CACHE_NEGATIVE)
+    return result
+
+
+def _read_pot_impl(region: np.ndarray) -> float:
+    """OCR the pot region. Caller already cropped + checked size."""
     if region.size == 0:
         return 0.0
 
