@@ -1323,6 +1323,16 @@ class MultiTableRunner:
                     table_h_pt=w.height,
                 )
                 state.ocr_source = 'python'
+
+                # Publish live state for tray app / external monitors.
+                # Wrapped in try/except — observability failures must never
+                # block the decision loop. Read from session._hand_context
+                # if available so action sequence is included.
+                try:
+                    from sys_core.ocr.live_state import publish_state
+                    publish_state(w.name, state, getattr(session, '_hand_context', None))
+                except Exception:
+                    pass
                 
                 # --- NEW: AUTO-ACTION (Pre-betting) Detection ---
                 # Scan for 'Fold to any bet' and 'Check/Fold' checkboxes.
