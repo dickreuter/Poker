@@ -2102,6 +2102,51 @@ def _classify_button_text(text: str, color_type: str) -> str:
     return color_type
 
 
+def _fix_stack_decimal(raw_value: float,
+                        plausible_min: float = 0.5,
+                        plausible_max: float = 999.0,
+                        prefer_near: float = 100.0) -> Optional[float]:
+    """When stack OCR returns an implausibly large integer (e.g. 8959 BB),
+    insert a decimal point at every position and return the most plausible
+    candidate.
+
+    Real bug from session logs: hero stack OCR'd as 8959 BB on a $0.01/$0.02
+    table. The actual value was ~89.59 BB — tesseract dropped or merged the
+    decimal point. Inserting a decimal at every position yields:
+
+        '8959'  pos=1: 8.959    in range, score |8.959-100|=91.0
+                pos=2: 89.59    in range, score |89.59-100|=10.4 ← BEST
+                pos=3: 895.9    in range, score |895.9-100|=795.9
+
+    Pick the candidate closest to a typical poker stack (default 100 BB) —
+    cash games re-buy to 100 BB, tournaments range 20-150 BB, micro-stakes
+    rarely above 500 BB. Anything over 1000 BB is virtually always an OCR
+    artifact at micro stakes.
+
+    Returns the corrected float, or None if no plausible candidate exists.
+    """
+    if plausible_min <= raw_value <= plausible_max:
+        return raw_value  # Already in plausible range, no fix needed
+
+    s = f"{raw_value:.0f}"
+    if len(s) < 2:
+        return None
+
+    candidates = []
+    for pos in range(1, len(s)):
+        try:
+            candidate = float(s[:pos] + '.' + s[pos:])
+        except ValueError:
+            continue
+        if plausible_min <= candidate <= plausible_max:
+            candidates.append((abs(candidate - prefer_near), candidate))
+
+    if not candidates:
+        return None
+    candidates.sort()
+    return candidates[0][1]
+
+
 def _fix_ocr_missing_decimal(raw_num: str, text: str,
                              original_num_token: str = "") -> Optional[str]:
     """Fix OCR misreads where a decimal point is dropped.
@@ -2265,25 +2310,18 @@ def _read_player_stacks(img: np.ndarray, W: int, H: int,
             continue
 
         stack = _ocr_stack_value(region)
-        # Sanity: reject stacks > 2000 BB (likely OCR picked up level badge
-        # concatenated with stack, e.g. "52101.0" = badge "52" + stack "101.0")
-        # Note: 500+ BB is normal for deep-stacked cash games.
-        if stack is not None and stack > 2000:
-            # Try to extract just the last plausible number
-            # e.g. 52101.0 → 101.0, 255100.0 → 100.0
-            s_str = f"{stack:.1f}"
-            for split_len in (3, 4, 5):  # try splitting off 3-5 digit suffix
-                if len(s_str) > split_len + 1:
-                    suffix = s_str[-split_len:]
-                    try:
-                        candidate = float(suffix)
-                        if 0.5 <= candidate <= 500:
-                            log.debug(f"Seat {seat_idx}: fixed garbled stack "
-                                      f"{stack} → {candidate}")
-                            stack = candidate
-                            break
-                    except ValueError:
-                        pass
+        # Decimal-fix: tesseract drops the dot in "85.9" → "859", or merges
+        # it as a digit → "8959". Live session logs showed hero stacks like
+        # 8959 / 9859 / 9959 BB on micro-stakes tables (real values 89.59 /
+        # 98.59 / 99.59). _fix_stack_decimal inserts a decimal at every
+        # position and picks the candidate closest to a typical 100 BB
+        # buy-in — the OLD recovery picked the SHORTEST suffix first which
+        # turned 8959 into 9.0 (also wrong, just less obvious).
+        if stack is not None and stack > 999:
+            fixed = _fix_stack_decimal(stack)
+            if fixed is not None:
+                log.info(f"Seat {seat_idx}: STACK DECIMAL FIX {stack:.0f} → {fixed:.2f}")
+                stack = fixed
             else:
                 log.debug(f"Seat {seat_idx}: rejecting implausible stack {stack}")
                 stack = None
@@ -2745,13 +2783,33 @@ def _detect_blinds_from_chips(img: np.ndarray, W: int, H: int,
     num_pattern = re.compile(r'^\d+\.?\d*$')
     used_indices = set()
 
+    def _accept_bet(amount: float) -> Optional[float]:
+        """Filter / repair a chip-posting amount.
+
+        - Accepts 0.25–250 BB as-is (covers blinds, raises, all-in shoves
+          up to 250 BB which is the realistic micro-stakes ceiling).
+        - For amounts > 250, runs decimal-insertion fix. 2.55 BB OCR'd as
+          "255" becomes 2.55. The fix prefers candidates near a 5 BB
+          typical bet — if no plausible result, the amount is rejected.
+        - Rejects amounts < 0.25 (sub-blind = noise).
+        """
+        if 0.25 <= amount <= 250:
+            return amount
+        if amount > 250:
+            fixed = _fix_stack_decimal(
+                amount, plausible_min=0.25, plausible_max=200, prefer_near=5.0)
+            if fixed is not None:
+                log.info(f"BET DECIMAL FIX: {amount:.0f} → {fixed:.2f}")
+                return fixed
+        return None
+
     for wi, (txt, cx, cy, conf) in enumerate(words):
         # Strategy 1: Direct match — "0.5BB", "1BB", "2.5BB", "3.5BB"
         cleaned = txt.replace(' ', '')
         m = bb_direct.match(cleaned)
         if m:
-            amount = float(m.group(1))
-            if 0.25 <= amount <= 50:
+            amount = _accept_bet(float(m.group(1)))
+            if amount is not None:
                 if 0.35 < cy < 0.45 and 0.40 < cx < 0.60:
                     continue  # Skip "Total Pot" area
                 postings.append((amount, cx, cy))
@@ -2767,8 +2825,8 @@ def _detect_blinds_from_chips(img: np.ndarray, W: int, H: int,
                 prev_clean = prev_txt.replace(',', '.').replace('O', '0')
                 if num_pattern.match(prev_clean) and abs(cy - prev_cy) < 0.03:
                     try:
-                        amount = float(prev_clean)
-                        if 0.25 <= amount <= 50:
+                        amount = _accept_bet(float(prev_clean))
+                        if amount is not None:
                             mid_cx = (cx + prev_cx) / 2
                             mid_cy = (cy + prev_cy) / 2
                             if 0.35 < mid_cy < 0.45 and 0.40 < mid_cx < 0.60:
