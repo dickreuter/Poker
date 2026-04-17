@@ -522,22 +522,16 @@ def read_table(
     # 7. Street from board cards
     street = _street_from_board(board_cards)
 
-    # 8. Player stacks — reuse cache aggressively, only full-read once per hand.
-    # Stack OCR is the #1 bottleneck (~2300ms). Stacks barely change within a hand.
+    # 8. Player stacks — read every seat every frame. The per-seat pixel-hash
+    # cache (number_cache.stack_cache) makes unchanged seats ~0.2ms each, so
+    # 6 reads = ~1.2ms when nothing changed. This replaces the old window-keyed
+    # _STACK_CACHE which never invalidated — opponents who busted, doubled up,
+    # or were replaced left the bot's mental model permanently stale. The new
+    # approach is auto-invalidating: any pixel change in a seat region forces
+    # a fresh OCR for that seat only.
     hero_stack_is_estimated = False
     if is_my_turn:
-        if window_id in _STACK_CACHE and len(_STACK_CACHE[window_id]) > 0:
-            # Have cached stacks — reuse them (read hero only for updates)
-            hero_players, hero_stack_is_estimated = _read_player_stacks(img, W, H, hero_only=True)
-            cached_opps = [p for p in _STACK_CACHE[window_id] if not p.is_hero]
-            players = hero_players + cached_opps
-            _STACK_CACHE[window_id] = players
-            log.debug(f"STACK FAST: hero-only read, {len(cached_opps)} opponents cached")
-        else:
-            # First read for this window — read all stacks
-            players, hero_stack_is_estimated = _read_player_stacks(img, W, H)
-            _STACK_CACHE[window_id] = players
-            _STACK_HASH_CACHE[window_id] = stack_hash_key
+        players, hero_stack_is_estimated = _read_player_stacks(img, W, H)
     else:
         # Default hero stack so DecisionMaker doesn't think we're broke
         players = [PlayerInfo(seat=0, name="", stack=100.0, current_bet=0.0,
