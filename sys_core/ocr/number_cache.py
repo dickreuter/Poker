@@ -114,6 +114,10 @@ class NumberCache:
 stack_cache = NumberCache()
 pot_cache = NumberCache()
 button_cache = NumberCache()
+# Player names rarely change — cache aggressively to skip the per-seat
+# tesseract call on every frame. Cap is small because there are far fewer
+# distinct nameplate pixel-hashes than there are stack values.
+name_cache = NumberCache(cap=2000)
 
 
 def all_stats() -> dict:
@@ -122,4 +126,5 @@ def all_stats() -> dict:
         "stack": stack_cache.stats(),
         "pot": pot_cache.stats(),
         "button": button_cache.stats(),
+        "name": name_cache.stats(),
     }

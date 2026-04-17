@@ -2981,6 +2981,13 @@ class MultiTableRunner:
                 return f"{tag}-{a.action}{amt}"
             action_seq = ' '.join(_fmt(a) for a in _ctx.full_action_sequence)
         hero_player = next((p for p in state.players if p.is_hero), None)
+        # Snapshot every seat for cross-hand opponent stats: name + stack.
+        # Names enable VPIP/PFR/AF tracking by player across sessions.
+        seat_snapshot = [
+            {'seat': p.seat, 'name': p.name, 'stack': p.stack,
+             'bet': p.current_bet, 'is_hero': p.is_hero}
+            for p in state.players
+        ]
         log_action('new_ocr_action', success=True, details={
             # Decision
             'decision': decision_label,
@@ -2999,6 +3006,8 @@ class MultiTableRunner:
             'preflop_raiser_position': _ctx.preflop_raiser_position if _ctx else None,
             'action_sequence': action_seq,
             'buttons_visible': [a.action_type for a in state.available_actions],
+            # Per-seat snapshot (names + stacks)
+            'seats': seat_snapshot,
             # Performance
             'latency_ms': state.ocr_latency_ms,
             'window': session.window.name[:60] if session.window and session.window.name else '',

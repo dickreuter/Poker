@@ -22,7 +22,11 @@ from PIL import Image
 
 from sys_core.ocr.card_reader import read_player_cards, _pixel_hash_cache
 from sys_core.ocr.game_state import AvailableAction, GameState, PlayerInfo, ReadConfidence, Street
-from sys_core.ocr.number_cache import stack_cache as _stack_cache, pot_cache as _pot_cache
+from sys_core.ocr.number_cache import (
+    stack_cache as _stack_cache,
+    pot_cache as _pot_cache,
+    name_cache as _name_cache,
+)
 
 # Sentinel to cache negative results (None / 0) under the same hash table —
 # distinguishes "we OCR'd this and got nothing" from "never seen these pixels".
@@ -2284,9 +2288,25 @@ def _read_player_stacks(img: np.ndarray, W: int, H: int,
                 log.debug(f"Seat {seat_idx}: rejecting implausible stack {stack}")
                 stack = None
         if stack is not None and 0 < stack <= 2000:
+            # Read the player's name from the strip above the stack.
+            # Region: same x range, shifted up by 1.5x stack height,
+            # extending up by 1.5x stack height total. Wider than stack
+            # to catch the full name on bigger plates.
+            name = ""
+            try:
+                name_cy = cy - sh * 0.9
+                name_sh = sh * 1.5
+                ny1 = max(int((name_cy - name_sh / 2) * H), 0)
+                ny2 = min(int((name_cy + name_sh / 2) * H), H)
+                name_region = img[ny1:ny2, x1:x2]
+                if name_region.size > 0:
+                    name = _ocr_player_name(name_region)
+            except Exception:
+                pass
+
             players.append(PlayerInfo(
                 seat=seat_idx,
-                name="",
+                name=name,
                 stack=stack,
                 current_bet=0.0,
                 is_active=True,
@@ -2380,6 +2400,65 @@ def _strip_ui_borders(bw: np.ndarray) -> np.ndarray:
         if col_frac[c] > 0.80:
             out[:, c] = 0
     return out
+
+
+_NAME_RE = re.compile(r'^[A-Za-z0-9@_\-+\.]+$')
+
+
+def _ocr_player_name(region: np.ndarray) -> str:
+    """Extract player name from a nameplate region. Returns '' on failure.
+
+    Uses image_to_data() at PSM 11 (sparse text) to find all candidates,
+    filters for name-shaped strings, and picks the longest high-confidence
+    match. Pixel-hash cached so steady-state reads are ~0.2ms.
+    """
+    if not PYTESSERACT_AVAILABLE or region.size == 0:
+        return ''
+
+    cached = _name_cache.get(region)
+    if cached is not None:
+        return '' if cached == _NUMBER_CACHE_NEGATIVE else cached
+
+    gray = cv2.cvtColor(region, cv2.COLOR_RGB2GRAY)
+    _, bw = cv2.threshold(gray, 140, 255, cv2.THRESH_BINARY)
+    big = cv2.resize(bw, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
+
+    try:
+        data = pytesseract.image_to_data(
+            Image.fromarray(big), config='--psm 11 --oem 3',
+            output_type=pytesseract.Output.DICT,
+        )
+    except Exception:
+        _name_cache.put(region, _NUMBER_CACHE_NEGATIVE)
+        return ''
+
+    best = ''
+    best_score = (-1, -1)  # (length, confidence)
+    for j, w in enumerate(data['text']):
+        w = w.strip()
+        conf = data['conf'][j]
+        try:
+            conf = int(conf)
+        except (TypeError, ValueError):
+            conf = -1
+        if not w or conf < 30:
+            continue
+        if not (3 <= len(w) <= 20):
+            continue
+        if not _NAME_RE.match(w):
+            continue
+        if not any(c.isalpha() for c in w):
+            continue  # Pure numbers aren't names
+        # Reject obvious stack readings like "100BB" / "5BB"
+        if re.match(r'^\d+\.?\d*\s?BB$', w, re.I):
+            continue
+        score = (len(w), conf)
+        if score > best_score:
+            best_score = score
+            best = w
+
+    _name_cache.put(region, best if best else _NUMBER_CACHE_NEGATIVE)
+    return best
 
 
 def _ocr_stack_value(region: np.ndarray) -> Optional[float]:
