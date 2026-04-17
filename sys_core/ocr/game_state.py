@@ -490,13 +490,16 @@ class GameState:
         # Running against 4 opponents when heads-up destroys equity for
         # draws and made hands (e.g. nut flush shows 24% instead of 85%).
         raw_active = len(active_opponents)
-        if self.opponents_in_hand >= 0 and self.board_cards:
-            # Card-back detection: the most accurate method.
-            # opponents_in_hand counts visible card backs at opponent seats.
+        if self.opponents_in_hand >= 0:
+            # Card-back detection: the most accurate signal both pre and post
+            # flop. opponents_in_hand counts visible card backs at opponent
+            # seats — folded opponents have no cards even though their stack
+            # is still readable, so this beats raw_active for accuracy.
             t.other_active_players = max(self.opponents_in_hand, 1)
             log.info(f"Opponents from card-back detection: {self.opponents_in_hand}")
         elif self.board_cards and len(self.board_cards) >= 1:
-            # Fallback: heuristic from pot size. Cap at 2 for Rush & Cash.
+            # Postflop fallback when card-back detection unavailable:
+            # heuristic from pot size. Cap at 2 for Rush & Cash.
             pot_in_bb = self.pot if self.pot > 0 else 3
             if pot_in_bb <= 6:
                 estimated_opponents = 1
@@ -504,7 +507,8 @@ class GameState:
                 estimated_opponents = 2
             t.other_active_players = min(estimated_opponents, raw_active)
         else:
-            # Preflop: all seated opponents are still in
+            # Preflop with no card-back data: assume all seated opponents
+            # are still in. Pessimistic — may overcount (some already folded).
             t.other_active_players = raw_active
 
         t.isHeadsUp = t.other_active_players <= 1

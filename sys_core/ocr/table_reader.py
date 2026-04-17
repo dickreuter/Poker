@@ -758,11 +758,16 @@ def read_table(
             log.info(f"STREET BET: seat{seat} ({amt}BB) = {pos}")
 
     # 10. Count opponents actually in the hand (card back detection)
-    #     Only run when it's our turn (postflop needs accurate count for Monte Carlo)
-    if is_my_turn and board_cards:
+    #     Card-back HSV scan is ~5ms — run any time we have action, preflop too.
+    #     This is the most accurate "still in hand" signal we have:
+    #       - Stack OCR can see folded players (their stack is still on screen).
+    #       - Card-back detection only counts opponents whose cards weren't mucked.
+    #     Used downstream (game_state.py) to set other_active_players for Monte
+    #     Carlo equity — wrong count here = wrong equity = bad decisions.
+    if is_my_turn:
         opponents_in_hand = _count_opponents_in_hand(img, W, H)
     else:
-        opponents_in_hand = -1  # unknown (preflop or not our turn)
+        opponents_in_hand = -1  # not our turn — don't waste cycles
 
     t6 = time.time()
     elapsed_ms = (time.time() - start) * 1000
